@@ -273,8 +273,11 @@ table.qt th:first-child,table.qt td:first-child{text-align:left}
 table.qt td{text-align:right;padding:5px 0;border-bottom:1px solid var(--line);color:var(--dim)}
 table.qt tr.me td{color:var(--txt);background:rgba(217,176,106,.07)}
 table.commt{margin-top:8px}
-table.commt td{font-size:11px;padding:3px 0;white-space:nowrap}
-table.commt td:first-child{color:var(--dimmer)}
+table.commt{table-layout:fixed;width:100%}
+table.commt td{font-size:11.5px;padding:4px 0;white-space:nowrap;overflow:hidden;text-align:right;border-bottom:1px solid var(--line)}
+table.commt tr:last-child td{border-bottom:none}
+table.commt td:first-child{color:var(--dimmer);text-align:left;width:34%}
+table.commt td[colspan="2"],table.commt td[colspan="3"]{text-align:left}
 table.commt b{font-weight:500}
 table.payt td,table.payt th{font-size:11px;padding:5px 2px}
 table.payt th{line-height:1.25}
@@ -1215,7 +1218,7 @@ function rumorEst(){
 function buyRumor(idx){
  const r=S.rumors[idx];if(!r||r.bought)return;
  r.bought=true;S.qRumor+=r.price;S.mgrCosts+=r.price/1000;rumorEst();
- renderNews();refreshStatus();
+ renderNews();refreshStatus();refreshGain();
  toast(`<span class="neg-g">−${mm(r.price/1000)}</span> · ${r.src} · ${r.rel}`);
 }
 function renderNews(){
@@ -1226,7 +1229,7 @@ function renderNews(){
    ?`<div class="news ${r.ev?'rum':''}"><span class="src">${r.src.toUpperCase()}</span><span>${r.t}<div class="chips">${r.v.map((z,k)=>`<i class="${z>0?'up':z<0?'dn':''}">${FACT[k].id} ${chip(z)}</i>`).join('')}<i class="rel ${r.rel}">fiabilité ${r.rel}</i></div></span></div>`
    :`<div class="news locked ${r.ev?'rum':''}"><span class="src">${r.src.toUpperCase()}</span><span>${r.teaser}<div class="chips"><i>${r.fk>=0?'facteur '+FACT[r.fk].id+' · '+FACT[r.fk].nm.toLowerCase():'plusieurs facteurs'}</i>${r.ev?'<i class="rel">pré-annonce</i>':''}<button class="buy" data-buy="${i}">Acheter · ${mm(r.price/1000)}</button></div></span></div>`).join('');
  el.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>buyRumor(+b.dataset.buy));
- const ba=el.querySelector('[data-buyall]');if(ba)ba.onclick=()=>{S.rumors.forEach((r,i)=>{if(!r.bought){r.bought=true;S.qRumor+=r.price;S.mgrCosts+=r.price/1000}});rumorEst();renderNews();refreshStatus();toast(`<span class="neg-g">−${mm(tot/1000)}</span> · toutes les sources achetées`)};
+ const ba=el.querySelector('[data-buyall]');if(ba)ba.onclick=()=>{S.rumors.forEach((r,i)=>{if(!r.bought){r.bought=true;S.qRumor+=r.price;S.mgrCosts+=r.price/1000}});rumorEst();renderNews();refreshStatus();refreshGain();toast(`<span class="neg-g">−${mm(tot/1000)}</span> · toutes les sources achetées`)};
  const rs=document.getElementById('rsum');
  const b=S.rumors.filter(r=>r.bought);
  if(rs)rs.innerHTML=b.length?`<table class="qt"><thead><tr><th>Facteur</th><th>Lecture du desk</th></tr></thead><tbody>`+FACT.map((f,k)=>{
@@ -1437,7 +1440,7 @@ function statusBar(done){
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
    <button class="tile" data-gauge="lp" style="flex:1.05"><span>Investisseurs<b>${Math.round(S.lp)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.lp)>=0.05?` <span class="${cls(S._pv.lp)}">→ ${Math.round(Math.max(0,Math.min(100,S.lp+S._pv.lp)))}</span>`:''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
    <button class="tile" data-gauge="rc" style="flex:1.05"><span>Comité<b>${Math.round(S.rc)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?` <span class="${cls(S._pv.rc)}">→ ${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
-   <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Vos gains</span><b class="${(S.mgrFees-S.mgrCosts)>=0?'':'neg-g'}">${score(S.mgrFees-S.mgrCosts)}</b></button>
+   <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Vos gains</span><b id="gaintile" class="${(S.mgrFees-S.mgrCosts)>=0?'':'neg-g'}">${score(S.mgrFees-S.mgrCosts)}</b></button>
   </div>
   <div class="srow">
    ${[0,1,2,3].map(fg).join('')}
@@ -1447,6 +1450,7 @@ function statusBar(done){
 }
 const sd1=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${Math.round(Math.abs(x))}</b>`;
 function gauge(dlp,drc,why){
+ refreshGain();
  dlp=Math.max(-15,Math.min(15,dlp||0));drc=Math.max(-15,Math.min(15,drc||0));
  S.lp=Math.max(0,Math.min(100,S.lp+dlp));S.rc=Math.max(0,Math.min(100,S.rc+drc));
  if(Math.abs(dlp)>=0.05||Math.abs(drc)>=0.05){S.gLog.push({why,lp:dlp,rc:drc});
@@ -1497,6 +1501,8 @@ function resultCard(kick,title,paras,rows,btn,next){
   <button class="cta" id="rgo">${btn}</button></div>`;
  document.getElementById('rgo').onclick=()=>{next();window.scrollTo(0,0)};window.scrollTo(0,0);
 }
+function refreshGain(){const e=document.getElementById('gaintile');if(!e||!S)return;
+ const v=S.mgrFees-S.mgrCosts;e.textContent=score(v);e.className=v>=0?'':'neg-g'}
 function refreshStatus(){const el=app.querySelector('.status');if(el)el.outerHTML=statusBar(S.statusDone)}
 function openModal(title,html){
  let m=document.getElementById('modal');
@@ -1513,7 +1519,12 @@ function toast(html){
 }
 const mm=x=>{const a=Math.abs(x);return a>=1?(x).toFixed(1).replace('.',',')+' Md$':a>=0.001?(x*1000).toFixed(a>=0.1?0:1).replace('.',',')+' M$':(x*1e6).toFixed(0)+' k$'};
 const moneyB=x=>{const a=Math.abs(x);return a>=1?x.toFixed(a>=10?1:2).replace('.',',')+' Md$':(x*1000).toFixed(a>=0.1?0:1).replace('.',',')+' M$'};
-const score=x=>`${x<0?'−':''}${moneyB(Math.abs(x))}`;
+function sig3(v,unit){const a=Math.abs(v);const d=a>=100?1:a>=10?2:2;
+ return (v<0?'−':'')+Math.abs(v).toFixed(d).replace('.',',')+' '+unit}
+const score=x=>{const a=Math.abs(x);
+ if(a>=1)return sig3(x,'Md$');
+ if(a>=0.00005)return sig3(x*1000,'M$');
+ return (x<0?'−':'')+Math.abs(x*1e6).toFixed(0)+' k$'};
 const M$=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${mm(Math.abs(x))}</b>`;
 function tbl(rows,head){return `<table class="qt">${head?`<thead><tr>${head.map((h,i)=>`<th${i===0?' style="text-align:left"':''}>${h}</th>`).join('')}</tr></thead>`:''}<tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td${i===0?' style="text-align:left;color:var(--txt)"':''}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
 function showGauge(id){
@@ -1672,6 +1683,7 @@ function phaseClose(o){
 function screenBudget(){
  S.phase='budget';
  save('screenBudget');S.hotFactor=null;
+ S.mgrCosts-=S.qOps||0;S.qOps=budgetBp()*1e-4*S.nav;S.mgrCosts+=S.qOps;
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Budget d'exploitation du trimestre</h2><span class="hint">refacturé au fonds</span></div>
    <p class="note" style="margin-top:0">Ces dépenses sortent de <em>votre poche de gérant</em> : elles viennent en déduction de vos gains, pas de la performance du fonds. Un point de base vaut <em>${(S.nav*0.1).toFixed(0)} M$</em>.</p>
@@ -1682,7 +1694,7 @@ function screenBudget(){
  drawBuds();
  document.getElementById('ok').onclick=()=>{
    const bp=BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK().fixed*1e4;
-   S.budBp=bp;S.mgrCosts+=bp*1e-4*S.nav;S.qOps=bp*1e-4*S.nav;planSignalsAfterBudget();phaseDesk();
+   S.budBp=bp;planSignalsAfterBudget();phaseDesk();
  };
 }
 function planSignalsAfterBudget(){
@@ -1703,7 +1715,8 @@ function drawBuds(){
  const bp=BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK().fixed*1e4;
  document.getElementById('btot').textContent=`${bp.toFixed(0)} pb · ${mm(bp*1e-4*S.nav)} · ${(bp*4/100).toFixed(2)} % par an`;
  app.querySelectorAll('.lvl').forEach(x=>x.onclick=()=>{
-  const b0=budgetBp();S.bud[x.dataset.b]=+x.dataset.i;drawBuds();refreshStatus();
+  const b0=budgetBp();S.mgrCosts-=S.qOps||0;S.bud[x.dataset.b]=+x.dataset.i;
+  S.qOps=budgetBp()*1e-4*S.nav;S.mgrCosts+=S.qOps;drawBuds();refreshStatus();
   const b1=budgetBp(),bb=BUDGET.find(q=>q.id===x.dataset.b),lv=bb.lv[+x.dataset.i];
   toast(`${bb.nm} → <b>${lv.nm}</b> · ${lv.ef} · budget ${b0.toFixed(0)} → <b>${b1.toFixed(0)} pb</b> (${(b1-b0)>=0?'+':'−'}${mm(Math.abs((b1-b0)*1e-4*S.nav))})`);
  });
@@ -1777,7 +1790,7 @@ function drawRows(){
    const sp1=pvol(weights(S.k)),c1=liveTC();
    S.hotFactor=null;const ex=factorExpo(weights(S.k));
    let big=-1,bv=0;INSTR[i].b.forEach((bb,kk)=>{if(Math.abs(bb)>bv){bv=Math.abs(bb);big=kk}});S.hotFactor=big;
-   updateRow(i);renderRisk();refreshStatus();
+   updateRow(i);renderRisk();refreshStatus();refreshGain();
    const pv=previewGauge();
    toast(`<span style="color:${GRPC[INSTR[i].grp]}">${INSTR[i].sym}</span> ${k1>0?'+':''}${k1} → ${S.k[i]>0?'+':''}${S.k[i]} · σ ${(sp0*100).toFixed(1)} → <b>${(sp1*100).toFixed(1)} %</b> · ordres <b>${((c1-c0)>=0?'+':'−')+mm(Math.abs((c1-c0)))}</b><br><span class="${cls(pv.lp)}">investisseurs ${sd1(pv.lp)}</span> · <span class="${cls(pv.rc)}">comité ${sd1(pv.rc)}</span> à la validation${pv.why?' — '+pv.why:''}`);
  });
@@ -1909,11 +1922,11 @@ function screenComm(){
   ${opts.map((o,i)=>`<div class="cardwrap ${S.commPick===o.id?'sel':''}"><button class="card" data-i="${i}">
    <div class="who">${o.who}</div><b>${o.nm}</b><p>${o.p}</p>
    <table class="qt commt"><tbody>
-    ${o.ret===null?`<tr><td>Aucun engagement</td><td colspan="2" class="neg-g">inv. ${Math.round(o.now.lp)} · com. ${Math.round(o.now.rc)}</td></tr>`
-    :`<tr><td>Promesse</td><td colspan="2">≥ ${sgnp(o.ret,1)} · vol ${o.vlo>0?pct(o.vlo,0)+'–':'≤ '}${pct(o.vhi,0)}</td></tr>
-      <tr><td>À l'annonce</td><td colspan="2">${sd1(o.now.lp)} inv. · ${sd1(o.now.rc)} com.</td></tr>
-      <tr><td>Si tenu</td><td class="pos-g">${sd1(o.win.lp)} inv.</td><td class="pos-g">${sd1(o.win.rc)} com.</td></tr>
-      <tr><td>Si manqué</td><td class="neg-g">${sd1(o.lose.lp)} inv.</td><td class="neg-g">${sd1(o.lose.rc)} com.</td></tr>`}
+    ${o.ret===null?`<tr><td colspan="3">Aucun engagement · <b class="neg-g">${Math.round(o.now.lp)} inv.</b> <b class="neg-g">${Math.round(o.now.rc)} com.</b></td></tr>`
+    :`<tr><td>Promesse</td><td colspan="2"><b>≥ ${sgnp(o.ret,0)}</b> · vol ${o.vlo>0?pct(o.vlo,0)+'–':'≤ '}${pct(o.vhi,0)}</td></tr>
+      <tr><td>Annonce</td><td>${sd1(o.now.lp)} inv.</td><td>${sd1(o.now.rc)} com.</td></tr>
+      <tr><td>Tenu</td><td>${sd1(o.win.lp)} inv.</td><td>${sd1(o.win.rc)} com.</td></tr>
+      <tr><td>Manqué</td><td>${sd1(o.lose.lp)} inv.</td><td>${sd1(o.lose.rc)} com.</td></tr>`}
    </tbody></table></button></div>`).join('')}
   <p class="note">La vol réalisée du trimestre dépend du régime, du book et des dépêches : elle s'écarte de la vol ex-ante, dans un sens comme dans l'autre.</p>
   <button class="cta gold" id="commok" ${S.commPick?'':'disabled'}>${S.commPick?'Annoncer : '+opts.find(o=>o.id===S.commPick).nm.toLowerCase():'Choisissez votre annonce'}</button></div>`;
@@ -2281,7 +2294,7 @@ function resolveQuarter(){
  S.peak=Math.max(S.peak,S.nav);const dd=1-S.nav/S.peak;S.maxdd=Math.max(S.maxdd,dd);
  if(S.nav>S.hwm)S.hwm=S.nav;
  S.totalOps+=(S.qOps||0);
- S.mgrFees=(S.mgrFees||0)+(mgmt+perf)*navBefore;
+ S.mgrFees=(S.mgrFees||0)+(mgmt+perf)*navBefore;refreshGain();
  S.mgrQ={fees:(mgmt+perf)*navBefore,ops:S.qOps||0,rum:(S.qRumor||0)/1000,mgmt:mgmt*navBefore,perf:perf*navBefore};
  S.lastR2=S.lastR;S.lastR=r;
  S.crowd=S.crowd.map((c,i)=>Math.max(-1,Math.min(1,0.55*c+0.85*(r[i]/INSTR[i].sigQ)/3)));
