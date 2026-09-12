@@ -21,5 +21,8 @@ Les polices viennent de Google Fonts ; sans connexion, le jeu tourne quand même
 ## Partager un résultat
 En fin de partie, le bouton « Partager ce résultat » copie un résumé (verdict, performance, rang, Sharpe, graine). La graine fixe la trajectoire des marchés : deux joueurs avec la même graine et la même configuration affrontent le même monde — mais pas les mêmes dépêches, car leurs décisions décalent les tirages.
 
+## Reprendre une partie
+La partie en cours est sauvegardée dans le navigateur à chaque étape. Si vous fermez l'onglet ou rafraîchissez la page, le bouton « Reprendre la partie en cours » apparaît sur l'écran d'accueil.
+
 ## Sous le capot
-Modèle factoriel à quatre facteurs (croissance, inflation, dollar, appétit pour le risque), régimes macro en chaîne de Markov, coûts d'exécution en racine carrée du notionnel, rumeurs vraies avec la probabilité de leur classe de fiabilité, quatre fonds concurrents simulés, Sharpe probabiliste de Bailey et López de Prado au rapport final. Tout est dans le fichier ; le panneau « Comment ça marche sous le capot » sur l'écran de composition en donne le résumé.
+Quinze marchés, modèle factoriel à quatre facteurs (croissance, inflation, dollar, appétit pour le risque), régimes macro en chaîne de Markov, coûts d'exécution en racine carrée du notionnel, rumeurs vraies avec la probabilité de leur classe de fiabilité, quatre fonds concurrents simulés, Sharpe probabiliste de Bailey et López de Prado au rapport final. Tout est dans le fichier ; le panneau « Comment ça marche sous le capot » sur l'écran de composition en donne le résumé.
