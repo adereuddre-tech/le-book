@@ -77,6 +77,8 @@ em{font-style:italic;color:var(--txt)}
 .ico{flex-shrink:0;width:38px;height:38px;border-radius:50%;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:19px;background:rgba(217,176,106,.10)}
 .cardwrap.sel .ico{background:rgba(217,176,106,.24)}
 .cardttl{min-width:0}
+.reco{display:inline-block;margin-top:5px;font-family:var(--mono);font-size:10px;letter-spacing:.03em;color:#0B1A14;background:var(--long);padding:2px 7px;border-radius:4px}
+.cardwrap.sel .reco{background:#5FBE9E}
 .brow .bh b{display:flex;align-items:center;gap:7px}
 .bico{font-size:15px}
 .commico{font-size:16px;margin-right:6px}
@@ -155,7 +157,7 @@ em{font-style:italic;color:var(--txt)}
 .rowinfo>span:last-child{overflow:hidden;text-overflow:ellipsis}
 .rowinfo .fx{letter-spacing:.02em}
 .rowinfo .fx b{font-weight:500}
-#toast{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;background:#1F2C40;border:1px solid var(--gold);color:var(--txt);font-family:var(--mono);font-size:11.5px;line-height:1.45;padding:8px 12px;border-radius:7px;max-width:92vw;width:max-content;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast{position:fixed;left:14px;bottom:14px;z-index:60;background:#1F2C40;border:1px solid var(--gold);color:var(--txt);font-family:var(--mono);font-size:11.5px;line-height:1.45;padding:8px 12px;border-radius:7px;max-width:calc(100vw - 28px);width:max-content;opacity:0;transition:opacity .2s;pointer-events:none}
 .news.locked>span{color:var(--dim)}
 .buy{font-family:var(--mono);font-size:10.5px;padding:2px 8px;border-radius:4px;border:1px solid var(--gold);color:var(--gold);margin-left:auto}
 .buy:active{background:rgba(217,176,106,.15)}
@@ -260,7 +262,11 @@ summary::marker{color:var(--dimmer)}
 .evcard{border:1px solid var(--gold);border-radius:9px;padding:17px 15px;background:linear-gradient(180deg,rgba(217,176,106,.09),rgba(217,176,106,0));}
 .evcard.bad{border-color:var(--short);background:linear-gradient(180deg,rgba(196,87,111,.10),rgba(196,87,111,0))}
 .evcard .who{font-family:var(--mono);font-size:10.5px;color:var(--gold);letter-spacing:.05em;margin-bottom:7px}
-.evtimer{display:flex;align-items:center;gap:11px;margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.evtimer{position:fixed;right:12px;bottom:14px;z-index:70;display:none;align-items:center;gap:10px;
+ background:rgba(21,32,47,.96);backdrop-filter:blur(8px);border:1px solid var(--line2);border-radius:12px;
+ padding:8px 12px 8px 8px;max-width:min(340px,calc(100vw - 24px));box-shadow:0 6px 22px rgba(0,0,0,.45);
+ font-family:var(--mono);font-size:11px;color:var(--dim);animation:fade .25s ease}
+.evtimer.on{display:flex}
 .tdial{position:relative;width:44px;height:44px;flex-shrink:0;display:block}
 .tdial svg{width:44px;height:44px;transform:rotate(-90deg);display:block}
 .tdial .ttrack{fill:none;stroke:var(--panel2);stroke-width:3}
@@ -269,7 +275,7 @@ summary::marker{color:var(--dimmer)}
 .tdial .tnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:15px;font-weight:600}
 .tdial.pulse{animation:tp 1s ease-in-out infinite}
 @keyframes tp{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
-.evtimer .tlb{font-size:11px;color:var(--dimmer);line-height:1.35}
+.evtimer .tlb{font-size:10.5px;color:var(--dimmer);line-height:1.3}
 @media (prefers-reduced-motion:reduce){.tdial.pulse{animation:none}.tdial .tarc,.tdial .tfill{transition:none}}
 .evcard.bad .who{color:var(--short)}
 .evcard h3{font-family:var(--serif);font-size:26px;line-height:1.12;margin-bottom:8px}
@@ -499,6 +505,10 @@ const SIG=[
 
 /* ════════════════════ 2. CHOIX D'OUVERTURE ════════════════════ */
 const PROFILES=[
+ {id:'syst',who:"« Le modèle ne lit pas les journaux, et il dort très bien »",nm:"Gestion systématique",
+  p:"Vous ne lisez pas les journaux, vous lisez des estimations. Le desk vous livre des chiffres, pas des récits — et le modèle passe les ordres.",
+  ef:[['g',"book conseillé : toutes les sources et tous les signaux, pondérés sans préférence"],['g',"incidents opérationnels −40 % (tout est automatisé et journalisé)"],['g',"le modèle recale vite : 60 % du mouvement capté après un ajustement"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"]],
+  sigBonus:0,capture:0.60,tcMult:1.0,rumBonus:0.05,lpMult:1.0,incMult:0.60,numeric:true,noAdj:true},
  {id:'fonda',who:"« Je peux avoir raison plus longtemps que le marché ne peut rester solvable »",nm:"Gérant fondamental discrétionnaire",
   p:"Vous construisez une vue du monde, vous la tenez, et vous laissez le marché venir à vous. Vous avez raison souvent — parfois trop tôt.",
   ef:[['g',"+2 rumeurs par trimestre"],['g',"book conseillé : priorité aux sources macro et à la valeur"],['g',"les pré-annonces d'événements vous parviennent 10 pts plus souvent"],['b',"réaction lente : vous ne captez que 45 % d'un mouvement en cours de trimestre"],['b',"coûts de transaction +12 % (vous arbitrez tard)"]],
@@ -506,11 +516,7 @@ const PROFILES=[
  {id:'flux',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez pas, vous réagissez. Le prix vous dit ce que le monde pense avant que les données ne le confirment.",
   ef:[['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"book conseillé : priorité aux rumeurs de marché, à la tendance et au positionnement des autres"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les LP suivent votre courbe au jour le jour : jauge LP 30 % plus nerveuse"],['b',"aucun indicateur supplémentaire"]],
-  sigBonus:0,capture:0.85,tcMult:0.90,rumBonus:0.05,lpMult:1.30,incMult:1.0,numeric:false,freeAdj:true},
- {id:'syst',who:"« Le modèle ne lit pas les journaux, et il dort très bien »",nm:"Gestion systématique",
-  p:"Vous ne lisez pas les journaux, vous lisez des estimations. Le desk vous livre des chiffres, pas des récits — et le modèle passe les ordres.",
-  ef:[['g',"book conseillé : toutes les sources et tous les signaux, pondérés sans préférence"],['g',"incidents opérationnels −40 % (tout est automatisé et journalisé)"],['g',"le modèle recale vite : 60 % du mouvement capté après un ajustement"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"]],
-  sigBonus:0,capture:0.60,tcMult:1.0,rumBonus:0.05,lpMult:1.0,incMult:0.60,numeric:true,noAdj:true}
+  sigBonus:0,capture:0.85,tcMult:0.90,rumBonus:0.05,lpMult:1.30,incMult:1.0,numeric:false,freeAdj:true}
 ];
 const RISKARCH=[
  {id:'light',nm:"Contrôle des risques allégé",who:"« On fait confiance aux gérants, jusqu'au jour où on ne le fait plus »",
@@ -554,6 +560,7 @@ const SIZES=[
   ef:[['g',"les commissions atteignent des sommes considérables"],['b',"impact de marché lourd : les gros ordres coûtent cher"],['b',"investisseurs impitoyables, comité sur votre dos"],['b',"concurrents au sommet de leur art"]],
   rivSkill:0.055,rivVol:1.15,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:1.35,goalMult:1.0}
 ];
+const RECO={prof:'syst',arch:'std',desk:'inhouse',size:'small',vol:'std'};
 function SIZE(){return SIZES.find(x=>x.id===S.size)||SIZES[1]}
 const VOLP=[
  {id:'prud',nm:"Mandat prudent — vol cible 15 %",who:"« L'assureur zurichois »",
@@ -1382,7 +1389,7 @@ const sgnp=(x,d=1)=>(x>=0?'+':'−')+Math.abs(x*100).toFixed(d)+' %';
 const bn=(x,d=1)=>`<b class="${cls(x)}">${x>=0?'+':'−'}${moneyB(Math.abs(x))}</b>`;
 const mn=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${mm(Math.abs(x))}</b>`;
 const cls=x=>x>0.00005?'pos-g':(x<-0.00005?'neg-g':'dim-g');
-let setup={prof:null,arch:null,desk:null,vol:null,size:null};
+let setup={prof:'syst',arch:'std',desk:'inhouse',vol:'std',size:'small'};
 
 const NAME1=["Blackpoint","Ironwood","Brightwater","Northgate","Silverline","Stonebridge","Kestrel","Redcliff","Harborview","Greystone","Larkspur","Wolfstone","Copperfield","Windward","Fairhaven","Tidewater","Cobalt","Highfield","Sablewood","Cromwell","Ashford","Meridian","Sterling","Whitmore","Longbow","Falconer","Marbury","Quarrystone","Eastbourne","Thornhill","Deepwater","Pinehurst","Ravenswood","Castlegate","Summit Rock","Old Harbour","Beacon Hill","Two Rivers","Saltmarsh","Kingsford"];
 const NAME2=["Capital","Capital Partners","Asset Management","Global Advisors","Investment Partners","Macro Partners","Global Macro","Absolute Return","Alpha Partners","Strategies","Investments","Management","Partners LP","Global Investors","Multi-Strategy","Systematic Capital","Discretionary Macro","Total Return","Opportunity Fund","Global Opportunities","Research Partners","Advisors LLP","Holdings","Trading","Quantitative Partners","Diversified Macro","Fund Management","International","Global Fund","Special Situations"];
@@ -1422,7 +1429,7 @@ function feeLine(){
 function screenSetup(){
  app.innerHTML=`<div class="hero fade" style="padding-top:34px">
   <div class="kicker">${fundName.toUpperCase()}${setup.size?' · '+SIZES.find(x=>x.id===setup.size).nm.split('—')[1].trim().toUpperCase():''}</div>
-  <h1 style="font-size:clamp(36px,11vw,58px)">Composez votre maison</h1>
+  <h1 style="font-size:clamp(36px,11vw,58px)">Composez votre équipe</h1>
   <div class="sub">quatre choix, puis le premier trimestre</div>
  </div>
  <div class="prose">
@@ -1447,7 +1454,7 @@ function screenSetup(){
    <input id="sd" class="num" value="${Math.floor(Math.random()*899999+100000)}" inputmode="numeric">
    <span style="font-size:12px;color:var(--dimmer)">fixe la trajectoire des marchés</span></div>
  </details>
- <button class="cta" id="go" disabled>Choisissez vos cinq options</button>`;
+ <button class="cta" id="go">Prendre le book</button>`;
  renderPicks();
  document.getElementById('go').onclick=()=>{
   const v=parseInt(document.getElementById('sd').value)||123456;
@@ -1462,7 +1469,7 @@ function renderPicks(){
    <div class="pickhead"><h2>${title}</h2><span>${hint}</span></div>
    ${arr.map(o=>`<div class="cardwrap ${setup[key]===o.id?'sel':''}">
      <button class="card" data-key="${key}" data-id="${o.id}">
-      <div class="cardtop"><span class="ico">${(ICO[key]||{})[o.id]||'•'}</span><div class="cardttl"><div class="who">${o.who}</div><b>${o.nm}</b></div></div><p>${o.p}</p></button>
+      <div class="cardtop"><span class="ico">${(ICO[key]||{})[o.id]||'•'}</span><div class="cardttl"><div class="who">${o.who}</div><b>${o.nm}</b>${RECO[key]===o.id?'<span class="reco">Recommandé</span>':''}</div></div><p>${o.p}</p></button>
      <details class="carddet"><summary>Détails</summary>
       <ul>${o.ef.map(e=>`<li class="${e[0]}">${e[1]}</li>`).join('')}</ul></details>
    </div>`).join('')}
@@ -1592,10 +1599,13 @@ function openModal(title,html){
  m.querySelector('.mback').onclick=m.querySelector('.mclose').onclick=()=>{m.style.display='none'};
 }
 let TID=null;
-function clearTimer(){if(TID){clearInterval(TID);TID=null}}
+function clearTimer(){if(TID){clearInterval(TID);TID=null}
+ const el=document.getElementById('evtimer');if(el)el.classList.remove('on')}
 function armTimer(fn){
  clearTimer();
- const el=document.getElementById('evtimer');if(!el)return;
+ let el=document.getElementById('evtimer');
+ if(!el){el=document.createElement('div');el.id='evtimer';el.className='evtimer';document.body.appendChild(el)}
+ el.classList.add('on');
  const sec=10+Math.floor(Math.random()*11);let t=sec;
  const R=17,C=2*Math.PI*R;
  el.innerHTML=`<span class="tdial"><svg viewBox="0 0 44 44">
@@ -1613,7 +1623,7 @@ function armTimer(fn){
  draw();
  TID=setInterval(()=>{t--;if(t<=0){clearTimer();fn()}else draw()},1000);
 }
-const evTimerHTML='<div id="evtimer" class="evtimer"></div>';
+const evTimerHTML='';
 let toastT=null;
 function toast(html){
  let t=document.getElementById('toast');
@@ -1845,8 +1855,8 @@ function screenPlay(){
    <div class="wire" id="news"></div>
    <details style="margin-top:8px"><summary>Comment lire ces sources</summary><p class="note">Une source non achetée ne livre que son origine, le facteur qu'elle concerne et le début de son propos. L'acheter révèle le contenu, l'effet prétendu sur les quatre facteurs et la <em>fiabilité</em> — la probabilité qu'elle dise vrai. Les prix dépendent de la qualité de la source et de votre budget de recherche (×${[1.3,1.0,0.6][S.bud.res].toFixed(1)}). Les achats sont à votre charge de gérant.</p></details>
    <div class="blockhead" style="margin-top:14px"><h2>Lecture consolidée</h2><span class="hint">sources achetées</span></div>
-   <div class="wire" style="margin-bottom:8px"><div class="kv" style="padding-bottom:6px"><span><b>Le book que votre desk recommande</b></span></div><div id="factest"></div>
-    <details style="margin-top:6px"><summary>Comment votre desk raisonne</summary><p class="note">${STYLEW[S.prof].txt} Il agrège les impacts prétendus de vos sources achetées, pondérés par leur fiabilité (2p−1) et par la famille de la source, puis traduit le tout en positions via la matrice factorielle, en y ajoutant les signaux de tendance, de portage et de valeur selon les poids de votre style. La lecture consolidée ci-dessus dit <em>ce que pensent les sources</em> ; ce book dit <em>ce qu'il faudrait acheter ou vendre</em> si vous suiviez votre desk. À vous de suivre, de nuancer ou d'ignorer.</p></details></div>
+   ${PROF().numeric?`<div class="wire" style="margin-bottom:8px"><div class="kv" style="padding-bottom:6px"><span><b>Le book que le modèle construirait</b></span></div><div id="factest"></div>
+    <details style="margin-top:6px"><summary>Comment votre desk raisonne</summary><p class="note">${STYLEW[S.prof].txt} Il agrège les impacts prétendus de vos sources achetées, pondérés par leur fiabilité (2p−1) et par la famille de la source, puis traduit le tout en positions via la matrice factorielle, en y ajoutant les signaux de tendance, de portage et de valeur selon les poids de votre style. La lecture consolidée ci-dessus dit <em>ce que pensent les sources</em> ; ce book dit <em>ce qu'il faudrait acheter ou vendre</em> si vous suiviez votre desk. À vous de suivre, de nuancer ou d'ignorer.</p></details></div>`:''}
    <div class="wire" id="rsum"></div>
    <p class="note" hidden>Chaque rumeur achetée prétend un effet sur les quatre facteurs — croissance, inflation, dollar, appétit pour le risque — de ▼▼ à ▲▲. La <em>fiabilité</em> est la probabilité que la source dise vrai : faible ≈ ${Math.round((RELP.faible+RESREL[S.bud.res])*100)} %, moyenne ≈ ${Math.round((RELP.moyenne+RESREL[S.bud.res])*100)} %, forte ≈ ${Math.round((RELP.forte+RESREL[S.bud.res])*100)} % au niveau de recherche choisi. Une pré-annonce concerne un événement qui peut survenir en cours de trimestre — ou pas.</p>
    <details class="wire" style="margin-top:8px"><summary>Matrice d'exposition factorielle${S.rupture?' <b style="color:var(--warn)">· rupture</b>':''}</summary>
@@ -2075,6 +2085,7 @@ function screenExec(){
  const done=()=>{S.totalTC+=(S.pendingTC*S.nav)-tot;phaseLive()};
  if(ev&&ev.ch)ev.ch.forEach(c=>{delete c.e._hit});
  if(!ev){document.getElementById('go2').onclick=done;return}
+ setTimeout(()=>armTimer(()=>{const bs=app.querySelectorAll('.choice');if(bs.length)bs[bs.length-1].click()}),0);
  app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
   const ch=ev.ch[+b.dataset.i],e=ch.e;let msg=[];const navB0=S.nav;
   if(e.tcMult){let sub=0;
@@ -2798,7 +2809,7 @@ function screenFinal(){
   try{if(navigator.share){await navigator.share({title:'Le Book',text:txt});return}}catch(e){}
   try{await navigator.clipboard.writeText(txt);b.textContent='Résultat copié — collez-le où vous voulez'}catch(e){prompt('Copiez ce texte :',txt)}
  };
- document.getElementById('again').onclick=()=>{setup={prof:null,arch:null,desk:null,vol:null,size:null};screenSetup();window.scrollTo(0,0)};
+ document.getElementById('again').onclick=()=>{setup={prof:'syst',arch:'std',desk:'inhouse',vol:'std',size:'small'};screenSetup();window.scrollTo(0,0)};
  document.getElementById('same').onclick=()=>{newGame(S.seed,S.prof,S.arch,S.desk,S.vol,S.size);phaseOpen()};
 }
 if(!(hasSave()&&location.hash==='#resume'))screenIntro();else loadGame();
