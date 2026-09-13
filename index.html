@@ -72,6 +72,13 @@ em{font-style:italic;color:var(--txt)}
 .cardwrap.sel{border-color:var(--line2);border-left-color:var(--gold);background:var(--panel2)}
 .carddet{padding:0 14px 11px}
 .carddet summary{font-size:12px;color:var(--dimmer)}
+.cardtop{display:flex;gap:11px;align-items:flex-start}
+.ico{flex-shrink:0;width:38px;height:38px;border-radius:50%;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:19px;background:rgba(217,176,106,.10)}
+.cardwrap.sel .ico{background:rgba(217,176,106,.24)}
+.cardttl{min-width:0}
+.brow .bh b{display:flex;align-items:center;gap:7px}
+.bico{font-size:15px}
+.commico{font-size:16px;margin-right:6px}
 .card .who{font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:4px}
 .card b{display:block;font-weight:600;font-size:15px;margin-bottom:5px}
 .card p{margin:0;color:var(--dim);font-size:13.5px}
@@ -475,15 +482,15 @@ const SIG=[
 const PROFILES=[
  {id:'fonda',who:"« Je peux avoir raison plus longtemps que le marché ne peut rester solvable »",nm:"Gérant fondamental discrétionnaire",
   p:"Vous construisez une vue du monde, vous la tenez, et vous laissez le marché venir à vous. Vous avez raison souvent — parfois trop tôt.",
-  ef:[['g',"+2 rumeurs par trimestre"],['g',"les pré-annonces d'événements vous parviennent 10 pts plus souvent"],['b',"réaction lente : vous ne captez que 45 % d'un mouvement en cours de trimestre"],['b',"coûts de transaction +12 % (vous arbitrez tard)"]],
+  ef:[['g',"+2 rumeurs par trimestre"],['g',"book conseillé : priorité aux sources macro et à la valeur"],['g',"les pré-annonces d'événements vous parviennent 10 pts plus souvent"],['b',"réaction lente : vous ne captez que 45 % d'un mouvement en cours de trimestre"],['b',"coûts de transaction +12 % (vous arbitrez tard)"]],
   sigBonus:2,capture:0.45,tcMult:1.12,rumBonus:0.18,lpMult:1.0,incMult:1.0,numeric:false},
  {id:'flux',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez pas, vous réagissez. Le prix vous dit ce que le monde pense avant que les données ne le confirment.",
-  ef:[['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les LP suivent votre courbe au jour le jour : jauge LP 30 % plus nerveuse"],['b',"aucun indicateur supplémentaire"]],
+  ef:[['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"book conseillé : priorité aux rumeurs de marché, à la tendance et au positionnement des autres"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les LP suivent votre courbe au jour le jour : jauge LP 30 % plus nerveuse"],['b',"aucun indicateur supplémentaire"]],
   sigBonus:0,capture:0.85,tcMult:0.90,rumBonus:0.05,lpMult:1.30,incMult:1.0,numeric:false,freeAdj:true},
  {id:'syst',who:"« Le modèle ne lit pas les journaux, et il dort très bien »",nm:"Gestion systématique",
   p:"Vous ne lisez pas les journaux, vous lisez des estimations. Le desk vous livre des chiffres, pas des récits — et le modèle passe les ordres.",
-  ef:[['g',"le desk traduit les rumeurs en un book prêt à appliquer"],['g',"incidents opérationnels −40 % (tout est automatisé et journalisé)"],['g',"le modèle recale vite : 60 % du mouvement capté après un ajustement"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"]],
+  ef:[['g',"book conseillé : toutes les sources et tous les signaux, pondérés sans préférence"],['g',"incidents opérationnels −40 % (tout est automatisé et journalisé)"],['g',"le modèle recale vite : 60 % du mouvement capté après un ajustement"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"]],
   sigBonus:0,capture:0.60,tcMult:1.0,rumBonus:0.05,lpMult:1.0,incMult:0.60,numeric:true,noAdj:true}
 ];
 const RISKARCH=[
@@ -545,16 +552,16 @@ const VOLP=[
 ];
 function VOL(){return VOLP.find(v=>v.id===S.vol)}
 const BUDGET=[
- {id:'exec',nm:"Desk de trading",
+ {id:'exec',ico:'💹',nm:"Desk de trading",
   d:"Nombre de traders, qualité des algorithmes, accès aux blocs. Agit directement sur ce que coûte chaque changement de position.",
   lv:[{nm:"Réduit",bp:2,ef:"coûts ×1,35"},{nm:"Standard",bp:7,ef:"coûts ×1,00"},{nm:"Renforcé",bp:16,ef:"coûts ×0,66 · chance de recruter une star"}]},
- {id:'risk',nm:"Contrôle des risques",
+ {id:'risk',ico:'🛡️',nm:"Contrôle des risques",
   d:"Surveillance pré-trade, réconciliation, contrôle des communications. Agit sur la probabilité qu'un incident vienne saccager un trimestre.",
   lv:[{nm:"Réduit",bp:1,ef:"incidents ×2,0"},{nm:"Standard",bp:6,ef:"incidents ×1,0"},{nm:"Renforcé",bp:15,ef:"incidents ×0,35 · gravité ÷2"}]},
- {id:'res',nm:"Recherche macro du desk",
+ {id:'res',ico:'🔭',nm:"Recherche macro du desk",
   d:"Économistes, réseau de terrain, achat de données alternatives. Agit sur le nombre d'indicateurs reçus, leur précision, et l'accès aux rumeurs.",
   lv:[{nm:"Réduit",bp:1,ef:"6 rumeurs · fiabilité −8 pts · peu de pré-annonces"},{nm:"Standard",bp:6,ef:"8 rumeurs · signaux marché corrects · pré-annonces fréquentes"},{nm:"Renforcé",bp:15,ef:"11 rumeurs · fiabilité +8 pts · signaux précis · pré-annonces quasi systématiques"}]},
- {id:'ret',nm:"Rétention des équipes",
+ {id:'ret',ico:'🤝',nm:"Rétention des équipes",
   d:"Bonus garantis, parts de carried, clauses de non-concurrence. Agit sur la probabilité que les concurrents vous prennent vos gérants.",
   lv:[{nm:"Réduit",bp:0,ef:"débauchage ×2,0"},{nm:"Standard",bp:5,ef:"débauchage ×1,0"},{nm:"Renforcé",bp:13,ef:"débauchage ×0,3 · vous pouvez recruter"}]}
 ];
@@ -1217,6 +1224,36 @@ function readCol(x){const a=Math.min(1,Math.abs(x)/2);
  const c=x>0?[79,169,140]:[196,87,111];const m=x>0?[143,199,179]:[217,144,159];
  const mix=c.map((v,i)=>Math.round(m[i]+(v-m[i])*a));
  return `rgb(${mix.join(',')})`}
+const MACROSRC=new Set(['ISM','Emploi','CPI','Chine','OPEP+','Salaires','Fed','Financement','BoJ','Crédit',
+ 'Économiste maison','Note de recherche','Ancien banquier central','Lobbyiste','Ancien ministre','Journaliste',
+ 'Douanes','Données satellites','Données cartes bancaires',"Données d'offres d'emploi",'Données de mobilité',
+ 'Données de fret',"Directeur d'usine",'Pré-annonce','Ex-collègue à Francfort','Banquier privé genevois','Facteur C','Facteur I','Facteur D','Facteur A']);
+const STYLEW={
+ fonda:{F:1.25,T:0.15,C:0.15,V:1.05,X:0,macro:1.35,mkt:0.35,
+  txt:"Votre desk pèse d'abord les sources macro et géopolitiques et la cherté des marchés. Il ne regarde presque pas la tendance ni le portage : ce n'est pas votre métier."},
+ flux:{F:0.70,T:1.25,C:0.95,V:0.10,X:0.55,macro:0.35,mkt:1.35,
+  txt:"Votre desk pèse d'abord les rumeurs de marché, la tendance, le portage et le positionnement des autres fonds. La valeur de long terme ne l'intéresse pas."},
+ syst:{F:1.00,T:0.85,C:0.85,V:0.85,X:0,macro:1.0,mkt:1.0,
+  txt:"Le modèle pondère l'ensemble des signaux — toutes les sources, la tendance, le portage et la valeur — sans privilégier aucune famille."}
+};
+function styleEst(){
+ const W=STYLEW[S.prof],b=S.rumors.filter(r=>r.bought);
+ const est=[0,0,0,0];let tw=0;
+ b.forEach(r=>{const p=r.p||RELP[r.rel],sw=MACROSRC.has(r.src)?W.macro:W.mkt;tw+=sw;
+  r.v.forEach((z,k)=>est[k]+=sw*(2*p-1)*z)});
+ return {W,f:est.map(z=>z/Math.max(1,tw)*2.2),n:b.length};
+}
+function recoBook(){
+ const {W,f}=styleEst();
+ const sc=INSTR.map((x,i)=>{let v=0;for(let k=0;k<K;k++)v+=x.b[k]*f[k]*W.F;
+  if(S.tcvEst)v+=0.24*W.T*S.tcvEst.t[i]+0.20*W.C*S.tcvEst.c[i]+0.18*W.V*S.tcvEst.v[i];
+  v+=W.X*0.30*S.crowd[i];
+  return {i,v}});
+ const mx=Math.max(0.001,...sc.map(o=>Math.abs(o.v)));
+ const k=new Array(N).fill(0);
+ sc.forEach(o=>{k[o.i]=Math.max(-S.maxk,Math.min(S.maxk,Math.round(o.v/mx*3)))});
+ return {k,W,sc,mx};
+}
 function rumorEst(){
  const b=S.rumors.filter(r=>r.bought);
  const est=[0,0,0,0];b.forEach(r=>{const p=r.p||RELP[r.rel];r.v.forEach((z,k)=>est[k]+=(2*p-1)*z)});
@@ -1246,17 +1283,17 @@ function renderNews(){
   :`<p class="note" style="margin:0">Aucune source achetée : le desk n'a rien à consolider.</p>`;
  const fe=document.getElementById('factest');
  if(fe){
-  const sc=INSTR.map((x,i)=>{let v=0;for(let k=0;k<K;k++)v+=x.b[k]*S.factEst[k];return {i,v}});
-  const mx=Math.max(0.001,...sc.map(o=>Math.abs(o.v)));
-  const reco=sc.map(o=>({i:o.i,k:Math.max(-S.maxk,Math.min(S.maxk,Math.round(o.v/mx*3)))})).filter(o=>o.k!==0)
-   .sort((a,b)=>Math.abs(b.k)-Math.abs(a.k));
-  S.modelK=new Array(N).fill(0);reco.forEach(o=>S.modelK[o.i]=o.k);
+  const R=recoBook();
+  const reco=R.k.map((k,i)=>({i,k})).filter(o=>o.k!==0).sort((a,b)=>Math.abs(b.k)-Math.abs(a.k));
+  S.modelK=R.k;
+  const nb=S.rumors.filter(r=>r.bought).length;
   fe.innerHTML=reco.length
    ?`<div class="chips">${reco.map(o=>`<i class="${o.k>0?'up':'dn'}">${INSTR[o.i].sym} ${o.k>0?'+':''}${o.k}</i>`).join('')}</div>
-     <button class="buy" id="applymodel" style="margin:8px 0 0">Appliquer le book du modèle</button>`
-   :`<p class="note" style="margin:0">Sans source achetée, le modèle reste à plat.</p>`;
+     <div class="note" style="margin:6px 0 0">Pondération de votre style : sources ${(R.W.F*100).toFixed(0)} % · tendance ${(R.W.T*100).toFixed(0)} % · portage ${(R.W.C*100).toFixed(0)} % · valeur ${(R.W.V*100).toFixed(0)} %${R.W.X?` · positionnement des autres ${(R.W.X*100).toFixed(0)} %`:''}${nb?'':' · aucune source achetée, le desk n\'a que les signaux de marché'}</div>
+     <button class="buy" id="applymodel" style="margin:8px 0 0">Appliquer ce book</button>`
+   :`<p class="note" style="margin:0">Votre desk ne voit rien de tranché : il resterait à plat.</p>`;
   const am=document.getElementById('applymodel');
-  if(am)am.onclick=()=>{S.k=[...S.modelK];drawRows();renderRisk();refreshStatus();toast('Book du modèle appliqué — à vous de l\'ajuster.')};
+  if(am)am.onclick=()=>{S.k=[...S.modelK];drawRows();renderRisk();refreshStatus();refreshGain();toast('Book du desk appliqué — à vous de l\'ajuster.')};
  }
 }
 function genRumors(){
@@ -1281,10 +1318,12 @@ function genRumors(){
    used.add(r.t);out.push({...r,truth:wantTrue,p});
  }
  for(let i=out.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[out[i],out[j]]=[out[j],out[i]]}
- const PM={faible:4,moyenne:10,forte:25},RM=[1.3,1.0,0.6][S.bud.res];
+ const PM={faible:1.0,moyenne:2.5,forte:6.0},RM=[1.3,1.0,0.6][S.bud.res];
  out.forEach(r=>{
    r.bought=false;
-   r.price=+((r.ev?15:PM[r.rel])*RM*S.nav/S.aum0).toFixed(S.nav<0.3?3:S.nav<3?2:1);
+   /* prix en M$ = pb de l'encours ; un encours dix fois plus gros paie dix fois plus */
+   const pb=(r.ev?4.0:PM[r.rel])*RM;
+   r.price=+(pb*0.1*S.nav).toFixed(S.nav<0.3?3:S.nav<3?2:1);
    let fk=-1,fv=0;r.v.forEach((z,k)=>{if(Math.abs(z)>fv){fv=Math.abs(z);fk=k}});r.fk=fk;
    r.teaser=(r.t&&r.t.length>44)?r.t.slice(0,44).replace(/\s+\S*$/,'')+'…':(r.t||'');
  });
@@ -1397,11 +1436,14 @@ function screenSetup(){
  };
 }
 function renderPicks(){
+ const ICO={prof:{fonda:'📚',flux:'⚡',syst:'🤖'},arch:{light:'🪶',std:'⚖️',inst:'🛡️'},
+  desk:{inhouse:'🏛️',broker:'🤝',algo:'💻'},size:{small:'🏠',mid:'🏢',mega:'🏙️'},
+  vol:{prud:'🧊',std:'🎯',risk:'🔥'}};
  const grp=(title,hint,arr,key)=>`<div class="pickgrp">
    <div class="pickhead"><h2>${title}</h2><span>${hint}</span></div>
    ${arr.map(o=>`<div class="cardwrap ${setup[key]===o.id?'sel':''}">
      <button class="card" data-key="${key}" data-id="${o.id}">
-      <div class="who">${o.who}</div><b>${o.nm}</b><p>${o.p}</p></button>
+      <div class="cardtop"><span class="ico">${(ICO[key]||{})[o.id]||'•'}</span><div class="cardttl"><div class="who">${o.who}</div><b>${o.nm}</b></div></div><p>${o.p}</p></button>
      <details class="carddet"><summary>Détails</summary>
       <ul>${o.ef.map(e=>`<li class="${e[0]}">${e[1]}</li>`).join('')}</ul></details>
    </div>`).join('')}
@@ -1719,7 +1761,7 @@ function planSignalsAfterBudget(){
 }
 function drawBuds(){
  document.getElementById('buds').innerHTML=BUDGET.map(b=>`<div class="brow">
-   <div class="bh"><b>${b.nm}</b><span>${b.lv[S.bud[b.id]].bp} pb · ${mm(b.lv[S.bud[b.id]].bp*1e-4*S.nav)}</span></div><p>${b.d}</p>
+   <div class="bh"><b><span class="bico">${b.ico}</span>${b.nm}</b><span>${b.lv[S.bud[b.id]].bp} pb · ${mm(b.lv[S.bud[b.id]].bp*1e-4*S.nav)}</span></div><p>${b.d}</p>
    <div class="lvls">${b.lv.map((l,i)=>`<button class="lvl ${S.bud[b.id]===i?'on':''}" data-b="${b.id}" data-i="${i}">
      <b>${l.nm}</b><span>${l.bp} pb</span></button>`).join('')}</div>
    <details style="margin-top:8px"><summary>Détails</summary><ul class="efl">${b.lv.map(l=>`<li><b>${l.nm}</b> · ${l.bp} pb · ${l.ef}</li>`).join('')}</ul></details></div>`).join('');
@@ -1741,8 +1783,8 @@ function screenPlay(){
    <div class="wire" id="news"></div>
    <details style="margin-top:8px"><summary>Comment lire ces sources</summary><p class="note">Une source non achetée ne livre que son origine, le facteur qu'elle concerne et le début de son propos. L'acheter révèle le contenu, l'effet prétendu sur les quatre facteurs et la <em>fiabilité</em> — la probabilité qu'elle dise vrai. Les prix dépendent de la qualité de la source et de votre budget de recherche (×${[1.3,1.0,0.6][S.bud.res].toFixed(1)}). Les achats sont à votre charge de gérant.</p></details>
    <div class="blockhead" style="margin-top:14px"><h2>Lecture consolidée</h2><span class="hint">sources achetées</span></div>
-   ${PROF().numeric?`<div class="wire" style="margin-bottom:8px"><div class="kv" style="padding-bottom:6px"><span><b>Le book que le modèle construirait</b></span></div><div id="factest"></div>
-    <details style="margin-top:6px"><summary>Comment le modèle lit les sources</summary><p class="note">Le modèle agrège les impacts prétendus de vos sources, pondérés par (2p−1) où p est la fiabilité, puis les traduit en positions marché par marché via la matrice factorielle. La lecture consolidée ci-dessus vous dit <em>ce que pensent les sources</em> ; cette ligne vous dit <em>ce qu'il faudrait acheter ou vendre</em> si vous les croyiez. À vous de suivre, de nuancer ou d'ignorer.</p></details></div>`:''}
+   <div class="wire" style="margin-bottom:8px"><div class="kv" style="padding-bottom:6px"><span><b>Le book que votre desk recommande</b></span></div><div id="factest"></div>
+    <details style="margin-top:6px"><summary>Comment votre desk raisonne</summary><p class="note">${STYLEW[S.prof].txt} Il agrège les impacts prétendus de vos sources achetées, pondérés par leur fiabilité (2p−1) et par la famille de la source, puis traduit le tout en positions via la matrice factorielle, en y ajoutant les signaux de tendance, de portage et de valeur selon les poids de votre style. La lecture consolidée ci-dessus dit <em>ce que pensent les sources</em> ; ce book dit <em>ce qu'il faudrait acheter ou vendre</em> si vous suiviez votre desk. À vous de suivre, de nuancer ou d'ignorer.</p></details></div>
    <div class="wire" id="rsum"></div>
    <p class="note" hidden>Chaque rumeur achetée prétend un effet sur les quatre facteurs — croissance, inflation, dollar, appétit pour le risque — de ▼▼ à ▲▲. La <em>fiabilité</em> est la probabilité que la source dise vrai : faible ≈ ${Math.round((RELP.faible+RESREL[S.bud.res])*100)} %, moyenne ≈ ${Math.round((RELP.moyenne+RESREL[S.bud.res])*100)} %, forte ≈ ${Math.round((RELP.forte+RESREL[S.bud.res])*100)} % au niveau de recherche choisi. Une pré-annonce concerne un événement qui peut survenir en cours de trimestre — ou pas.</p>
    <details class="wire" style="margin-top:8px"><summary>Matrice d'exposition factorielle${S.rupture?' <b style="color:var(--warn)">· rupture</b>':''}</summary>
@@ -1916,13 +1958,13 @@ function screenComm(){
  const w=weights(S.k),sp=pvol(w),g=VOL().goal/4;
  const spD=Math.max(sp,0.04);
  const opts=[
-  {id:'none',nm:"Ne rien communiquer",who:"« On verra à la fin du trimestre »",p:"Pas de lettre, pas de réunion. Les investisseurs et le comité en concluent que vous n'avez rien à dire, ou rien à montrer.",
+  {id:'none',ico:'🤐',nm:"Ne rien communiquer",who:"« On verra à la fin du trimestre »",p:"Pas de lettre, pas de réunion. Les investisseurs et le comité en concluent que vous n'avez rien à dire, ou rien à montrer.",
    ret:null,vlo:null,vhi:null,now:{lp:-1.5,rc:-1},win:{lp:0,rc:0},lose:{lp:0,rc:0}},
-  {id:'prud',nm:"Communication prudente",who:"« Préserver le capital dans un régime incertain »",p:"Vous vous engagez sur un trimestre au moins nul, avec un risque contenu. Facile à tenir, peu récompensé.",
+  {id:'prud',ico:'🪶',nm:"Communication prudente",who:"« Préserver le capital dans un régime incertain »",p:"Vous vous engagez sur un trimestre au moins nul, avec un risque contenu. Facile à tenir, peu récompensé.",
    ret:0,vlo:0,vhi:1.4*spD,now:{lp:0,rc:0.5},win:{lp:2,rc:2},lose:{lp:-3.5,rc:-2.5}},
-  {id:'conv',nm:"Conviction affirmée",who:"« Nous voyons clair sur ce trimestre »",p:"Vous vous engagez sur l'objectif du mandat, avec une volatilité conforme à ce que vous affichez aujourd'hui.",
+  {id:'conv',ico:'🎯',nm:"Conviction affirmée",who:"« Nous voyons clair sur ce trimestre »",p:"Vous vous engagez sur l'objectif du mandat, avec une volatilité conforme à ce que vous affichez aujourd'hui.",
    ret:g,vlo:0.6*spD,vhi:1.25*spD,now:{lp:1,rc:0},win:{lp:5,rc:4},lose:{lp:-7,rc:-5}},
-  {id:'fort',nm:"Forte conviction",who:"« C'est le trimestre de l'année »",p:"Vous annoncez presque le double de l'objectif, et un risque tenu au cordeau. Si ça passe, on vous adore. Sinon, on s'en souviendra.",
+  {id:'fort',ico:'📣',nm:"Forte conviction",who:"« C'est le trimestre de l'année »",p:"Vous annoncez presque le double de l'objectif, et un risque tenu au cordeau. Si ça passe, on vous adore. Sinon, on s'en souviendra.",
    ret:1.8*g,vlo:0.75*spD,vhi:1.15*spD,now:{lp:2,rc:-1},win:{lp:9,rc:6},lose:{lp:-13,rc:-9}}
  ];
  app.innerHTML=statusBar()+`<div class="fade">
@@ -1931,7 +1973,7 @@ function screenComm(){
    <div class="kv"><span>Vol ex-ante du book</span><b>${pct(sp)}</b></div><div class="kv"><span>Objectif trimestriel du mandat</span><b>${pct(g,1)} · ${mm(g*S.nav)}</b></div>
   </div>
   ${opts.map((o,i)=>`<div class="cardwrap ${S.commPick===o.id?'sel':''}"><button class="card" data-i="${i}">
-   <div class="who">${o.who}</div><b>${o.nm}</b><p>${o.p}</p>
+   <div class="who">${o.who}</div><b><span class="commico">${o.ico}</span>${o.nm}</b><p>${o.p}</p>
    <table class="qt commt"><tbody>
     ${o.ret===null?`<tr><td colspan="3">Aucun engagement · <b class="neg-g">${Math.round(o.now.lp)} inv.</b> <b class="neg-g">${Math.round(o.now.rc)} com.</b></td></tr>`
     :`<tr><td>Promesse</td><td colspan="2"><b>≥ ${sgnp(o.ret,0)}</b> · vol ${o.vlo>0?pct(o.vlo,0)+'–':'≤ '}${pct(o.vhi,0)}</td></tr>
