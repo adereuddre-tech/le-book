@@ -142,6 +142,8 @@ em{font-style:italic;color:var(--txt)}
 .tile.gold>span{color:var(--gold);opacity:.8}
 .fg{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 4px 3px;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
 .fg .fl{font-family:var(--mono);font-size:9.5px;color:var(--dimmer);letter-spacing:.03em;white-space:nowrap}
+.tri{font-size:8px;line-height:8px;letter-spacing:1px;height:8px;display:block}
+.tri.up{color:var(--long)}.tri.dn{color:var(--short)}.tri.none{color:var(--flat)}
 .fg .ft2{position:relative;display:block;width:100%;height:5px;background:var(--panel2);border-radius:3px;overflow:hidden}
 .fg .ft2 i{position:absolute;top:0;bottom:0;border-radius:3px}
 .fg .ft2 em{position:absolute;top:-1px;bottom:-1px;width:1px;background:var(--line2)}
@@ -160,7 +162,8 @@ em{font-style:italic;color:var(--txt)}
 .rescard h3{font-family:var(--serif);font-size:23px;margin-bottom:8px}
 .rescard p{color:var(--dim);font-size:14px;margin:0 0 8px}
 .rescard p em{color:var(--txt);font-style:normal}
-#toast.on{opacity:1}
+#toast.on{opacity:1;pointer-events:auto}
+#toast .tclose{margin-left:10px;color:var(--dimmer)}
 #modal{display:none;position:fixed;inset:0;z-index:80}
 #modal .mback{position:absolute;inset:0;background:rgba(6,10,18,.72)}
 #modal .mbox{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:680px;height:94vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line2);border-bottom:none;border-radius:12px 12px 0 0;padding:14px 16px 40px;font-size:14.5px}
@@ -233,7 +236,8 @@ summary::marker{color:var(--dimmer)}
 .crowd{display:inline-block;width:5px;height:5px;border-radius:50%;margin-left:5px;vertical-align:middle}
 
 /* risque */
-.kv{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:var(--dim)}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:4px 0;color:var(--dim);white-space:nowrap}
+.kv>span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .kv b{font-family:var(--mono);font-weight:500;color:var(--txt)}
 .kv.nowrp{white-space:nowrap;gap:8px}
 .kv.nowrp b{flex-shrink:0}
@@ -255,6 +259,12 @@ summary::marker{color:var(--dimmer)}
 .evcard{border:1px solid var(--gold);border-radius:9px;padding:17px 15px;background:linear-gradient(180deg,rgba(217,176,106,.09),rgba(217,176,106,0));}
 .evcard.bad{border-color:var(--short);background:linear-gradient(180deg,rgba(196,87,111,.10),rgba(196,87,111,0))}
 .evcard .who{font-family:var(--mono);font-size:10.5px;color:var(--gold);letter-spacing:.05em;margin-bottom:7px}
+.evtimer{display:flex;align-items:center;gap:8px;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.evtimer .tnum{color:var(--warn);font-weight:600;min-width:30px}
+.evtimer .tnum.hot{color:var(--short)}
+.evtimer .tbar{flex:1;height:3px;background:var(--panel2);border-radius:2px;overflow:hidden;min-width:40px}
+.evtimer .tbar i{display:block;height:100%;transition:width .9s linear}
+.evtimer .tlb{font-size:10px;color:var(--dimmer);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .evcard.bad .who{color:var(--short)}
 .evcard h3{font-family:var(--serif);font-size:26px;line-height:1.12;margin-bottom:8px}
 .evcard p{color:var(--dim);font-size:14px;margin:0}
@@ -269,8 +279,9 @@ summary::marker{color:var(--dimmer)}
 .pnlhead .big{font-family:var(--mono);font-size:42px;line-height:1;font-weight:500}
 .pnlhead .sub{color:var(--dim);font-size:13.5px;margin-top:7px;max-width:52ch}
 .regime{font-family:var(--serif);font-size:25px;margin:2px 0 0}
-.attr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
-.attr .an{color:var(--dim)}
+.attr{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap}
+.attr .an{color:var(--dim);overflow:hidden;text-overflow:ellipsis;min-width:0}
+.attr .av{flex-shrink:0}
 .attr .av{font-family:var(--mono);font-size:13px}
 .bar2{position:relative;height:5px;background:var(--panel2);border-radius:3px;overflow:hidden}
 .bar2 .mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line2)}
@@ -281,7 +292,9 @@ summary::marker{color:var(--dimmer)}
 table.qt{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px;margin-top:8px}
 table.qt th{text-align:right;color:var(--dimmer);font-weight:500;padding:5px 0;border-bottom:1px solid var(--line);font-size:10.5px}
 table.qt th:first-child,table.qt td:first-child{text-align:left}
-table.qt td{text-align:right;padding:5px 0;border-bottom:1px solid var(--line);color:var(--dim)}
+table.qt td{text-align:right;padding:5px 0;border-bottom:1px solid var(--line);color:var(--dim);white-space:nowrap}
+table.qt td:first-child{overflow:hidden;text-overflow:ellipsis;max-width:0}
+table.qt{table-layout:auto}
 table.qt tr.me td{color:var(--txt);background:rgba(217,176,106,.07)}
 table.commt{margin-top:8px}
 table.commt{table-layout:fixed;width:100%}
@@ -1151,7 +1164,7 @@ function newGame(seed,prof,arch,desk,vol,size){
    execPenalty:1,star:-1,leak:DESKS.find(d=>d.id===desk).leak||false,
    stop:A.stop,carry:false,noise:false,flighty:false,
    totalTC:0,totalOps:0,incidents:[],poaches:[],usedEv:[],usedMacro:[],usedTrader:[],usedExec:[],poachBoost:0,tcMultQ:1,leakQ:false,qLog:[],
-   idx:1,hwmIdx:1,
+   idx:1,hwmIdx:1,peakIdx:1,
    rivals:RIVALS.map(r=>({...r,skill:Math.max(0.5,Math.min(0.82,r.skill+Z.rivSkill)),vol:r.vol*Z.rivVol,cum:1,last:0})),
    over:null,truth:null,f:[],rumor:null,pending:[],shock:new Array(N).fill(0),
    evQueue:[],log:[],flows:0,press:[],lastPress:null,rankPrev:1,phase:'budget',hotFactor:null,lpD:null,rcD:null,fLast:null,gLog:[],navQ0:100,qEvM:0,qIncM:0,qRumor:0,evLog:[]};
@@ -1462,6 +1475,17 @@ function renderPicks(){
  });
 }
 
+function readScore(k){
+ const b=(S.rumors||[]).filter(r=>r.bought);if(!b.length)return null;
+ let z=0;b.forEach(r=>{const p=r.p||RELP[r.rel];z+=(2*p-1)*r.v[k]/2});return z;
+}
+function readTri(k){
+ const z=readScore(k);
+ if(z===null)return '<span class="tri none">···</span>';
+ const n=Math.min(3,Math.max(1,Math.round(Math.abs(z)/0.7)));
+ if(Math.abs(z)<0.3)return '<span class="tri none">···</span>';
+ return `<span class="tri ${z>0?'up':'dn'}">${(z>0?'▲':'▼').repeat(n)}</span>`;
+}
 function factorExpo(w){return FACT.map((f,k)=>{let e=0;for(let i=0;i<N;i++)e+=w[i]*INSTR[i].sig*INSTR[i].b[k];return e})}
 function budgetBp(){return BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK().fixed*1e4}
 function liveTC(){let tot=0;const k0=S.k0||S.k;for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}return tot}
@@ -1471,7 +1495,7 @@ function costsNow(){
 }
 function statusBar(done){
  S.statusDone=!!done;
- const dd=1-S.nav/S.peak,cum=S.nav/S.aum0-1;
+ const dd=1-S.idx/S.peakIdx,cum=S.idx-1;
  const lab=done?`APRÈS ${S.q} TRIMESTRE${S.q>1?'S':''}`:`TRIMESTRE ${Math.min(S.q+1,QTOT)} / ${QTOT}`;
  const gc=v=>v>55?'var(--long)':v>25?'var(--warn)':'var(--short)';
  const rank=1+S.rivals.filter(r=>r.cum>S.idx).length;
@@ -1479,11 +1503,11 @@ function statusBar(done){
  const band=ARCH().band,rk=S.tgt>0?sp/S.tgt:0;
  const rcol=Math.abs(rk-1)<=band?'var(--long)':(rk>1+band?'var(--short)':'var(--warn)');
  const fg=k=>{const v=ex[k],pc=Math.min(50,Math.abs(v)/0.15*50);
-  return `<button class="fg ${S.hotFactor===k?'hot':''}" data-gauge="f${k}"><span class="fl">${FACT[k].nm.split(' ')[0].slice(0,9)}</span><span class="ft2"><em style="left:50%"></em><i style="${v>=0?'left:50%':'right:50%'};width:${pc}%;background:${v>=0?'var(--long)':'var(--short)'}"></i></span><b class="${Math.abs(v)<0.002?'dim-g':(v>0?'pos-g':'neg-g')}">${v>=0?'+':'−'}${Math.abs(v*100).toFixed(1)}</b></button>`};
+  return `<button class="fg ${S.hotFactor===k?'hot':''}" data-gauge="f${k}"><span class="fl">${FACT[k].nm.split(' ')[0].slice(0,9)}</span>${readTri(k)}<span class="ft2"><em style="left:50%"></em><i style="${v>=0?'left:50%':'right:50%'};width:${pc}%;background:${v>=0?'var(--long)':'var(--short)'}"></i></span><b class="${Math.abs(v)<0.002?'dim-g':(v>0?'pos-g':'neg-g')}">${v>=0?'+':'−'}${Math.abs(v*100).toFixed(1)}</b></button>`};
  return `<div class="status">
   <div class="srow">
    <button class="tile" data-gauge="cap"><span><i>${S.fundName.split(' ')[0]}${done?` · T${S.q}`:` · T${Math.min(S.q+1,QTOT)}`}</i><b>${rank}<sup>${rank===1?'er':'e'}</sup>/5</b></span><b>${moneyB(S.nav)}</b></button>
-   <button class="tile" data-gauge="perf"><span><i>Perf.</i>${dd>0.005?`<b class="neg-g">−${(dd*100).toFixed(1)} %</b>`:'<b class="dim-g">au plus haut</b>'}</span><b class="${cls(cum)}">${sgnp(cum,1)}</b></button>
+   <button class="tile" data-gauge="perf"><span><i>Perf.</i>${dd>0.005?`<b class="neg-g">repli ${(dd*100).toFixed(0)} %</b>`:'<b class="dim-g">au plus haut</b>'}</span><b class="${cls(cum)}">${sgnp(cum,1)}</b></button>
   </div>
   <div class="srow">
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
@@ -1544,6 +1568,7 @@ function riskGauge(why,bonus){
  return gauge(0,d,`${why} — ${txt}${fmax>0.75?', book mono-facteur':''}${sp<0.02?', book vide':''}`);
 }
 function resultCard(kick,title,paras,rows,btn,next){
+ clearTimer();
  app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="kicker">${kick}</div>
   <div class="rescard"><h3>${title}</h3>${paras.map(t=>`<p>${t}</p>`).join('')}
   ${rows.length?tbl(rows):''}</div>
@@ -1560,17 +1585,35 @@ function openModal(title,html){
  m.style.display='block';
  m.querySelector('.mback').onclick=m.querySelector('.mclose').onclick=()=>{m.style.display='none'};
 }
+let TID=null;
+function clearTimer(){if(TID){clearInterval(TID);TID=null}}
+function armTimer(fn){
+ clearTimer();
+ const el=document.getElementById('evtimer');if(!el)return;
+ const sec=10+Math.floor(Math.random()*11);let t=sec;
+ const draw=()=>{el.innerHTML=`<span class="tnum ${t<=5?'hot':''}">${t}s</span><span class="tbar"><i style="width:${Math.max(0,t/sec*100)}%;background:${t<=5?'var(--short)':'var(--warn)'}"></i></span><span class="tlb">sans décision, l'option du bas est retenue</span>`};
+ draw();
+ TID=setInterval(()=>{t--;if(t<=0){clearTimer();fn()}else draw()},1000);
+}
+const evTimerHTML='<div id="evtimer" class="evtimer"></div>';
 let toastT=null;
 function toast(html){
  let t=document.getElementById('toast');
  if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t)}
- t.innerHTML=html;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600);
+ t.innerHTML=html+'<span class="tclose">×</span>';t.classList.add('on');t._fresh=true;
+ t.onclick=()=>t.classList.remove('on');
+ setTimeout(()=>{t._fresh=false},150);
 }
+document.addEventListener('click',e=>{const t=document.getElementById('toast');
+ if(t&&t.classList.contains('on')&&!t._fresh&&!t.contains(e.target))t.classList.remove('on')},true);
 const mmShort=x=>{const a=Math.abs(x),sg=x<0?'−':'';
  if(a>=1)return sg+a.toFixed(a>=10?0:1).replace('.',',')+'Md';
  if(a>=0.001)return sg+(a*1000).toFixed(a>=0.1?0:1).replace('.',',')+'M';
  return sg+(a*1e6).toFixed(0)+'k'};
-const mm=x=>{const a=Math.abs(x);return a>=1?(x).toFixed(1).replace('.',',')+' Md$':a>=0.001?(x*1000).toFixed(a>=0.1?0:1).replace('.',',')+' M$':(x*1e6).toFixed(0)+' k$'};
+const mm=x=>{const a=Math.abs(x),sg=x<0?'−':'';
+ if(a>=1)return sg+a.toFixed(a>=10?1:2).replace('.',',')+' Md$';
+ if(a>=0.0005)return sg+(a*1000).toFixed(a>=0.1?0:1).replace('.',',')+' M$';
+ return sg+(a*1e6).toFixed(a>=0.00001?0:1).replace('.',',')+' k$'};
 const moneyB=x=>{const a=Math.abs(x);return a>=1?x.toFixed(a>=10?1:2).replace('.',',')+' Md$':(x*1000).toFixed(a>=0.1?0:1).replace('.',',')+' M$'};
 function sig3(v,unit){const a=Math.abs(v);const d=a>=100?0:a>=10?1:2;
  return (v<0?'−':'')+Math.abs(v).toFixed(d).replace('.',',')+' '+unit}
@@ -1692,6 +1735,7 @@ function ctxLines(){
  return L;
 }
 function phase(kick,title,lines,btn,next){
+ clearTimer();
  app.innerHTML=statusBar(S.statusDone)+`<div class="phase fade">
   <div class="kicker">${kick}</div><h2 class="ptitle">${title}</h2>
   <ul class="plines">${lines.map(l=>`<li>${l}</li>`).join('')}</ul>
@@ -2042,7 +2086,7 @@ function screenExec(){
   S.evLog.push({t:ev.t,pnl,m:pnl*navB0,lp:g.lp+g2.lp,rc:g.rc+g2.rc});
   S.totalTC+=(S.pendingTC*S.nav)-tot;
   resultCard('EXÉCUTION · '+ev.who.split(' ·')[0].toUpperCase(),ch.b,[ch.s,...msg],
-   [['Coûts d\'exécution du trimestre',`<span class="neg-g">−${mm(S.pendingTC*S.nav)}</span>`],['Marché pendant l\'exécution',`<span class="${cls(pnl)}">${sgn(pnl,2)} · ${mn(pnl*navB0)}</span>`],['Investisseurs · Comité',`<span class="${cls(g.lp+g2.lp)}">${sd1(g.lp+g2.lp)}</span> · <span class="${cls(g.rc+g2.rc)}">${sd1(g.rc+g2.rc)}</span>`]],
+   [['Coûts d\'exécution du trimestre',`<span class="neg-g">−${mm(S.pendingTC*S.nav)}</span>`],['Marché pendant l\'exécution',`<span class="${cls(pnl)}">${sgn(pnl,2)} · ${mn(pnl*navB0)}</span>`],['Jauges',`<span class="${cls(g.lp+g2.lp)}">${sd1(g.lp+g2.lp)}</span> · <span class="${cls(g.rc+g2.rc)}">${sd1(g.rc+g2.rc)}</span>`]],
    "Lancer le trimestre",phaseLive);
  });
 }
@@ -2105,7 +2149,7 @@ function screenMacroEvent(ev){
  </tbody></table>`;
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard">${evHead(ev.who,'news')}<h3>${ev.t}</h3><p>${ev.p}</p>
-   <div class="shock">${chips}</div></div>
+   <div class="shock">${chips}</div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px">
    <div class="kv nowrp"><span>Effet immédiat</span><b>${sgn(imm,2)} · ${mn(imm*navB)}</b></div>
    <div class="kv nowrp"><span>Jauges</span><b>${sd1(g.lp)} inv. · ${sd1(g.rc)} com.</b></div>
@@ -2119,11 +2163,11 @@ function screenMacroEvent(ev){
   ${opts.map((o,i)=>{const gg=o.a==='none'?{lp:0,rc:0}:(o.a==='cut'?{lp:-1,rc:2}:{lp:1,rc:-3});
    return `<button class="choice" data-i="${i}"><b>${o.b}</b><span>${o.s}${o.cost>0?` · coût ${mm(o.cost)}`:''}${o.rc?` · dérogation comité ${o.rc}`:''}${(gg.lp||gg.rc)?` · jauges ${sd1(gg.lp)} inv. ${sd1(gg.rc)} com.`:''}</span></button>`}).join('')}
  </div>`;
- app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
-  const o=opts[+b.dataset.i];
+ const go=i=>{clearTimer();const o=opts[i];
   if(o.rc)gauge(0,o.rc,`Dérogation au modèle — ${ev.t}`);
-  resolveEvent(ev,touched,o.a,imm,navB);
- });
+  resolveEvent(ev,touched,o.a,imm,navB)};
+ app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>go(+b.dataset.i));
+ armTimer(()=>go(opts.length-1));
 }
 function resolveEvent(ev,touched,a,imm,navB){
  const prof=PROF(),free=prof.freeAdj&&!S.freeAdjUsed;S.kBefore=[...S.k];
@@ -2169,11 +2213,11 @@ function resolveEvent(ev,touched,a,imm,navB){
    :`Vous renforcez : ${trades.join(' ; ')}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${freeTxt}`;
  resultCard(`DÉPÊCHE · ${ev.t.toUpperCase()}`,['Le mouvement a continué','Le mouvement s\'est arrêté','Le mouvement s\'est retourné'][si],
   [`<b>${scName}</b> ${flav} ${what}`,...flowLines,`La suite du mouvement, marché par marché, et ce que votre position (après ajustement, capture ${a==='none'||a==='cut'?'100':(prof.capture*100).toFixed(0)} %) en a fait :`,tbl(perM,['Marché','Position','Suite du mvt','Sur votre book']),`Votre book capte au total <em class="${cls(resid)}">${sgn(resid,2)}</em> sur la suite du mouvement.`],
-  [['Effet immédiat (avant votre décision)',`<span class="${cls(imm)}">${sgn(imm,2)} · ${mn(imm*navB)}</span>`],
-   ['Suite du mouvement sur vos positions',`<span class="${cls(resid)}">${sgn(resid,2)} · ${mn(resid*navR)}</span>`],
+  [['Effet immédiat',`<span class="${cls(imm)}">${sgn(imm,2)} · ${mn(imm*navB)}</span>`],
+   ['Suite du mouvement',`<span class="${cls(resid)}">${sgn(resid,2)} · ${mn(resid*navR)}</span>`],
    ['Coûts d\'ajustement',`<span class="neg-g">−${mm(cost)}</span>`],
    ['<b>Bilan de la dépêche</b>',`<b class="${cls(total)}">${sgn(total,2)} · ${mn(total*navB)}</b>`],
-   ['Investisseurs · Comité',`<span class="${cls((ev0?ev0.lp:0)+g.lp)}">${sd1((ev0?ev0.lp:0)+g.lp+gr.lp)}</span> · <span class="${cls((ev0?ev0.rc:0)+g.rc+gr.rc)}">${sd1((ev0?ev0.rc:0)+g.rc+gr.rc)}</span>`]],
+   ['Jauges',`<span class="${cls((ev0?ev0.lp:0)+g.lp)}">${sd1((ev0?ev0.lp:0)+g.lp+gr.lp)}</span> · <span class="${cls((ev0?ev0.rc:0)+g.rc+gr.rc)}">${sd1((ev0?ev0.rc:0)+g.rc+gr.rc)}</span>`]],
   "Continuer le trimestre",stepEvents);
 }
 function applyEventChoice(ev,touched,a){
@@ -2208,15 +2252,14 @@ function screenRivalEvent(e){
  const g0=gauge(-2.5,-0.5,`${src} : ${rv.nm} a eu raison sur ${x.sym}, pas vous`);
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard">${evHead(rv.boss+' · '+src,'rival')}<h3>${t1}</h3><p>${p}</p>
-   <div class="shock"><span style="color:${dir>0?'var(--long)':'var(--short)'}">${x.sym} ${sgn(half,1)} déjà réalisé</span><span>vous : ${S.k[i]===0?'plat':(S.k[i]>0?'+':'')+S.k[i]}</span><span>${rv.nm} : ${dir>0?'long':'court'}</span></div></div>
+   <div class="shock"><span style="color:${dir>0?'var(--long)':'var(--short)'}">${x.sym} ${sgn(half,1)} déjà réalisé</span><span>vous : ${S.k[i]===0?'plat':(S.k[i]>0?'+':'')+S.k[i]}</span><span>${rv.nm} : ${dir>0?'long':'court'}</span></div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px"><div class="kv"><span>Effet de l'article</span><b><span class="${cls(g0.lp)}">investisseurs ${sd1(g0.lp)}</span> · <span class="${cls(g0.rc)}">comité ${sd1(g0.rc)}</span></b></div></div>
   <button class="choice" data-a="follow"><b>Suivre ${rv.boss} : passer ${x.sym} à ${nk>0?'+':''}${nk}</b><span>Coût ${(t.cost*1000*1.5).toFixed(0)} M$ dans un marché qui a déjà bougé. La suite du mouvement vaut en moyenne un tiers de ce qui a été fait, avec beaucoup de bruit. Si ça continue, la presse parle d'un rattrapage ; sinon, d'un gérant qui court après les autres.</span></button>
   <button class="choice" data-a="fade"><b>Prendre le contre-pied : ${x.sym} à ${(-nk)>0?'+':''}${-nk}</b><span>Vous pariez que ${rv.boss} a tort de rester. Même coût, même bruit, gloire ou ridicule.</span></button>
   <button class="choice" data-a="none"><b>Ne pas répondre à la presse</b><span>Vous ne changez rien. Investisseurs −1,5 de plus : ils voulaient une réaction.</span></button></div>`;
- app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
-  const a=b.dataset.a,navB=S.nav;let msg=[],cost=0,pnl=0;
+ const pickR=a=>{clearTimer();const navB=S.nav;let msg=[],cost=0,pnl=0;
   if(a==='none'){const g=gauge(-1.5,0,"Silence face à la presse");S.evLog.push({t:t1,pnl:0,m:0,lp:g0.lp+g.lp,rc:g0.rc+g.rc});
-    resultCard(`RIVALITÉ · ${rv.nm.toUpperCase()}`,"Vous laissez dire",[`${rv.boss} a eu ses colonnes. Vous gardez votre book.`],[['Investisseurs · Comité',`<span class="${cls(g0.lp+g.lp)}">${sd1(g0.lp+g.lp)}</span> · <span class="${cls(g0.rc+g.rc)}">${sd1(g0.rc+g.rc)}</span>`]],"Continuer le trimestre",stepEvents);return}
+    resultCard(`RIVALITÉ · ${rv.nm.toUpperCase()}`,"Vous laissez dire",[`${rv.boss} a eu ses colonnes. Vous gardez votre book.`],[['Jauges',`<span class="${cls(g0.lp+g.lp)}">${sd1(g0.lp+g.lp)}</span> · <span class="${cls(g0.rc+g.rc)}">${sd1(g0.rc+g.rc)}</span>`]],"Continuer le trimestre",stepEvents);return}
   const target=a==='follow'?nk:-nk;const tt=tcost(target-S.k[i],i);cost=tt.cost*1.5*S.tcMultQ;S.k[i]=target;S.pendingTC+=cost/S.nav;S.totalTC+=cost;
   const resid=r*(0.17+0.45*gauss());const w=weights(S.k);pnl=w[i]*resid;
   S.nav*=(1+pnl);S.nav-=cost;S.qEvM+=pnl*navB-cost;
@@ -2226,16 +2269,19 @@ function screenRivalEvent(e){
   S.evLog.push({t:t1,pnl:total,m:total*navB,lp:g0.lp+g.lp+g2.lp,rc:g0.rc+g.rc+g2.rc});
   resultCard(`RIVALITÉ · ${rv.nm.toUpperCase()}`,total>=0?"La presse change de camp":"La presse en remet une couche",
    [`${x.sym} passe à ${target>0?'+':''}${target} (${mm(cost)} de coûts). La suite du mouvement : ${sgn(resid,1)} sur ${x.nm.toLowerCase()}.`,total>=0?`« ${S.fundName} ${a==='follow'?'recolle':'prend '+rv.boss+' à contre-pied'} », titre ${pick(PRESS_SRC)}.`:`« ${S.fundName} ${a==='follow'?'arrive après la bataille':'s\'entête contre '+rv.boss} », titre ${pick(PRESS_SRC)}.`],
-   [['Résultat',`<span class="${cls(total)}">${sgn(total,2)} · ${mn(total*navB)}</span>`],['Investisseurs · Comité',`<span class="${cls(g0.lp+g.lp+g2.lp)}">${sd1(g0.lp+g.lp+g2.lp)}</span> · <span class="${cls(g0.rc+g.rc+g2.rc)}">${sd1(g0.rc+g.rc+g2.rc)}</span>`]],"Continuer le trimestre",stepEvents);
- });
+   [['Résultat',`<span class="${cls(total)}">${sgn(total,2)} · ${mn(total*navB)}</span>`],['Jauges',`<span class="${cls(g0.lp+g.lp+g2.lp)}">${sd1(g0.lp+g.lp+g2.lp)}</span> · <span class="${cls(g0.rc+g.rc+g2.rc)}">${sd1(g0.rc+g.rc+g2.rc)}</span>`]],"Continuer le trimestre",stepEvents);
+ };
+ app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>pickR(b.dataset.a));
+ armTimer(()=>pickR('none'));
+
 }
 function screenTraderEvent(ev,next){
  next=next||stepEvents;
  app.innerHTML=statusBar()+`<div class="evwrap fade">
-  <div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p></div>
+  <div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p>${evTimerHTML}</div>
   ${ev.ch.map((c,i)=>`<button class="choice" data-i="${i}"><b>${c.b}</b><span>${c.s}</span></button>`).join('')}</div>`;
- app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
-  const ch=ev.ch[+b.dataset.i],e=ch.e;const msg=[];let pnl=0,cost=0;const navB=S.nav;
+ const pickCh=idx=>{clearTimer();
+  const ch=ev.ch[idx],e=ch.e;const msg=[];let pnl=0,cost=0;const navB=S.nav;
   const setK=(i,nk)=>{nk=Math.max(-S.maxk,Math.min(S.maxk,nk));if(nk!==S.k[i]){const t=tcost(nk-S.k[i],i);const c=t.cost*S.tcMultQ;S.pendingTC+=c/S.nav;S.totalTC+=c;cost+=c;S.k[i]=nk;msg.push(`${INSTR[i].sym} passe à ${nk>0?'+':''}${nk} (${mm(c)} de coûts).`)}};
   if(e.kAdd){const i=IDX[e.kAdd[0]];setK(i,S.k[i]+e.kAdd[1]*(S.k[i]===0?1:Math.sign(S.k[i])))}
   if(e.kAddAbs){const i=IDX[e.kAddAbs[0]];setK(i,S.k[i]+e.kAddAbs[1])}
@@ -2280,9 +2326,12 @@ function screenTraderEvent(ev,next){
   const g2=(e.rc||e.lp)?gauge(e.lp||0,e.rc||0,`${ev.who.split(' ·')[0]} — ${ch.b}`):{lp:0,rc:0};
   S.evLog.push({t:ev.t,pnl:total,m:total*navB,lp:g.lp+g2.lp,rc:g.rc+g2.rc});
   resultCard(`LE DESK · ${ev.who.split(' ·')[0].toUpperCase()}`,ch.b,[ev.after||ch.s,...msg],
-   [['Résultat',`<span class="${cls(total)}">${sgn(total,2)} · ${mn(total*navB)}</span>`],['Investisseurs · Comité',`<span class="${cls(g.lp+g2.lp)}">${sd1(g.lp+g2.lp)}</span> · <span class="${cls(g.rc+g2.rc)}">${sd1(g.rc+g2.rc)}</span>`]],
+   [['Résultat',`<span class="${cls(total)}">${sgn(total,2)} · ${mn(total*navB)}</span>`],['Jauges',`<span class="${cls(g.lp+g2.lp)}">${sd1(g.lp+g2.lp)}</span> · <span class="${cls(g.rc+g2.rc)}">${sd1(g.rc+g2.rc)}</span>`]],
    next===stepEvents?"Continuer le trimestre":"Aller sur le desk",next);
- });
+ };
+ app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>pickCh(+b.dataset.i));
+ armTimer(()=>pickCh(ev.ch.length-1));
+
 }
 function screenMidMark(){
  const w=weights(S.k);let p=0;const rows=[];
@@ -2293,7 +2342,7 @@ function screenMidMark(){
  resultCard(`TRIMESTRE ${S.q+1} · MI-PARCOURS`,p>=0?"Le book est en gains latents":"Le book est en pertes latentes",
   [`À mi-trimestre, vos positions directionnelles valent <em class="${cls(p)}">${sgn(p,2)} · ${mn(p*navB)}</em>, non réalisés. Rien n'est encaissé, mais les investisseurs et le comité reçoivent le rapport hebdomadaire et réagissent.`,
    rows.length?`Principaux contributeurs : ${rows.slice(0,4).map(o=>`${INSTR[o.i].sym} <span class="${cls(o.v)}">${mn(o.v*navB)}</span>`).join(', ')}.`:"Aucune position ouverte : rien à marquer."],
-  [['Investisseurs · Comité',`<span class="${cls(g.lp)}">${sd1(g.lp)}</span> · <span class="${cls(g.rc)}">${sd1(g.rc)}</span>`]],
+  [['Jauges',`<span class="${cls(g.lp)}">${sd1(g.lp)}</span> · <span class="${cls(g.rc)}">${sd1(g.rc)}</span>`]],
   "Poursuivre le trimestre",stepEvents);
 }
 function screenIncident(){
@@ -2354,6 +2403,7 @@ function resolveQuarter(){
  S.peak=Math.max(S.peak,S.nav);const dd=1-S.nav/S.peak;S.maxdd=Math.max(S.maxdd,dd);
  if(S.nav>S.hwm)S.hwm=S.nav;
  S.idx*=(1+qTotal);if(S.idx>S.hwmIdx)S.hwmIdx=S.idx;
+ S.peakIdx=Math.max(S.peakIdx||1,S.idx);S.maxdd=Math.max(S.maxdd,1-S.idx/S.peakIdx);
  S.totalOps+=(S.qOps||0);
  S.mgrFees=(S.mgrFees||0)+(mgmt+perf)*navBefore;refreshGain();
  S.mgrQ={fees:(mgmt+perf)*navBefore,ops:S.qOps||0,rum:(S.qRumor||0)/1000,mgmt:mgmt*navBefore,perf:perf*navBefore};
@@ -2518,67 +2568,48 @@ function pressFeed(o){
 /* ---------- avis des investisseurs et du comité ---------- */
 function pk(arr,n){return arr[(S.seed+S.q*13+n*7)%arr.length]}
 function verdicts(o){
- const lp=S.lp,rc=S.rc,q=o.qTotal,dd=1-S.nav/S.peak;
+ const lp=S.lp,rc=S.rc,q=o.qTotal,dd=1-S.idx/(S.peakIdx||1);
  const rank=1+S.rivals.filter(r=>r.cum>S.idx).length;
  const med=[...S.rivals.map(x=>x.last)].sort((a,b)=>a-b)[2],rel=q-med;
- const dlpT=S.gLog.reduce((a,g)=>a+g.lp,0)+S.lpD.reduce((a,x)=>a+x[1],0);
- const drcT=S.gLog.reduce((a,g)=>a+g.rc,0)+S.rcD.reduce((a,x)=>a+x[1],0);
  const w=weights(S.k),sp=pvol(w),band=ARCH().band,dev=Math.abs(sp-S.tgt)/S.tgt;
- const cuts=S.gLog.filter(g=>/coupée/.test(g.why)).length,adds=S.gLog.filter(g=>/renforcée/.test(g.why)).length;
  const inc=S.evLog.filter(e=>INCIDENTS.some(x=>x.t===e.t)).length;
- const nEv=S.evLog.length,goal=VOL().goal/4;
+ const goal=VOL().goal/4,best=[...S.rivals].sort((a,b)=>b.last-a.last)[0];
+ const P=n=>pk.bind(null,n);
  const I=[],C=[];
- /* investisseurs : ouverture */
- I.push(lp>78?pk(["Le ton est chaleureux, presque familier.","On vous parle déjà de la prochaine levée.","Les allocataires se disputent vos créneaux de rendez-vous."],1)
-  :lp>58?pk(["Le ton est cordial, avec la retenue de gens qui vous prêtent beaucoup d'argent.","On vous écoute avec attention, sans acquiescer trop vite.","La confiance est là, mais elle se mérite chaque trimestre."],1)
-  :lp>38?pk(["Les questions se font plus précises et les silences plus longs.","On vous demande des chiffres que personne ne demandait avant.","Le comité d'investissement d'un grand allocataire a ajouté votre fonds à son ordre du jour."],1)
-  :lp>20?pk(["Deux allocataires ont demandé les documents de rachat « à titre d'information ».","On ne vous reproche rien de précis, ce qui est pire.","Le principal investisseur ne prend plus vos appels lui-même."],1)
-  :pk(["Les lettres recommandées ont commencé à arriver.","Le conseil de surveillance d'un grand allocataire a voté votre sortie ; il attend la fenêtre.","Personne ne parle de la performance : on parle des délais de préavis."],1));
- /* performance absolue */
- I.push(q>goal*1.8?pk([`Un trimestre à ${sgn(q,1)} : ils savent que ça ne se répète pas, mais ils le prendront volontiers deux fois.`,`${sgn(q,1)} sur le trimestre, très au-dessus du mandat. On vous demande surtout de ne pas gâcher.`,`Les ${sgn(q,1)} ont été redistribués dans les rapports internes de chacun, avec votre nom dessus.`],2)
-  :q>goal*0.8?pk([`${sgn(q,1)} : dans la trajectoire du mandat, ni plus ni moins. C'est exactement ce qu'ils ont acheté.`,`Un trimestre à ${sgn(q,1)}, conforme. Personne ne s'extasie, personne ne s'inquiète.`,`${sgn(q,1)} sur le trimestre : le genre de chiffre qui ne fait pas de bruit, dans un sens comme dans l'autre.`],2)
-  :q>0?pk([`${sgn(q,1)} : positif, mais en dessous de ce que le mandat promettait. Ils remarquent l'écart.`,`Un trimestre à ${sgn(q,1)}, honnête, sans plus. Le collatéral en a fait une partie, et ils le savent.`,`${sgn(q,1)} : ils ne vous en veulent pas, ils ne vous en félicitent pas non plus.`],2)
-  :q>-0.03?pk([`${sgn(q,1)} : une perte modérée, qu'ils acceptent tant qu'elle est expliquée.`,`Un trimestre à ${sgn(q,1)}. Ils ont vu pire, mais ils ont surtout vu mieux.`,`${sgn(q,1)} : la lettre trimestrielle va devoir être bien écrite.`],2)
-  :pk([`${sgn(q,1)} sur le trimestre : le chiffre a circulé avant la lettre, et sans commentaire.`,`Une perte de ${sgn(q,1)} : ils parlent de « trimestre difficile », ce qui est leur façon de ne pas dire le mot qu'ils pensent.`,`${sgn(q,1)} : certains allocataires ont demandé si le processus avait été respecté. La question n'est jamais innocente.`],2));
- /* relatif */
- I.push(rel>0.01?pk([`Vous avez battu la médiane des concurrents de ${sgn(rel,1)} : c'est ce qu'ils regardent en premier.`,`${rank===1?'Premier':rank+'e'} sur cinq ce trimestre — ils ont un tableau comparatif et vous y êtes en haut.`,`Devant ${S.rivals.filter(r=>r.last<q).map(r=>r.nm.split(' ')[0]).join(', ')} : les noms comptent.`],3)
-  :rel>-0.01?pk(["Dans le peloton des concurrents, ni devant ni derrière : rien à dire, rien à écrire.","Vous faites comme les autres. Pour certains, c'est rassurant ; pour d'autres, c'est la question de savoir pourquoi vous payer plus cher.","La comparaison avec les concurrents ne tranche pas ce trimestre."],3)
-  :pk([`${sgn(rel,1)} par rapport à la médiane des concurrents, et c'est le chiffre qu'ils retiennent.`,`${rank}e sur cinq : ils ont vu que ${S.rivals.filter(r=>r.last>q)[0]?S.rivals.filter(r=>r.last>q)[0].nm:'un concurrent'} a fait mieux avec moins de risque.`,"Derrière la concurrence ce trimestre. Quelqu'un a demandé si votre process était « toujours adapté au régime »."],3));
- /* repli / plus haut */
- if(S.nav>=S.hwm-1e-9)I.push(pk(["Nouveau plus haut : la commission de performance passe, et personne ne s'en plaint.","Un plus haut historique, ce qui met fin aux conversations sur le passé.","Plus haut historique franchi : l'argent gagné a un goût que l'argent récupéré n'a pas."],4));
- else if(dd>0.15)I.push(pk([`Un repli de ${(dd*100).toFixed(0)} % depuis le pic : les allocataires calculent le temps qu'il faudra pour revenir, et ils ne trouvent pas le résultat rassurant.`,`${(dd*100).toFixed(0)} % sous le plus haut. Certains parlent de « moyenner », la plupart parlent de « diversifier ».`],4));
- else if(dd>0.06)I.push(pk([`${(dd*100).toFixed(0)} % sous le plus haut : tolérable, à condition que ça s'arrête là.`,`Un repli de ${(dd*100).toFixed(0)} %, qu'ils suivent sans commenter.`],4));
- /* coûts */
- if(S.budBp>34||S.qRumor>S.nav*3)I.push(pk(["La facture d'exploitation a été remarquée : « c'est notre argent qui paie vos analystes », dit l'un d'eux.","Les frais refacturés font l'objet d'une note de bas de page, en gras.","On vous demande la ventilation du budget d'exploitation. Ce n'était jamais arrivé."],5));
- /* tendance */
- I.push(dlpT>4?pk(["Au total, la confiance a progressé ce trimestre.","Ils vous font un peu plus confiance qu'il y a trois mois.","Le solde du trimestre est positif dans leur esprit."],6):dlpT<-4?pk(["Au total, la confiance a reculé ce trimestre.","Ils vous font un peu moins confiance qu'il y a trois mois, et ils s'en souviendront.","Le solde du trimestre est négatif dans leur esprit, quoi qu'en dise la lettre."],6):pk(["Le solde du trimestre est neutre : rien de gagné, rien de perdu.","Ils sont où ils étaient il y a trois mois.","Trimestre sans effet notable sur la confiance."],6));
- if(S.commRes){I.push(S.commRes.ok?pk([`Vous aviez annoncé ${sgn(S.comm.ret,1)} et vous l'avez fait : ils aiment les gens qui tiennent parole, surtout quand elle est chiffrée.`,`L'engagement du trimestre est tenu. C'est le genre de chose qui figure dans les comptes rendus de comité d'investissement, en votre faveur.`],13)
-   :pk([`Vous aviez promis ${sgn(S.comm.ret,1)} ${S.comm.id==='fort'?'avec force':''}; ils ont la lettre sous les yeux. Personne ne la relit à voix haute, ce qui est pire.`,`L'engagement du trimestre n'est pas tenu${S.commRes.okR?' — sur la volatilité, pas sur le rendement, mais ils ne font pas la différence':''}. Ils se souviendront surtout que vous l'aviez pris.`],13))}
- else if(S.comm&&S.comm.id==='none')I.push(pk(["Vous n'aviez rien promis. Ils n'attendaient donc rien, et c'est à peu près ce qu'ils retiennent de vous.","Sans engagement chiffré, la lettre trimestrielle ressemble à un bulletin météo. Ils la lisent comme tel."],13));
- /* comité : ouverture */
- C.push(rc>78?pk(["Le comité a expédié votre dossier en dix minutes, et c'est un compliment.","Mireille Cauchemar a signé le rapport sans annotation.","Le comité vous cite en exemple aux autres gérants, ce qui ne vous fera pas que des amis."],7)
-  :rc>58?pk(["Le comité a validé le rapport avec deux remarques de forme.","Rien de bloquant, quelques points à surveiller.","Le comité est satisfait, au sens administratif du terme."],7)
-  :rc>38?pk(["Le comité a demandé un point intermédiaire le mois prochain.","Mireille Cauchemar a annoté le rapport en rouge à trois endroits.","Le comité rappelle que les limites ne sont pas des objectifs."],7)
-  :rc>20?pk(["Le comité a saisi le conseil d'administration d'un « point d'attention ».","Le rapport a été renvoyé avec une demande de plan de réduction du risque.","Le comité parle de vous à la troisième personne, en votre présence."],7)
-  :pk(["Le comité a mis au vote la réduction du mandat. Il manquait une voix.","Le conseil a demandé au comité si le gérant était « encore le bon ».","Le dossier a été transmis au conseil avec une recommandation que personne ne vous a lue."],7));
- /* bande de vol */
- C.push(dev<band*0.5?pk([`Vol ex-ante ${pct(sp)} : au cœur de la bande, exactement là où le comité aime vous voir.`,`Le risque est calibré (${pct(sp)} contre ${pct(S.tgt,0)}) : le comité n'a rien à redire sur le dimensionnement.`],8)
-  :dev<band?pk([`Vol ex-ante ${pct(sp)} : dans la bande, mais vers le bord. Le comité note la direction.`,`Dimensionnement acceptable (${pct(sp)}), sans marge. Un mouvement de vol et vous sortez.`],8)
-  :sp>S.tgt?pk([`Vol ex-ante ${pct(sp)} : au-dessus de la bande. Le comité y voit un book qui parie plus que le mandat ne l'autorise.`,`${pct(sp)} de vol ex-ante, hors bande par le haut : « ce n'est pas un book, c'est une conviction avec des positions autour ».`],8)
-  :pk([`Vol ex-ante ${pct(sp)} : sous la bande. Le comité ne vous reproche pas la prudence, il vous reproche de facturer un mandat que vous ne remplissez pas.`,`${pct(sp)} de vol pour un mandat à ${pct(S.tgt,0)} : le comité se demande ce que font vos analystes.`],8));
- /* comportement pendant le trimestre */
- if(cuts>0&&adds===0)C.push(pk([`Vous avez coupé ${cuts} fois en cours de trimestre : le comité apprécie le réflexe, moins la facture de transaction.`,`${cuts} réduction${cuts>1?'s':''} de position sur dépêche : « de la discipline », dit le rapport.`],9));
- else if(adds>0&&cuts===0)C.push(pk([`Vous avez renforcé ${adds} fois sur dépêche : le comité parle de « conviction », avec des guillemets audibles.`,`${adds} renfort${adds>1?'s':''} en cours de trimestre, dans une liquidité dégradée : le comité a recalculé l'impact.`],9));
- else if(adds>0&&cuts>0)C.push(pk(["Coupes et renforts alternés en cours de trimestre : le comité se demande si c'est une stratégie ou une humeur.","Vous avez bougé dans les deux sens sur dépêche. Le comité a compté les coûts, pas les raisons."],9));
- else if(nEv>3)C.push(pk(["Vous n'avez rien touché malgré les dépêches : le comité y voit soit de la sérénité, soit de l'absence.","Aucun ajustement sur un trimestre agité : « au moins, il n'a pas payé de fourchette »."],9));
- if(S.commRes)C.push(S.commRes.ok?pk([`La vol réalisée (${pct(S.realVol,1)}) est dans la fourchette annoncée : le comité aime qu'on sache ce qu'on porte.`,"Rendement et vol conformes à l'engagement : le comité y voit un gérant qui connaît son book."],14)
-   :pk([`La vol réalisée (${pct(S.realVol,1)}) ${S.commRes.okV?'était conforme, mais le rendement promis n\'y est pas':'est sortie de la fourchette promise'} : pour le comité, un engagement manqué vaut une limite dépassée.`,"L'engagement du trimestre n'a pas été tenu. Le comité en conclut que vos prévisions de risque valent moins que vos convictions, et ce n'est pas un compliment."],14));
- /* perte de queue */
- if(S.rcD.some(x=>/2,2 σ/.test(x[0])))C.push(pk(["La perte du trimestre dépasse ce que votre propre modèle de risque annonçait : c'est la seule chose que le comité ne pardonne pas.","Vous avez perdu plus que 2,2 σ ex-ante. Le comité pose la question qui tue : le modèle est faux, ou le book n'était pas celui du rapport ?"],10));
- /* incidents */
- if(inc>0)C.push(pk([`${inc} incident${inc>1?'s':''} opérationnel${inc>1?'s':''} ce trimestre : le comité les a mis en tête du rapport, avant la performance.`,"L'incident du trimestre a été discuté plus longtemps que le book. C'est ainsi que fonctionnent les comités.","Un incident, même petit, et c'est tout le dispositif de contrôle que le comité réexamine."],11));
- /* tendance */
- C.push(drcT>4?pk(["Au total, le comité vous accorde un peu plus de latitude qu'il y a trois mois.","Le solde du trimestre joue en votre faveur auprès du comité.","Trimestre positif au comité : la prochaine limite se négociera plus facilement."],12):drcT<-4?pk(["Au total, le comité vous accorde moins de latitude qu'il y a trois mois.","Le solde du trimestre joue contre vous au comité.","Trimestre négatif au comité : la prochaine dérogation sera refusée."],12):pk(["Solde neutre au comité : rien n'a changé, rien n'est acquis.","Le comité est où il était il y a trois mois.","Trimestre sans effet notable sur la patience du comité."],12));
+ const t=(arr,n)=>pk(arr,n);
+ /* investisseurs : ton */
+ I.push(lp>78?t(["On vous appelle par votre prénom et on vous propose des tickets sans les demander.","Le téléphone sonne pour vous féliciter, pas pour vous demander des comptes.","Un allocataire a cité votre nom dans sa lettre annuelle, en bien.","On vous invite à parler en conférence : le signe qu'on n'a plus peur de vous associer.","Trois family offices ont demandé une capacité qui n'existe pas."],1)
+  :lp>58?t(["Le ton reste cordial, avec la réserve de gens qui vous prêtent beaucoup.","On vous écoute, on ne vous interrompt pas, on prend des notes.","La relation est saine : ni enthousiasme, ni méfiance.","On vous fait confiance, à la condition tacite que ça continue.","Les rendez-vous se tiennent, courts et sans tension."],1)
+  :lp>38?t(["Les questions deviennent précises et les réponses sont relues.","On vous demande des chiffres que personne ne demandait il y a six mois.","Un comité d'investissement a inscrit votre fonds à son ordre du jour.","Le ton s'est refroidi sans qu'on vous dise pourquoi.","On vous compare, à voix haute, à des gérants que vous ne citiez pas."],1)
+  :lp>20?t(["Deux allocataires ont demandé les formulaires de rachat « pour information ».","On ne vous reproche rien de précis, ce qui est plus inquiétant qu'un reproche.","Le principal investisseur délègue désormais vos rendez-vous.","Les appels ne sont plus retournés le jour même.","Un consultant a été mandaté pour « revoir l'allocation »."],1)
+  :t(["Les lettres recommandées ont commencé à arriver.","On ne parle plus de performance, on parle de délais de préavis.","Un conseil de surveillance a voté votre sortie ; il attend la fenêtre.","Le mot « liquidation » a été prononcé dans une réunion où vous n'étiez pas.","Vos investisseurs se parlent entre eux, et pas de vous en bien."],1));
+ /* performance */
+ I.push(q>goal*1.8?t([`Un trimestre à ${sgnp(q,1)} : ils le prendront volontiers deux fois, sans y croire.`,`${sgnp(q,1)} : le chiffre a circulé avant la lettre, et pour une fois c'est une bonne nouvelle.`,`${sgnp(q,1)} sur le trimestre. On vous demande déjà si c'est reproductible.`,`${sgnp(q,1)} : votre nom apparaît dans des présentations que vous n'avez pas écrites.`],2)
+  :q>goal*0.8?t([`${sgnp(q,1)} : exactement ce qu'ils ont acheté, ni plus ni moins.`,`Un trimestre conforme à ${sgnp(q,1)}. Personne ne s'extasie, personne ne s'inquiète.`,`${sgnp(q,1)} : le genre de chiffre qui ne déclenche aucun appel.`,`${sgnp(q,1)}, dans la trajectoire. La lettre s'écrira toute seule.`],2)
+  :q>0?t([`${sgnp(q,1)} : positif, mais sous le mandat. Ils remarquent l'écart.`,`Un trimestre à ${sgnp(q,1)} dont le collatéral a fait une partie, et ils le savent.`,`${sgnp(q,1)} : ni félicitations ni reproches, juste un silence poli.`,`${sgnp(q,1)} : de quoi tenir, pas de quoi lever.`],2)
+  :q>-0.03?t([`${sgnp(q,1)} : une perte modérée, qu'ils acceptent si elle est expliquée.`,`Un trimestre à ${sgnp(q,1)}. Ils ont vu pire — et surtout mieux.`,`${sgnp(q,1)} : la lettre trimestrielle va devoir être bien écrite.`,`${sgnp(q,1)} : le genre de chiffre qu'on oublie s'il ne se répète pas.`],2)
+  :t([`${sgnp(q,1)} : le chiffre a circulé avant la lettre, sans commentaire.`,`Une perte de ${sgnp(q,1)} : ils parlent de « trimestre difficile », ce qui est leur façon de ne pas dire le mot qu'ils pensent.`,`${sgnp(q,1)} : on vous demande si le processus a été respecté. La question n'est jamais innocente.`,`${sgnp(q,1)} : deux investisseurs ont demandé la liste complète des positions.`],2));
+ /* relatif ou contexte */
+ I.push(rel>0.01?t([`Vous battez la médiane des concurrents de ${sgnp(rel,1)} : c'est ce qu'ils regardent en premier.`,`${rank===1?'Premier':rank+'e'} sur cinq : le tableau comparatif joue pour vous.`,`Devant ${best.nm}, ce trimestre. On ne vous en félicitera pas, mais on l'a noté.`],3)
+  :rel>-0.01?t(["La comparaison avec les concurrents ne tranche pas ce trimestre.","Vous faites comme les autres, ce qui pose la question de pourquoi vous payer plus cher.","Dans le peloton : rien à écrire, rien à défendre."],3)
+  :t([`${sgnp(rel,1)} contre la médiane des concurrents, et c'est ce chiffre qu'ils retiennent.`,`${rank}e sur cinq : ${best.nm} a fait mieux, avec moins de risque affiché.`,"Derrière la concurrence. Quelqu'un a demandé si votre processus était « toujours adapté ».",`On vous compare à ${best.boss}, et pas à votre avantage.`],3));
+ if(dd>0.12)I.push(t([`${(dd*100).toFixed(0)} % sous le plus haut : ils calculent le temps du retour et n'aiment pas le résultat.`,`Un repli de ${(dd*100).toFixed(0)} %. Certains parlent de moyenner, la plupart de diversifier.`],4));
+ else if(S.idx>=(S.hwmIdx||1)-1e-9)I.push(t(["Nouveau plus haut : les conversations sur le passé s'arrêtent.","Plus haut historique franchi. L'argent gagné a un autre goût que l'argent récupéré."],4));
+ if(S.commRes)I.push(S.commRes.ok?t(["L'engagement du trimestre est tenu : ils aiment les gens dont la parole est chiffrée.","Promesse tenue, et notée dans un compte rendu de comité."],13)
+   :t(["L'engagement n'est pas tenu. Personne ne relit la lettre à voix haute, ce qui est pire.","Promesse manquée. Ils se souviendront surtout que vous l'aviez prise.","La lettre du trimestre dernier circule, annotée."],13));
+ /* comité : ton */
+ C.push(rc>78?t(["Le dossier a été expédié en dix minutes, et c'est un compliment.","Mireille Cauchemar a signé le rapport sans une annotation.","Le comité vous cite en exemple, ce qui ne vous fera pas que des amis."],7)
+  :rc>58?t(["Validé avec deux remarques de forme.","Rien de bloquant, quelques points à surveiller.","Le comité est satisfait, au sens administratif du terme."],7)
+  :rc>38?t(["Un point intermédiaire est demandé le mois prochain.","Le rapport revient annoté en rouge à trois endroits.","On vous rappelle que les limites ne sont pas des objectifs.","Le comité demande à voir vos calculs, pas vos conclusions."],7)
+  :rc>20?t(["Le comité a saisi le conseil d'un « point d'attention ».","Un plan de réduction du risque vous est réclamé par écrit.","On parle de vous à la troisième personne, en votre présence."],7)
+  :t(["La réduction du mandat a été mise au vote. Il manquait une voix.","Le conseil demande si le gérant est « encore le bon ».","Le dossier est parti au conseil avec une recommandation qu'on ne vous a pas lue."],7));
+ /* risque */
+ C.push(dev<band*0.5?t([`Vol ex-ante ${pct(sp)} : au cœur de la bande, là où le comité aime vous voir.`,`Dimensionnement calibré (${pct(sp)}) : rien à redire.`],8)
+  :dev<band?t([`Vol ex-ante ${pct(sp)} : dans la bande, mais vers le bord. On note la direction.`,`${pct(sp)} sans marge : un mouvement de volatilité et vous sortez.`],8)
+  :sp>S.tgt?t([`${pct(sp)} de vol : hors bande par le haut. « Ce n'est pas un book, c'est une conviction avec des positions autour. »`,`Vol ex-ante ${pct(sp)} : le comité y voit un pari plus gros que le mandat.`],8)
+  :t([`${pct(sp)} de vol pour un mandat à ${pct(S.tgt,0)} : on vous reproche de facturer un mandat que vous ne remplissez pas.`,`Sous la bande à ${pct(sp)} : le comité se demande ce que font vos analystes.`],8));
+ if(inc)C.push(t([`${inc} incident${inc>1?'s':''} ce trimestre, placé${inc>1?'s':''} en tête du rapport, avant la performance.`,"L'incident a été discuté plus longtemps que le book. C'est ainsi que fonctionnent les comités.","Un incident, et c'est tout le dispositif de contrôle qui repasse à l'examen."],11));
+ else if(S.rcD.some(x=>/2,2 σ/.test(x[0])))C.push(t(["La perte dépasse ce que votre propre modèle annonçait : la seule chose qu'un comité ne pardonne pas.","Le modèle est faux, ou le book n'était pas celui du rapport. Les deux hypothèses vous desservent."],10));
  return {inv:I.join(' '),com:C.join(' ')};
 }
 /* ---------- débriefing ---------- */
@@ -2607,12 +2638,14 @@ function screenDebrief(o){
    <div class="num ${cls(o.qTotal)}" style="font-size:18px;margin-top:4px">${bn(o.qTotal*o.q0,2)} sur ${moneyB(o.q0)} d'encours en début de trimestre</div>
    <div class="regime">${R.nm}</div><div class="sub">${R.txt}</div></div>
   ${warn.map(t=>`<div class="flag" style="margin-top:12px">${t}</div>`).join('')}
-  <div class="block"><div class="blockhead"><h2>Dans la presse et sur les réseaux</h2><span class="hint">${S.press.length} titres</span></div>
-   <div class="wire">${S.press.map(h=>`<div class="news"><span class="src">${h.src.toUpperCase()}</span><span>${h.t}</span></div>`).join('')}</div>
+  <div class="block"><div class="wire" style="border-color:var(--line2)">
+   <div class="news" style="border:none;padding:0"><span class="src">${S.press[0].src.toUpperCase()}</span><span>${S.press[0].t}</span></div>
+   <details style="margin-top:8px"><summary>${S.press.length-1} autres titres</summary>
+    ${S.press.slice(1).map(h=>`<div class="news"><span class="src">${h.src.toUpperCase()}</span><span>${h.t}</span></div>`).join('')}</details></div>
   </div>
-  <div class="block"><div class="blockhead"><h2>Ce qu'ils en disent</h2><span class="hint">investisseurs · comité</span></div>
-   <div class="wire"><div class="kicker" style="margin-bottom:4px">LES INVESTISSEURS · ${Math.round(S.lp)}</div><p style="margin:0;color:var(--dim);font-size:14px">${V.inv}</p></div>
-   <div class="wire"><div class="kicker" style="margin-bottom:4px">LE COMITÉ DES RISQUES · ${Math.round(S.rc)}</div><p style="margin:0;color:var(--dim);font-size:14px">${V.com}</p></div>
+  <div class="block"><div class="blockhead"><h2>Ce qu'ils en disent</h2><span class="hint">${Math.round(S.lp)} · ${Math.round(S.rc)}</span></div>
+   <div class="wire"><div class="kicker" style="margin-bottom:4px">LES INVESTISSEURS</div><p style="margin:0;color:var(--dim);font-size:13.5px">${V.inv}</p>
+    <div class="kicker" style="margin:12px 0 4px">LE COMITÉ DES RISQUES</div><p style="margin:0;color:var(--dim);font-size:13.5px">${V.com}</p></div>
   </div>
   <div class="block"><div class="blockhead"><h2>Du brut au net</h2><span class="hint">en % de l'encours</span></div>
    <div class="attr"><span class="an">Positions directionnelles</span><span class="av">${sgn(o.P.grossM/o.q0,2)} · ${M$(o.P.grossM)}</span></div>
@@ -2625,32 +2658,28 @@ function screenDebrief(o){
    <div class="attr"><span class="an">Encours en fin de trimestre</span><span class="av"><b>${moneyB(S.nav)}</b></span></div>
    <details style="margin-top:8px"><summary>Détails</summary><p class="note">Les pourcentages sont exprimés sur l'encours de début de trimestre (${moneyB(o.q0)}). Les dépêches, interactions et incidents ont été comptabilisés au fil du trimestre ; les positions, le collatéral et les frais le sont à la clôture. Les souscriptions et rachats sont des mouvements de capital : ils changent l'encours sans compter dans la performance.</p></details>
   </div>
-  <div class="block"><div class="blockhead"><h2>Effets sur les jauges</h2><span class="hint">investisseurs · comité</span></div>
-   ${tbl([['<b>Total du trimestre</b>',sd1(gT.lp),sd1(gT.rc)],['Niveau après le trimestre',`<b>${Math.round(S.lp)}</b>`,`<b>${Math.round(S.rc)}</b>`]],['','Investisseurs','Comité'])}
-   <details style="margin-top:8px"><summary>Détail cause par cause</summary>
-   ${tbl([...S.gLog.map(g=>[g.why,sd1(g.lp),sd1(g.rc)]),...S.lpD.map(x=>[x[0],sd1(x[1]),'']),...S.rcD.map(x=>[x[0],'',sd1(x[1])])],['Cause','Investisseurs','Comité'])}</details>
+  <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Jauges du trimestre · ${sd1(gT.lp)} inv. ${sd1(gT.rc)} com.</summary>
+   ${tbl([...S.gLog.map(g=>[g.why,sd1(g.lp),sd1(g.rc)]),...S.lpD.map(x=>[x[0],sd1(x[1]),'']),...S.rcD.map(x=>[x[0],'',sd1(x[1])]),['<b>Total</b>',sd1(gT.lp),sd1(gT.rc)]],['Cause','Inv.','Com.'])}</details>
   </div>
   ${S.evLog.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Le film du trimestre · ${S.evLog.length} épisodes</summary>
    ${tbl(S.evLog.map(e=>[e.t,`${sgn(e.pnl,2)} · ${mn(e.m)}`,`${sd1(e.lp)} · ${sd1(e.rc)}`]),['Épisode','Résultat','Inv. · Com.'])}</details></div>`:''}
-  ${S.comm&&S.comm.ret!==null?`<div class="block"><div class="blockhead"><h2>Votre engagement</h2><span class="hint">${S.commRes&&S.commRes.ok?'tenu':'manqué'}</span></div>
+  ${S.comm&&S.comm.ret!==null?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Votre engagement · ${S.commRes&&S.commRes.ok?'<span class="pos-g">tenu</span>':'<span class="neg-g">manqué</span>'}</summary>
    <div class="attr"><span class="an">Rendement promis</span><span class="av ${S.commRes&&S.commRes.okR?'pos-g':'neg-g'}">≥ ${sgn(S.comm.ret,1)} · ${S.commRes&&S.commRes.okR?'atteint':'manqué'}</span></div>
-   <div class="attr"><span class="an">Volatilité réalisée</span><span class="av ${S.commRes&&S.commRes.okV?'pos-g':'neg-g'}">${pct(S.realVol,1)} · promis ${S.comm.vlo>0?pct(S.comm.vlo,1)+'–':'≤ '}${pct(S.comm.vhi,1)}</span></div>
-  </div>`:''}
-  <div class="block"><div class="blockhead"><h2>Vos gains de gérant</h2><span class="hint">le score</span></div>
-   <div class="attr"><span class="an">Commission de gestion</span><span class="av pos-g">+${mm(S.mgrQ.mgmt)}</span></div>
-   <div class="attr"><span class="an">Commission de performance</span><span class="av ${S.mgrQ.perf>0?'pos-g':'dim-g'}">+${mm(S.mgrQ.perf)}</span></div>
-   <div class="attr"><span class="an">Budget d'exploitation (${S.budBp} pb, à votre charge)</span><span class="av neg-g">−${mm(S.mgrQ.ops)}</span></div>
-   <div class="attr"><span class="an">Achat de sources et rumeurs</span><span class="av neg-g">−${mm(S.mgrQ.rum)}</span></div>
-   <div class="attr"><span class="an" style="color:var(--txt)">Net du trimestre · cumul depuis le début</span><span class="av"><b class="${(S.mgrQ.fees-S.mgrQ.ops-S.mgrQ.rum)>=0?'pos-g':'neg-g'}">${mm((S.mgrQ.fees-S.mgrQ.ops-S.mgrQ.rum))}</b> · <b class="gold-g">${score(S.mgrFees-S.mgrCosts)}</b></span></div>
+   <div class="attr"><span class="an">Volatilité réalisée</span><span class="av ${S.commRes&&S.commRes.okV?'pos-g':'neg-g'}">${pct(S.realVol,0)} · promis ${S.comm.vlo>0?pct(S.comm.vlo,0)+'–':'≤ '}${pct(S.comm.vhi,0)}</span></div>
+  </details></div>`:''}
+  <div class="block"><div class="blockhead"><h2>Vos gains</h2><span class="hint">le score</span></div>
+   <div class="attr"><span class="an">Net du trimestre</span><span class="av"><b class="${(S.mgrQ.fees-S.mgrQ.ops-S.mgrQ.rum)>=0?'pos-g':'neg-g'}">${mm(S.mgrQ.fees-S.mgrQ.ops-S.mgrQ.rum)}</b></span></div>
+   <div class="attr"><span class="an" style="color:var(--txt)">Cumul depuis le début</span><span class="av"><b class="gold-g">${score(S.mgrFees-S.mgrCosts)}</b></span></div>
+   <details style="margin-top:6px"><summary>Détail</summary>
+    ${tbl([['Commission de gestion','+'+mm(S.mgrQ.mgmt)],['Commission de performance','+'+mm(S.mgrQ.perf)],[`Budget d'exploitation (${S.budBp} pb)`,'−'+mm(S.mgrQ.ops)],['Achat de sources','−'+mm(S.mgrQ.rum)]])}</details>
   </div>
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">D'où vient la performance · décomposition factorielle</summary>${att}</details></div>
   ${lines.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Par marché · rendement et contribution</summary>${byl}</details></div>`:''}
-  <div class="block"><div class="blockhead"><h2>La concurrence</h2><span class="hint">trimestre · cumul</span></div>
+  <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">La concurrence · ${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur cinq</summary>
    <table class="qt"><thead><tr><th>Fonds</th><th>Trim.</th><th>Cumul</th><th>vs vous</th></tr></thead><tbody>
    ${all.map(a=>{const c=cums.find(z=>z.nm===(a.me?S.fundName:a.nm.split(' · ')[0]));const dv=a.me?0:(c?c.v:0)-(S.idx-1);
      return `<tr class="${a.me?'me':''}"><td>${a.nm}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(c?c.v:0)}">${sgn(c?c.v:0,1)}</td><td class="${a.me?'':cls(-dv)}">${a.me?'—':(dv>=0?'+':'−')+Math.abs(dv*100).toFixed(1)+' pts'}</td></tr>`}).join('')}
-   </tbody></table>
-   <p class="note">La colonne « vs vous » lit l'écart cumulé de chaque concurrent par rapport à votre fonds. Être devant attire l'encours et rassure le comité ; être derrière fait l'inverse — les flux et la jauge investisseurs ci-dessus en portent la trace.</p></div>
+   </tbody></table></details></div>
   <button class="cta" id="nx">${S.over?'Voir le rapport final':(S.q>=QTOT?'Clôturer les deux ans':'Trimestre suivant')}</button></div>`;
  document.getElementById('nx').onclick=()=>{
   if(S.over||S.q>=QTOT){screenFinal();window.scrollTo(0,0);return}
@@ -2663,10 +2692,10 @@ function screenBoard(){
  const av=BOARDEV.filter(e=>!S.usedEv.includes(e.t));
  const ev=pick(av);S.usedEv.push(ev.t);
  app.innerHTML=statusBar(true)+`<div class="evwrap fade">
-  <div class="evcard">${evHead(ev.who,'inv')}<h3>${ev.t}</h3><p>${ev.p}</p></div>
+  <div class="evcard">${evHead(ev.who,'inv')}<h3>${ev.t}</h3><p>${ev.p}</p>${evTimerHTML}</div>
   ${ev.ch.map((c,i)=>`<button class="choice" data-i="${i}"><b>${c.b}</b><span>${c.s}</span></button>`).join('')}</div>`;
- app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
-  const e=ev.ch[+b.dataset.i].e;
+ const pickB=idx=>{clearTimer();
+  const e=ev.ch[idx].e;
   if(e.lp)S.lp=Math.max(0,Math.min(100,S.lp+e.lp));
   if(e.rc)S.rc=Math.max(0,Math.min(100,S.rc+e.rc));
   if(e.aum){S.flows=(S.flows||0)+e.aum*S.nav;S.nav*=(1+e.aum)}
@@ -2677,7 +2706,10 @@ function screenBoard(){
     if(d)  {const t=tcost(d,i);S.totalTC+=t.cost;S.nav-=t.cost}
     S.k[i]=Math.trunc(S.k[i]/2)});
   planQuarter();phaseOpen();
- });
+ };
+ app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>pickB(+b.dataset.i));
+ armTimer(()=>pickB(ev.ch.length-1));
+
 }
 
 /* ---------- rapport final ---------- */
