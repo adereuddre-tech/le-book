@@ -28,7 +28,8 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 body{background:var(--ink);color:var(--txt);font-family:var(--sans);font-size:15px;line-height:1.5}
-#app{max-width:680px;margin:0 auto;padding:0 14px 48px}
+#app{max-width:680px;margin:0 auto;padding:0 14px 100px}
+@supports(padding:max(0px)){#app{padding-bottom:max(100px,calc(88px + env(safe-area-inset-bottom)))}}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 h1,h2,h3{font-weight:500;margin:0}
 button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;cursor:pointer}
@@ -154,7 +155,7 @@ em{font-style:italic;color:var(--txt)}
 .rowinfo>span:last-child{overflow:hidden;text-overflow:ellipsis}
 .rowinfo .fx{letter-spacing:.02em}
 .rowinfo .fx b{font-weight:500}
-#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;background:#1F2C40;border:1px solid var(--gold);color:var(--txt);font-family:var(--mono);font-size:11.5px;line-height:1.45;padding:8px 12px;border-radius:7px;max-width:92vw;width:max-content;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;background:#1F2C40;border:1px solid var(--gold);color:var(--txt);font-family:var(--mono);font-size:11.5px;line-height:1.45;padding:8px 12px;border-radius:7px;max-width:92vw;width:max-content;opacity:0;transition:opacity .2s;pointer-events:none}
 .news.locked>span{color:var(--dim)}
 .buy{font-family:var(--mono);font-size:10.5px;padding:2px 8px;border-radius:4px;border:1px solid var(--gold);color:var(--gold);margin-left:auto}
 .buy:active{background:rgba(217,176,106,.15)}
@@ -259,12 +260,17 @@ summary::marker{color:var(--dimmer)}
 .evcard{border:1px solid var(--gold);border-radius:9px;padding:17px 15px;background:linear-gradient(180deg,rgba(217,176,106,.09),rgba(217,176,106,0));}
 .evcard.bad{border-color:var(--short);background:linear-gradient(180deg,rgba(196,87,111,.10),rgba(196,87,111,0))}
 .evcard .who{font-family:var(--mono);font-size:10.5px;color:var(--gold);letter-spacing:.05em;margin-bottom:7px}
-.evtimer{display:flex;align-items:center;gap:8px;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--dim)}
-.evtimer .tnum{color:var(--warn);font-weight:600;min-width:30px}
-.evtimer .tnum.hot{color:var(--short)}
-.evtimer .tbar{flex:1;height:3px;background:var(--panel2);border-radius:2px;overflow:hidden;min-width:40px}
-.evtimer .tbar i{display:block;height:100%;transition:width .9s linear}
-.evtimer .tlb{font-size:10px;color:var(--dimmer);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evtimer{display:flex;align-items:center;gap:11px;margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.tdial{position:relative;width:44px;height:44px;flex-shrink:0;display:block}
+.tdial svg{width:44px;height:44px;transform:rotate(-90deg);display:block}
+.tdial .ttrack{fill:none;stroke:var(--panel2);stroke-width:3}
+.tdial .tfill{stroke:none;transition:fill-opacity .9s linear}
+.tdial .tarc{fill:none;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .9s linear,stroke .4s}
+.tdial .tnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:15px;font-weight:600}
+.tdial.pulse{animation:tp 1s ease-in-out infinite}
+@keyframes tp{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.evtimer .tlb{font-size:11px;color:var(--dimmer);line-height:1.35}
+@media (prefers-reduced-motion:reduce){.tdial.pulse{animation:none}.tdial .tarc,.tdial .tfill{transition:none}}
 .evcard.bad .who{color:var(--short)}
 .evcard h3{font-family:var(--serif);font-size:26px;line-height:1.12;margin-bottom:8px}
 .evcard p{color:var(--dim);font-size:14px;margin:0}
@@ -1591,7 +1597,19 @@ function armTimer(fn){
  clearTimer();
  const el=document.getElementById('evtimer');if(!el)return;
  const sec=10+Math.floor(Math.random()*11);let t=sec;
- const draw=()=>{el.innerHTML=`<span class="tnum ${t<=5?'hot':''}">${t}s</span><span class="tbar"><i style="width:${Math.max(0,t/sec*100)}%;background:${t<=5?'var(--short)':'var(--warn)'}"></i></span><span class="tlb">sans décision, l'option du bas est retenue</span>`};
+ const R=17,C=2*Math.PI*R;
+ el.innerHTML=`<span class="tdial"><svg viewBox="0 0 44 44">
+   <circle class="tfill" cx="22" cy="22" r="${R}"/>
+   <circle class="ttrack" cx="22" cy="22" r="${R}"/>
+   <circle class="tarc" cx="22" cy="22" r="${R}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="0"/>
+  </svg><b class="tnum">${t}</b></span><span class="tlb">Sans décision de votre part, l'option du bas sera retenue.</span>`;
+ const arc=el.querySelector('.tarc'),fill=el.querySelector('.tfill'),num=el.querySelector('.tnum'),dial=el.querySelector('.tdial');
+ const draw=()=>{const f=Math.max(0,t/sec);
+  arc.setAttribute('stroke-dashoffset',(C*(1-f)).toFixed(1));
+  const col=t<=3?'var(--short)':t<=6?'#D97A54':t<=10?'var(--warn)':'var(--long)';
+  arc.style.stroke=col;num.style.color=col;
+  fill.style.fill=col;fill.style.fillOpacity=(0.10+0.55*(1-f)).toFixed(2);
+  num.textContent=t;dial.classList.toggle('pulse',t<=5)};
  draw();
  TID=setInterval(()=>{t--;if(t<=0){clearTimer();fn()}else draw()},1000);
 }
