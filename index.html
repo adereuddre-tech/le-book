@@ -122,9 +122,10 @@ em{font-style:italic;color:var(--txt)}
 .hval>b{font-family:var(--mono);font-size:15px}
 .hintx{background:none;border:0;color:var(--dimmer);font-size:17px;line-height:1;padding:0 2px;cursor:pointer}
 .hintx:hover{color:var(--txt)}
-.commline{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:3px 0;font-size:12.5px}
-.commline span{color:var(--dim)}
-.commline b{font-family:var(--mono);white-space:nowrap}
+.commrow{padding:5px 0;font-size:12.5px;border-top:1px solid var(--line)}
+.commrow:first-of-type{border-top:0}
+.commrow span{display:block;color:var(--dim);font-size:11.5px;letter-spacing:.02em}
+.commrow b{display:block;margin-top:2px;font-family:var(--mono);font-size:13px}
 .feats{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px;margin-top:12px}
 .feat{border:1px solid var(--line);border-radius:9px;padding:10px 9px;background:var(--panel);text-align:center;opacity:.42}
 .feat.on{opacity:1;border-color:var(--gold);background:linear-gradient(180deg,rgba(217,176,106,.13),rgba(217,176,106,.02))}
@@ -2614,13 +2615,13 @@ function phaseExec(){
 function phaseLive(){
  save('phaseLive');
  phase(`TRIMESTRE ${S.q+1} · TROIS MOIS`,"Le trimestre se déroule",
-  [S.comm&&S.comm.ret!==null?`Vous avez promis <b>${sgn(S.comm.ret,1)}</b> et une vol réalisée ${S.comm.vlo>0?`entre ${pct(S.comm.vlo,1)} et`:'sous'} ${pct(S.comm.vhi,1)}. Tout le monde a noté.`:"Vous n'avez rien promis. Tout le monde a noté aussi.","Vos positions sont en place. Le monde continue sans vous demander votre avis.","Chaque dépêche vous interrompt : vous pourrez couper, renforcer ou tenir — à un coût, et sans certitude sur la suite.",S.incidentDue?"Quelque chose ne va pas au back-office, mais vous ne le savez pas encore.":"Le contrôle des risques n'a rien signalé pour l'instant."],
+  [S.comm&&S.comm.ret!==null?`Vous avez promis <b>au moins ${sgn(S.comm.ret,1)}</b> pour ce trimestre. Tout le monde a noté.`:"Vous n'avez rien promis. Tout le monde a noté aussi.","Vos positions sont en place. Le monde continue sans vous demander votre avis.","Chaque dépêche vous interrompt : vous pourrez couper, renforcer ou tenir — à un coût, et sans certitude sur la suite.",S.incidentDue?"Quelque chose ne va pas au back-office, mais vous ne le savez pas encore.":"Le contrôle des risques n'a rien signalé pour l'instant."],
   "Lancer le trimestre",()=>{S.evIdx=0;S.incidentShown=false;S.midShown=false;stepEvents()});
 }
 function phaseClose(o){
  save('phaseClose',o);
  phase(`TRIMESTRE ${S.q} · CLÔTURE`,"Le trimestre est clos",
-  [`Régime réalisé : <b>${REG[S.regime].nm}</b>.`,`Résultat du trimestre, tout compris : <b class="${cls(o.qTotal)}">${sgn(o.qTotal,2)} · ${bn(o.qTotal*o.q0,2)}</b>, vol réalisée <b>${pct(S.realVol,1)}</b>.`,...(S.commRes?[`Engagement « ${S.comm.nm.toLowerCase()} » : <b class="${S.commRes.ok?'pos-g':'neg-g'}">${S.commRes.ok?'tenu':'manqué'}</b>${S.commRes.ok?'':S.commRes.okR?' — la vol réalisée est sortie de la fourchette':S.commRes.okV?' — le rendement n\'y est pas':' — ni le rendement ni la vol'}.`]:[]),...rivalryLines(),...(S.rankPrev&&S.rankPrev!==rivalRank()?[`Vous ${rivalRank()<S.rankPrev?'<b class="pos-g">gagnez':'<b class="neg-g">perdez'} ${Math.abs(rivalRank()-S.rankPrev)} place${Math.abs(rivalRank()-S.rankPrev)>1?'s':''}</b> au classement.`]:[]),...ctxLines()],
+  [`Régime réalisé : <b>${REG[S.regime].nm}</b>.`,`Résultat du trimestre, tout compris : <b class="${cls(o.qTotal)}">${sgn(o.qTotal,2)} · ${bn(o.qTotal*o.q0,2)}</b>, vol réalisée <b>${pct(S.realVol,1)}</b>.`,...(S.commRes?[`Engagement « ${S.comm.nm.toLowerCase()} » : <b class="${S.commRes.ok?'pos-g':'neg-g'}">${S.commRes.ok?'tenu':'manqué'}</b>.`]:[]),...rivalryLines(),...(S.rankPrev&&S.rankPrev!==rivalRank()?[`Vous ${rivalRank()<S.rankPrev?'<b class="pos-g">gagnez':'<b class="neg-g">perdez'} ${Math.abs(rivalRank()-S.rankPrev)} place${Math.abs(rivalRank()-S.rankPrev)>1?'s':''}</b> au classement.`]:[]),...ctxLines()],
   "Lire le débriefing",()=>{screenDebrief(o)});
 }
 /* ---------- budget ---------- */
@@ -2901,33 +2902,30 @@ function screenComm(){
  const w=weights(S.k),sp=pvol(w),g=VOL().goal/4;
  const spD=Math.max(sp,0.04);
  const opts=[
-  {id:'none',ico:'🤐',nm:"Ne rien communiquer",who:"« On verra à la fin du trimestre »",p:"Pas de lettre, pas de réunion. Les investisseurs et le comité en concluent que vous n'avez rien à dire, ou rien à montrer.",
-   ret:null,vlo:null,vhi:null,now:{lp:-1.5,rc:-1},win:{lp:0,rc:0},lose:{lp:0,rc:0}},
-  {id:'prud',ico:'🪶',nm:"Communication prudente",who:"« Préserver le capital dans un régime incertain »",p:"Vous vous engagez sur un trimestre au moins nul, avec un risque contenu. Facile à tenir, peu récompensé.",
-   ret:0,vlo:0,vhi:1.4*spD,now:{lp:0,rc:0.5},win:{lp:2,rc:2},lose:{lp:-3.5,rc:-2.5}},
-  {id:'conv',ico:'🎯',nm:"Conviction affirmée",who:"« Nous voyons clair sur ce trimestre »",p:"Vous vous engagez sur l'objectif du mandat, avec une volatilité conforme à ce que vous affichez aujourd'hui.",
-   ret:g,vlo:0.6*spD,vhi:1.25*spD,now:{lp:1,rc:0},win:{lp:5,rc:4},lose:{lp:-7,rc:-5}},
-  {id:'fort',ico:'📣',nm:"Forte conviction",who:"« C'est le trimestre de l'année »",p:"Vous annoncez presque le double de l'objectif, et un risque tenu au cordeau. Si ça passe, on vous adore. Sinon, on s'en souviendra.",
-   ret:1.8*g,vlo:0.75*spD,vhi:1.15*spD,now:{lp:2,rc:-1},win:{lp:9,rc:6},lose:{lp:-13,rc:-9}}
+  {id:'none',ico:'🤐',nm:"Silence radio",who:"« On verra à la fin du trimestre »",p:"Pas de lettre, pas de réunion, aucun chiffre avancé. Vous ne risquez pas de manquer une promesse, mais personne ne saura vous créditer d'un bon trimestre annoncé d'avance.",
+   ret:null,win:{lp:-2,rc:-2},lose:{lp:-2,rc:-2}},
+  {id:'prud',ico:'🪶',nm:"Communication prudente",who:"« Préserver le capital dans un régime incertain »",p:`Vous annoncez la moitié de l'objectif trimestriel de votre mandat, soit ${pct(0.5*g,1)}. Une promesse qu'un trimestre médiocre suffit à tenir, et qu'on vous reprochera peu d'avoir faite.`,
+   ret:0.5*g,win:{lp:3,rc:3},lose:{lp:-4,rc:-3}},
+  {id:'fort',ico:'📣',nm:"Conviction forte",who:"« C'est le trimestre de l'année »",p:`Vous annoncez une fois et demie l'objectif de votre mandat, soit ${pct(1.5*g,1)}. Si vous y arrivez, on vous croira sur parole pendant deux ans. Sinon, on s'en souviendra aussi longtemps.`,
+   ret:1.5*g,win:{lp:9,rc:6},lose:{lp:-12,rc:-8}}
  ];
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Ce que vous annoncez</h2><span class="hint">investisseurs · comité</span></div>
-   <p class="note" style="margin-top:0">Le book est passé. Avant l'exécution, vous rencontrez les investisseurs et le comité des risques. Que promettez-vous pour ce trimestre, en rendement <em>tout compris</em> et en <em>écart-type réalisé</em> ? Une promesse tenue rapporte des points ; une promesse manquée en coûte davantage ; ne rien promettre coûte un peu, à coup sûr.</p>
-   <div class="kv"><span>Vol ex-ante du book</span><b>${pct(sp)}</b></div><div class="kv"><span>Objectif trimestriel du mandat</span><b>${pct(g,1)} · ${mm(g*S.nav)}</b></div>
+   <p class="note" style="margin-top:0">Avant l'exécution, vous rencontrez les investisseurs et le comité des risques. Que promettez-vous pour ce trimestre ?</p>
+   <div class="kv"><span>Objectif trimestriel du mandat</span><b>${pct(g,1)} · ${mm(g*S.nav)}</b></div>
   </div>
   ${opts.map((o,i)=>`<div class="cardwrap ${S.commPick===o.id?'sel':''}"><button class="card" data-i="${i}">
    <div class="who">${o.who}</div><b><span class="commico">${o.ico}</span>${o.nm}</b><p>${o.p}</p>
-   ${o.ret===null?`<div class="commline"><span>Aucun engagement</span><b class="neg-g">${sd1(o.now.lp)} inv. · ${sd1(o.now.rc)} com.</b></div>`
-    :`<div class="commline"><span>Vous promettez</span><b>≥ ${sgnp(o.ret,0)} · vol ${o.vlo>0?pct(o.vlo,0)+'–':'≤ '}${pct(o.vhi,0)}</b></div>
-      <div class="commline"><span>Si c'est tenu</span><b class="pos-g">${sd1(o.win.lp)} inv. · ${sd1(o.win.rc)} com.</b></div>
-      <div class="commline"><span>Si c'est manqué</span><b class="neg-g">${sd1(o.lose.lp)} inv. · ${sd1(o.lose.rc)} com.</b></div>`}
+   ${o.ret===null?`<div class="commrow"><span>En fin de trimestre, quoi qu'il arrive</span><b class="neg-g">${sd1(o.lose.lp)} investisseurs · ${sd1(o.lose.rc)} comité</b></div>`
+    :`<div class="commrow"><span>Vous promettez pour ce trimestre</span><b>au moins ${sgnp(o.ret,1)} · ${mm(o.ret*S.nav)}</b></div>
+      <div class="commrow"><span>En fin de trimestre, si c'est tenu</span><b class="pos-g">${sd1(o.win.lp)} investisseurs · ${sd1(o.win.rc)} comité</b></div>
+      <div class="commrow"><span>En fin de trimestre, si c'est manqué</span><b class="neg-g">${sd1(o.lose.lp)} investisseurs · ${sd1(o.lose.rc)} comité</b></div>`}
    </button></div>`).join('')}
-  <p class="note">La vol réalisée du trimestre dépend du régime, du book et des dépêches : elle s'écarte de la vol ex-ante, dans un sens comme dans l'autre.</p>
+  <p class="note">L'annonce ne change rien tout de suite : elle se solde à la fin du trimestre, sur le résultat tout compris, commissions et coûts déduits.</p>
   <button class="cta gold" id="commok" ${S.commPick?'':'disabled'}>${S.commPick?'Annoncer : '+opts.find(o=>o.id===S.commPick).nm.toLowerCase():'Choisissez votre annonce'}</button></div>`;
  app.querySelectorAll('.card[data-i]').forEach(b=>b.onclick=()=>{S.commPick=opts[+b.dataset.i].id;screenComm()});
  document.getElementById('commok').onclick=()=>{
-  const o=opts.find(x=>x.id===S.commPick);S.comm={id:o.id,nm:o.nm,ret:o.ret,vlo:o.vlo,vhi:o.vhi,win:o.win,lose:o.lose};
-  gauge(o.now.lp,o.now.rc,`Communication : ${o.nm.toLowerCase()}`);
+  const o=opts.find(x=>x.id===S.commPick);S.comm={id:o.id,nm:o.nm,ret:o.ret,win:o.win,lose:o.lose};
   S.commPick=null;phaseExec();
  };
 }
@@ -3323,10 +3321,7 @@ function resolveQuarter(){
  const evVar=(S.evLog||[]).reduce((a,e)=>a+(e.pnl||0)**2,0);
  S.realVol=Math.sqrt((pvol(w)*R.sf*(0.85+0.3*rng()))**2+evVar*4);
  S.commRes=null;
- if(S.comm&&S.comm.ret!==null){
-   const okR=qTotal>=S.comm.ret,okV=S.realVol>=S.comm.vlo&&S.realVol<=S.comm.vhi;
-   S.commRes={ok:okR&&okV,okR,okV};
- }
+ if(S.comm&&S.comm.ret!==null)S.commRes={ok:qTotal>=S.comm.ret,okR:qTotal>=S.comm.ret,okV:true};
  S.peak=Math.max(S.peak,S.nav);const dd=1-S.nav/S.peak;S.maxdd=Math.max(S.maxdd,dd);
  if(S.nav>S.hwm)S.hwm=S.nav;
  S.idx*=(1+qTotal);
@@ -3354,7 +3349,8 @@ function resolveQuarter(){
  const lpD=[['Performance des positions sur le trimestre (hors dépêches déjà comptées)',net>0?260*net:200*net]];
  if(qTotal>VOL().goal/4)lpD.push(['Objectif du mandat atteint ce trimestre',5]);else if(qTotal<0)lpD.push(['Trimestre négatif tout compris',-3]);
  if(S.nav>=S.hwm-1e-9)lpD.push(['Nouveau plus haut historique',3]);
- if(S.commRes)lpD.push([`Engagement « ${S.comm.nm.toLowerCase()} » ${S.commRes.ok?'tenu':'manqué'+(S.commRes.okR?' sur la vol':S.commRes.okV?' sur le rendement':' sur les deux')}`,S.commRes.ok?S.comm.win.lp:S.comm.lose.lp]);
+ if(S.commRes)lpD.push([`Engagement « ${S.comm.nm.toLowerCase()} » ${S.commRes.ok?'tenu':'manqué'}`,S.commRes.ok?S.comm.win.lp:S.comm.lose.lp]);
+ else if(S.comm&&S.comm.id==='none')lpD.push(['Aucune communication ce trimestre',S.comm.lose.lp]);
  if(dd>0.10)lpD.push(['Repli au-delà de 10 %',-(dd-0.10)*70]);
  lpD.push(['Écart à la médiane des concurrents',(net-med)*90]);
  if(S.budBp>70)lpD.push(['Facture d\'exploitation jugée lourde',-1.5]);
@@ -3368,6 +3364,7 @@ function resolveQuarter(){
  const band=ARCH().band,dev=Math.abs(sp-S.tgt)/S.tgt;
  const rcD=[];
  if(S.commRes)rcD.push([`Engagement « ${S.comm.nm.toLowerCase()} » ${S.commRes.ok?'tenu':'manqué'}`,S.commRes.ok?S.comm.win.rc:S.comm.lose.rc]);
+ else if(S.comm&&S.comm.id==='none')rcD.push(['Aucune communication ce trimestre',S.comm.lose.rc]);
  if(sp>1e-6&&gross<-2.2*sp/2)rcD.push(['Perte au-delà de 2,2 σ ex-ante',-10]);
  if(S.marginCall)rcD.push([`Appel de marge : ${(S.marginCall.f*100).toFixed(0)} % du book liquidé d'office`,-12]);
  rcD.push([net>0?'La performance achète de la patience':'La perte use la patience',(net>0?Math.min(12,220*net):Math.max(-9,140*net))*VOL().rcPerf]);
@@ -3625,8 +3622,8 @@ function screenDebrief(o){
   ${S.evLog.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Le film du trimestre · ${S.evLog.length} épisodes</summary>
    ${tbl(S.evLog.map(e=>[e.t,`${sgn(e.pnl,2)} · ${mn(e.m)}`,`${sd1(e.lp)} · ${sd1(e.rc)}`]),['Épisode','Résultat','Inv. · Com.'])}</details></div>`:''}
   ${S.comm&&S.comm.ret!==null?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Votre engagement · ${S.commRes&&S.commRes.ok?'<span class="pos-g">tenu</span>':'<span class="neg-g">manqué</span>'}</summary>
-   <div class="attr"><span class="an">Rendement promis</span><span class="av ${S.commRes&&S.commRes.okR?'pos-g':'neg-g'}">≥ ${sgn(S.comm.ret,1)} · ${S.commRes&&S.commRes.okR?'atteint':'manqué'}</span></div>
-   <div class="attr"><span class="an">Volatilité réalisée</span><span class="av ${S.commRes&&S.commRes.okV?'pos-g':'neg-g'}">${pct(S.realVol,0)} · promis ${S.comm.vlo>0?pct(S.comm.vlo,0)+'–':'≤ '}${pct(S.comm.vhi,0)}</span></div>
+   <div class="attr"><span class="an">Rendement promis</span><span class="av">≥ ${sgn(S.comm.ret,1)}</span></div>
+   <div class="attr"><span class="an">Rendement livré</span><span class="av ${S.commRes&&S.commRes.ok?'pos-g':'neg-g'}">${sgn(S.rets[S.rets.length-1]||0,1)} · ${S.commRes&&S.commRes.ok?'tenu':'manqué'}</span></div>
   </details></div>`:''}
   <div class="block"><div class="blockhead"><h2>Vos gains</h2><span class="hint">le score</span></div>
    <div class="attr"><span class="an">Net du trimestre</span><span class="av">${inU(S.mgrQ.fees-S.mgrQ.ops-S.mgrQ.rum,UG)}</span></div>
