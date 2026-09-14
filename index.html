@@ -294,15 +294,16 @@ summary::marker{color:var(--dimmer)}
  padding:8px 12px 8px 8px;max-width:min(340px,calc(100vw - 24px));box-shadow:0 6px 22px rgba(0,0,0,.45);
  font-family:var(--mono);font-size:11px;color:var(--dim);animation:fade .25s ease}
 .evtimer.on{display:flex}
-.tdial{position:relative;width:44px;height:44px;flex-shrink:0;display:block}
-.tdial svg{width:44px;height:44px;transform:rotate(-90deg);display:block}
-.tdial .ttrack{fill:none;stroke:var(--panel2);stroke-width:3}
+.tdial{position:relative;width:76px;height:76px;flex-shrink:0;display:block}
+.tdial svg{width:76px;height:76px;transform:rotate(-90deg);display:block}
+.tdial .ttrack{fill:none;stroke:var(--panel2);stroke-width:6}
 .tdial .tfill{stroke:none;transition:fill-opacity .9s linear}
-.tdial .tarc{fill:none;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .9s linear,stroke .4s}
-.tdial .tnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:15px;font-weight:600}
+.tdial .tarc{fill:none;stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .9s linear,stroke .4s}
+.tdial .tnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:27px;font-weight:700;letter-spacing:-.02em}
 .tdial.pulse{animation:tp 1s ease-in-out infinite}
-@keyframes tp{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
-.evtimer .tlb{font-size:10.5px;color:var(--dimmer);line-height:1.3}
+@keyframes tp{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.evtimer .tlb{font-size:12.5px;color:var(--dim);line-height:1.35;font-weight:500}
+.evtimer{border:1.5px solid var(--gold,#c9a86a);transition:border-color .4s,box-shadow .9s linear}
 @media (prefers-reduced-motion:reduce){.tdial.pulse{animation:none}.tdial .tarc,.tdial .tfill{transition:none}}
 .evcard.bad .who{color:var(--short)}
 .evcard h3{font-family:var(--serif);font-size:26px;line-height:1.12;margin-bottom:8px}
@@ -2443,12 +2444,19 @@ function statusBar(done){
   </div>${ticker()}</div>`;
 }
 const sd1=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${Math.round(Math.abs(x))}</b>`;
+/* format unique des effets de jauge dans tout le jeu */
+function gz(lp,rc,opt){
+ const p=[];
+ if(Math.abs(lp||0)>=0.05||opt==='always')p.push(`<span class="${cls(lp)}">investisseurs ${sd1(lp)}</span>`);
+ if(Math.abs(rc||0)>=0.05||opt==='always')p.push(`<span class="${cls(rc)}">comité ${sd1(rc)}</span>`);
+ return p.join(' • ');
+}
 function gauge(dlp,drc,why){
  refreshGain();
  dlp=Math.max(-15,Math.min(15,dlp||0));drc=Math.max(-15,Math.min(15,drc||0));
  S.lp=Math.max(0,Math.min(100,S.lp+dlp));S.rc=Math.max(0,Math.min(100,S.rc+drc));
  if(Math.abs(dlp)>=0.05||Math.abs(drc)>=0.05){S.gLog.push({why,lp:dlp,rc:drc});
-  toast(`<span class="${cls(dlp)}">Investisseurs ${sd1(dlp)}</span> · <span class="${cls(drc)}">Comité ${sd1(drc)}</span><br><span style="color:var(--dim)">${why}</span>`)}
+  toast(`${gz(dlp,drc)}<br><span style="color:var(--dim)">${why}</span>`)}
  refreshStatus();return {lp:dlp,rc:drc};
 }
 function pnlGauge(pnl,why){
@@ -2521,20 +2529,21 @@ function armTimer(fn){
  let el=document.getElementById('evtimer');
  if(!el){el=document.createElement('div');el.id='evtimer';el.className='evtimer';document.body.appendChild(el)}
  el.classList.add('on');
- const sec=10+Math.floor(Math.random()*11);let t=sec;
- const R=17,C=2*Math.PI*R;
- el.innerHTML=`<span class="tdial"><svg viewBox="0 0 44 44">
-   <circle class="tfill" cx="22" cy="22" r="${R}"/>
-   <circle class="ttrack" cx="22" cy="22" r="${R}"/>
-   <circle class="tarc" cx="22" cy="22" r="${R}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="0"/>
+ const sec=15+Math.floor(Math.random()*16);let t=sec;   /* tirage uniforme 15–30 s */
+ const R=30,C=2*Math.PI*R;
+ el.innerHTML=`<span class="tdial"><svg viewBox="0 0 76 76">
+   <circle class="tfill" cx="38" cy="38" r="${R}"/>
+   <circle class="ttrack" cx="38" cy="38" r="${R}"/>
+   <circle class="tarc" cx="38" cy="38" r="${R}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="0"/>
   </svg><b class="tnum">${t}</b></span><span class="tlb">Sans décision de votre part, l'option du bas sera retenue.</span>`;
  const arc=el.querySelector('.tarc'),fill=el.querySelector('.tfill'),num=el.querySelector('.tnum'),dial=el.querySelector('.tdial');
  const draw=()=>{const f=Math.max(0,t/sec);
   arc.setAttribute('stroke-dashoffset',(C*(1-f)).toFixed(1));
-  const col=t<=3?'var(--short)':t<=6?'#D97A54':t<=10?'var(--warn)':'var(--long)';
-  arc.style.stroke=col;num.style.color=col;
-  fill.style.fill=col;fill.style.fillOpacity=(0.10+0.55*(1-f)).toFixed(2);
-  num.textContent=t;dial.classList.toggle('pulse',t<=5)};
+  const col=t<=4?'var(--short)':t<=8?'#D97A54':t<=15?'var(--warn)':'var(--long)';
+  arc.style.stroke=col;num.style.color=col;el.style.borderColor=col;
+  el.style.boxShadow=`0 0 ${(6+18*(1-f)).toFixed(0)}px ${t<=8?'rgba(196,87,111,.45)':'rgba(201,168,106,.28)'}`;
+  fill.style.fill=col;fill.style.fillOpacity=(0.12+0.55*(1-f)).toFixed(2);
+  num.textContent=t;dial.classList.toggle('pulse',t<=8)};
  draw();
  TID=setInterval(()=>{t--;if(t<=0){clearTimer();if(S)S.fl.cool=1;award('cool');fn()}else draw()},1000);
 }
@@ -3245,16 +3254,24 @@ function screenMacroEvent(ev){
    <div class="shock">${chips}</div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px">
    <div class="kv nowrp"><span>Effet immédiat</span><b>${sgn(imm,2)} · ${mn(imm*navB)}</b></div>
-   <div class="kv nowrp"><span>Jauges</span><b>${sd1(g.lp)} inv. · ${sd1(g.rc)} com.</b></div>
+   <div class="kv nowrp"><span>Effet sur les jauges</span><b>${gz(g.lp,g.rc,'always')}</b></div>
   </div>
   <div class="block"><div class="blockhead"><h2>Ce que rapporte chaque option</h2><span class="hint">suite du mouvement</span></div>
    ${mat}
    <details style="margin-top:6px"><summary>Comment lire ce tableau</summary><p class="note">La moitié du choc est déjà dans les prix. Le reste dépend de trois scénarios dont les probabilités sont affichées ; les montants incluent les coûts d'ajustement (fourchette élargie ×1,35) et supposent que vous êtes en position à temps — votre profil capte ${(prof.capture*100).toFixed(0)} % de l'ajustement, c'est déjà déduit. « Moy. » est l'espérance sur les trois scénarios.</p></details>
-   <details style="margin-top:6px"><summary>Détail par marché</summary>${tbl(touched.map(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ;
-     return [INSTR[i].sym,sgn(m,1),S.k[i]===0?'plat':`${S.k[i]>0?'+':''}${S.k[i]} · ${moneyB(Math.abs(notionalBn(S.k[i],i)))}`,mn(w[i]*0.5*m*navB)]}),['Marché','Mouvement total','Position','Déjà encaissé'])}</details>
+   <details style="margin-top:6px"><summary>Le détail, marché par marché</summary>
+    <p class="note" style="margin:6px 0 4px">1 · Effet immédiat — la moitié du choc déjà passée dans les prix, appliquée à votre position actuelle.</p>
+    ${tbl(touched.map(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ;
+     return [INSTR[i].sym,S.k[i]===0?'plat':`${S.k[i]>0?'+':''}${S.k[i]} · ${moneyB(Math.abs(notionalBn(S.k[i],i)))}`,sgn(0.5*m,1),mn(w[i]*0.5*m*navB)]}),['Marché','Position','Choc passé','Encaissé'])}
+    <p class="note" style="margin:10px 0 4px">2 · La suite du mouvement — l'autre moitié, si le mouvement continue jusqu'au bout.</p>
+    ${tbl(touched.map(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ;
+     return [INSTR[i].sym,sgn(0.5*m,1),mn(w[i]*0.5*m*navB),sgn(m,1)]}),['Marché','Reste à venir','Si ça continue','Mouvement total'])}
+    <p class="note" style="margin:10px 0 4px">3 · Total si le mouvement va jusqu'au bout, position inchangée.</p>
+    ${tbl([['<b>Tous marchés</b>',`<b>${sgn(imm,1)}</b>`,`<b>${mn(imm*navB)}</b>`,`<b>${sgn(2*imm,1)} · ${mn(2*imm*navB)}</b>`]],['','Déjà acquis','En montant','Total potentiel'])}
+   </details>
   </div>
   ${opts.map((o,i)=>{const gg=o.a==='none'?{lp:0,rc:0}:(o.a==='cut'?{lp:-1,rc:2}:{lp:1,rc:-3});
-   return `<button class="choice" data-i="${i}"><b>${o.b}</b><span>${o.s}${o.cost>0?` · coût ${mm(o.cost)}`:''}${o.rc?` · dérogation comité ${o.rc}`:''}${(gg.lp||gg.rc)?` · jauges ${sd1(gg.lp)} inv. ${sd1(gg.rc)} com.`:''}</span></button>`}).join('')}
+   return `<button class="choice" data-i="${i}"><b>${o.b}</b><span>${o.s}${o.cost>0?` · coût ${mm(o.cost)}`:''}${o.rc?` · dérogation comité ${o.rc}`:''}${(gg.lp||gg.rc)?` · ${gz(gg.lp,gg.rc)} inv. ${sd1(gg.rc)} com.`:''}</span></button>`}).join('')}
  </div>`;
  const go=i=>{clearTimer();const o=opts[i];
   if(o.rc)gauge(0,o.rc,`Dérogation au modèle — ${ev.t}`);
@@ -3827,15 +3844,15 @@ function screenDebrief(o){
    <div class="attr"><span class="an">Coûts de transaction</span><span class="av">${sgn(o.P.tcM/o.q0,2)} · ${inU(o.P.tcM,UQ)}</span></div>
    <div class="attr"><span class="an">Frais de gestion et de performance</span><span class="av">${sgn(o.P.feeM/o.q0,2)} · ${inU(o.P.feeM,UQ)}</span></div>
    <div class="attr"><span class="an" style="color:var(--txt)">Résultat du trimestre</span><span class="av">${sgn(o.qTotal,2)} · ${inU(o.P.perfM,UQ)}</span></div>
-   ${Math.abs(o.P.flowM)>1e-9?`<div class="attr"><span class="an">Souscriptions et rachats</span><span class="av">${inU(o.P.flowM,UQ)}</span></div>`:''}
+   <div class="attr"><span class="an">Souscriptions et rachats</span><span class="av ${Math.abs(o.P.flowM)>1e-9?cls(o.P.flowM):''}">${Math.abs(o.P.flowM)>1e-9?inU(o.P.flowM,UQ):'aucun mouvement'}</span></div>
    <div class="attr"><span class="an">Encours en fin de trimestre</span><span class="av"><b>${moneyB(S.nav)}</b></span></div>
    <details style="margin-top:8px"><summary>Détails</summary><p class="note">Les pourcentages sont exprimés sur l'encours de début de trimestre (${moneyB(o.q0)}). Les dépêches, interactions et incidents ont été comptabilisés au fil du trimestre ; les positions, le collatéral et les frais le sont à la clôture. Les souscriptions et rachats sont des mouvements de capital : ils changent l'encours sans compter dans la performance.</p></details>
   </div>
-  <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Jauges du trimestre · ${sd1(gT.lp)} inv. ${sd1(gT.rc)} com.</summary>
+  <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Jauges du trimestre · ${gz(gT.lp,gT.rc,'always')}</summary>
    ${tbl([...S.gLog.map(g=>[g.why,sd1(g.lp),sd1(g.rc)]),...S.lpD.map(x=>[x[0],sd1(x[1]),'']),...S.rcD.map(x=>[x[0],'',sd1(x[1])]),['<b>Total</b>',sd1(gT.lp),sd1(gT.rc)]],['Cause','Inv.','Com.'])}</details>
   </div>
   ${S.evLog.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Le film du trimestre · ${S.evLog.length} épisodes</summary>
-   ${tbl(S.evLog.map(e=>[e.t,`${sgn(e.pnl,2)} · ${mn(e.m)}`,`${sd1(e.lp)} · ${sd1(e.rc)}`]),['Épisode','Résultat','Inv. · Com.'])}</details></div>`:''}
+   ${tbl(S.evLog.map(e=>[e.t,`${sgn(e.pnl,1)} · ${mn(e.m)}`,gz(e.lp,e.rc,'always')]),['Épisode','Résultat','Effet sur les jauges'])}</details></div>`:''}
   ${S.comm&&S.comm.ret!==null?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Votre engagement · ${S.commRes&&S.commRes.ok?'<span class="pos-g">tenu</span>':'<span class="neg-g">manqué</span>'}</summary>
    <div class="attr"><span class="an">Rendement promis</span><span class="av">≥ ${sgn(S.comm.ret,1)}</span></div>
    <div class="attr"><span class="an">Rendement livré</span><span class="av ${S.commRes&&S.commRes.ok?'pos-g':'neg-g'}">${sgn(S.rets[S.rets.length-1]||0,1)} · ${S.commRes&&S.commRes.ok?'tenu':'manqué'}</span></div>
