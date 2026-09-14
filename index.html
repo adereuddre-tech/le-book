@@ -111,6 +111,15 @@ em{font-style:italic;color:var(--txt)}
 .tcvb{display:flex;gap:4px;align-items:center;width:100%;padding:0}
 .tcvb .more{margin-left:auto;font-size:11px;color:var(--dimmer)}
 /* palmarès */
+.hrow{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel);margin-top:8px}
+.hrow.top{border-color:var(--gold);background:linear-gradient(180deg,rgba(217,176,106,.10),rgba(217,176,106,.02))}
+.hrk{font-family:var(--mono);font-size:15px;color:var(--dimmer);min-width:18px;text-align:center;flex-shrink:0}
+.hrow.top .hrk{color:var(--gold)}
+.hmid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.hmid>b{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hsub{font-size:10.5px;color:var(--dimmer);line-height:1.25}
+.hval{text-align:right;flex-shrink:0;display:flex;flex-direction:column;gap:2px}
+.hval>b{font-family:var(--mono);font-size:15px}
 .feats{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px;margin-top:12px}
 .feat{border:1px solid var(--line);border-radius:9px;padding:10px 9px;background:var(--panel);text-align:center;opacity:.42}
 .feat.on{opacity:1;border-color:var(--gold);background:linear-gradient(180deg,rgba(217,176,106,.13),rgba(217,176,106,.02))}
@@ -247,8 +256,9 @@ summary::marker{color:var(--dimmer)}
 .crowd{display:inline-block;width:5px;height:5px;border-radius:50%;margin-left:5px;vertical-align:middle}
 
 /* risque */
-.kv{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:4px 0;color:var(--dim);white-space:nowrap}
-.kv>span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:4px 0;color:var(--dim)}
+.kv>span:first-child{min-width:0;line-height:1.3}
+.kv b{white-space:nowrap;text-align:right}
 .kv b{font-family:var(--mono);font-weight:500;color:var(--txt)}
 .kv.nowrp{white-space:nowrap;gap:8px}
 .kv.nowrp b{flex-shrink:0}
@@ -299,9 +309,9 @@ summary::marker{color:var(--dimmer)}
 .pnlhead .big{font-family:var(--mono);font-size:42px;line-height:1;font-weight:500}
 .pnlhead .sub{color:var(--dim);font-size:13.5px;margin-top:7px;max-width:52ch}
 .regime{font-family:var(--serif);font-size:25px;margin:2px 0 0}
-.attr{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap}
-.attr .an{color:var(--dim);overflow:hidden;text-overflow:ellipsis;min-width:0}
-.attr .av{flex-shrink:0}
+.attr{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+.attr .an{color:var(--dim);min-width:0;line-height:1.3}
+.attr .av{flex-shrink:0;white-space:nowrap;text-align:right}
 .attr .av{font-family:var(--mono);font-size:13px}
 .bar2{position:relative;height:5px;background:var(--panel2);border-radius:3px;overflow:hidden}
 .bar2 .mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line2)}
@@ -312,9 +322,11 @@ summary::marker{color:var(--dimmer)}
 table.qt{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px;margin-top:8px}
 table.qt th{text-align:right;color:var(--dimmer);font-weight:500;padding:5px 0;border-bottom:1px solid var(--line);font-size:10.5px}
 table.qt th:first-child,table.qt td:first-child{text-align:left}
-table.qt td{text-align:right;padding:5px 0;border-bottom:1px solid var(--line);color:var(--dim);white-space:nowrap}
-table.qt td:first-child{overflow:hidden;text-overflow:ellipsis;max-width:0}
-table.qt{table-layout:auto}
+table.qt{table-layout:auto;width:100%}
+table.qt td{text-align:right;padding:6px 0 6px 8px;border-bottom:1px solid var(--line);color:var(--dim);white-space:nowrap;vertical-align:top}
+table.qt td:first-child{text-align:left;white-space:normal;line-height:1.3;padding-left:0;padding-right:10px;word-break:normal;overflow-wrap:anywhere}
+table.qt th{white-space:nowrap;vertical-align:bottom;padding-left:8px}
+table.qt th:first-child{padding-left:0}
 table.qt tr.me td{color:var(--txt);background:rgba(217,176,106,.07)}
 table.commt{margin-top:8px}
 table.commt{table-layout:fixed;width:100%}
@@ -325,7 +337,7 @@ table.commt td[colspan="2"],table.commt td[colspan="3"]{text-align:left}
 table.commt b{font-weight:500}
 table.payt{table-layout:fixed;width:100%}
 table.payt td,table.payt th{font-size:10.5px;padding:5px 1px;text-align:right;white-space:nowrap}
-table.payt th:first-child,table.payt td:first-child{text-align:left;width:26%;overflow:hidden;text-overflow:ellipsis}
+table.payt th:first-child,table.payt td:first-child{text-align:left;width:27%;white-space:normal;line-height:1.2}
 table.payt th{line-height:1.2;font-size:9.5px}
 
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:13px}
@@ -588,16 +600,16 @@ function VOL(){return VOLP.find(v=>v.id===S.vol)}
 const BUDGET=[
  {id:'exec',ico:'💹',nm:"Desk de trading",
   d:"Nombre de traders, qualité des algorithmes, accès aux blocs. Agit directement sur ce que coûte chaque changement de position.",
-  lv:[{nm:"Réduit",bp:2,ef:"coûts ×1,35"},{nm:"Standard",bp:7,ef:"coûts ×1,00"},{nm:"Renforcé",bp:16,ef:"coûts ×0,66 · chance de recruter une star"}]},
+  lv:[{nm:"Réduit",bp:4,ef:"coûts ×1,35"},{nm:"Standard",bp:15,ef:"coûts ×1,00"},{nm:"Renforcé",bp:34,ef:"coûts ×0,66 · chance de recruter une star"}]},
  {id:'risk',ico:'🛡️',nm:"Contrôle des risques",
   d:"Surveillance pré-trade, réconciliation, contrôle des communications. Agit sur la probabilité qu'un incident vienne saccager un trimestre.",
-  lv:[{nm:"Réduit",bp:1,ef:"incidents ×2,0"},{nm:"Standard",bp:6,ef:"incidents ×1,0"},{nm:"Renforcé",bp:15,ef:"incidents ×0,35 · gravité ÷2"}]},
+  lv:[{nm:"Réduit",bp:2,ef:"incidents ×2,0"},{nm:"Standard",bp:13,ef:"incidents ×1,0"},{nm:"Renforcé",bp:32,ef:"incidents ×0,35 · gravité ÷2"}]},
  {id:'res',ico:'🔭',nm:"Recherche macro du desk",
   d:"Économistes, réseau de terrain, achat de données alternatives. Agit sur le nombre d'indicateurs reçus, leur précision, et l'accès aux rumeurs.",
-  lv:[{nm:"Réduit",bp:1,ef:"6 rumeurs · fiabilité −8 pts · peu de pré-annonces"},{nm:"Standard",bp:6,ef:"8 rumeurs · signaux marché corrects · pré-annonces fréquentes"},{nm:"Renforcé",bp:15,ef:"11 rumeurs · fiabilité +8 pts · signaux précis · pré-annonces quasi systématiques"}]},
+  lv:[{nm:"Réduit",bp:2,ef:"6 rumeurs · fiabilité −8 pts · peu de pré-annonces"},{nm:"Standard",bp:13,ef:"8 rumeurs · signaux marché corrects · pré-annonces fréquentes"},{nm:"Renforcé",bp:32,ef:"11 rumeurs · fiabilité +8 pts · signaux précis · pré-annonces quasi systématiques"}]},
  {id:'ret',ico:'🤝',nm:"Rétention des équipes",
   d:"Bonus garantis, parts de carried, clauses de non-concurrence. Agit sur la probabilité que les concurrents vous prennent vos gérants.",
-  lv:[{nm:"Réduit",bp:0,ef:"débauchage ×2,0"},{nm:"Standard",bp:5,ef:"débauchage ×1,0"},{nm:"Renforcé",bp:13,ef:"débauchage ×0,3 · vous pouvez recruter"}]}
+  lv:[{nm:"Réduit",bp:0,ef:"débauchage ×2,0"},{nm:"Standard",bp:10,ef:"débauchage ×1,0"},{nm:"Renforcé",bp:28,ef:"débauchage ×0,3 · vous pouvez recruter"}]}
 ];
 const EXECM=[1.35,1.00,0.66],RISKM=[2.0,1.0,0.35],RISKS=[1.0,1.0,0.5],RETM=[2.0,1.0,0.30];
 const RESN=[6,8,11],RESREL=[-0.08,0,0.08],RESTCV=[0.9,0.6,0.35],RESR=[0.30,0.60,0.95];
@@ -1361,11 +1373,11 @@ function genRumors(){
    used.add(r.t);out.push({...r,truth:wantTrue,p});
  }
  for(let i=out.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[out[i],out[j]]=[out[j],out[i]]}
- const PM={faible:1.0,moyenne:2.5,forte:6.0},RM=[1.3,1.0,0.6][S.bud.res];
+ const PM={faible:1.4,moyenne:3.5,forte:8.0},RM=[1.3,1.0,0.6][S.bud.res];
  out.forEach(r=>{
    r.bought=false;
    /* prix en M$ = pb de l'encours ; un encours dix fois plus gros paie dix fois plus */
-   const pb=(r.ev?4.0:PM[r.rel])*RM;
+   const pb=(r.ev?5.5:PM[r.rel])*RM;
    r.price=+(pb*0.1*S.nav).toFixed(S.nav<0.3?3:S.nav<3?2:1);
    let fk=-1,fv=0;r.v.forEach((z,k)=>{if(Math.abs(z)>fv){fv=Math.abs(z);fk=k}});r.fk=fk;
    r.teaser=(r.t&&r.t.length>44)?r.t.slice(0,44).replace(/\s+\S*$/,'')+'…':(r.t||'');
@@ -1599,11 +1611,16 @@ function riskGauge(why,bonus){
  const txt=dev<band?`vol ex-ante ${pct(sp)} dans la bande`:`vol ex-ante ${pct(sp)} hors de la bande ±${(band*100).toFixed(0)} %`;
  return gauge(0,d,`${why} — ${txt}${fmax>0.75?', book mono-facteur':''}${sp<0.02?', book vide':''}`);
 }
-function resultCard(kick,title,paras,rows,btn,next){
+function resultCard(kick,title,paras,rows,btn,next,extra){
  clearTimer();
+ const head=paras.length?paras[0]:'',rest=paras.slice(1).filter(Boolean);
+ const key=(extra&&extra.key)||[];
  app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="kicker">${kick}</div>
-  <div class="rescard"><h3>${title}</h3>${paras.map(t=>`<p>${t}</p>`).join('')}
-  ${rows.length?tbl(rows):''}</div>
+  <div class="rescard"><h3>${title}</h3><p>${head}</p>
+  ${key.length?tbl(key):''}
+  ${(rest.length||rows.length)?`<details style="margin-top:10px"><summary>Le détail</summary>
+    ${rest.map(t=>`<p style="margin-top:8px">${t}</p>`).join('')}
+    ${rows.length?tbl(rows):''}</details>`:''}</div>
   <button class="cta" id="rgo">${btn}</button></div>`;
  document.getElementById('rgo').onclick=()=>{next();window.scrollTo(0,0)};window.scrollTo(0,0);
 }
@@ -1774,9 +1791,11 @@ function screenHall(back){
  app.innerHTML=`<div class="fade" style="padding-top:28px">
   <div class="kicker">PALMARÈS</div><h1 style="font-family:var(--serif);font-size:clamp(32px,10vw,50px);line-height:1;margin:10px 0 0">Vos meilleures années</h1>
   <p class="prose" style="margin-top:12px">Vos parties sont conservées dans ce navigateur. Le classement se fait sur les commissions encaissées : c'est le score du jeu.</p>
-  ${h.length?`<table class="qt" style="margin-top:14px"><thead><tr><th>Fonds</th><th>Gains</th><th>Ann.</th><th>Fin</th></tr></thead><tbody>
-   ${h.slice(0,10).map((r,i)=>`<tr class="${i===0?'me':''}"><td>${i+1}. ${r.f}<br><span style="color:var(--dimmer);font-size:10px">${SZ[r.s]||''} · ${PR[r.p]||''} · ${r.q} trim.</span></td><td class="gold-g">${score(r.g)}</td><td class="${cls(r.c)}">${sgnp(r.c,0)}</td><td style="font-size:10px;color:var(--dim)">${r.v}</td></tr>`).join('')}
-   </tbody></table>`:`<p class="note">Aucune partie terminée pour l'instant.</p>`}
+  ${h.length?h.slice(0,10).map((r,i)=>`<div class="hrow ${i===0?'top':''}">
+    <span class="hrk">${i+1}</span>
+    <span class="hmid"><b>${r.f}</b><span class="hsub">${SZ[r.s]||''} · ${PR[r.p]||''} · ${r.q} trimestre${r.q>1?'s':''} · ${r.v.toLowerCase()}</span></span>
+    <span class="hval"><b class="gold-g">${score(r.g)}</b><span class="hsub ${cls(r.c)}">${sgnp(r.c,0)} par an</span></span>
+   </div>`).join(''):`<p class="note">Aucune partie terminée pour l'instant.</p>`}
   <div class="blockhead" style="margin-top:24px"><h2>Hauts faits</h2><span class="hint">${u.length} / ${FEATS.length}</span></div>
   <div class="feats">${FEATS.map(f=>`<div class="feat ${u.includes(f.id)?'on':''}"><span class="fic">${f.ic}</span><b>${f.nm}</b><span class="fd">${f.d}</span></div>`).join('')}</div>
   <button class="cta" id="hback">Retour</button></div>`;
@@ -2317,14 +2336,16 @@ function resolveEvent(ev,touched,a,imm,navB){
    :a==='cut'?`Vous coupez : ${trades.join(' ; ')}. Le desk exécute dans une liquidité dégradée (×1,35).${freeTxt}`
    :a==='fade'?`Vous ouvrez à contre-sens : ${trades.join(' ; ')}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${freeTxt}`
    :`Vous renforcez : ${trades.join(' ; ')}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${freeTxt}`;
+ const keyRows=[['<b>Bilan de la dépêche</b>',`${sgn(total,2)} · ${inU(total*navB,UE)}`],
+  ['Investisseurs · comité',`${sd1((ev0?ev0.lp:0)+g.lp+gr.lp)} · ${sd1((ev0?ev0.rc:0)+g.rc+gr.rc)}`]];
  resultCard(`DÉPÊCHE · ${ev.t.toUpperCase()}`,['Le mouvement a continué','Le mouvement s\'est arrêté','Le mouvement s\'est retourné'][si],
   [`<b>${scName}</b> ${flav} ${what}`,...flowLines,`La suite du mouvement, marché par marché :`,tbl(perM.map(r=>[r[0],r[1],r[2],inU(r[3]*S.nav,UE)]),['Marché','Position','Mouvement','Sur le book']),`Votre book capte au total <em class="${cls(resid)}">${sgn(resid,2)}</em> sur la suite du mouvement.`],
   [['Effet immédiat',`${sgn(imm,2)} · ${inU(imm*navB,UE)}`],
    ['Suite du mouvement',`${sgn(resid,2)} · ${inU(resid*navR,UE)}`],
    ['Coûts d\'ajustement',cost>1e-9?inU(-cost,UE):'<b class="dim-g">aucun</b>'],
    ['<b>Bilan de la dépêche</b>',`${sgn(total,2)} · ${inU(total*navB,UE)}`],
-   ['Jauges',`<span class="${cls((ev0?ev0.lp:0)+g.lp)}">${sd1((ev0?ev0.lp:0)+g.lp+gr.lp)}</span> · <span class="${cls((ev0?ev0.rc:0)+g.rc+gr.rc)}">${sd1((ev0?ev0.rc:0)+g.rc+gr.rc)}</span>`]],
-  "Continuer le trimestre",stepEvents);
+  ],
+  "Continuer le trimestre",stepEvents,{key:keyRows});
 }
 function applyEventChoice(ev,touched,a){
  if(a==='none')return;
@@ -2376,7 +2397,7 @@ function screenRivalEvent(e){
   S.evLog.push({t:t1,pnl:total,m:total*navB,lp:g0.lp+g.lp+g2.lp,rc:g0.rc+g.rc+g2.rc});
   resultCard(`RIVALITÉ · ${rv.nm.toUpperCase()}`,total>=0?"La presse change de camp":"La presse en remet une couche",
    [`${x.sym} passe à ${target>0?'+':''}${target} (${mm(cost)} de coûts). La suite du mouvement : ${sgn(resid,1)} sur ${x.nm.toLowerCase()}.`,total>=0?`« ${S.fundName} ${a==='follow'?'recolle':'prend '+rv.boss+' à contre-pied'} », titre ${pick(PRESS_SRC)}.`:`« ${S.fundName} ${a==='follow'?'arrive après la bataille':'s\'entête contre '+rv.boss} », titre ${pick(PRESS_SRC)}.`],
-   [['Résultat',`<span class="${cls(total)}">${sgn(total,2)} · ${mn(total*navB)}</span>`],['Jauges',`<span class="${cls(g0.lp+g.lp+g2.lp)}">${sd1(g0.lp+g.lp+g2.lp)}</span> · <span class="${cls(g0.rc+g.rc+g2.rc)}">${sd1(g0.rc+g.rc+g2.rc)}</span>`]],"Continuer le trimestre",stepEvents);
+   [],"Continuer le trimestre",stepEvents,{key:[['<b>Résultat</b>',`<span class="${cls(total)}">${sgn(total,2)} · ${mn(total*navB)}</span>`],['Investisseurs · comité',`<span class="${cls(g0.lp+g.lp+g2.lp)}">${sd1(g0.lp+g.lp+g2.lp)}</span> · <span class="${cls(g0.rc+g.rc+g2.rc)}">${sd1(g0.rc+g.rc+g2.rc)}</span>`]]});
  };
  app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>pickR(b.dataset.a));
  armTimer(()=>pickR('none'));
@@ -2433,8 +2454,8 @@ function screenTraderEvent(ev,next){
   const g2=(e.rc||e.lp)?gauge(e.lp||0,e.rc||0,`${ev.who.split(' ·')[0]} — ${ch.b}`):{lp:0,rc:0};
   S.evLog.push({t:ev.t,pnl:total,m:total*navB,lp:g.lp+g2.lp,rc:g.rc+g2.rc});
   resultCard(`LE DESK · ${ev.who.split(' ·')[0].toUpperCase()}`,ch.b,[ev.after||ch.s,...msg],
-   [['Résultat',`<span class="${cls(total)}">${sgn(total,2)} · ${mn(total*navB)}</span>`],['Jauges',`<span class="${cls(g.lp+g2.lp)}">${sd1(g.lp+g2.lp)}</span> · <span class="${cls(g.rc+g2.rc)}">${sd1(g.rc+g2.rc)}</span>`]],
-   next===stepEvents?"Continuer le trimestre":"Aller sur le desk",next);
+   [],
+   next===stepEvents?"Continuer le trimestre":"Aller sur le desk",next,{key:[['<b>Résultat</b>',`<span class="${cls(total)}">${sgn(total,2)} · ${mn(total*navB)}</span>`],['Investisseurs · comité',`<span class="${cls(g.lp+g2.lp)}">${sd1(g.lp+g2.lp)}</span> · <span class="${cls(g.rc+g2.rc)}">${sd1(g.rc+g2.rc)}</span>`]]});
  };
  app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>pickCh(+b.dataset.i));
  armTimer(()=>pickCh(ev.ch.length-1));
@@ -2537,7 +2558,7 @@ function resolveQuarter(){
  if(S.commRes)lpD.push([`Engagement « ${S.comm.nm.toLowerCase()} » ${S.commRes.ok?'tenu':'manqué'+(S.commRes.okR?' sur la vol':S.commRes.okV?' sur le rendement':' sur les deux')}`,S.commRes.ok?S.comm.win.lp:S.comm.lose.lp]);
  if(dd>0.10)lpD.push(['Repli au-delà de 10 %',-(dd-0.10)*70]);
  lpD.push(['Écart à la médiane des concurrents',(net-med)*90]);
- if(S.budBp>34)lpD.push(['Facture d\'exploitation jugée lourde',-1.5]);
+ if(S.budBp>70)lpD.push(['Facture d\'exploitation jugée lourde',-1.5]);
  const lpMult=(S.flighty?1.25:1)*PROF().lpMult*VOL().lpMult;
  let dlp=lpD.reduce((a,x)=>a+x[1],0)*lpMult;
  if(lpMult!==1)lpD.push([`Multiplicateur (profil${S.flighty?', passif fragile':''}) ×${lpMult.toFixed(2)}`,dlp-dlp/lpMult]);
