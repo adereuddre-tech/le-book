@@ -2113,7 +2113,7 @@ function planQuarter(){
  const gav=QGOALS.filter(g=>!S.usedGoals.includes(g.nm));
  S.goal=pick(gav.length?gav:QGOALS);S.usedGoals.push(S.goal.nm);
  S.gSnap={lp:S.lp,rc:S.rc,k:[...S.k],inc:S.incidents?S.incidents.length:0,rank:rivalRank()};
- S.qGoal=null;
+ S.qGoal=null;S.qName=null;
  S.rumors=[];S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
  S.pendingTC=0;S.freeAdjUsed=false;
 }
@@ -3751,6 +3751,112 @@ function pressFeed(o){
 }
 /* ---------- avis des investisseurs et du comité ---------- */
 function pk(arr,n){return arr[(S.seed+S.q*13+n*7)%arr.length]}
+/* ══════════ nom du trimestre selon la combinaison factorielle réalisée ══════════
+   f = [croissance, inflation, dollar, appétit pour le risque], en écarts-types. */
+const QNAMES=[
+ /* croissance + inflation : les quatre quadrants */
+ {nm:"Surchauffe",d:"La croissance et les prix accélèrent ensemble. Tout le monde gagne de l'argent et personne ne dort tranquille.",t:f=>f[0]>0.9&&f[1]>0.9},
+ {nm:"Reflation désordonnée",d:"L'activité repart, les prix aussi, et les banques centrales découvrent qu'elles sont en retard.",t:f=>f[0]>0.6&&f[1]>0.6},
+ {nm:"Boom sans inflation",d:"La croissance surprend à la hausse sans tension sur les prix. Le meilleur des mondes, et il ne dure jamais.",t:f=>f[0]>0.9&&f[1]<-0.5},
+ {nm:"Désinflation immaculée",d:"Les prix ralentissent sans que l'activité en souffre. Les manuels disaient que c'était impossible.",t:f=>f[0]>0.4&&f[1]<-0.9},
+ {nm:"Stagflation",d:"L'activité cale et les prix montent. La pire combinaison pour un book, et la plus difficile à couvrir.",t:f=>f[0]<-0.9&&f[1]>0.9},
+ {nm:"Choc d'offre",d:"Les prix montent parce que quelque chose manque, pas parce que la demande est forte.",t:f=>f[0]<-0.4&&f[1]>0.8},
+ {nm:"Atterrissage brutal",d:"L'activité décroche, les prix avec elle. Les taux longs sont le seul endroit où l'on gagne.",t:f=>f[0]<-0.9&&f[1]<-0.9},
+ {nm:"Récession déflationniste",d:"Tout ralentit en même temps. Le collatéral rapporte plus que le book.",t:f=>f[0]<-0.7&&f[1]<-0.5},
+ {nm:"Atterrissage en douceur",d:"L'activité ralentit juste assez pour calmer les prix, pas assez pour casser quoi que ce soit.",t:f=>f[0]<-0.2&&f[0]>-0.7&&f[1]<-0.4},
+ {nm:"Reprise molle",d:"La croissance revient sans conviction, les prix ne bougent pas. Les gérants s'ennuient.",t:f=>f[0]>0.3&&f[0]<0.8&&Math.abs(f[1])<0.4},
+ /* dollar dominant */
+ {nm:"Dollar roi",d:"Le billet vert aspire tout. Les émergents encaissent, les matières premières trinquent.",t:f=>f[2]>1.1},
+ {nm:"Fuite vers le dollar",d:"Le monde cherche du dollar et n'en trouve pas assez. Tout le reste se vend pour en obtenir.",t:f=>f[2]>0.9&&f[3]<-0.5},
+ {nm:"Resserrement des conditions financières",d:"Dollar fort et appétit en berne : les conditions se durcissent sans qu'aucune banque centrale n'ait bougé.",t:f=>f[2]>0.7&&f[3]<-0.3},
+ {nm:"Dollar en repli",d:"Le billet vert lâche du lest. Les émergents respirent, l'or s'apprécie, les exportateurs américains sourient.",t:f=>f[2]<-1.1},
+ {nm:"Détente monétaire mondiale",d:"Dollar faible et appétit revenu : les conditions financières se relâchent partout à la fois.",t:f=>f[2]<-0.7&&f[3]>0.4},
+ {nm:"Le dollar fait le trimestre",d:"Un seul facteur a compté, et c'est celui que la moitié du book ne regardait pas.",t:f=>Math.abs(f[2])>0.9&&Math.abs(f[0])<0.4&&Math.abs(f[1])<0.4},
+ /* appétit pour le risque */
+ {nm:"Euphorie",d:"Tout ce qui est risqué monte, et plus c'est risqué, plus ça monte. Personne ne demande pourquoi.",t:f=>f[3]>1.2},
+ {nm:"Appétit retrouvé",d:"Les investisseurs reprennent du risque après l'avoir vendu trop tôt.",t:f=>f[3]>0.8&&f[0]>0},
+ {nm:"Rotation vers le risque",d:"L'argent quitte les refuges pour les actifs qui paient. Sans nouvelle particulière.",t:f=>f[3]>0.7&&f[2]<0},
+ {nm:"Aversion au risque",d:"On vend d'abord, on réfléchit ensuite. Les corrélations se rapprochent de un.",t:f=>f[3]<-1.0},
+ {nm:"Fuite vers la qualité",d:"Tout ce qui est sûr monte, tout ce qui ne l'est pas baisse. Il n'y a pas de troisième catégorie.",t:f=>f[3]<-0.8&&f[0]<0},
+ {nm:"Panique de liquidité",d:"Ce n'est plus une question de valeur mais de qui peut encore vendre.",t:f=>f[3]<-1.2&&f[2]>0.5},
+ {nm:"Purge du levier",d:"Les books trop chargés se vident en même temps. Le prix n'a plus grand-chose à voir avec la valeur.",t:f=>f[3]<-1.0&&Math.abs(f[0])<0.6},
+ /* combinaisons à trois facteurs */
+ {nm:"Le scénario idéal",d:"Croissance solide, prix sages, dollar tranquille, appétit intact. Ça arrive une fois par cycle.",t:f=>f[0]>0.6&&f[1]<0&&Math.abs(f[2])<0.5&&f[3]>0.5},
+ {nm:"Le cauchemar du gérant macro",d:"Croissance en berne, prix en hausse, dollar fort, appétit nul. Il n'y a nulle part où se cacher.",t:f=>f[0]<-0.5&&f[1]>0.5&&f[2]>0.5&&f[3]<-0.5},
+ {nm:"Reflation risquée",d:"Prix et appétit montent ensemble, la croissance suit de loin. Le marché achète l'histoire avant les chiffres.",t:f=>f[1]>0.7&&f[3]>0.7&&f[0]<0.4},
+ {nm:"Désinflation et soulagement",d:"Les prix ralentissent, le risque se reprend, le dollar se détend. Le trimestre que tout le monde espérait.",t:f=>f[1]<-0.7&&f[3]>0.5&&f[2]<0},
+ {nm:"Peur de la croissance",d:"L'activité déçoit et le marché s'en inquiète plus que de l'inflation.",t:f=>f[0]<-0.8&&f[3]<-0.4&&Math.abs(f[1])<0.5},
+ {nm:"Rallye des mal-aimés",d:"Appétit en hausse et dollar en baisse : tout ce qu'on avait vendu remonte d'un coup.",t:f=>f[3]>0.6&&f[2]<-0.6},
+ {nm:"Coup de froid sur les émergents",d:"Dollar fort, appétit faible : la combinaison que les pays émergents redoutent le plus.",t:f=>f[2]>0.6&&f[3]<-0.4},
+ {nm:"Les taux mènent la danse",d:"L'inflation a tout dicté, et le reste du marché a suivi sans discuter.",t:f=>Math.abs(f[1])>1.0&&Math.abs(f[0])<0.5&&Math.abs(f[3])<0.5},
+ {nm:"La croissance mène la danse",d:"Un seul chiffre a compté ce trimestre, et c'était celui de l'activité.",t:f=>Math.abs(f[0])>1.0&&Math.abs(f[1])<0.5&&Math.abs(f[2])<0.5},
+ /* magnitudes extrêmes */
+ {nm:"Le trimestre de tous les records",d:"Trois facteurs sur quatre au-delà d'un écart-type. Des années de moyennes viennent d'être effacées.",t:f=>f.filter(x=>Math.abs(x)>1.0).length>=3},
+ {nm:"Dislocation générale",d:"Tous les facteurs bougent fort et dans des sens qui ne vont pas ensemble. Les modèles rendent les armes.",t:f=>f.filter(x=>Math.abs(x)>0.9).length>=3},
+ {nm:"Choc factoriel",d:"Un facteur a dépassé deux écarts-types. Ce genre de trimestre se raconte longtemps.",t:f=>f.some(x=>Math.abs(x)>2.0)},
+ {nm:"Le grand écart",d:"Deux facteurs opposés à l'extrême. Les couvertures classiques n'ont rien couvert.",t:f=>f.some(x=>x>1.3)&&f.some(x=>x<-1.3)},
+ /* calme */
+ {nm:"Marché sans direction",d:"Rien n'a vraiment bougé. Les frais, eux, ont couru normalement.",t:f=>f.every(x=>Math.abs(x)<0.35)},
+ {nm:"Trimestre anesthésié",d:"Volatilité au plus bas, volumes en berne, et un desk qui regarde ses écrans sans rien y voir.",t:f=>f.every(x=>Math.abs(x)<0.25)},
+ {nm:"Le calme avant quelque chose",d:"Aucun facteur n'a parlé. C'est rarement une bonne nouvelle pour le trimestre suivant.",t:f=>f.every(x=>Math.abs(x)<0.3)},
+ {nm:"Consolidation",d:"Le marché digère le trimestre précédent sans rien décider.",t:f=>f.every(x=>Math.abs(x)<0.45)},
+ /* variantes de tonalité sur les mêmes quadrants */
+ {nm:"Surchauffe contenue",d:"Croissance et prix montent, mais le marché fait comme s'il n'avait rien vu.",t:f=>f[0]>0.5&&f[1]>0.4&&f[3]>0},
+ {nm:"Inflation qui s'installe",d:"Les prix montent pour la deuxième fois de suite. On commence à parler de « persistance ».",t:f=>f[1]>0.8&&f[0]>-0.3},
+ {nm:"Désinflation qui inquiète",d:"Les prix baissent plus vite que prévu, et ce n'est plus une bonne nouvelle.",t:f=>f[1]<-1.0&&f[0]<0},
+ {nm:"Choc de demande",d:"L'activité surprend fort, dans un sens comme dans l'autre, et les prix suivent avec retard.",t:f=>Math.abs(f[0])>1.1},
+ {nm:"Croissance en trompe-l'œil",d:"Les chiffres d'activité sont bons, le marché n'y croit pas.",t:f=>f[0]>0.7&&f[3]<-0.2},
+ {nm:"Pessimisme démenti",d:"L'activité déçoit et pourtant le risque se reprend. Le marché regarde déjà plus loin.",t:f=>f[0]<-0.5&&f[3]>0.5},
+ {nm:"Le marché achète la baisse",d:"Les mauvaises nouvelles s'accumulent, les prix montent quand même.",t:f=>f[0]<-0.4&&f[1]<-0.3&&f[3]>0.6},
+ {nm:"Le marché vend la hausse",d:"Les bonnes nouvelles sont là, les prix ne suivent pas. Quelqu'un sait quelque chose.",t:f=>f[0]>0.4&&f[3]<-0.6},
+ {nm:"Convergence des banques centrales",d:"Tout le monde va dans le même sens en même temps. Le dollar ne bouge presque pas.",t:f=>Math.abs(f[2])<0.3&&Math.abs(f[1])>0.6},
+ {nm:"Divergence monétaire",d:"Les banques centrales ne sont plus d'accord, et le change s'en charge.",t:f=>Math.abs(f[2])>0.8&&Math.abs(f[1])>0.5},
+ {nm:"Commodités en tension",d:"L'inflation vient des matières premières et de rien d'autre.",t:f=>f[1]>0.7&&Math.abs(f[0])<0.5},
+ {nm:"Détente des matières premières",d:"L'offre est revenue, les prix redescendent, et les importateurs respirent.",t:f=>f[1]<-0.7&&f[0]>-0.3},
+ {nm:"Prime de terme qui se reconstitue",d:"Les taux longs montent sans que l'inflation ne le justifie. Le marché veut être payé pour attendre.",t:f=>f[1]>0.5&&f[0]<0.2&&f[2]>0.2},
+ {nm:"Rallye obligataire",d:"Les taux longs s'effondrent et emportent tout le reste avec eux.",t:f=>f[1]<-0.9&&f[0]<0.3},
+ {nm:"Le trimestre des couvertures inutiles",d:"Tout est monté ou tout est descendu ensemble. La diversification n'a servi à rien.",t:f=>f.filter(x=>x>0.5).length>=3||f.filter(x=>x<-0.5).length>=3},
+ {nm:"Rotation sectorielle brutale",d:"Les gagnants et les perdants ont changé de place en quelques séances.",t:f=>f[3]>0.5&&f[0]<-0.3},
+ {nm:"Retour de la prime de risque",d:"Le marché redemande à être payé pour le risque qu'il prend. Les valorisations s'ajustent.",t:f=>f[3]<-0.6&&f[1]>0.2},
+ {nm:"Compression des primes",d:"Tout ce qui payait un supplément de rendement paie un peu moins. Et ça ne s'arrête pas.",t:f=>f[3]>0.7&&Math.abs(f[1])<0.5},
+ {nm:"Trimestre à deux visages",d:"La première moitié a annulé la seconde. Les moyennes ne racontent rien.",t:f=>Math.abs(f[0])>0.6&&Math.abs(f[3])>0.6&&f[0]*f[3]<0},
+ {nm:"Le marché change d'avis",d:"Les facteurs se sont retournés en cours de route. Ceux qui ont tenu leur position ont eu raison ou tort, jamais à moitié.",t:f=>f.filter(x=>Math.abs(x)>0.7).length===2},
+ {nm:"Convexité punie",d:"Les mouvements ont été assez forts pour faire mal aux positions extrêmes, pas assez pour payer les paris directionnels.",t:f=>f.filter(x=>Math.abs(x)>0.5).length>=2&&f.every(x=>Math.abs(x)<1.1)},
+ {nm:"Tendance propre",d:"Un mouvement net, régulier, sans retournement. Le rêve d'un suiveur de tendance.",t:f=>f.filter(x=>Math.abs(x)>0.8).length===1&&f.filter(x=>Math.abs(x)<0.3).length>=2},
+ {nm:"Bruit de fond",d:"Beaucoup d'agitation pour pas grand-chose au compteur.",t:f=>f.every(x=>Math.abs(x)<0.6)&&f.some(x=>Math.abs(x)>0.4)},
+ {nm:"Reprise cyclique",d:"L'activité mène, les prix suivent de loin, le risque accompagne.",t:f=>f[0]>0.5&&f[3]>0.3&&f[1]>-0.3&&f[1]<0.6},
+ {nm:"Ralentissement ordonné",d:"L'activité faiblit sans drame et sans panique. Les marchés s'y étaient préparés.",t:f=>f[0]<-0.4&&Math.abs(f[3])<0.4},
+ {nm:"Crise de confiance",d:"Aucun chiffre ne justifie ce qui s'est passé. Le marché a simplement cessé d'y croire.",t:f=>f[3]<-0.9&&Math.abs(f[0])<0.5&&Math.abs(f[1])<0.5},
+ {nm:"Rallye de soulagement",d:"Ce qu'on redoutait n'est pas arrivé, et cela a suffi.",t:f=>f[3]>0.9&&Math.abs(f[0])<0.5},
+ {nm:"Le dollar contre le monde",d:"Le billet vert monte contre tout, y compris contre ce qui n'a rien à voir.",t:f=>f[2]>0.8&&Math.abs(f[1])<0.6},
+ {nm:"Reflux du refuge",d:"Le dollar et l'or reculent ensemble : l'argent ressort des abris.",t:f=>f[2]<-0.6&&f[3]>0.3},
+ {nm:"Trimestre de transition",d:"Un régime s'achève, un autre commence, et le marché hésite entre les deux.",t:f=>f.filter(x=>Math.abs(x)>0.4&&Math.abs(x)<0.9).length>=3},
+ {nm:"Retour à la moyenne",d:"Les excès du trimestre précédent se sont corrigés. Ceux qui les avaient suivis ont payé.",t:f=>f.every(x=>Math.abs(x)<0.8)&&f.filter(x=>Math.abs(x)>0.3).length>=2},
+ {nm:"Rien ne s'est passé comme prévu",d:"Chaque facteur a déjoué le consensus, dans un sens différent.",t:f=>f.filter(x=>Math.abs(x)>0.55).length>=3},
+ {nm:"Trimestre de gérant de taux",d:"L'essentiel s'est joué sur la courbe. Les actions ont regardé.",t:f=>Math.abs(f[1])>0.7&&Math.abs(f[3])<0.5},
+ {nm:"Trimestre de gérant actions",d:"L'appétit pour le risque a tout emporté. Les taux ont suivi de loin.",t:f=>Math.abs(f[3])>0.8&&Math.abs(f[1])<0.5},
+ {nm:"Trimestre de cambiste",d:"Le change a fait le résultat, pour ceux qui y étaient.",t:f=>Math.abs(f[2])>0.7&&f.filter(x=>Math.abs(x)>0.7).length===1},
+ {nm:"L'inflation importée",d:"Les prix montent parce que le dollar baisse, pas parce que la demande est là.",t:f=>f[1]>0.5&&f[2]<-0.5},
+ {nm:"La désinflation par le change",d:"Un dollar fort fait le travail des banques centrales, gratuitement.",t:f=>f[1]<-0.5&&f[2]>0.5},
+ {nm:"Croissance financée à crédit",d:"L'activité tient, l'appétit aussi, mais les conditions se durcissent en arrière-plan.",t:f=>f[0]>0.4&&f[3]>0.3&&f[2]>0.4},
+ {nm:"Le trimestre des banques centrales",d:"Chaque mot compté, chaque virgule interprétée. Les données macro n'ont presque rien dit.",t:f=>Math.abs(f[1])>0.6&&Math.abs(f[0])<0.4},
+ {nm:"Le trimestre des politiques",d:"Les marchés ont réagi à des décisions, pas à des chiffres.",t:f=>Math.abs(f[3])>0.6&&Math.abs(f[0])<0.4&&Math.abs(f[1])<0.4},
+ {nm:"Vent de face généralisé",d:"Rien de catastrophique, mais tout a tiré dans le mauvais sens.",t:f=>f[0]<-0.2&&f[1]>0.2&&f[3]<-0.2},
+ {nm:"Vent arrière généralisé",d:"Tout est allé dans le bon sens en même temps. Profitez-en, ça ne se reproduira pas de sitôt.",t:f=>f[0]>0.3&&f[1]<0.2&&f[3]>0.3},
+ {nm:"Trimestre en dents de scie",d:"Deux facteurs se sont opposés du début à la fin. Le résultat dépend entièrement du côté choisi.",t:f=>f[0]*f[1]<-0.3},
+ {nm:"Fin de cycle",d:"L'activité ralentit, les prix restent hauts, le marché commence à en tirer les conséquences.",t:f=>f[0]<-0.3&&f[1]>0.3},
+ {nm:"Début de cycle",d:"L'activité repart d'un point bas, les prix ne suivent pas encore. C'est le meilleur moment pour être long de tout.",t:f=>f[0]>0.3&&f[1]<-0.2&&f[3]>0.2},
+ {nm:"Milieu de cycle",d:"Rien d'extrême, tout en place. Les gérants qui gagnent ici gagnent sur le détail.",t:f=>f.every(x=>Math.abs(x)<0.7)&&f[0]>0},
+ {nm:"Trimestre indéchiffrable",d:"Les facteurs ont bougé sans logique apparente. Personne n'en tirera de leçon.",gen:1,t:f=>true},
+ {nm:"Trimestre ordinaire",d:"Ni drame ni exploit : les marchés ont fait leur travail et le book a fait le sien.",gen:1,t:f=>true},
+ {nm:"Trimestre sans histoire",d:"Il ne s'est rien passé qui mérite d'être raconté au conseil.",gen:1,t:f=>true}
+];
+function qRegime(){
+ const f=S.f||[0,0,0,0];
+ const m=QNAMES.filter(x=>{try{return !x.gen&&x.t(f)}catch(e){return false}});
+ const pool=m.length?m:QNAMES.filter(x=>x.gen);
+ return pool[Math.floor(rng()*pool.length)];
+}
 function verdicts(o){
  const lp=S.lp,rc=S.rc,q=o.qTotal,dd=1-S.idx/(S.peakIdx||1);
  const rank=1+S.rivals.filter(r=>r.cum>S.idx).length;
@@ -3803,7 +3909,7 @@ function screenDebrief(o){
  const UQ=pickU([o.P.grossM,o.P.evM+o.P.incM,o.P.collM,o.P.tcM,o.P.feeM,o.P.perfM,o.P.flowM]);
  const UG=pickU([S.mgrQ.mgmt,S.mgrQ.perf,S.mgrQ.ops,S.mgrQ.rum,S.mgrQ.fees-S.mgrQ.ops-S.mgrQ.rum]);
  const gT={lp:S.gLog.reduce((a,g)=>a+g.lp,0)+S.lpD.reduce((a,x)=>a+x[1],0),rc:S.gLog.reduce((a,g)=>a+g.rc,0)+S.rcD.reduce((a,x)=>a+x[1],0)};
- const R=REG[S.regimes[S.regimes.length-1]];const V=verdicts(o);
+ const R=S.qName||(S.qName=qRegime());const V=verdicts(o);
  const lines=INSTR.map((x,i)=>({sym:x.sym,nm:x.nm,r:o.r[i],p:o.w[i]*o.r[i],k:S.k[i]}))
    .filter(z=>z.k!==0).sort((a,b)=>b.p-a.p);
  const amx=Math.max(0.001,...o.attr.map(Math.abs));
@@ -3820,23 +3926,19 @@ function screenDebrief(o){
  if(S.qGoal)warn.push(`Objectif du trimestre « ${S.qGoal.nm.toLowerCase()} » : <b class="${S.qGoal.ok?'pos-g':'neg-g'}">${S.qGoal.ok?'tenu':'manqué'}</b>${S.qGoal.ok?` — ${moneyB(S.qGoal.bonus)} de bonus sur votre score.`:` — ${S.qGoal.d}`}`);
  if(S.marginCall)warn.push(`Appel de marge : la marge utilisée a dépassé ${(MGC.thr*100).toFixed(0)} % de l'encours en cours de trimestre. Le prime broker a liquidé ${(S.marginCall.f*100).toFixed(0)} % du book au plus bas, ${mm(S.marginCall.cost)} de coûts de liquidation, et vous repartez avec les positions réduites d'autant.`);
  if(S.qLog.includes('mandat'))warn.push("Votre mandat est réduit : plus aucune position au-delà de 3 unités.");
- S.qLog.filter(x=>x!=='mandat').forEach(x=>warn.push(x));
- if(S.poachMsg)warn.push(S.poachMsg);
+ const story=S.qLog.filter(x=>x!=='mandat');
  app.innerHTML=statusBar(true)+`<div class="fade">
   <div class="pnlhead"><div class="q">RÉSULTAT DU TRIMESTRE ${S.q} · TOUT COMPRIS</div>
    <div class="big ${cls(o.qTotal)}">${sgn(o.qTotal,2)}</div>
    <div class="num ${cls(o.qTotal)}" style="font-size:18px;margin-top:4px">${bn(o.qTotal*o.q0,2)} sur ${moneyB(o.q0)} d'encours en début de trimestre</div>
-   <div class="regime">${R.nm}</div><div class="sub">${R.txt}</div></div>
+   <div class="regime">${R.nm}</div><div class="sub">${R.d}</div></div>
   ${warn.map(t=>`<div class="flag" style="margin-top:12px">${t}</div>`).join('')}
-  <div class="block"><div class="wire" style="border-color:var(--line2)">
-   <div class="news" style="border:none;padding:0"><span class="src">${S.press[0].src.toUpperCase()}</span><span>${S.press[0].t}</span></div>
-   <details style="margin-top:8px"><summary>${S.press.length-1} autres titres</summary>
-    ${S.press.slice(1).map(h=>`<div class="news"><span class="src">${h.src.toUpperCase()}</span><span>${h.t}</span></div>`).join('')}</details></div>
-  </div>
-  <div class="block"><div class="blockhead"><h2>Ce qu'ils en disent</h2><span class="hint">${Math.round(S.lp)} · ${Math.round(S.rc)}</span></div>
-   <div class="wire"><div class="kicker" style="margin-bottom:4px">LES INVESTISSEURS</div><p style="margin:0;color:var(--dim);font-size:13.5px">${V.inv}</p>
-    <div class="kicker" style="margin:12px 0 4px">LE COMITÉ DES RISQUES</div><p style="margin:0;color:var(--dim);font-size:13.5px">${V.com}</p></div>
-  </div>
+  <div class="block"><div class="blockhead"><h2>La concurrence</h2><span class="hint">${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur cinq</span></div>
+   <table class="qt"><thead><tr><th>Fonds</th><th>Trim.</th><th>Cumul</th><th>vs vous</th></tr></thead><tbody>
+   ${all.map(a=>{const c=cums.find(z=>z.nm===(a.me?S.fundName:a.nm.split(' · ')[0]));const dv=a.me?0:(c?c.v:0)-(S.idx-1);
+     return `<tr class="${a.me?'me':''}"><td>${a.nm}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(c?c.v:0)}">${sgn(c?c.v:0,1)}</td><td class="${a.me?'':cls(-dv)}">${a.me?'—':(dv>=0?'+':'−')+Math.abs(dv*100).toFixed(1)+' pts'}</td></tr>`}).join('')}
+   </tbody></table></div>
+
   <div class="block"><div class="blockhead"><h2>Du brut au net</h2><span class="hint">en % de l'encours</span></div>
    <div class="attr"><span class="an">Positions directionnelles</span><span class="av">${sgn(o.P.grossM/o.q0,2)} · ${inU(o.P.grossM,UQ)}</span></div>
    <div class="attr"><span class="an">Dépêches, incidents et desk</span><span class="av">${sgn((o.P.evM+o.P.incM)/o.q0,2)} · ${inU(o.P.evM+o.P.incM,UQ)}</span></div>
@@ -3845,11 +3947,26 @@ function screenDebrief(o){
    <div class="attr"><span class="an">Frais de gestion et de performance</span><span class="av">${sgn(o.P.feeM/o.q0,2)} · ${inU(o.P.feeM,UQ)}</span></div>
    <div class="attr"><span class="an" style="color:var(--txt)">Résultat du trimestre</span><span class="av">${sgn(o.qTotal,2)} · ${inU(o.P.perfM,UQ)}</span></div>
    <div class="attr"><span class="an">Souscriptions et rachats</span><span class="av ${Math.abs(o.P.flowM)>1e-9?cls(o.P.flowM):''}">${Math.abs(o.P.flowM)>1e-9?inU(o.P.flowM,UQ):'aucun mouvement'}</span></div>
-   <div class="attr"><span class="an">Encours en fin de trimestre</span><span class="av"><b>${moneyB(S.nav)}</b></span></div>
+   ${S.poachMsg?`<div class="note" style="margin:4px 0 8px">${S.poachMsg}</div>`:''}<div class="attr"><span class="an">Encours en fin de trimestre</span><span class="av"><b>${moneyB(S.nav)}</b></span></div>
    <details style="margin-top:8px"><summary>Détails</summary><p class="note">Les pourcentages sont exprimés sur l'encours de début de trimestre (${moneyB(o.q0)}). Les dépêches, interactions et incidents ont été comptabilisés au fil du trimestre ; les positions, le collatéral et les frais le sont à la clôture. Les souscriptions et rachats sont des mouvements de capital : ils changent l'encours sans compter dans la performance.</p></details>
   </div>
-  <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Jauges du trimestre · ${gz(gT.lp,gT.rc,'always')}</summary>
-   ${tbl([...S.gLog.map(g=>[g.why,sd1(g.lp),sd1(g.rc)]),...S.lpD.map(x=>[x[0],sd1(x[1]),'']),...S.rcD.map(x=>[x[0],'',sd1(x[1])]),['<b>Total</b>',sd1(gT.lp),sd1(gT.rc)]],['Cause','Inv.','Com.'])}</details>
+  <div class="block"><div class="blockhead"><h2>Vos gains</h2><span class="hint">le score</span></div>
+   <div class="attr"><span class="an">Net du trimestre</span><span class="av">${inU(S.mgrQ.fees-S.mgrQ.ops-S.mgrQ.rum,UG)}</span></div>
+   <div class="attr"><span class="an" style="color:var(--txt)">Cumul depuis le début</span><span class="av"><b class="gold-g">${score(S.mgrFees-S.mgrCosts)}</b></span></div>
+   <details style="margin-top:6px"><summary>Détail</summary>
+    ${tbl([['Commission de gestion',inU(S.mgrQ.mgmt,UG)],['Commission de performance',inU(S.mgrQ.perf,UG)],[`Budget d'exploitation (${S.budBp} pb)`,inU(-S.mgrQ.ops,UG)],['Achat de sources',inU(-S.mgrQ.rum,UG)]])}</details>
+  </div>
+  <div class="block"><div class="blockhead"><h2>Ce qu'ils en disent</h2><span class="hint">${Math.round(S.lp)} · ${Math.round(S.rc)}</span></div>
+   <div class="wire"><div class="kicker" style="margin-bottom:4px">LES INVESTISSEURS</div><p style="margin:0;color:var(--dim);font-size:13.5px">${V.inv}</p>
+    <div class="kicker" style="margin:12px 0 4px">LE COMITÉ DES RISQUES</div><p style="margin:0;color:var(--dim);font-size:13.5px">${V.com}</p></div>
+  </div>
+  <div class="block"><div class="wire" style="border-color:var(--line2)">
+   <div class="news" style="border:none;padding:0"><span class="src">${S.press[0].src.toUpperCase()}</span><span>${S.press[0].t}</span></div>
+   <details style="margin-top:8px"><summary>${S.press.length-1} autres titres</summary>
+    ${S.press.slice(1).map(h=>`<div class="news"><span class="src">${h.src.toUpperCase()}</span><span>${h.t}</span></div>`).join('')}</details></div>
+  </div>
+  <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Ce qui s'est passé ce trimestre · ${gz(gT.lp,gT.rc,'always')}</summary>
+   ${story.length?`<p class="note" style="margin:6px 0 8px">${story.map(x=>`• ${x}`).join('<br>')}</p>`:''}${tbl([...S.gLog.map(g=>[g.why,sd1(g.lp),sd1(g.rc)]),...S.lpD.map(x=>[x[0],sd1(x[1]),'']),...S.rcD.map(x=>[x[0],'',sd1(x[1])]),['<b>Total</b>',sd1(gT.lp),sd1(gT.rc)]],['Cause','Inv.','Com.'])}</details>
   </div>
   ${S.evLog.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Le film du trimestre · ${S.evLog.length} épisodes</summary>
    ${tbl(S.evLog.map(e=>[e.t,`${sgn(e.pnl,1)} · ${mn(e.m)}`,gz(e.lp,e.rc,'always')]),['Épisode','Résultat','Effet sur les jauges'])}</details></div>`:''}
@@ -3857,20 +3974,8 @@ function screenDebrief(o){
    <div class="attr"><span class="an">Rendement promis</span><span class="av">≥ ${sgn(S.comm.ret,1)}</span></div>
    <div class="attr"><span class="an">Rendement livré</span><span class="av ${S.commRes&&S.commRes.ok?'pos-g':'neg-g'}">${sgn(S.rets[S.rets.length-1]||0,1)} · ${S.commRes&&S.commRes.ok?'tenu':'manqué'}</span></div>
   </details></div>`:''}
-  <div class="block"><div class="blockhead"><h2>Vos gains</h2><span class="hint">le score</span></div>
-   <div class="attr"><span class="an">Net du trimestre</span><span class="av">${inU(S.mgrQ.fees-S.mgrQ.ops-S.mgrQ.rum,UG)}</span></div>
-   <div class="attr"><span class="an" style="color:var(--txt)">Cumul depuis le début</span><span class="av"><b class="gold-g">${score(S.mgrFees-S.mgrCosts)}</b></span></div>
-   <details style="margin-top:6px"><summary>Détail</summary>
-    ${tbl([['Commission de gestion',inU(S.mgrQ.mgmt,UG)],['Commission de performance',inU(S.mgrQ.perf,UG)],[`Budget d'exploitation (${S.budBp} pb)`,inU(-S.mgrQ.ops,UG)],['Achat de sources',inU(-S.mgrQ.rum,UG)]])}</details>
-  </div>
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">D'où vient la performance · décomposition factorielle</summary>${att}</details></div>
-  ${lines.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Par marché · rendement et contribution</summary>${byl}</details></div>`:''}
-  <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">La concurrence · ${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur cinq</summary>
-   <table class="qt"><thead><tr><th>Fonds</th><th>Trim.</th><th>Cumul</th><th>vs vous</th></tr></thead><tbody>
-   ${all.map(a=>{const c=cums.find(z=>z.nm===(a.me?S.fundName:a.nm.split(' · ')[0]));const dv=a.me?0:(c?c.v:0)-(S.idx-1);
-     return `<tr class="${a.me?'me':''}"><td>${a.nm}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(c?c.v:0)}">${sgn(c?c.v:0,1)}</td><td class="${a.me?'':cls(-dv)}">${a.me?'—':(dv>=0?'+':'−')+Math.abs(dv*100).toFixed(1)+' pts'}</td></tr>`}).join('')}
-   </tbody></table></details></div>
-  <button class="cta" id="nx">${S.over?'Voir le rapport final':(S.q>=QT()?`Clôturer les ${DUR().ans} an${DUR().ans>1?'s':''}`:'Trimestre suivant')}</button></div>`;
+  ${lines.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Par marché · rendement et contribution</summary>${byl}</details></div>`:''}  <button class="cta" id="nx">${S.over?'Voir le rapport final':(S.q>=QT()?`Clôturer les ${DUR().ans} an${DUR().ans>1?'s':''}`:'Trimestre suivant')}</button></div>`;
  document.getElementById('nx').onclick=()=>{
   if(S.over||S.q>=QT()){screenFinal();window.scrollTo(0,0);return}
   if(rng()<0.42&&BOARDEV.filter(e=>!S.usedEv.includes(e.t)).length){screenBoard();window.scrollTo(0,0)}
