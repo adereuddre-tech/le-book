@@ -683,21 +683,126 @@ const BUDGET=[
 const EXECM=[1.35,1.00,0.66],RISKM=[2.0,1.0,0.35],RISKS=[1.0,1.0,0.5],RETM=[2.0,1.0,0.30];
 const RESN=[6,8,11],RESREL=[-0.08,0,0.08],RESTCV=[0.9,0.6,0.35],RESR=[0.30,0.60,0.95];
 
-const GOALS=[
- {id:'first',nm:"Finir premier",d:"Terminer devant les quatre concurrents sur la performance cumulée.",
-  test:o=>o.rank===1,bonus:0.30},
- {id:'dd10',nm:"Ne jamais dépasser 10 % de repli",d:"Garder le repli maximal du fonds sous 10 % du début à la fin.",
-  test:o=>S.maxdd<0.10,bonus:0.35},
- {id:'mandat',nm:"Tenir l'objectif du mandat",d:()=>`Livrer au moins ${(VOL().goal*100).toFixed(0)} % net annualisés, l'objectif que vous facturez.`,
-  test:o=>o.cagr>=VOL().goal,bonus:0.25},
- {id:'clean',nm:"Aucun incident, aucun appel de marge",d:"Traverser le mandat sans incident opérationnel ni liquidation forcée.",
-  test:o=>!S.incidents.length&&!S.everMarginCall,bonus:0.30},
- {id:'band',nm:"Ne jamais sortir de la bande",d:"Garder la volatilité ex-ante dans la bande du comité à chaque trimestre.",
-  test:o=>!S.outBand,bonus:0.28},
- {id:'double',nm:"Une performance qu'on raconte",d:"Terminer avec un fonds en hausse d'au moins 50 % depuis le premier jour.",
-  test:o=>S.idx>=1.5,bonus:0.32}
+/* Objectifs trimestriels. c = contexte de fin de trimestre (voir goalCtx).
+   bonus exprimé en fraction de l'encours initial. */
+const QGOALS=[
+ /* — performance absolue — */
+ {nm:"Le trimestre vert",d:"Terminer le trimestre en positif, tout compris.",t:c=>c.q>0,b:0.04},
+ {nm:"L'objectif du mandat",d:"Livrer au moins l'objectif trimestriel que vous facturez.",t:c=>c.q>=c.goalQ,b:0.06},
+ {nm:"Le trimestre qu'on raconte",d:"Livrer au moins le double de l'objectif trimestriel du mandat.",t:c=>c.q>=2*c.goalQ,b:0.11},
+ {nm:"Trois fois la mise",d:"Livrer au moins le triple de l'objectif trimestriel.",t:c=>c.q>=3*c.goalQ,b:0.16},
+ {nm:"Ne rien casser",d:"Terminer au-dessus de −1 %, quoi qu'il arrive.",t:c=>c.q>-0.01,b:0.04},
+ {nm:"Le plus haut",d:"Terminer le trimestre sur un nouveau plus haut historique d'encours.",t:c=>c.newHigh,b:0.07},
+ {nm:"La ligne droite",d:"Enchaîner un deuxième trimestre positif d'affilée.",t:c=>c.q>0&&c.prevQ>0,b:0.07},
+ {nm:"Le rebond",d:"Terminer en positif après un trimestre négatif.",t:c=>c.q>0&&c.prevQ<0,b:0.08},
+ {nm:"Le coupon",d:"Faire au moins aussi bien que le taux sans risque du trimestre.",t:c=>c.q>=c.rate/4,b:0.05},
+ {nm:"Doublé sur la médiane",d:"Faire au moins deux fois la performance médiane des concurrents, quand elle est positive.",t:c=>c.med>0&&c.q>=2*c.med,b:0.10},
+ /* — performance relative — */
+ {nm:"Battre la médiane",d:"Faire mieux que la performance médiane des quatre concurrents.",t:c=>c.rel>0,b:0.06},
+ {nm:"Table rase",d:"Faire mieux que les quatre concurrents, sans exception.",t:c=>c.beatAll,b:0.11},
+ {nm:"Le scalp du champion",d:"Battre le fonds qui a réalisé le meilleur trimestre de la place.",t:c=>c.beatBest,b:0.12},
+ {nm:"Ne pas être dernier",d:"Ne pas terminer le trimestre en dernière position sur la performance.",t:c=>!c.worst,b:0.04},
+ {nm:"Podium",d:"Terminer dans les trois premiers au classement cumulé.",t:c=>c.rank<=3,b:0.06},
+ {nm:"La première place",d:"Être premier au classement cumulé à la fin du trimestre.",t:c=>c.rank===1,b:0.13},
+ {nm:"Gagner une place",d:"Progresser d'au moins une place au classement cumulé.",t:c=>c.rankUp>=1,b:0.07},
+ {nm:"Deux places d'un coup",d:"Progresser d'au moins deux places au classement cumulé.",t:c=>c.rankUp>=2,b:0.13},
+ {nm:"L'écart net",d:"Battre la médiane des concurrents de plus de deux points.",t:c=>c.rel>0.02,b:0.10},
+ {nm:"Pont-Levis dans le rétroviseur",d:"Faire mieux que Pont-Levis Associés ce trimestre.",t:c=>c.beat('Pont-Levis Associés'),b:0.05},
+ {nm:"Plus malin que Médaillon",d:"Faire mieux que Médaillon d'Or ce trimestre.",t:c=>c.beat("Médaillon d'Or"),b:0.08},
+ {nm:"Millénaire à sa place",d:"Faire mieux que Millénaire Partners ce trimestre.",t:c=>c.beat('Millénaire Partners'),b:0.06},
+ {nm:"La Citadelle tombe",d:"Faire mieux que Citadelle Nord ce trimestre.",t:c=>c.beat('Citadelle Nord'),b:0.06},
+ {nm:"Vert quand ils sont rouges",d:"Terminer positif un trimestre où la médiane des concurrents est négative.",t:c=>c.q>0&&c.med<0,b:0.08},
+ {nm:"Moins pire",d:"Perdre moins que la médiane des concurrents, un trimestre où tout le monde perd.",t:c=>c.q<0&&c.med<0&&c.rel>0,b:0.06},
+ /* — risque et discipline — */
+ {nm:"La main légère",d:"Garder la volatilité réalisée sous la cible du mandat.",t:c=>c.vol<c.tgt,b:0.06},
+ {nm:"Dans la bande",d:"Terminer avec une volatilité ex-ante dans la bande du comité.",t:c=>c.inBand,b:0.05},
+ {nm:"Sous les dix pour cent",d:"Ne pas dépasser 10 % de repli depuis le pic pendant le trimestre.",t:c=>c.dd<0.10,b:0.05},
+ {nm:"Sous les cinq pour cent",d:"Ne pas dépasser 5 % de repli depuis le pic.",t:c=>c.dd<0.05,b:0.08},
+ {nm:"La marge tranquille",d:"Terminer avec une marge utilisée sous 30 % de l'encours.",t:c=>c.mgu<0.30,b:0.05},
+ {nm:"Rien d'appelé",d:"Traverser le trimestre sans appel de marge.",t:c=>!c.marginCall,b:0.04},
+ {nm:"Aucune unité extrême",d:"Terminer sans aucune position au-delà de ±3 unités.",t:c=>c.maxK<=3,b:0.05},
+ {nm:"Aucune position maximale",d:"Terminer sans aucune position à ±5 unités.",t:c=>c.maxK<5,b:0.04},
+ {nm:"Le book sobre",d:"Terminer avec au plus six lignes ouvertes.",t:c=>c.nPos<=6,b:0.06},
+ {nm:"Le book large",d:"Terminer avec au moins douze lignes ouvertes.",t:c=>c.nPos>=12,b:0.07},
+ {nm:"Dollar neutre",d:"Terminer avec une exposition au facteur dollar inférieure à 2 % en valeur absolue.",t:c=>Math.abs(c.fx[2])<0.02,b:0.07},
+ {nm:"Croissance neutre",d:"Terminer avec une exposition au facteur croissance inférieure à 2 % en valeur absolue.",t:c=>Math.abs(c.fx[0])<0.02,b:0.07},
+ {nm:"Inflation assumée",d:"Terminer avec une exposition au facteur inflation supérieure à 3 % en valeur absolue.",t:c=>Math.abs(c.fx[1])>0.03,b:0.06},
+ {nm:"Le pari d'appétit",d:"Terminer avec une exposition au facteur appétit pour le risque supérieure à 4 % en valeur absolue.",t:c=>Math.abs(c.fx[3])>0.04,b:0.07},
+ {nm:"Aucun facteur dominant",d:"Terminer sans qu'un seul facteur porte plus de la moitié de la variance du book.",t:c=>c.fmax<0.50,b:0.08},
+ {nm:"L'équilibriste",d:"Terminer avec autant de lignes longues que de lignes courtes, au moins quatre de chaque.",t:c=>c.nLong>=4&&c.nLong===c.nShort,b:0.10},
+ {nm:"Rien que du long",d:"Terminer avec au moins six lignes, toutes longues.",t:c=>c.nPos>=6&&c.nShort===0,b:0.07},
+ {nm:"Rien que du court",d:"Terminer avec au moins quatre lignes, toutes courtes.",t:c=>c.nPos>=4&&c.nLong===0,b:0.10},
+ {nm:"Le levier contenu",d:"Terminer avec un notionnel brut sous trois fois l'encours.",t:c=>c.lev<3,b:0.06},
+ {nm:"Le levier assumé",d:"Terminer avec un notionnel brut au-dessus de six fois l'encours, et un trimestre positif.",t:c=>c.lev>6&&c.q>0,b:0.11},
+ /* — coûts, budget, sources — */
+ {nm:"L'exécution frugale",d:"Garder les coûts de transaction du trimestre sous 15 points de base de l'encours.",t:c=>c.tcBp<15,b:0.06},
+ {nm:"L'exécution chirurgicale",d:"Garder les coûts de transaction sous 8 points de base de l'encours.",t:c=>c.tcBp<8,b:0.10},
+ {nm:"Le budget serré",d:"Garder la facture d'exploitation du trimestre sous 40 points de base.",t:c=>c.ops<40,b:0.05},
+ {nm:"Le grand train",d:"Dépenser plus de 70 points de base d'exploitation et finir le trimestre positif.",t:c=>c.ops>70&&c.q>0,b:0.09},
+ {nm:"Sans sources",d:"Traverser le trimestre sans acheter une seule rumeur.",t:c=>c.rum===0,b:0.06},
+ {nm:"L'omniscient",d:"Acheter toutes les sources disponibles du trimestre.",t:c=>c.rum>0&&c.rum===c.rumTot,b:0.07},
+ {nm:"Une seule source",d:"N'acheter qu'une seule rumeur, et finir le trimestre positif.",t:c=>c.rum===1&&c.q>0,b:0.08},
+ {nm:"L'information rentable",d:"Gagner au moins dix fois ce que vous avez dépensé en sources.",t:c=>c.rum>0&&c.pnlM>10*c.rumM,b:0.10},
+ {nm:"Le book immobile",d:"Traverser le trimestre sans changer une seule position par rapport au trimestre précédent.",t:c=>c.noTrade,b:0.09},
+ {nm:"La refonte totale",d:"Changer au moins huit lignes du book par rapport au trimestre précédent.",t:c=>c.nChanged>=8,b:0.07},
+ /* — jauges et relations — */
+ {nm:"Gagner du crédit",d:"Terminer avec la jauge investisseurs plus haute qu'au début du trimestre.",t:c=>c.dLp>0,b:0.05},
+ {nm:"Rassurer le comité",d:"Terminer avec la jauge comité plus haute qu'au début du trimestre.",t:c=>c.dRc>0,b:0.05},
+ {nm:"Les deux à la fois",d:"Terminer avec les deux jauges en hausse sur le trimestre.",t:c=>c.dLp>0&&c.dRc>0,b:0.09},
+ {nm:"Le comité serein",d:"Terminer avec la jauge comité au-dessus de 75.",t:c=>c.rc>75,b:0.07},
+ {nm:"Les investisseurs conquis",d:"Terminer avec la jauge investisseurs au-dessus de 80.",t:c=>c.lp>80,b:0.09},
+ {nm:"Remonter la pente",d:"Regagner au moins huit points de jauge investisseurs sur le trimestre.",t:c=>c.dLp>=8,b:0.09},
+ {nm:"La parole tenue",d:"Tenir un engagement de conviction forte.",t:c=>c.comm==='fort'&&c.commOK,b:0.12},
+ {nm:"La promesse modeste",d:"Tenir un engagement de communication prudente.",t:c=>c.comm==='prud'&&c.commOK,b:0.05},
+ {nm:"Le moine",d:"Choisir le silence radio et terminer quand même le trimestre positif.",t:c=>c.comm==='none'&&c.q>0,b:0.07},
+ {nm:"La collecte",d:"Terminer le trimestre avec une collecte nette positive.",t:c=>c.flow>0,b:0.06},
+ {nm:"La grosse collecte",d:"Attirer au moins 3 % d'encours supplémentaire sur le trimestre.",t:c=>c.flow>0.03,b:0.10},
+ {nm:"Aucun rachat",d:"Traverser le trimestre sans le moindre rachat.",t:c=>c.flow>=0,b:0.05},
+ {nm:"Le trimestre propre",d:"Traverser le trimestre sans incident opérationnel.",t:c=>c.inc===0,b:0.05},
+ /* — marchés et classes d'actifs — */
+ {nm:"Le taupier",d:"Terminer avec une position ouverte sur au moins trois marchés de taux.",t:c=>c.inClass('Taux')>=3,b:0.06},
+ {nm:"Le cambiste",d:"Terminer avec une position ouverte sur au moins trois devises.",t:c=>c.inClass('Devises')>=3,b:0.06},
+ {nm:"L'actionnaire",d:"Terminer avec une position ouverte sur au moins trois marchés d'actions.",t:c=>c.inClass('Actions')>=3,b:0.06},
+ {nm:"Le négociant",d:"Terminer avec une position ouverte sur au moins deux matières premières.",t:c=>c.inClass('Matières premières')>=2,b:0.06},
+ {nm:"L'aventurier",d:"Terminer avec une position ouverte sur au moins deux marchés exotiques.",t:c=>c.inClass('Exotiques')>=2,b:0.08},
+ {nm:"Le généraliste",d:"Terminer avec au moins une position dans chaque classe d'actifs ouverte.",t:c=>c.allClasses,b:0.10},
+ {nm:"Le spécialiste",d:"Terminer avec toutes vos positions dans une seule classe d'actifs, et un trimestre positif.",t:c=>c.nPos>=3&&c.oneClass&&c.q>0,b:0.12},
+ {nm:"Sans actions",d:"Traverser le trimestre sans aucune position sur les marchés d'actions.",t:c=>c.inClass('Actions')===0,b:0.06},
+ {nm:"Sans exotiques",d:"Traverser le trimestre sans aucune position exotique.",t:c=>c.inClass('Exotiques')===0,b:0.04},
+ {nm:"L'or en poche",d:"Terminer avec une position ouverte sur l'or.",t:c=>c.has('GC'),b:0.04},
+ {nm:"Le baril",d:"Terminer avec une position ouverte sur le pétrole et un trimestre positif.",t:c=>c.has('CL')&&c.q>0,b:0.07},
+ {nm:"Le yen",d:"Terminer avec une position ouverte sur le yen.",t:c=>c.has('JPY'),b:0.04},
+ {nm:"Le Bund",d:"Terminer avec une position ouverte sur le taux allemand.",t:c=>c.has('GBL'),b:0.04},
+ {nm:"Le contrarien du consensus",d:"Terminer à contre-courant du positionnement dominant sur au moins trois marchés.",t:c=>c.contra>=3,b:0.10},
+ {nm:"Dans le sens du flux",d:"Terminer dans le sens du positionnement dominant sur au moins cinq marchés, avec un trimestre positif.",t:c=>c.withFlow>=5&&c.q>0,b:0.08},
+ /* — régimes et circonstances — */
+ {nm:"Le trimestre de crise",d:"Terminer positif un trimestre de régime de crise.",t:c=>c.regime==='crise'&&c.q>0,b:0.13},
+ {nm:"Le calme plat",d:"Terminer au-dessus de l'objectif du mandat dans un régime de marché sans tendance.",t:c=>c.regime==='range'&&c.q>=c.goalQ,b:0.11},
+ {nm:"Surfer la tendance",d:"Terminer au-dessus de l'objectif dans un régime de tendance.",t:c=>c.regime==='trend'&&c.q>=c.goalQ,b:0.07},
+ {nm:"Traverser la tempête",d:"Terminer au-dessus de −2 % dans un trimestre de crise.",t:c=>c.regime==='crise'&&c.q>-0.02,b:0.09},
+ {nm:"Le trimestre sans dégâts",d:"Traverser un trimestre avec au moins quatre dépêches et finir positif.",t:c=>c.ev>=4&&c.q>0,b:0.08},
+ {nm:"Le trimestre calme",d:"Terminer positif un trimestre où il s'est passé moins de trois choses.",t:c=>c.ev<3&&c.q>0,b:0.05},
+ {nm:"Encaisser le choc",d:"Terminer positif malgré une dépêche qui vous a coûté plus de 1 % dans le trimestre.",t:c=>c.worstEv<-0.01&&c.q>0,b:0.12},
+ {nm:"Le coup de maître",d:"Gagner plus de 1,5 % sur une seule dépêche.",t:c=>c.bestEv>0.015,b:0.10},
+ /* — combinaisons exigeantes — */
+ {nm:"Le trimestre parfait",d:"Battre la médiane, rester sous 5 % de repli et finir avec les deux jauges en hausse.",t:c=>c.rel>0&&c.dd<0.05&&c.dLp>0&&c.dRc>0,b:0.17},
+ {nm:"Le rendement propre",d:"Livrer l'objectif du mandat avec une volatilité réalisée sous la cible.",t:c=>c.q>=c.goalQ&&c.vol<c.tgt,b:0.13},
+ {nm:"Le ratio",d:"Livrer une performance trimestrielle supérieure à la moitié de la volatilité réalisée.",t:c=>c.vol>0.01&&c.q>c.vol/2,b:0.14},
+ {nm:"Efficace et discret",d:"Battre la médiane avec moins de dix points de base de coûts de transaction.",t:c=>c.rel>0&&c.tcBp<10,b:0.12},
+ {nm:"Gagner sans rien savoir",d:"Battre la médiane sans avoir acheté la moindre source.",t:c=>c.rel>0&&c.rum===0,b:0.11},
+ {nm:"La démonstration",d:"Battre les quatre concurrents en gardant moins de huit lignes ouvertes.",t:c=>c.beatAll&&c.nPos<8,b:0.15},
+ {nm:"Le funambule",d:"Finir positif avec un notionnel brut supérieur à cinq fois l'encours et sans appel de marge.",t:c=>c.q>0&&c.lev>5&&!c.marginCall,b:0.12},
+ {nm:"Tenir parole en tempête",d:"Tenir son engagement dans un régime de crise.",t:c=>c.regime==='crise'&&c.commOK,b:0.15},
+ {nm:"Le retour en grâce",d:"Regagner des points sur les deux jauges après un trimestre négatif.",t:c=>c.prevQ<0&&c.dLp>0&&c.dRc>0,b:0.12},
+ {nm:"Trois sur trois",d:"Trimestre positif, collecte positive et comité en hausse.",t:c=>c.q>0&&c.flow>0&&c.dRc>0,b:0.11},
+ {nm:"Le vrai gérant macro",d:"Finir positif avec des positions dans au moins trois classes d'actifs et aucun facteur dominant.",t:c=>c.q>0&&c.nClasses>=3&&c.fmax<0.55,b:0.13},
+ {nm:"L'art de ne rien faire",d:"Ne changer aucune ligne et battre quand même la médiane.",t:c=>c.noTrade&&c.rel>0,b:0.14},
+ {nm:"Le trimestre du comptable",d:"Finir positif avec des coûts de transaction inférieurs aux commissions encaissées.",t:c=>c.q>0&&c.tcM<c.feeM,b:0.07},
+ {nm:"La ligne qui paie",d:"Terminer avec une seule ligne ouverte et un trimestre positif.",t:c=>c.nPos===1&&c.q>0,b:0.13},
+ {nm:"Le doublé relatif",d:"Battre la médiane deux trimestres de suite.",t:c=>c.rel>0&&c.prevRel>0,b:0.10},
+ {nm:"Contre le champion, deux fois",d:"Battre Médaillon d'Or tout en finissant au-dessus de l'objectif du mandat.",t:c=>c.beat("Médaillon d'Or")&&c.q>=c.goalQ,b:0.12},
+ {nm:"Sans filet et sans casse",d:"Finir positif avec une marge utilisée au-dessus de 40 % et aucun appel de marge.",t:c=>c.q>0&&c.mgu>0.40&&!c.marginCall,b:0.12}
 ];
-function GOALTXT(g){return typeof g.d==='function'?g.d():g.d}
 const RIVALS=[
  {nm:"Pont-Levis Associés",boss:"Rayon Daglio",skill:0.615,vol:0.095,aum:150},
  {nm:"Médaillon d'Or",boss:"Jim Simonet",skill:0.730,vol:0.075,aum:60},
@@ -1813,6 +1918,47 @@ const CAPSOFT={small:1.9,mid:1.5,mega:1.25};
 function capSoftNav(){return S.aum0*(CAPSOFT[S.size]||1.5)}
 function capStress(){return Math.max(0,S.nav/capSoftNav()-1)}
 function capFactor(){return 1+1.30*capStress()}
+
+/* contexte d'évaluation d'un objectif trimestriel */
+function goalCtx(o){
+ const k=S.k,w=weights(k),vd=varDecomp(w),g0=S.gSnap||{lp:S.lp,rc:S.rc,k:k.map(()=>0),inc:0,rank:o.rank};
+ const nPos=k.filter(v=>v!==0).length;
+ const cls=nm=>k.filter((v,i)=>v!==0&&INSTR[i].grp===nm).length;
+ const openCls=[...new Set(INSTR.map(x=>x.grp))];
+ const nClasses=openCls.filter(g=>cls(g)>0).length;
+ const evP=(S.evLog||[]).map(e=>e.pnl||0);
+ const navB=o.navBefore||S.nav;
+ return {
+  q:o.qTotal,prevQ:S.rets.length>1?S.rets[S.rets.length-2]:0,
+  med:o.med,rel:o.qTotal-o.med,prevRel:S.prevRel!==undefined?S.prevRel:0,
+  beatAll:S.rivals.every(r=>r.last<o.qTotal),
+  beatBest:o.qTotal>Math.max(...S.rivals.map(r=>r.last)),
+  worst:S.rivals.every(r=>r.last>o.qTotal),
+  beat:nm=>{const r=S.rivals.find(x=>x.nm===nm);return r?o.qTotal>r.last:false},
+  rank:o.rank,rankUp:(g0.rank||o.rank)-o.rank,
+  vol:S.realVol,tgt:S.tgt,inBand:Math.abs(pvol(w)-S.tgt)/S.tgt<=ARCH().band,
+  dd:o.dd,newHigh:S.nav>=S.hwm-1e-9,rate:S.rate,
+  mgu:marginPct(k),marginCall:!!S.marginCall,lev:grossBn(k)/Math.max(1e-9,S.nav),
+  maxK:k.reduce((a,v)=>Math.max(a,Math.abs(v)),0),
+  nPos,nLong:k.filter(v=>v>0).length,nShort:k.filter(v=>v<0).length,
+  fx:factorExpo(w),fmax:vd.tot>0?Math.max(...vd.fv)/vd.tot:0,
+  inClass:cls,nClasses,allClasses:openCls.every(g=>cls(g)>0),oneClass:nClasses===1,
+  has:sy=>IDX[sy]!==undefined&&k[IDX[sy]]!==0,
+  contra:k.filter((v,i)=>v!==0&&S.crowd[i]*v<-0.25).length,
+  withFlow:k.filter((v,i)=>v!==0&&S.crowd[i]*v>0.25).length,
+  noTrade:g0.k.every((v,i)=>v===k[i]),nChanged:k.filter((v,i)=>v!==g0.k[i]).length,
+  dLp:S.lp-g0.lp,dRc:S.rc-g0.rc,lp:S.lp,rc:S.rc,
+  comm:S.comm?S.comm.id:null,commOK:!!(S.commRes&&S.commRes.ok),
+  flow:(S.qFlow||0)/Math.max(1e-9,navB),
+  inc:(S.incidents?S.incidents.length:0)-(g0.inc||0),
+  ev:(S.evLog||[]).length,bestEv:evP.length?Math.max(...evP):0,worstEv:evP.length?Math.min(...evP):0,
+  rum:(S.rumors||[]).filter(r=>r.bought).length,rumTot:(S.rumors||[]).length,
+  rumM:(S.qRumor||0),pnlM:o.qTotal*navB*1000,
+  tcM:(S.qPnl?S.qPnl.tcM:0),feeM:(S.qPnl?S.qPnl.feeM:0),
+  tcBp:Math.abs(S.qPnl?S.qPnl.tcM:0)/Math.max(1e-9,navB*1000)*1e4,
+  ops:S.budBp,regime:S.truth,goalQ:VOL().goal/4
+ };
+}
 function marginPct(k){let m=0;for(let i=0;i<N;i++)m+=Math.abs(notionalBn(k[i],i))*INSTR[i].mg;return m/Math.max(1e-9,S.nav)}
 /* stress de corrélation : les couvertures cessent de couvrir.
    rho* = rho + kappa(1-|rho|)·signe(wi·wj) — augmente la variance quel que soit le sens des paires */
@@ -1957,6 +2103,12 @@ function planQuarter(){
    if(cand.length){const o=pick(cand),rv=pick(S.rivals);S.evQueue.splice(Math.floor(rng()*(S.evQueue.length+1)),0,{rivalEv:true,i:o.i,rv})}
  }
 
+ /* objectif du trimestre : tiré maintenant, soldé à la clôture */
+ S.usedGoals=(S.usedGoals||[]).slice(-16);
+ const gav=QGOALS.filter(g=>!S.usedGoals.includes(g.nm));
+ S.goal=pick(gav.length?gav:QGOALS);S.usedGoals.push(S.goal.nm);
+ S.gSnap={lp:S.lp,rc:S.rc,k:[...S.k],inc:S.incidents?S.incidents.length:0,rank:rivalRank()};
+ S.qGoal=null;
  S.rumors=[];S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
  S.pendingTC=0;S.freeAdjUsed=false;
 }
@@ -2205,7 +2357,7 @@ function screenSetup(){
  renderPicks();
  document.getElementById('go').onclick=()=>{
   const v=parseInt(document.getElementById('sd').value)||123456;
-  newGame(v,setup.prof,setup.arch,setup.desk,setup.vol,setup.size,setup.univ,setup.dur);S.fundName=fundName;S.goal=pick(GOALS);phaseOpen();
+  newGame(v,setup.prof,setup.arch,setup.desk,setup.vol,setup.size,setup.univ,setup.dur);S.fundName=fundName;phaseOpen();
  };
 }
 function renderPicks(){
@@ -2595,7 +2747,7 @@ function phaseOpen(){
  save('phaseOpen');
  const last=S.rets.length?S.rets[S.rets.length-1]:null;
  phase(`TRIMESTRE ${S.q+1} SUR ${QT()} · OUVERTURE`,`Le trimestre ${S.q+1} commence`,
-  [...(last!==null?[`Trimestre précédent : <b class="${cls(last)}">${sgn(last,1)}</b>, régime « ${REG[S.regime].nm.toLowerCase()} ».`]:["Premier trimestre : le book est vide, le collatéral rapporte le taux au jour le jour."]),...ctxLines(),...(S.q>0?rivalryLines():[]),...(S.lastPress?[`Dans la presse : « ${S.lastPress} »`]:[]),...(S.goal?[`Objectif personnel de ce mandat : <b>${S.goal.nm.toLowerCase()}</b> — ${GOALTXT(S.goal)} Bonus de ${moneyB(S.goal.bonus*S.aum0)} sur votre score s'il est tenu — à condition d'aller au bout du mandat.`]:[]),"Première décision : le budget d'exploitation."],
+  [...(last!==null?[`Trimestre précédent : <b class="${cls(last)}">${sgn(last,1)}</b>, régime « ${REG[S.regime].nm.toLowerCase()} ».`]:["Premier trimestre : le book est vide, le collatéral rapporte le taux au jour le jour."]),...ctxLines(),...(S.q>0?rivalryLines():[]),...(S.lastPress?[`Dans la presse : « ${S.lastPress} »`]:[]),...(S.goal?[`Objectif du trimestre — <b>${S.goal.nm.toLowerCase()}</b> : ${S.goal.d} Bonus de ${moneyB(S.goal.b*S.aum0)} sur votre score.`]:[]),"Première décision : le budget d'exploitation."],
   "Fixer le budget",screenBudget);
 }
 function phaseDesk(){
@@ -3387,7 +3539,15 @@ function resolveQuarter(){
  /* le sens du flux est commandé par l'écart aux concurrents ; la probabilité module l'intensité */
  if(rel>0.002){if(rng()<pIn)doIn();else if(rng()<pOut*0.45)doOut()}
  else{if(rng()<pOut)doOut();else if(rng()<pIn*0.45)doIn()}
-S.regimes.push(S.truth);S.regime=S.truth;S.q++;
+ /* objectif du trimestre */
+ if(S.goal){
+  const ok=!!S.goal.t(goalCtx({qTotal,med,rank:rivalRank(),dd,navBefore:S.navQ0}));
+  const bon=ok?S.goal.b*S.aum0:0;
+  if(ok)S.mgrFees+=bon;
+  S.qGoal={nm:S.goal.nm,d:S.goal.d,ok,bonus:bon};
+ }
+ S.prevRel=qTotal-med;
+ S.regimes.push(S.truth);S.regime=S.truth;S.q++;
  S.press=pressFeed({qTotal});S.lastPress=S.press[0]?S.press[0].t:null;
  if(S.maxdd>=0.28)S.over='dd';
  else if(S.lp<=8)S.over='lp';
@@ -3590,6 +3750,7 @@ function screenDebrief(o){
  if(S.lp<24&&!S.over)warn.push("Le principal investisseur a demandé un point mensuel. C'est le signe qui précède les rachats.");
  if(S.rc<24&&!S.over)warn.push("Le comité des risques a inscrit votre book à l'ordre du jour du conseil.");
  if(capStress()>0&&!S.capWarned){S.capWarned=1;warn.push(`Capacité atteinte : à ${moneyB(S.nav)} d'encours, vos ordres coûtent ${((capFactor()-1)*100).toFixed(0)} % d'impact de plus qu'au premier jour. Collecter davantage ne rapportera bientôt plus ce que ça coûte.`)}
+ if(S.qGoal)warn.push(`Objectif du trimestre « ${S.qGoal.nm.toLowerCase()} » : <b class="${S.qGoal.ok?'pos-g':'neg-g'}">${S.qGoal.ok?'tenu':'manqué'}</b>${S.qGoal.ok?` — ${moneyB(S.qGoal.bonus)} de bonus sur votre score.`:` — ${S.qGoal.d}`}`);
  if(S.marginCall)warn.push(`Appel de marge : la marge utilisée a dépassé ${(MGC.thr*100).toFixed(0)} % de l'encours en cours de trimestre. Le prime broker a liquidé ${(S.marginCall.f*100).toFixed(0)} % du book au plus bas, ${mm(S.marginCall.cost)} de coûts de liquidation, et vous repartez avec les positions réduites d'autant.`);
  if(S.qLog.includes('mandat'))warn.push("Votre mandat est réduit : plus aucune position au-delà de 3 unités.");
  S.qLog.filter(x=>x!=='mandat').forEach(x=>warn.push(x));
@@ -3696,9 +3857,6 @@ function screenFinal(){
  if(!S.rumBought){S.fl.ascet=1;award('ascet')}
  if(S.maxdd<0.10&&S.q>=4){S.fl.steel=1;award('steel')}
  if(!S.outBand&&S.q>=4){S.fl.disc=1;award('disc')}
- S.goalOK=null;
- if(S.goal&&!S.goalDone){S.goalDone=1;S.goalOK=!S.over&&!!S.goal.test({rank,cagr,tot});
-  if(S.goalOK){S.goalBonus=S.goal.bonus*S.aum0;S.mgrFees+=S.goalBonus}}
  let verdict,vtxt;
  if(S.over==='dd'){verdict="Le fonds est liquidé";vtxt=`La perte a dépassé 28 %. Les clauses de rachat se sont déclenchées en cascade au trimestre ${S.q}.`}
  else if(S.over==='lp'){verdict="Les rachats l'ont emporté";vtxt="La base d'investisseurs s'est vidée avant que la thèse n'ait le temps de se réaliser. C'est la façon la plus courante de perdre en gestion."}
