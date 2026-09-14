@@ -649,7 +649,7 @@ const UNIVS=[
   p:"Les cinq classes, jusqu'au carbone, au fret et aux dérivés climatiques. Le meilleur potentiel de diversification, dans les marchés les plus hostiles.",
   ef:[["g","cinq classes : le meilleur potentiel de diversification du jeu"],["g","des marchés presque indépendants des facteurs macro classiques"],["b","fourchettes très larges, liquidité qui disparaît sans prévenir"],["b","comité et investisseurs mal à l'aise avec ce qu'ils ne comprennent pas"]]}
 ];
-const RECO={prof:'syst',arch:'std',desk:'inhouse',size:'mid',univ:'com',vol:'std',dur:'normal'};
+const RECO={prof:'flux',arch:'std',desk:'inhouse',size:'mid',univ:'com',vol:'std',dur:'normal'};
 function SIZE(){return SIZES.find(x=>x.id===S.size)||SIZES[1]}
 function UNIV(){return UNIVS.find(x=>x.id===(S&&S.univ))||UNIVS[1]}
 const VOLP=[
@@ -2121,7 +2121,7 @@ const sgnp=(x,d=1)=>(x>=0?'+':'−')+Math.abs(x*100).toFixed(d)+' %';
 const bn=(x,d=1)=>`<b class="${cls(x)}">${x>=0?'+':'−'}${moneyB(Math.abs(x))}</b>`;
 const mn=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${mm(Math.abs(x))}</b>`;
 const cls=x=>x>0.00005?'pos-g':(x<-0.00005?'neg-g':'dim-g');
-let setup={prof:'syst',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'com',dur:'normal'};
+let setup={prof:'flux',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'com',dur:'normal'};
 let TUTO=true;
 let SHOWHINTS=true;
 const SETUPHINTS={
