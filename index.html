@@ -628,16 +628,16 @@ const DESKS=[
 const SIZES=[
  {id:'small',lvl:'Débutant',nav:0.075,capX:6,nm:"Boutique — 75 M$",who:"« Trois personnes, deux écrans, un mandat »",
   p:"Un fonds de niche. Vous ne bougez aucun marché, personne ne vous surveille vraiment, et les commissions sont modestes. Seuls les trois premiers marchés de chaque classe vous sont ouverts.",
-  ef:[["g","impact de marché négligeable : les coûts de transaction sont marginaux"],["g","investisseurs et comité indulgents"],["g","concurrents plus faibles"],["b","trois marchés par classe seulement : moins de diversification"],["b","les commissions se comptent en millions, pas en dizaines de millions"]],
-  rivSkill:-0.055,rivVol:0.85,lpNeg:0.75,rcNeg:0.75,lp0:8,flowMult:0.7,goalMult:1},
+  ef:[["g","impact de marché négligeable : les coûts de transaction sont marginaux"],["g","investisseurs et comité indulgents"],["g","concurrents moins aguerris que la moyenne de la place"],["b","trois marchés par classe seulement : moins de diversification"],["b","les commissions se comptent en millions, pas en dizaines de millions"]],
+  rivSkill:-0.050,rivVol:0.85,lpNeg:0.75,rcNeg:0.75,lp0:8,flowMult:0.7,goalMult:1},
  {id:'mid',lvl:'Normal',nav:0.1,capX:10,nm:"Fonds établi — 100 M$",who:"« La taille où l'on commence à être regardé »",
   p:"Assez gros pour intéresser les allocataires institutionnels et les chasseurs de têtes, assez petit pour encore bouger vite. Quatre marchés par classe.",
-  ef:[["g","quatre marchés par classe : la diversification devient exploitable"],["g","commissions substantielles"],["b","impact de marché sensible sur les marchés étroits"],["b","investisseurs exigeants, comité vigilant"],["b","quatre concurrents sérieux"]],
-  rivSkill:0,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1},
+  ef:[["g","quatre marchés par classe : la diversification devient exploitable"],["g","commissions substantielles"],["b","impact de marché sensible sur les marchés étroits"],["b","investisseurs exigeants, comité vigilant"],["b","quatre concurrents sérieux, qui battent le marché plus souvent qu'à leur tour"]],
+  rivSkill:0.020,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1},
  {id:'mega',lvl:'Expert',nav:0.15,capX:22,nm:"Mastodonte — 150 M$",who:"« À cette taille, vous êtes le marché »",
   p:"Chaque ordre déplace les prix, chaque trimestre est commenté, et les meilleurs gérants du monde vous attendent au tournant. Les cinq marchés de chaque classe sont ouverts, y compris les plus étroits.",
-  ef:[["g","cinq marchés par classe : l'univers complet, marchés étroits compris"],["g","les commissions atteignent des sommes considérables"],["b","impact de marché lourd : les gros ordres coûtent cher"],["b","investisseurs impitoyables, comité sur votre dos"],["b","concurrents au sommet de leur art"]],
-  rivSkill:0.055,rivVol:1.15,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:1.35,goalMult:1}
+  ef:[["g","cinq marchés par classe : l'univers complet, marchés étroits compris"],["g","les commissions atteignent des sommes considérables"],["b","impact de marché lourd : les gros ordres coûtent cher"],["b","investisseurs impitoyables, comité sur votre dos"],["b","concurrents au sommet de leur art : à cette taille, vous jouez contre les meilleurs du monde"]],
+  rivSkill:0.085,rivVol:1.15,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:1.35,goalMult:1}
 ];
 const UNIVS=[
  {id:'fin',lvl:'Débutant',nm:"Macro restreint — financier",who:"« Actions, taux, devises. Le triangle classique »",
@@ -655,17 +655,17 @@ function SIZE(){return SIZES.find(x=>x.id===S.size)||SIZES[1]}
 function UNIV(){return UNIVS.find(x=>x.id===(S&&S.univ))||UNIVS[1]}
 const VOLP=[
  {id:'prud',lvl:'Débutant',nm:"Mandat prudent — vol cible 15 %",who:"« L'assureur zurichois »",
-  p:"Un book qui ne fait peur à personne. Les investisseurs dorment, le comité aussi ; vous serez jugé sur la régularité.",
-  ef:[['g',"unité de risque : 1,9 % de vol, positions plus petites"],['g',"jauge investisseurs 25 % moins nerveuse"],['b',"frais réduits : 1,5 % + 15 % — moins de commission de performance à gagner"],['b',"objectif ramené à 9 % net annualisés"]],
-  tgt:0.15,mgmt:0.00375,perf:0.15,lpMult:0.75,rcPerf:0.8,goal:0.09},
+  p:"Un book qui ne fait peur à personne. Les investisseurs dorment, le comité aussi ; vous serez jugé sur la régularité. Les frais sont les mêmes partout — 2 % de gestion, 20 % de performance : c'est la volatilité cible qui fait la différence, pas le tarif.",
+  ef:[['g',"unité de risque : 1,9 % de vol, positions plus petites"],['g',"jauge investisseurs 25 % moins nerveuse"],['b',"la commission de performance porte sur des gains plus petits"],['b',"objectif ramené à 9 % net annualisés"]],
+  tgt:0.15,mgmt:0.005,perf:0.20,lpMult:0.75,rcPerf:0.8,goal:0.09},
  {id:'std',lvl:'Normal',nm:"Mandat standard — vol cible 20 %",who:"« Le macro classique »",
   p:"Le mandat standard d'un grand fonds global macro : assez de risque pour que ça se voie, assez de contrôle pour que ça dure.",
-  ef:[['g',"unité de risque : 2,5 % de vol"],['g',"frais 2 % + 20 %"],['b',"jauge investisseurs de référence"],['b',"objectif : 12 % net annualisés"]],
+  ef:[['g',"unité de risque : 2,5 % de vol"],['g',"le compromis de référence entre ce qui se voit et ce qui dure"],['b',"jauge investisseurs de référence"],['b',"objectif : 12 % net annualisés"]],
   tgt:0.20,mgmt:0.005,perf:0.20,lpMult:1.0,rcPerf:1.0,goal:0.12},
  {id:'risk',lvl:'Expert',nm:"Mandat agressif — vol cible 30 %",who:"« Le cow-boy du Connecticut »",
-  p:"Gros notionnels, grosses années, grosses fins de carrière. Les investisseurs qui restent savent pourquoi ils sont là.",
-  ef:[['g',"unité de risque : 3,75 % de vol, positions 50 % plus grosses — jusqu'à ±5 unités, en surlevier"],['g',"frais 2,5 % + 25 % — la commission de performance devient énorme"],['b',"jauge investisseurs 35 % plus nerveuse, comité impatient"],['b',"objectif : 18 % net annualisés"]],
-  tgt:0.30,mgmt:0.00625,perf:0.25,lpMult:1.35,rcPerf:1.25,goal:0.18}
+  p:"Gros notionnels, grosses années, grosses fins de carrière. Les investisseurs qui restent savent pourquoi ils sont là. Mêmes frais que les autres mandats : 2 % et 20 %, appliqués à une performance qui bouge trois fois plus.",
+  ef:[['g',"unité de risque : 3,75 % de vol, positions 50 % plus grosses — jusqu'à ±5 unités, en surlevier"],['g',"à commission égale, les gains à 20 % portent sur des montants bien plus gros"],['b',"jauge investisseurs 35 % plus nerveuse, comité impatient"],['b',"objectif : 18 % net annualisés"]],
+  tgt:0.30,mgmt:0.005,perf:0.20,lpMult:1.35,rcPerf:1.25,goal:0.18}
 ];
 function VOL(){return VOLP.find(v=>v.id===S.vol)}
 const BUDGET=[
@@ -699,10 +699,10 @@ const GOALS=[
 ];
 function GOALTXT(g){return typeof g.d==='function'?g.d():g.d}
 const RIVALS=[
- {nm:"Pont-Levis Associés",boss:"Rayon Daglio",skill:0.575,vol:0.095,aum:150},
- {nm:"Médaillon d'Or",boss:"Jim Simonet",skill:0.70,vol:0.075,aum:60},
- {nm:"Millénaire Partners",boss:"Isidore Anglaidre",skill:0.635,vol:0.085,aum:170,poacher:1.6},
- {nm:"Citadelle Nord",boss:"Ken Griffon",skill:0.645,vol:0.115,aum:140,poacher:1.3}
+ {nm:"Pont-Levis Associés",boss:"Rayon Daglio",skill:0.615,vol:0.095,aum:150},
+ {nm:"Médaillon d'Or",boss:"Jim Simonet",skill:0.730,vol:0.075,aum:60},
+ {nm:"Millénaire Partners",boss:"Isidore Anglaidre",skill:0.665,vol:0.085,aum:170,poacher:1.6},
+ {nm:"Citadelle Nord",boss:"Ken Griffon",skill:0.675,vol:0.115,aum:140,poacher:1.3}
 ];
 
 /* ════════════════════ 3. ÉVÉNEMENTS ════════════════════ */
@@ -2108,7 +2108,7 @@ function drawReturns(){
 function rivalReturns(){
  return S.rivals.map(rv=>{
    let e=0;for(let k=0;k<K;k++){const s=rng()<rv.skill?Math.sign(S.f[k]||1):-Math.sign(S.f[k]||1);e+=s*S.f[k]}
-   const r=(rv.vol/2)*(0.62*e/2+0.80*gauss())-0.011;
+   const r=(rv.vol/2)*(0.70*e/2+0.78*gauss())-0.008;
    return r;
  });
 }
@@ -3352,7 +3352,7 @@ function resolveQuarter(){
  if(S.commRes)lpD.push([`Engagement « ${S.comm.nm.toLowerCase()} » ${S.commRes.ok?'tenu':'manqué'}`,S.commRes.ok?S.comm.win.lp:S.comm.lose.lp]);
  else if(S.comm&&S.comm.id==='none')lpD.push(['Aucune communication ce trimestre',S.comm.lose.lp]);
  if(dd>0.10)lpD.push(['Repli au-delà de 10 %',-(dd-0.10)*70]);
- lpD.push(['Écart à la médiane des concurrents',(net-med)*90]);
+ lpD.push(['Écart à la médiane des concurrents',(net-med)*115]);
  if(S.budBp>70)lpD.push(['Facture d\'exploitation jugée lourde',-1.5]);
  if(S.marginCall)lpD.push(['Liquidation forcée sur appel de marge',-7]);
  const lpMult=(S.flighty?1.25:1)*PROF().lpMult*VOL().lpMult;
@@ -3374,16 +3374,20 @@ function resolveQuarter(){
  /* débauchage / collecte */
  S.poachMsg=null;
  const rel=qTotal-med;
- const pOut=Math.min(0.95,(0.22+Math.max(0,-rel)*14+(S.lp<40?0.3:0)+(dd>0.10?0.2:0)+(S.flighty?0.15:0))*SIZE().flowMult);
- const pIn=Math.min(0.8,0.08+Math.max(0,rel)*14+(S.lp>70?0.2:0)+(S.nav>=S.hwm-1e-9?0.1:0));
- if(rng()<pOut){const out=Math.min(0.25,uni(0.02,0.09)*(1+Math.max(0,-rel)*12+(S.lp<30?0.6:0)));S.flows-=out*S.nav;S.qFlow=(S.qFlow||0)-out*S.nav;S.nav*=(1-out);
+ /* les allocataires comparent : c'est l'écart à la médiane des concurrents qui commande, pas la performance absolue */
+ const pOut=Math.min(0.95,(0.06+Math.max(0,-rel)*32+(S.lp<40?0.20:0)+(dd>0.10?0.12:0)+(S.flighty?0.10:0))*SIZE().flowMult);
+ const pIn=Math.min(0.85,0.05+Math.max(0,rel)*32+(S.lp>70?0.12:0)+(S.nav>=S.hwm-1e-9?0.06:0));
+ const doOut=()=>{const out=Math.min(0.30,uni(0.01,0.05)*(1+Math.max(0,-rel)*30+(S.lp<30?0.5:0)));S.flows-=out*S.nav;S.qFlow=(S.qFlow||0)-out*S.nav;S.nav*=(1-out);
    const rv=pick(S.rivals.filter(x=>x.last>qTotal))||S.rivals[0];
-   S.poachMsg=`Rachats : ${(out*100).toFixed(1)} % de l'encours sont partis${rel<-0.005?` vers ${rv.nm}`:''}.`;
+   S.poachMsg=`Rachats : ${(out*100).toFixed(1)} % de l'encours sont partis${rel<-0.005?` vers ${rv.nm}`:''}. ${rel<-0.001?`Vous avez fait ${pct(Math.abs(rel),1)} de moins que la médiane des concurrents ce trimestre.`:'Les allocataires ne vous reprochent pas votre performance, seulement leur propre calendrier.'}`;
    if(rng()<(0.5+S.poachBoost)*RETM[S.bud.ret]*(rel<-0.005?1:0.4)){S.execPenalty*=1.14;S.poachMsg+=` ${(pick(S.rivals.filter(x=>x.poacher))||S.rivals[2]).boss} a débauché deux de vos gérants : coûts d'exécution +14 % durablement.`}}
- else if(rng()<pIn){const inn=Math.min(0.2,uni(0.01,0.07)*(1+Math.max(0,rel)*10));S.flows+=inn*S.nav;S.qFlow=(S.qFlow||0)+inn*S.nav;S.nav*=(1+inn);
-   S.poachMsg=`Collecte : ${(inn*100).toFixed(1)} % d'encours supplémentaire.`;
+ const doIn=()=>{const inn=Math.min(0.25,uni(0.01,0.05)*(1+Math.max(0,rel)*28));S.flows+=inn*S.nav;S.qFlow=(S.qFlow||0)+inn*S.nav;S.nav*=(1+inn);
+   S.poachMsg=`Collecte : ${(inn*100).toFixed(1)} % d'encours supplémentaire.${rel>0.001?` Vous avez battu la médiane des concurrents de ${pct(rel,1)} ce trimestre, et ça se sait.`:''}`;
    if(S.bud.ret===2&&rng()<0.4){S.execPenalty=Math.max(0.7,S.execPenalty*0.92);S.poachMsg+=" Vous avez recruté un trader chez un concurrent : coûts d'exécution −8 %."}}
- S.regimes.push(S.truth);S.regime=S.truth;S.q++;
+ /* le sens du flux est commandé par l'écart aux concurrents ; la probabilité module l'intensité */
+ if(rel>0.002){if(rng()<pIn)doIn();else if(rng()<pOut*0.45)doOut()}
+ else{if(rng()<pOut)doOut();else if(rng()<pIn*0.45)doIn()}
+S.regimes.push(S.truth);S.regime=S.truth;S.q++;
  S.press=pressFeed({qTotal});S.lastPress=S.press[0]?S.press[0].t:null;
  if(S.maxdd>=0.28)S.over='dd';
  else if(S.lp<=8)S.over='lp';
