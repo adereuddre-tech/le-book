@@ -2040,7 +2040,8 @@ function newGame(seed,prof,arch,desk,vol,size,univ,dur){
    bPrev:INSTR.map(x=>[...x.b]),rupture:null,rumors:[],
    k:new Array(N).fill(0),rets:[],navs:[100],regimes:[],
    regime:'range',crowd:new Array(N).fill(0),lastR:new Array(N).fill(0),
-   bud:{exec:1,risk:1,res:1,ret:1},goal:null,everMarginCall:0,capWarned:0,budBp:0,mgrFees:0,mgrCosts:0,mgrQ:null,
+   bud:{exec:1,risk:1,res:1,ret:1},goal:null,everMarginCall:0,capWarned:0,
+   streak:0,streakMax:0,goalsWon:0,sweeps:0,commNone:0,qNeg:0,mguMax:0,budBp:0,mgrFees:0,mgrCosts:0,mgrQ:null,
    execPenalty:1,star:-1,leak:DESKS.find(d=>d.id===desk).leak||false,
    stop:A.stop,carry:false,noise:false,flighty:false,
    totalTC:0,totalOps:0,incidents:[],poaches:[],usedEv:[],usedMacro:[],usedTrader:[],usedExec:[],poachBoost:0,tcMultQ:1,leakQ:false,qLog:[],
@@ -2638,26 +2639,50 @@ function showGauge(id){
 app.addEventListener('click',e=>{const g=e.target.closest('[data-gauge]');if(g&&S)showGauge(g.dataset.gauge)});
 /* ---------- palmarès et hauts faits ---------- */
 const HALLKEY='lebook_hall_v1',FEATKEY='lebook_feats_v1';
+/* Hauts faits, cinq paliers de difficulté croissante.
+   tq : prédicat évalué à la clôture de chaque trimestre sur goalCtx.
+   tf : prédicat évalué au rapport final.
+   sans prédicat : attribué par le code au moment de l'action. */
+const TIERS=["Débuts","Métier","Maîtrise","Exploit","Légende"];
 const FEATS=[
- {id:'first', ic:'🌱', nm:"Premier sang", d:"Boucler un trimestre en gain."},
- {id:'full',  ic:'🏁', nm:"Jusqu'au bout", d:"Tenir les huit trimestres sans être débarqué."},
- {id:'surv',  ic:'⚓', nm:"Le survivant", d:"Revenir au plus haut après un repli de plus de 20 %."},
- {id:'clean', ic:'🧼', nm:"Mains propres", d:"Terminer une partie sans le moindre incident opérationnel."},
- {id:'ascet', ic:'🕯️', nm:"L'ascète", d:"Terminer une partie sans acheter une seule source."},
- {id:'omni',  ic:'📡', nm:"Tout entendre", d:"Acheter toutes les sources d'un même trimestre."},
- {id:'parole',ic:'🤝', nm:"Parole tenue", d:"Tenir un engagement de forte conviction."},
- {id:'first1',ic:'👑', nm:"Premier de la classe", d:"Finir la partie en tête des cinq fonds."},
- {id:'mega',  ic:'🏙️', nm:"Le mastodonte", d:"Aller au bout d'une partie à 10 Md$."},
- {id:'bill',  ic:'💰', nm:"Milliardaire", d:"Dépasser 1 Md$ de gains de gérant."},
- {id:'steel', ic:'🛡️', nm:"Book d'acier", d:"Finir une partie avec un repli maximal sous 10 %."},
- {id:'cool',  ic:'⏳', nm:"Sang-froid", d:"Laisser un minuteur expirer sans décider."},
- {id:'lev',   ic:'🎰', nm:"Tout sur le rouge", d:"Finir un trimestre en gain avec une position à cinq unités."},
- {id:'coche', ic:'🎯', nm:"Prendre le train", d:"Gagner plus de 1 % en renforçant sur une dépêche."},
- {id:'contra',ic:'🪃', nm:"Le contrarien", d:"Gagner en prenant le contre-pied d'un concurrent."},
- {id:'disc',  ic:'📏', nm:"Irréprochable", d:"Ne jamais sortir de la bande de volatilité de la partie."},
- {id:'psr',   ic:'🔬', nm:"Statistiquement crédible", d:"Finir avec un Sharpe probabiliste au-dessus de 95 %."},
- {id:'lp90',  ic:'💚', nm:"Chouchou des investisseurs", d:"Atteindre 90 de confiance investisseurs."}
+ {id:'first', tier:0,ic:'🌱',nm:"Trois d'affilée",d:"Enchaîner trois trimestres positifs dans une même partie.",tq:c=>c.streak>=3},
+ {id:'full',  tier:0,ic:'🏁',nm:"Jusqu'au bout",d:"Terminer un mandat sans être débarqué.",tf:f=>!f.over},
+ {id:'clean', tier:0,ic:'🧼',nm:"Mains propres",d:"Terminer un mandat complet sans le moindre incident opérationnel.",tf:f=>!f.over&&!f.inc},
+ {id:'coche', tier:0,ic:'🎯',nm:"Prendre le train",d:"Gagner plus de 1 % en renforçant sur une dépêche."},
+ {id:'cool',  tier:0,ic:'⏳',nm:"Sang-froid",d:"Laisser un minuteur expirer sans décider."},
+ {id:'goal1', tier:0,ic:'✅',nm:"Objectif atteint",d:"Tenir trois objectifs trimestriels dans une même partie.",tf:f=>f.goals>=3},
+ {id:'parole',tier:1,ic:'🤝',nm:"Parole tenue",d:"Tenir un engagement de conviction forte.",tq:c=>c.comm==='fort'&&c.commOK},
+ {id:'steel', tier:1,ic:'🛡️',nm:"Book d'acier",d:"Terminer un mandat complet avec un repli maximal sous 8 %.",tf:f=>!f.over&&f.maxdd<0.08},
+ {id:'contra',tier:1,ic:'🪃',nm:"Le contrarien",d:"Gagner en prenant le contre-pied d'un concurrent."},
+ {id:'lp90',  tier:1,ic:'💚',nm:"Chouchou des investisseurs",d:"Atteindre 90 de confiance investisseurs.",tq:c=>c.lp>=90},
+ {id:'omni',  tier:1,ic:'📡',nm:"Tout entendre",d:"Acheter toutes les sources d'un trimestre et finir ce trimestre positif.",tq:c=>c.rum>0&&c.rum===c.rumTot&&c.q>0},
+ {id:'gain50',tier:1,ic:'💵',nm:"La belle année",d:"Dépasser 50 M$ de gains de gérant sur une partie.",tf:f=>f.gains>0.050},
+ {id:'surv',  tier:1,ic:'⚓',nm:"Le survivant",d:"Revenir au plus haut après un repli de plus de 20 %."},
+ {id:'first1',tier:2,ic:'👑',nm:"Premier de la classe",d:"Terminer un mandat en tête des cinq fonds.",tf:f=>f.rank===1},
+ {id:'disc',  tier:2,ic:'📏',nm:"Irréprochable",d:"Ne jamais sortir de la bande de volatilité d'un mandat d'au moins huit trimestres.",tf:f=>!f.over&&!f.outBand&&f.q>=8},
+ {id:'ascet', tier:2,ic:'🕯️',nm:"L'ascète",d:"Terminer un mandat complet sans acheter une seule source, en performance positive.",tf:f=>!f.over&&!f.rum&&f.cagr>0},
+ {id:'lev',   tier:2,ic:'🎰',nm:"Tout sur le rouge",d:"Finir un trimestre en gain avec une position à cinq unités et sans appel de marge.",tq:c=>c.q>0&&c.maxK>=5&&!c.marginCall},
+ {id:'sweep', tier:2,ic:'🧹',nm:"Table rase",d:"Battre les quatre concurrents sur un même trimestre.",tq:c=>c.beatAll},
+ {id:'goal8', tier:2,ic:'🎖️',nm:"Le collectionneur",d:"Tenir six objectifs trimestriels dans une même partie.",tf:f=>f.goals>=6},
+ {id:'gain150',tier:2,ic:'💰',nm:"Le gros chèque",d:"Dépasser 150 M$ de gains de gérant sur une partie.",tf:f=>f.gains>0.150},
+ {id:'nomargin',tier:2,ic:'🧯',nm:"Jamais appelé",d:"Terminer un mandat complet sans appel de marge, après avoir dépassé 40 % de marge utilisée.",tf:f=>!f.over&&!f.mc&&f.mguMax>0.40},
+ {id:'mega',  tier:3,ic:'🏙️',nm:"Le mastodonte",d:"Terminer un mandat complet en mastodonte, univers étendu.",tf:f=>!f.over&&f.size==='mega'&&f.univ==='ext'},
+ {id:'cycle', tier:3,ic:'🗓️',nm:"Le cycle complet",d:"Terminer les douze trimestres du format long.",tf:f=>!f.over&&f.dur==='saison'},
+ {id:'psr',   tier:3,ic:'🔬',nm:"Statistiquement crédible",d:"Terminer avec un Sharpe probabiliste au-dessus de 95 %.",tf:f=>f.psr>0.95},
+ {id:'crise', tier:3,ic:'🌊',nm:"Debout dans la tempête",d:"Terminer un trimestre de crise au-dessus de l'objectif du mandat.",tq:c=>c.regime==='crise'&&c.q>=c.goalQ},
+ {id:'streak6',tier:3,ic:'📈',nm:"La série",d:"Enchaîner six trimestres positifs d'affilée.",tq:c=>c.streak>=6},
+ {id:'double',tier:3,ic:'🚀',nm:"Doubler la mise",d:"Terminer un mandat avec un encours au moins doublé.",tf:f=>f.idx>=2},
+ {id:'sweep3',tier:3,ic:'🥊',nm:"La démonstration",d:"Battre les quatre concurrents sur trois trimestres d'une même partie.",tf:f=>f.sweeps>=3},
+ {id:'quiet', tier:3,ic:'🤫',nm:"L'invisible",d:"Terminer un mandat complet en silence radio à chaque trimestre, et premier des cinq fonds.",tf:f=>!f.over&&f.commNone===f.q&&f.rank===1},
+ {id:'perfect',tier:4,ic:'💎',nm:"Le mandat parfait",d:"Terminer un mandat d'au moins huit trimestres sans un seul trimestre négatif.",tf:f=>!f.over&&f.qNeg===0&&f.q>=8},
+ {id:'gain400',tier:4,ic:'🏦',nm:"La fortune",d:"Dépasser 400 M$ de gains de gérant sur une partie.",tf:f=>f.gains>0.400},
+ {id:'triple',tier:4,ic:'☄️',nm:"Tripler la mise",d:"Terminer un mandat avec un encours au moins triplé.",tf:f=>f.idx>=3},
+ {id:'ironman',tier:4,ic:'⛰️',nm:"L'homme de fer",d:"Terminer le cycle complet en mastodonte étendu, premier des cinq fonds, sans jamais être appelé en marge.",tf:f=>!f.over&&f.dur==='saison'&&f.size==='mega'&&f.univ==='ext'&&f.rank===1&&!f.mc},
+ {id:'oracle',tier:4,ic:'🔮',nm:"L'oracle",d:"Tenir dix objectifs trimestriels dans une même partie.",tf:f=>f.goals>=10},
+ {id:'monk',  tier:4,ic:'🧘',nm:"Le moine et la montagne",d:"Terminer un mandat complet sans une source, sans incident, et premier des cinq fonds.",tf:f=>!f.over&&!f.rum&&!f.inc&&f.rank===1},
+ {id:'grail', tier:4,ic:'🏆',nm:"Le Graal",d:"Terminer un mandat complet avec un repli maximal sous 5 % et un Sharpe probabiliste au-dessus de 95 %.",tf:f=>!f.over&&f.maxdd<0.05&&f.psr>0.95}
 ];
+
 function loadJ(k,def){try{const st=store();if(!st)return def;const v=st.getItem(k);return v?JSON.parse(v):def}catch(e){return def}}
 function saveJ(k,v){try{const st=store();if(st)st.setItem(k,JSON.stringify(v))}catch(e){}}
 function unlocked(){return loadJ(FEATKEY,[])}
@@ -2680,8 +2705,16 @@ function screenHall(back){
     <span class="hval"><b class="gold-g">${score(r.g)}</b><span class="hsub ${cls(r.c)}">${sgnp(r.c,0)} par an</span></span>
    </div>`).join(''):`<p class="note">Aucune partie terminée pour l'instant.</p>`}
   <div class="blockhead" style="margin-top:24px"><h2>Hauts faits</h2><span class="hint">${u.length} / ${FEATS.length}</span></div>
-  <div class="feats">${FEATS.map(f=>`<div class="feat ${u.includes(f.id)?'on':''}"><span class="fic">${f.ic}</span><b>${f.nm}</b><span class="fd">${f.d}</span></div>`).join('')}</div>
-  <button class="cta" id="hback">Retour</button></div>`;
+  ${TIERS.map((tn,ti)=>{const fs=FEATS.filter(f=>f.tier===ti),nu=fs.filter(f=>u.includes(f.id)).length;
+   return `<div class="blockhead" style="margin-top:14px"><h2 style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)">${tn}</h2><span class="hint">${nu} / ${fs.length}</span></div>
+   <div class="feats">${fs.map(f=>`<div class="feat ${u.includes(f.id)?'on':''}"><span class="fic">${f.ic}</span><b>${f.nm}</b><span class="fd">${f.d}</span></div>`).join('')}</div>`}).join('')}
+  <button class="cta" id="hback">Retour</button>
+  <button class="cta ghost" id="hreset" style="margin-top:8px">Réinitialiser le palmarès</button></div>`;
+ document.getElementById('hreset').onclick=()=>{
+  const b=document.getElementById('hreset');
+  if(b.dataset.armed){saveJ(HALLKEY,[]);saveJ(FEATKEY,[]);toast('Palmarès et hauts faits effacés.');screenHall(back);return}
+  b.dataset.armed='1';b.textContent='Confirmer : effacer les meilleures années et les hauts faits';b.classList.add('gold');
+ };
  document.getElementById('hback').onclick=()=>{back();window.scrollTo(0,0)};
  window.scrollTo(0,0);
 }
@@ -3488,11 +3521,10 @@ function resolveQuarter(){
  S.idx*=(1+qTotal);
  if(S.maxdd>0.20&&S.idx>=S.hwmIdx){S.fl.surv=1;award('surv')}
  if(S.idx>S.hwmIdx)S.hwmIdx=S.idx;
- if(qTotal>0){S.fl.first=1;award('first');if(S.k.some(v=>Math.abs(v)===5)){S.fl.lev=1;award('lev')}}
+ if(qTotal>0)S.fl.first=1;
  if(Math.abs(pvol(weights(S.k))-S.tgt)/S.tgt>ARCH().band)S.outBand=(S.outBand||0)+1;
- if(S.lp>=90){S.fl.lp90=1;award('lp90')}
- if(S.commRes&&S.commRes.ok&&S.comm.id==='fort'){S.fl.parole=1;award('parole')}
- if((S.mgrFees-S.mgrCosts)>1){S.fl.bill=1;award('bill')}
+ if(S.lp>=90)S.fl.lp90=1;
+ if(S.commRes&&S.commRes.ok&&S.comm.id==='fort')S.fl.parole=1;
  S.peakIdx=Math.max(S.peakIdx||1,S.idx);S.maxdd=Math.max(S.maxdd,1-S.idx/S.peakIdx);
  S.totalOps+=(S.qOps||0);
  S.mgrFees=(S.mgrFees||0)+(mgmt+perf)*navBefore;refreshGain();
@@ -3549,12 +3581,21 @@ function resolveQuarter(){
  if(rel>0.002){if(rng()<pIn)doIn();else if(rng()<pOut*0.45)doOut()}
  else{if(rng()<pOut)doOut();else if(rng()<pIn*0.45)doIn()}
  /* objectif du trimestre */
+ S.streak=qTotal>0?(S.streak||0)+1:0;S.streakMax=Math.max(S.streakMax||0,S.streak);
+ if(qTotal<=0)S.qNeg=(S.qNeg||0)+1;
+ if(S.comm&&S.comm.id==='none')S.commNone=(S.commNone||0)+1;
+ S.mguMax=Math.max(S.mguMax||0,marginPct(S.k));
  if(S.goal&&typeof S.goal.t==='function'){
   const ok=!!S.goal.t(goalCtx({qTotal,med,rank:rivalRank(),dd,navBefore:S.navQ0}));
   const bon=ok?S.goal.b*S.aum0:0;
   if(ok)S.mgrFees+=bon;
   S.qGoal={nm:S.goal.nm,d:S.goal.d,ok,bonus:bon};
+  if(ok)S.goalsWon=(S.goalsWon||0)+1;
  }
+ {const fc=goalCtx({qTotal,med,rank:rivalRank(),dd,navBefore:S.navQ0});
+  fc.streak=S.streak;
+  if(fc.beatAll)S.sweeps=(S.sweeps||0)+1;
+  FEATS.forEach(f=>{if(f.tq){try{if(f.tq(fc))award(f.id)}catch(e){}}})}
  S.prevRel=qTotal-med;
  S.regimes.push(S.truth);S.regime=S.truth;S.q++;
  S.press=pressFeed({qTotal});S.lastPress=S.press[0]?S.press[0].t:null;
@@ -3860,12 +3901,11 @@ function screenFinal(){
  const psr=n>2?normCdf(srQ*Math.sqrt(n-1)/den):0.5;
  const seSR=Math.sqrt((1+srQ*srQ/2)/Math.max(1,n-1))*2;
  const rank=1+S.rivals.filter(x=>x.cum>tot).length;
- if(!S.over){S.fl.full=1;award('full');if(S.size==='mega'){S.fl.mega=1;award('mega')}}
- if(rank===1){S.fl.first1=1;award('first1')}
- if(!S.incidents.length){S.fl.clean=1;award('clean')}
- if(!S.rumBought){S.fl.ascet=1;award('ascet')}
- if(S.maxdd<0.10&&S.q>=4){S.fl.steel=1;award('steel')}
- if(!S.outBand&&S.q>=4){S.fl.disc=1;award('disc')}
+ S.finalCtx={over:S.over,rank,cagr,tot,gains:S.mgrFees-S.mgrCosts,maxdd:S.maxdd,q:S.q,idx:S.idx,psr,
+  inc:S.incidents.length,rum:S.rumBought||0,outBand:!!S.outBand,mc:!!S.everMarginCall,
+  size:S.size,univ:S.univ,dur:S.dur,goals:S.goalsWon||0,sweeps:S.sweeps||0,
+  commNone:S.commNone||0,qNeg:S.qNeg||0,mguMax:S.mguMax||0};
+ FEATS.forEach(f=>{if(f.tf){try{if(f.tf(S.finalCtx))award(f.id)}catch(e){}}});
  let verdict,vtxt;
  if(S.over==='dd'){verdict="Le fonds est liquidé";vtxt=`La perte a dépassé 28 %. Les clauses de rachat se sont déclenchées en cascade au trimestre ${S.q}.`}
  else if(S.over==='lp'){verdict="Les rachats l'ont emporté";vtxt="La base d'investisseurs s'est vidée avant que la thèse n'ait le temps de se réaliser. C'est la façon la plus courante de perdre en gestion."}
@@ -3916,7 +3956,6 @@ function screenFinal(){
   <button class="cta ghost" id="hall2">Palmarès et hauts faits</button>
   <button class="cta" id="again">Rejouer avec d'autres choix</button>
   <button class="cta ghost" id="same">Rejouer la même configuration (graine ${S.seed})</button></div>`;
- if(psr>0.95){S.fl.psr=1;award('psr')}
  recordRun({verdict,cagr,rank});
  document.getElementById('hall2').onclick=()=>screenHall(screenFinal);
  document.getElementById('share').onclick=async()=>{
