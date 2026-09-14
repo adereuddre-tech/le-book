@@ -174,6 +174,8 @@ em{font-style:italic;color:var(--txt)}
 .fg .ft2{position:relative;display:block;width:100%;height:5px;background:var(--panel2);border-radius:3px;overflow:hidden}
 .fg .ft2 i{position:absolute;top:0;bottom:0;border-radius:3px}
 .fg .ft2 em{position:absolute;top:-1px;bottom:-1px;width:1px;background:var(--line2)}
+.fg .ft2.lin em{width:2px;margin-left:-1px;background:var(--gold,#c9a86a);box-shadow:0 0 3px rgba(201,168,106,.8);z-index:3}
+.fg .ft2.lin .band{border-left:1px solid rgba(201,168,106,.35);border-right:1px solid rgba(201,168,106,.35)}
 .fg .ft2.lin .band{position:absolute;top:0;bottom:0;background:rgba(79,169,140,.22)}
 .fg b{font-family:var(--mono);font-size:11px;font-weight:500;white-space:nowrap}
 .fg.hot{border-color:var(--gold)}
@@ -2416,7 +2418,8 @@ function statusBar(done){
  const lab=done?`APRÈS ${S.q} TRIMESTRE${S.q>1?'S':''}`:`TRIMESTRE ${Math.min(S.q+1,QT())} / ${QT()}`;
  const gc=v=>v>55?'var(--long)':v>25?'var(--warn)':'var(--short)';
  const rank=1+S.rivals.filter(r=>r.cum>S.idx).length;
- const w=weights(S.k),ex=factorExpo(w),sp=pvol(w),c=costsNow(),ctot=c.ops+c.tc+c.mgmt+c.info;
+ const w=weights(S.k),ex=factorExpo(w),c=costsNow(),ctot=c.ops+c.tc+c.mgmt+c.info;
+ const sp=riskShown(w).total;   /* même grandeur que le panneau du book */
  const band=ARCH().band,rk=S.tgt>0?sp/S.tgt:0;
  const rcol=Math.abs(rk-1)<=band?'var(--long)':(rk>1+band?'var(--short)':'var(--warn)');
  const fg=k=>{const v=ex[k],pc=Math.min(50,Math.abs(v)/0.15*50);
@@ -2435,7 +2438,7 @@ function statusBar(done){
   <div class="srow">
    ${[0,1,2,3].map(fg).join('')}
    <button class="fg" data-gauge="risk"><span class="fl">Risque</span><span class="ft2 lin"><span class="band" style="left:${(1-band)*50}%;width:${band*100}%"></span><em style="left:50%"></em><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b>${(sp*100).toFixed(1)}/${(S.tgt*100).toFixed(0)}</b></button>
-   <button class="fg" data-gauge="cost"><span class="fl">Coûts T</span><span class="ft2 lin"><em style="left:50%"></em><i style="left:0;width:${Math.min(100,ctot/1.6)}%;background:${ctot>90?'var(--short)':ctot>65?'var(--warn)':'var(--dim)'}"></i></span><b>${ctot.toFixed(0)} pb</b></button>
+   <button class="fg" data-gauge="cost"><span class="fl">Coûts T</span><span class="ft2"><i style="left:0;width:${Math.min(100,ctot/1.6)}%;background:${ctot>90?'var(--short)':ctot>65?'var(--warn)':'var(--dim)'}"></i></span><b>${ctot.toFixed(0)} pb</b></button>
   </div>${ticker()}</div>`;
 }
 const sd1=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${Math.round(Math.abs(x))}</b>`;
@@ -2578,7 +2581,7 @@ function showGauge(id){
    <p style="margin-top:10px">Au-delà de <em>28 % de perte</em> depuis le pic, le fonds est liquidé.</p>`);
  } else if(id==='perf'){
   const rows=S.rets.map((r,i)=>[`T${i+1} · ${REG[S.regimes[i]].nm}`,`<span class="${cls(r)}">${sgn(r,2)}</span>`,`<span class="${cls(r)}">${M$(r*S.navs[i])}</span>`]);
-  openModal('Performance cumulée nette',`<p>Ce qu'un investisseur entré au premier jour a gagné ou perdu, <em>après tout</em> : frais de gestion (${(VOL().mgmt*400).toFixed(1)} % par an), commission de performance (${(VOL().perf*100).toFixed(0)} % au-dessus du plus haut historique), coûts de transaction, budget d'exploitation refacturé et incidents. Le collatéral rapporte le taux au jour le jour (${(S.rate*100).toFixed(2)} % actuellement), inclus.</p>
+  openModal('Performance cumulée nette',`<p>Ce qu'un investisseur entré au premier jour a gagné ou perdu, <em>après tout</em> : frais de gestion (${(VOL().mgmt*400).toFixed(1)} % par an), commission de performance (${(VOL().perf*100).toFixed(0)} % au-dessus du plus haut historique), coûts de transaction, budget d'exploitation refacturé et incidents. Le collatéral rapporte le taux au jour le jour (${(S.rate*100).toFixed(1)} % actuellement), inclus.</p>
    ${tbl([['Depuis le début',`<span class="${cls(S.nav/S.aum0-1)}">${sgn(S.nav/S.aum0-1,2)}</span>`,`<span class="${cls(S.nav-S.aum0)}">${bn(S.nav-S.aum0,2)}</span>`],['Coûts de transaction cumulés','',`−${mm(S.totalTC)}`],['Budget d\'exploitation cumulé','',`−${mm(S.totalOps)}`],...rows],['Période','Net','Md$'])}
    <p style="margin-top:10px">L'objectif de votre mandat est <em>${(VOL().goal*100).toFixed(0)} % net annualisés</em> sur deux ans, soit environ +${((Math.pow(1+VOL().goal,2)-1)*100).toFixed(0)} % cumulés.</p>`);
  } else if(id==='lp'){
@@ -2596,9 +2599,9 @@ function showGauge(id){
  } else if(id[0]==='f'){
   const k=+id[1],f=FACT[k];
   const rows=INSTR.map((x,i)=>({x,i,v:w[i]*x.sig*x.b[k]})).filter(o=>Math.abs(o.v)>1e-6).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v))
-   .map(o=>[`${o.x.sym} <span style="color:var(--dimmer)">${S.k[o.i]>0?'+':''}${S.k[o.i]} · b=${o.x.b[k]>=0?'+':'−'}${Math.abs(o.x.b[k]).toFixed(2)}</span>`,`<span class="${cls(o.v)}">${o.v>=0?'+':'−'}${Math.abs(o.v*100).toFixed(2)}</span>`,`<span class="${cls(o.v)}">${M$(o.v/2*S.nav)}</span>`]);
+   .map(o=>[`${o.x.sym} <span style="color:var(--dimmer)">${S.k[o.i]>0?'+':''}${S.k[o.i]} · b=${o.x.b[k]>=0?'+':'−'}${Math.abs(o.x.b[k]).toFixed(2)}</span>`,`<span class="${cls(o.v)}">${o.v>=0?'+':'−'}${Math.abs(o.v*100).toFixed(1)}</span>`,`<span class="${cls(o.v)}">${M$(o.v/2*S.nav)}</span>`]);
   openModal(`Facteur « ${f.nm.toLowerCase()} »`,`<p>Exposition nette de votre book à ce facteur, en points de volatilité annualisée : Σ<sub>i</sub> w<sub>i</sub>σ<sub>i</sub>b<sub>ik</sub>. Positif, vous gagnez si le facteur monte. La dernière colonne donne ce que vous rapporterait un mouvement de <em>+1 σ trimestriel</em> du facteur, marché par marché.</p>
-   ${tbl([['Exposition nette',`<span class="${cls(ex[k])}">${ex[k]>=0?'+':'−'}${Math.abs(ex[k]*100).toFixed(2)}</span>`,`<span class="${cls(ex[k])}">${M$(ex[k]/2*S.nav)}</span>`],...rows],['Marché','pts de vol','+1 σ ⇒'])}
+   ${tbl([['Exposition nette',`<span class="${cls(ex[k])}">${ex[k]>=0?'+':'−'}${Math.abs(ex[k]*100).toFixed(1)}</span>`,`<span class="${cls(ex[k])}">${M$(ex[k]/2*S.nav)}</span>`],...rows],['Marché','pts de vol','+1 σ ⇒'])}
    ${S.q>0?`<p style="margin-top:10px">Dernier trimestre, ce facteur a fait <em>${S.fLast?(S.fLast[k]>=0?'+':'−')+Math.abs(S.fLast[k]).toFixed(2):'—'} σ</em>.</p>`:''}`);
  } else if(id==='risk'){
   const vd=varDecomp(w),rc=riskContrib(w);
@@ -2760,14 +2763,14 @@ function phaseDesk(){
  let cEx=0;for(let i=0;i<N;i++)cEx+=tcost(1,i).cost;
  const cPct=cEx/Math.max(1e-9,S.nav)*100;
  phase(`TRIMESTRE ${S.q+1} · LE DESK`,"Le desk vous attend",
-  [`Budget validé : <b>${budgetBp().toFixed(0)} pb</b>, soit ${mm(budgetBp()*1e-4*S.nav)}.`,`${nr} rumeurs ont été collectées${S.rupture?', et une rupture factorielle signalée':''}.`,`Liquidité des marchés : <b>${lqNm}</b>. Ouvrir une unité sur chacun de vos ${N} marchés coûterait <b>${mm(cEx)}</b>, soit ${cPct.toFixed(2)} % de l'encours — ${L>1.2?'nettement plus cher que d\'habitude : mieux vaut réfléchir à deux fois avant de tout réarranger':L>1.05?'un peu plus cher que d\'habitude':L<0.95?'moins cher que d\'habitude, c\'est le moment de remettre le book en ordre':'le tarif habituel'}.`,`Le trimestre sera ${nev>=4?'très agité':nev>=3?'agité':'relativement calme'} : des dépêches sont attendues, dont certaines annoncées dans les rumeurs.`,"Vous positionnez le book pour les trois prochains mois."],
+  [`Budget validé : <b>${budgetBp().toFixed(0)} pb</b>, soit ${mm(budgetBp()*1e-4*S.nav)}.`,`${nr} rumeurs ont été collectées${S.rupture?', et une rupture factorielle signalée':''}.`,`Liquidité des marchés : <b>${lqNm}</b>. Ouvrir une unité sur chacun de vos ${N} marchés coûterait <b>${mm(cEx)}</b>, soit ${cPct.toFixed(1)} % de l'encours — ${L>1.2?'nettement plus cher que d\'habitude : mieux vaut réfléchir à deux fois avant de tout réarranger':L>1.05?'un peu plus cher que d\'habitude':L<0.95?'moins cher que d\'habitude, c\'est le moment de remettre le book en ordre':'le tarif habituel'}.`,`Le trimestre sera ${nev>=4?'très agité':nev>=3?'agité':'relativement calme'} : des dépêches sont attendues, dont certaines annoncées dans les rumeurs.`,"Vous positionnez le book pour les trois prochains mois."],
   "Voir le desk",()=>{if(S.preDesk&&(!S.preDesk.cond||S.preDesk.cond())){const ev=S.preDesk;S.preDesk=null;screenTraderEvent(ev,screenPlay)}else screenPlay()});
 }
 function phaseExec(){
  save('phaseExec');
  const n=INSTR.filter((x,i)=>S.k[i]!==S.k0[i]).length;
  phase(`TRIMESTRE ${S.q+1} · EXÉCUTION`,n?"Les traders passent vos ordres":"Aucun ordre à passer",
-  n?[`${n} marché${n>1?'s':''} à travailler, ${mm(S.pendingTC*S.nav)} de coûts estimés au tarif standard.`,`Liquidité du régime ×${S.liq.toFixed(2)} · taux au jour le jour ${(S.rate*100).toFixed(2)} %.`,"Le desk a son mot à dire sur la manière de faire."]:["Le book est reconduit tel quel. Le desk en profite pour vous parler d'autre chose."],
+  n?[`${n} marché${n>1?'s':''} à travailler, ${mm(S.pendingTC*S.nav)} de coûts estimés au tarif standard.`,`Liquidité du régime ×${S.liq.toFixed(2)} · taux au jour le jour ${(S.rate*100).toFixed(1)} %.`,"Le desk a son mot à dire sur la manière de faire."]:["Le book est reconduit tel quel. Le desk en profite pour vous parler d'autre chose."],
   "Aller sur le desk",screenExec);
 }
 function phaseLive(){
@@ -2841,7 +2844,7 @@ function drawBuds(){
      <b>${l.nm}</b><span>${l.bp} pb</span></button>`).join('')}</div>
    <details style="margin-top:8px"><summary>Détails</summary><ul class="efl">${b.lv.map(l=>`<li><b>${l.nm}</b> · ${l.bp} pb · ${l.ef}</li>`).join('')}</ul></details></div>`).join('');
  const bp=BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK().fixed*1e4;
- document.getElementById('btot').textContent=`${bp.toFixed(0)} pb · ${mm(bp*1e-4*S.nav)} · ${(bp*4/100).toFixed(2)} % par an`;
+ document.getElementById('btot').textContent=`${bp.toFixed(0)} pb · ${mm(bp*1e-4*S.nav)} · ${(bp*4/100).toFixed(1)} % par an`;
  app.querySelectorAll('.lvl').forEach(x=>x.onclick=()=>{
   const b0=budgetBp();S.mgrCosts-=S.qOps||0;S.bud[x.dataset.b]=+x.dataset.i;if(x.dataset.b==='exec')S.bud.ret=S.bud.exec;
   S.qOps=budgetBp()*1e-4*S.nav;S.mgrCosts+=S.qOps;drawBuds();refreshStatus();
@@ -2941,9 +2944,9 @@ function showMarket(i){
  openModal(`${x.sym} — ${x.nm}`,`<p>${x.sub}. Volatilité annualisée ${(x.sig*100).toFixed(1)} %. Une unité de risque vaut ici <em>${moneyB(Math.abs(notionalBn(1,i)))}</em> de notionnel ; une unité de plus coûterait ${t1.bp.toFixed(1)} pb, soit ${mm(t1.cost)}.</p>
   <p style="margin:12px 0 4px">Sensibilité aux facteurs</p><p>${bw}</p>
   <p style="margin:12px 0 4px">Signaux du desk</p>
-  ${tbl([['Tendance',`<span class="${e.t[i]>0?'pos-g':e.t[i]<0?'neg-g':'dim-g'}">${chip(e.t[i])} ${lab(e.t[i])}</span>`,`${(0.12*e.t[i]*x.sigQ*100).toFixed(2).replace('-','−')} %`],
-        ['Portage',`<span class="${e.c[i]>0?'pos-g':e.c[i]<0?'neg-g':'dim-g'}">${chip(e.c[i])} ${lab(e.c[i])}</span>`,`${(0.10*e.c[i]*x.sigQ*100).toFixed(2).replace('-','−')} %`],
-        ['Valeur',`<span class="${e.v[i]>0?'pos-g':e.v[i]<0?'neg-g':'dim-g'}">${chip(e.v[i])} ${lab(e.v[i])}</span>`,`${(0.08*e.v[i]*x.sigQ*100).toFixed(2).replace('-','−')} %`],
+  ${tbl([['Tendance',`<span class="${e.t[i]>0?'pos-g':e.t[i]<0?'neg-g':'dim-g'}">${chip(e.t[i])} ${lab(e.t[i])}</span>`,`${(0.12*e.t[i]*x.sigQ*100).toFixed(1).replace('-','−')} %`],
+        ['Portage',`<span class="${e.c[i]>0?'pos-g':e.c[i]<0?'neg-g':'dim-g'}">${chip(e.c[i])} ${lab(e.c[i])}</span>`,`${(0.10*e.c[i]*x.sigQ*100).toFixed(1).replace('-','−')} %`],
+        ['Valeur',`<span class="${e.v[i]>0?'pos-g':e.v[i]<0?'neg-g':'dim-g'}">${chip(e.v[i])} ${lab(e.v[i])}</span>`,`${(0.08*e.v[i]*x.sigQ*100).toFixed(1).replace('-','−')} %`],
         ['<b>Dérive attendue hors facteurs</b>','',`<b class="${cls(drift)}">${sgn(drift,2)}</b> par trimestre`]],['Signal','Estimation','Effet'])}
   <p style="margin-top:10px"><em>Tendance</em> — ${TCVTXT.t.d}</p><p><em>Portage</em> — ${TCVTXT.c.d[x.grp]}</p><p><em>Valeur</em> — ${TCVTXT.v.d}</p>
   <p>Ces estimations sont bruitées ; la précision dépend du budget de recherche (bruit ±${RESTCV[S.bud.res].toFixed(2)} cran). L'effet indiqué s'ajoute à ce que font les facteurs macro : sur un marché à ${(x.sig*100).toFixed(0)} % de vol, ${(x.sigQ*100).toFixed(1)} % par trimestre, c'est un pouce sur la balance, pas une certitude.</p>
@@ -3023,7 +3026,7 @@ function renderTC(){
  const el=document.getElementById('tc');if(!el)return;
  el.innerHTML=rows||`<p class="note" style="margin:0">Aucun ordre à passer : le book est inchangé, vous ne payez rien.</p>`;
  if(rows)el.innerHTML+=`<div class="kv" style="margin-top:8px"><span>Coût total des ordres</span><b class="neg-g">${mm(tot)} · ${sgn(-tot/S.nav,2)} de l'encours</b></div>
-  <p class="note">Multiplicateur d'exécution appliqué : ×${(EXECM[S.bud.exec]*DESK().mult(INSTR[0])*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult).toFixed(2)} sur les actions (budget desk, organisation, liquidité du régime ${S.liq.toFixed(2)}, taux ${(S.rate*100).toFixed(2)} %${S.execPenalty>1?', pénalité débauchage':''}).${S.star>=0?` <em>Votre recrutement du trimestre travaille sur ${INSTR[S.star].sym} : coûts divisés par trois sur ce marché.</em>`:''}</p>`;
+  <p class="note">Multiplicateur d'exécution appliqué : ×${(EXECM[S.bud.exec]*DESK().mult(INSTR[0])*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult).toFixed(2)} sur les actions (budget desk, organisation, liquidité du régime ${S.liq.toFixed(2)}, taux ${(S.rate*100).toFixed(1)} %${S.execPenalty>1?', pénalité débauchage':''}).${S.star>=0?` <em>Votre recrutement du trimestre travaille sur ${INSTR[S.star].sym} : coûts divisés par trois sur ce marché.</em>`:''}</p>`;
 }
 function commitOrders(){
  let tot=0;
