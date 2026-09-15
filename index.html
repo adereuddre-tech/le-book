@@ -121,6 +121,19 @@ em{font-style:italic;color:var(--txt)}
 .hval{text-align:right;flex-shrink:0;display:flex;flex-direction:column;gap:2px}
 .hval>b{font-family:var(--mono);font-size:15px}
 .bico{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;margin-right:10px;font-size:20px;line-height:1;vertical-align:middle;border-radius:50%;border:1.5px solid rgba(201,168,106,.55);background:radial-gradient(circle at 34% 28%,rgba(201,168,106,.22),rgba(201,168,106,.05) 70%);box-shadow:0 0 0 3px rgba(201,168,106,.07),inset 0 1px 2px rgba(255,255,255,.08)}
+.opay{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px;background:var(--panel2)}
+.opayhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.opayhead b{font-size:14px;color:var(--txt)}
+.opayev{font-family:var(--mono);font-size:16px;font-weight:600;white-space:nowrap}
+.opayev em{display:block;font-style:normal;font-size:10px;font-weight:400;color:var(--dimmer);text-align:right;letter-spacing:.04em}
+.opaybar{display:flex;gap:2px;margin:8px 0 6px;height:7px}
+.opaybar .opseg{border-radius:2px}
+.opaybar .up{background:var(--long)}
+.opaybar .dn{background:var(--short)}
+.opaybar .flat{background:var(--line2)}
+.opayleg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--dim)}
+.opayleg em{font-style:normal}
+.opayleg b{font-family:var(--mono)}
 .gzr{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:12.5px;padding:1px 0}
 .gzr span{color:var(--dim)}
 .gzr b{font-family:var(--mono)}
@@ -3231,7 +3244,10 @@ function screenMacroEvent(ev){
  const prof=PROF();
  const g=pnlGauge(imm,`${ev.t} — effet immédiat`);
  const mh=Math.max(...Object.values(ev.hit).map(Math.abs));
- if(mh>0.8)gauge(-(0.4+0.5*mh),-(0.2+0.2*mh),"Nervosité : investisseurs et comité lisent les mêmes dépêches que vous");
+ const gn=mh>0.8?gauge(-(0.4+0.5*mh),-(0.2+0.2*mh),"Nervosité : investisseurs et comité lisent les mêmes dépêches que vous"):{lp:0,rc:0};
+ /* on retient le total explicitement : le relire dans le journal par décalage d'indice
+    donnait la nervosité seule et faisait perdre des points sur une dépêche gagnante */
+ S.evImmG={lp:g.lp+gn.lp,rc:g.rc+gn.rc};
  /* scénarios de la suite du mouvement, tirés maintenant, révélés après */
  if(!S.sc){
   const raw=[0.10+Math.pow(rng(),1.6)*1.6,0.10+Math.pow(rng(),1.6)*1.2,0.08+Math.pow(rng(),1.8)*1.4];
@@ -3267,19 +3283,29 @@ function screenMacroEvent(ev){
   o.pay=SC.m.map(m=>payoff(t,m)-o.cost/S.nav);
   o.ev=o.pay.reduce((x,v,i)=>x+v*SC.p[i],0)});
  const UM=pickU(opts.flatMap(o=>o.pay.map(v=>v*S.nav)).concat(opts.map(o=>o.ev*S.nav)));
- const mat=`<table class="qt payt"><thead><tr><th>Option<br><span style="color:var(--dimmer);font-weight:400">${UM.s.trim()}</span></th>${['Continue','Stoppe','Retourne'].map((n,i)=>`<th>${n}<br><span style="color:var(--gold)">${Math.round(SC.p[i]*100)}%</span></th>`).join('')}<th>Moy.</th></tr></thead><tbody>
+ const matOLD=`<table class="qt payt"><thead><tr><th>Option<br><span style="color:var(--dimmer);font-weight:400">${UM.s.trim()}</span></th>${['Continue','Stoppe','Retourne'].map((n,i)=>`<th>${n}<br><span style="color:var(--gold)">${Math.round(SC.p[i]*100)}%</span></th>`).join('')}<th>Moy.</th></tr></thead><tbody>
   ${opts.map((o,i)=>`<tr><td>${({cut:'Couper',follow:'Renforcer',fade:'Contre-sens',none:prof.noAdj?'Modèle':'Tenir'})[o.a]}</td>${o.pay.map(v=>`<td class="${cls(v)}">${uShort(v*S.nav,UM)}</td>`).join('')}<td class="${cls(o.ev)}"><b>${uShort(o.ev*S.nav,UM)}</b></td></tr>`).join('')}
  </tbody></table>`;
+ const SCN=['Le mouvement continue','Il s\'arrête','Il se retourne'];
+ const mat=opts.map(o=>{
+  const nm={cut:'Couper de moitié',follow:'Renforcer',fade:'Prendre le contre-sens',none:prof.noAdj?'Laisser le modèle':'Tenir la position'}[o.a];
+  const segs=o.pay.map((v,i)=>`<span class="opseg ${v>0.0005?'up':v<-0.0005?'dn':'flat'}" style="flex:${Math.max(4,SC.p[i]*100)}"></span>`).join('');
+  const leg=o.pay.map((v,i)=>`<span><em>${SCN[i]}</em><span style="color:var(--dimmer)"> ${Math.round(SC.p[i]*100)} %</span> <b class="${cls(v)}">${uShort(v*S.nav,UM)}</b></span>`).join('');
+  return `<div class="opay">
+   <div class="opayhead"><b>${nm}</b><span class="opayev ${cls(o.ev)}">${uShort(o.ev*S.nav,UM)}<em>en moyenne</em></span></div>
+   <div class="opaybar">${segs}</div>
+   <div class="opayleg">${leg}</div>
+  </div>`}).join('');
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard">${evHead(ev.who,'news')}<h3>${ev.t}</h3><p>${ev.p}</p>
    <div class="shock">${chips}</div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px">
    <div class="kv nowrp"><span>Effet immédiat</span><b>${sgn(imm,2)} · ${mn(imm*navB)}</b></div>
-   <div class="kv nowrp"><span>Effets</span><b>${gz(g.lp,g.rc,'always')}</b></div>
+   <div class="kv nowrp"><span>Effets</span><b>${gz(S.evImmG.lp,S.evImmG.rc,'always')}</b></div>
   </div>
-  <div class="block"><div class="blockhead"><h2>Ce que rapporte chaque option</h2><span class="hint">suite du mouvement</span></div>
+  <div class="block"><div class="blockhead"><h2>Ce que rapporte chaque option</h2><span class="hint">sur la suite du mouvement</span></div>
    ${mat}
-   <details style="margin-top:6px"><summary>Comment lire ce tableau</summary><p class="note">La moitié du choc est déjà dans les prix. Le reste dépend de trois scénarios dont les probabilités sont affichées ; les montants incluent les coûts d'ajustement (fourchette élargie ×1,35) et supposent que vous êtes en position à temps — votre profil capte ${(prof.capture*100).toFixed(0)} % de l'ajustement, c'est déjà déduit. « Moy. » est l'espérance sur les trois scénarios.</p></details>
+   <details style="margin-top:6px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix. Le reste dépend de trois scénarios dont les probabilités sont affichées ; les montants incluent les coûts d'ajustement (fourchette élargie ×1,35) et supposent que vous êtes en position à temps — votre profil capte ${(prof.capture*100).toFixed(0)} % de l'ajustement, c'est déjà déduit. « Moy. » est l'espérance sur les trois scénarios.</p></details>
    <details style="margin-top:6px"><summary>Le détail, marché par marché</summary>
     <p class="note" style="margin:6px 0 4px">1 · Effet immédiat — la moitié du choc déjà passée dans les prix, appliquée à votre position actuelle.</p>
     ${tbl(touched.map(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ;
@@ -3342,7 +3368,7 @@ function resolveEvent(ev,touched,a,imm,navB){
    const g2=react>0.004?gauge(3,1,'Réaction offensive qui a payé'):react>=0?gauge(1,0,'Réaction offensive sans dégât'):gauge(-2,-3,'Réaction offensive qui a coûté');
    gr={lp:gr.lp+g2.lp,rc:gr.rc+g2.rc}}
  const flowLines=[];midFlows(total,flowLines);
- const ev0=S.gLog.length>=2?S.gLog[S.gLog.length-(a==='none'?2:3)]:null;
+ const ev0=S.evImmG||{lp:0,rc:0};S.evImmG=null;
  S.evLog.push({t:ev.t,pnl:total,m:total*navB,lp:(ev0?ev0.lp:0)+g.lp+gr.lp,rc:(ev0?ev0.rc:0)+g.rc+gr.rc});
  const flav=pk(EVFLAV,S.q*3+S.evIdx);
  const UE=pickU([imm*navB,resid*navR,cost,total*navB]);
