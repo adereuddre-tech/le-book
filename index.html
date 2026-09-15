@@ -2124,7 +2124,7 @@ function planQuarter(){
  const gav=QGOALS.filter(g=>!S.usedGoals.includes(g.nm));
  S.goal=pick(gav.length?gav:QGOALS);S.usedGoals.push(S.goal.nm);
  S.gSnap={lp:S.lp,rc:S.rc,k:[...S.k],inc:S.incidents?S.incidents.length:0,rank:rivalRank()};
- S.qGoal=null;S.qName=null;
+ S.qGoal=null;S.qName=null;S.lastG=null;
  /* ce sont des futures : le book repart à plat, on le reconstruit chaque trimestre */
  S.k=new Array(N).fill(0);S.k0=new Array(N).fill(0);
  S.rumors=[];S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
@@ -2328,14 +2328,17 @@ function screenIntro(){
    <div class="namerow"><button class="cta ghost" id="shuffle" style="margin:0">Proposez-m'en un</button></div>
   </div>
   <button class="cta gold" id="found">Fonder le fonds</button>
-  ${hasSave()?`<button class="cta ghost" id="resume">Reprendre la partie en cours</button>`:''}
+  ${hasSave()?`<button class="cta ghost" id="resume">Reprendre la partie en cours</button><button class="cta ghost" id="dropsave" style="margin-top:6px;font-size:12px;opacity:.6">Abandonner cette partie</button>`:''}
   <button class="cta ghost" id="hall">Palmarès et hauts faits</button>
  </div>`;
  const inp=document.getElementById('fname');
  inp.oninput=()=>{fundName=inp.value};
  document.getElementById('shuffle').onclick=()=>{fundName=randName();inp.value=fundName};
  document.getElementById('found').onclick=()=>{fundName=(inp.value||'').trim()||randName();screenSetup();window.scrollTo(0,0)};
- const rb=document.getElementById('resume');if(rb)rb.onclick=()=>loadGame();
+ const rb=document.getElementById('resume');
+ if(rb)rb.onclick=()=>{if(!loadGame())toast('Cette sauvegarde est inutilisable. Vous pouvez abandonner la partie et en lancer une nouvelle.')};
+ const db=document.getElementById('dropsave');
+ if(db)db.onclick=()=>{clearSave();toast('Partie abandonnée.');screenIntro()};
  document.getElementById('hall').onclick=()=>screenHall(screenIntro);
 }
 function feeLine(){
@@ -2446,8 +2449,8 @@ function statusBar(done){
   </div>
   <div class="srow">
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
-   <button class="tile" data-gauge="lp" style="flex:1.05"><span><i>Investisseurs</i><b>${Math.round(S.lp)}${S.gSnap?gzd(S.lp-S.gSnap.lp):''}${S.phase==='book'&&S._pv&&Math.abs(S._pv.lp)>=0.05?`<span class="${cls(S._pv.lp)}">→${Math.round(Math.max(0,Math.min(100,S.lp+S._pv.lp)))}</span>`:''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
-   <button class="tile" data-gauge="rc" style="flex:1.05"><span><i>Comité</i><b>${Math.round(S.rc)}${S.gSnap?gzd(S.rc-S.gSnap.rc):''}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?`<span class="${cls(S._pv.rc)}">→${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
+   <button class="tile" data-gauge="lp" style="flex:1.05"><span><i>Investisseurs</i><b>${Math.round(S.lp)}${S.lastG?gzd(S.lastG.lp):''}${S.phase==='book'&&S._pv&&Math.abs(S._pv.lp)>=0.05?`<span class="${cls(S._pv.lp)}">→${Math.round(Math.max(0,Math.min(100,S.lp+S._pv.lp)))}</span>`:''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
+   <button class="tile" data-gauge="rc" style="flex:1.05"><span><i>Comité</i><b>${Math.round(S.rc)}${S.lastG?gzd(S.lastG.rc):''}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?`<span class="${cls(S._pv.rc)}">→${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
    <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Vos gains</span><b id="gaintile" class="${(S.mgrFees-S.mgrCosts)>=0?'':'neg-g'}">${score(S.mgrFees-S.mgrCosts)}</b></button>
   </div>
   <div class="srow">
@@ -2470,7 +2473,7 @@ function gauge(dlp,drc,why){
  refreshGain();
  dlp=Math.max(-15,Math.min(15,dlp||0));drc=Math.max(-15,Math.min(15,drc||0));
  S.lp=Math.max(0,Math.min(100,S.lp+dlp));S.rc=Math.max(0,Math.min(100,S.rc+drc));
- if(Math.abs(dlp)>=0.05||Math.abs(drc)>=0.05){S.gLog.push({why,lp:dlp,rc:drc});
+ if(Math.abs(dlp)>=0.05||Math.abs(drc)>=0.05){S.gLog.push({why,lp:dlp,rc:drc});S.lastG={lp:dlp,rc:drc};
   toast(`${gz(dlp,drc)}<br><span style="color:var(--dim)">${why}</span>`)}
  refreshStatus();return {lp:dlp,rc:drc};
 }
@@ -2775,17 +2778,20 @@ function loadGame(){
  const st=store();if(!st)return false;
  try{
   const d=JSON.parse(st.getItem(SAVEKEY));if(!d)return false;
+  /* INSTR contient les 25 marchés tant que setUniverse n'a pas tourné : sans cette ligne,
+     d.b est plus court que INSTR et normB explose sur un marché fermé */
+  setUniverse(d.size,d.univ);
   rng=mulberry32(0);rngState=d.rngState;spare=d.spare===undefined?null:d.spare;U=d.U;
-  INSTR.forEach((x,i)=>{x.b=d.b[i];normB(x);x.sigQ=x.sig/2});buildCov();
+  INSTR.forEach((x,i)=>{if(d.b&&d.b[i])x.b=d.b[i];normB(x);x.sigQ=x.sig/2});buildCov();
   S=d;fundName=d.fundName;
   if(S.goal&&S.goal.nm)S.goal=QGOALS.find(g=>g.nm===S.goal.nm)||null;
   S.evQueue=(d.evQ||[]).map(evFromTag).filter(Boolean);S.preDesk=evFromTag(d.preD);
   const P={phaseOpen:()=>phaseOpen(),screenBudget:()=>screenBudget(),phaseDesk:()=>phaseDesk(),screenPlay:()=>screenPlay(),
    screenComm:()=>screenComm(),phaseExec:()=>phaseExec(),screenExec:()=>screenExec(),phaseLive:()=>phaseLive(),
-   stepEvents:()=>stepEvents(),phaseClose:()=>phaseClose(S.resumeO),screenDebrief:()=>screenDebrief(S.resumeO),
+   stepEvents:()=>stepEvents(),phaseClose:()=>screenDebrief(S.resumeO),screenDebrief:()=>screenDebrief(S.resumeO),
    screenFinal:()=>screenFinal(),screenBoard:()=>screenBoard()};
   (P[S.resume]||P.phaseOpen)();window.scrollTo(0,0);return true;
- }catch(e){clearSave();return false}
+ }catch(e){console.error('reprise impossible',e);return false}
 }
 /* ---------- fenêtres de phase ---------- */
 function ctxLines(){
