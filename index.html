@@ -793,7 +793,7 @@ const QGOALS=[
  {nm:"Les investisseurs conquis",d:"Terminer avec la jauge investisseurs au-dessus de 80.",t:c=>c.lp>80,b:0.09},
  {nm:"Remonter la pente",d:"Regagner au moins huit points de jauge investisseurs sur le trimestre.",t:c=>c.dLp>=8,b:0.09},
  {nm:"La parole tenue",d:"Tenir un engagement de conviction forte.",t:c=>c.comm==='fort'&&c.commOK,b:0.12},
- {nm:"La promesse modeste",d:"Tenir un engagement de communication prudente.",t:c=>c.comm==='prud'&&c.commOK,b:0.05},
+ {nm:"La promesse modeste",d:"Tenir un engagement de communication standard.",t:c=>c.comm==='prud'&&c.commOK,b:0.05},
  {nm:"Le moine",d:"Choisir le silence radio et terminer quand même le trimestre positif.",t:c=>c.comm==='none'&&c.q>0,b:0.07},
  {nm:"La collecte",d:"Terminer le trimestre avec une collecte nette positive.",t:c=>c.flow>0,b:0.06},
  {nm:"La grosse collecte",d:"Attirer au moins 3 % d'encours supplémentaire sur le trimestre.",t:c=>c.flow>0.03,b:0.10},
@@ -2474,7 +2474,7 @@ function statusBar(done){
  const band=bandNow(),rk=S.tgt>0?sp/S.tgt:0;
  const rcol=Math.abs(rk-1)<=band?'var(--long)':(rk>1+band?'var(--short)':'var(--warn)');
  const fg=k=>{const v=ex[k],pc=Math.min(50,Math.abs(v)/0.15*50);
-  return `<button class="fg ${S.hotFactor===k?'hot':''}" data-gauge="f${k}"><span class="fl">${FACT[k].nm.split(' ')[0].slice(0,9)}</span>${readTri(k)}<span class="ft2"><em style="left:50%"></em><i style="${v>=0?'left:50%':'right:50%'};width:${pc}%;background:${v>=0?'var(--long)':'var(--short)'}"></i></span><b class="${Math.abs(v)<0.002?'dim-g':(v>0?'pos-g':'neg-g')}">${v>=0?'+':'−'}${Math.abs(v*100).toFixed(1)}</b></button>`};
+  return `<button class="fg ${S.hotFactor===k?'hot':''}" data-gauge="f${k}"><span class="fl">${FACT[k].nm.split(' ')[0].slice(0,9)}</span>${readTri(k)}<span class="ft2"><em style="left:50%"></em><i style="${v>=0?'left:50%':'right:50%'};width:${pc}%;background:${v>=0?'var(--long)':'var(--short)'}"></i></span>${(()=>{const r=Math.round(v*100);return `<b class="${r===0?'dim-g':(r>0?'pos-g':'neg-g')}">${r>0?'+':r<0?'−':''}${Math.abs(r)}</b>`})()}</button>`};
  return `<div class="status">
   <div class="srow">
    <button class="tile" data-gauge="cap"><span><i>${S.fundName.split(' ')[0]}${done?` · T${S.q}`:` · T${Math.min(S.q+1,QT())}`}</i><b>${rank}<sup>${rank===1?'er':'e'}</sup>/5</b></span><b>${moneyB(S.nav)}</b></button>
@@ -2482,16 +2482,19 @@ function statusBar(done){
   </div>
   <div class="srow">
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
-   <button class="tile" data-gauge="lp" style="flex:1.05"><span><i>Investisseurs</i><b>${Math.round(S.lp)}${S.lastG?gzd(S.lastG.lp):''}${S.phase==='book'&&S._pv&&Math.abs(S._pv.lp)>=0.05?`<span class="${cls(S._pv.lp)}">→${Math.round(Math.max(0,Math.min(100,S.lp+S._pv.lp)))}</span>`:''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
-   <button class="tile" data-gauge="rc" style="flex:1.05"><span><i>Comité</i><b>${Math.round(S.rc)}${S.lastG?gzd(S.lastG.rc):''}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?`<span class="${cls(S._pv.rc)}">→${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
+   <button class="tile" data-gauge="lp" style="flex:1.05"><span><i>Investisseurs</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,S.lp):Math.round(S.lp)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.lp)>=0.05?`<span class="${cls(S._pv.lp)}">→${Math.round(Math.max(0,Math.min(100,S.lp+S._pv.lp)))}</span>`:''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
+   <button class="tile" data-gauge="rc" style="flex:1.05"><span><i>Comité</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.rc0,S.rc):Math.round(S.rc)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?`<span class="${cls(S._pv.rc)}">→${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
    <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Vos gains</span><b id="gaintile" class="${(S.mgrFees-S.mgrCosts)>=0?'':'neg-g'}">${score(S.mgrFees-S.mgrCosts)}</b></button>
   </div>
   <div class="srow">
    ${[0,1,2,3].map(fg).join('')}
-   <button class="fg" data-gauge="risk"><span class="fl">Risque</span><span class="ft2 lin"><span class="band" style="left:${(1-band)*50}%;width:${band*100}%"></span><em style="left:50%"></em><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b>${(sp*100).toFixed(1)}/${(S.tgt*100).toFixed(0)}</b></button>
-   <button class="fg" data-gauge="cost"><span class="fl">Coûts T</span><span class="ft2"><i style="left:0;width:${Math.min(100,ctot/1.6)}%;background:${ctot>90?'var(--short)':ctot>65?'var(--warn)':'var(--dim)'}"></i></span><b>${ctot.toFixed(0)} pb</b></button>
+   <button class="fg" data-gauge="risk"><span class="fl">Risque</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><span class="band" style="left:${(1-band)*50}%;width:${band*100}%"></span><em style="left:50%"></em><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b>${Math.round(sp*100)}/${Math.round(S.tgt*100)}</b></button>
+   <button class="fg" data-gauge="cost"><span class="fl">Coûts T</span><span class="tri none">&nbsp;</span><span class="ft2"><i style="left:0;width:${Math.min(100,ctot/1.6)}%;background:${ctot>90?'var(--short)':ctot>65?'var(--warn)':'var(--dim)'}"></i></span><b>${ctot.toFixed(0)} pb</b></button>
   </div>${ticker()}</div>`;
 }
+/* « 61 → 58 » : valeur avant le dernier mouvement, puis valeur actuelle en couleur */
+function gArrow(v0,v){const a=Math.round(v),b=v0===undefined?a:Math.round(v0);
+ if(a===b)return `${a}`;return `${b}<span class="${a>b?'pos-g':'neg-g'}">→${a}</span>`}
 const sd1=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${Math.round(Math.abs(x))}</b>`;
 /* format unique des effets de jauge dans tout le jeu */
 function gzd(v){const d=Math.round((v||0)*10)/10;return Math.abs(d)<0.05?'':`<span class="${cls(d)}" style="font-size:11px;font-weight:500"> (${sd1(d)})</span>`}
@@ -2505,8 +2508,9 @@ function gz(lp,rc,opt){
 function gauge(dlp,drc,why){
  refreshGain();
  dlp=Math.max(-15,Math.min(15,dlp||0));drc=Math.max(-15,Math.min(15,drc||0));
+ const lp0=S.lp,rc0=S.rc;
  S.lp=Math.max(0,Math.min(100,S.lp+dlp));S.rc=Math.max(0,Math.min(100,S.rc+drc));
- if(Math.abs(dlp)>=0.05||Math.abs(drc)>=0.05){S.gLog.push({why,lp:dlp,rc:drc});S.lastG={lp:dlp,rc:drc};
+ if(Math.abs(dlp)>=0.05||Math.abs(drc)>=0.05){S.gLog.push({why,lp:dlp,rc:drc});S.lastG={lp:dlp,rc:drc,lp0,rc0};
   toast(`${gz(dlp,drc)}<br><span style="color:var(--dim)">${why}</span>`)}
  refreshStatus();return {lp:dlp,rc:drc};
 }
@@ -2882,7 +2886,7 @@ function phaseExec(){
 function phaseLive(){
  save('phaseLive');
  phase(`TRIMESTRE ${S.q+1} · TROIS MOIS`,"Le trimestre se déroule",
-  [S.comm&&S.comm.ret!==null?`Vous avez promis <b>au moins ${sgn(S.comm.ret,1)}</b> pour ce trimestre. Tout le monde a noté.`:"Vous n'avez rien promis. Tout le monde a noté aussi.","Vos positions sont en place. Le monde continue sans vous demander votre avis.","Chaque dépêche vous interrompt : vous pourrez couper, renforcer ou tenir — à un coût, et sans certitude sur la suite.",S.incidentDue?"Quelque chose ne va pas au back-office, mais vous ne le savez pas encore.":"Le contrôle des risques n'a rien signalé pour l'instant."],
+  [S.comm&&S.comm.ret!==null?`Vous avez promis <b>au moins ${sgn(S.comm.ret,1)}</b> pour ce trimestre. Tout le monde a noté.`:"Vous n'avez rien promis. Tout le monde a noté aussi.","Vos positions sont en place. Le monde continue sans vous demander votre avis.","Chaque dépêche vous interrompt : vous pourrez suivre le mouvement ou ne pas réagir — à un coût, et sans certitude sur la suite.",S.incidentDue?"Quelque chose ne va pas au back-office, mais vous ne le savez pas encore.":"Le contrôle des risques n'a rien signalé pour l'instant."],
   "Lancer le trimestre",()=>{S.evIdx=0;S.incidentShown=false;S.midShown=false;stepEvents()});
 }
 function phaseClose(o){
@@ -3165,16 +3169,16 @@ function hint(id){
  },420);
 }
 function screenComm(){
- hint('comm');save('screenComm');S.commPick=S.commPick||null;
+ hint('comm');save('screenComm');S.commPick=S.commPick||'prud';
  const w=weights(S.k),sp=pvol(w),g=VOL().goal/4;
  const spD=Math.max(sp,0.04);
  const opts=[
   {id:'none',ico:'🤐',nm:"Silence radio",who:"« On verra à la fin du trimestre »",p:"Pas de lettre, pas de réunion, aucun chiffre avancé. Vous ne risquez pas de manquer une promesse, mais personne ne saura vous créditer d'un bon trimestre annoncé d'avance.",
    ret:null,win:{lp:-2,rc:-2},lose:{lp:-2,rc:-2}},
-  {id:'prud',ico:'🪶',nm:"Communication prudente",who:"« Préserver le capital dans un régime incertain »",p:`Vous annoncez la moitié de l'objectif trimestriel de votre mandat, soit ${pct(0.5*g,1)}. Une promesse qu'un trimestre médiocre suffit à tenir, et qu'on vous reprochera peu d'avoir faite.`,
-   ret:0.5*g,win:{lp:3,rc:3},lose:{lp:-4,rc:-3}},
-  {id:'fort',ico:'📣',nm:"Conviction forte",who:"« C'est le trimestre de l'année »",p:`Vous annoncez une fois et demie l'objectif de votre mandat, soit ${pct(1.5*g,1)}. Si vous y arrivez, on vous croira sur parole pendant deux ans. Sinon, on s'en souviendra aussi longtemps.`,
-   ret:1.5*g,win:{lp:9,rc:6},lose:{lp:-12,rc:-8}}
+  {id:'prud',ico:'📄',nm:"Communication standard",who:"« Nous visons l'objectif du mandat »",p:`Vous annoncez l'objectif trimestriel de votre mandat, soit ${pctc(g)}. C'est ce que les investisseurs attendent de toute façon : le tenir rassure, le manquer se remarque.`,
+   ret:g,win:{lp:4,rc:3},lose:{lp:-4,rc:-3}},
+  {id:'fort',ico:'📣',nm:"Conviction forte",who:"« C'est le trimestre de l'année »",p:`Vous annoncez deux fois l'objectif de votre mandat, soit ${pctc(2*g)}. Si vous y arrivez, on vous croira sur parole pendant deux ans. Sinon, on s'en souviendra aussi longtemps.`,
+   ret:2*g,win:{lp:10,rc:7},lose:{lp:-12,rc:-8}}
  ];
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Ce que vous annoncez</h2><span class="hint">investisseurs · comité</span></div>
@@ -3633,6 +3637,7 @@ function resolveQuarter(){
  if(lpMult!==1)lpD.push([`Multiplicateur (profil${S.flighty?', passif fragile':''}) ×${lpMult.toFixed(2)}`,dlp-dlp/lpMult]);
  const dlpC=Math.max(-30,Math.min(22,dlp*(dlp<0?SIZE().lpNeg:1)));if(dlpC!==dlp)lpD.push(['Plafonnement',dlpC-dlp]);
  S.lpD=lpD;
+ const clo0={lp0:S.lp,rc0:S.rc};
  S.lp=Math.max(0,Math.min(100,S.lp+dlpC));
  const band=bandNow(),dev=Math.abs(sp-S.tgt)/S.tgt;
  const rcD=[];
@@ -3643,6 +3648,7 @@ function resolveQuarter(){
  rcD.push([net>0?'La performance achète de la patience':'La perte use la patience',(net>0?Math.min(12,220*net):Math.max(-9,140*net))*VOL().rcPerf]);
  S.rcD=rcD;
  S.rc=Math.max(0,Math.min(100,S.rc+rcD.reduce((a,x)=>a+x[1],0)));
+ S.lastG={lp:S.lp-clo0.lp0,rc:S.rc-clo0.rc0,lp0:clo0.lp0,rc0:clo0.rc0};
  S.fLast=[...S.f];
  /* débauchage / collecte */
  S.poachMsg=null;
@@ -3996,26 +4002,26 @@ function screenDebrief(o){
  const story=S.qLog.filter(x=>x!=='mandat');
  app.innerHTML=statusBar(true)+`<div class="fade">
   <div class="pnlhead"><div class="q">RÉSULTAT DU TRIMESTRE ${S.q} · TOUT COMPRIS</div>
-   <div class="big ${cls(o.qTotal)}">${sgn(o.qTotal,2)}</div>
+   <div class="big ${cls(o.qTotal)}">${sgn(o.qTotal,1)}</div>
    <div class="num ${cls(o.qTotal)}" style="font-size:18px;margin-top:4px">${bn(o.qTotal*o.q0,2)} sur ${moneyB(o.q0)} d'encours en début de trimestre</div>
    <div class="regime">${R.nm}</div><div class="sub">${R.d}</div></div>
   ${warn.map(t=>`<div class="flag" style="margin-top:12px">${t}</div>`).join('')}
   <div class="block"><div class="blockhead"><h2>La concurrence</h2><span class="hint">${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur cinq</span></div>
-   <table class="qt"><thead><tr><th>Fonds</th><th>Trim.</th><th>Cumul</th><th>vs vous</th></tr></thead><tbody>
-   ${all.map(a=>{const c=cums.find(z=>z.nm===(a.me?S.fundName:a.nm.split(' · ')[0]));const dv=a.me?0:(c?c.v:0)-(S.idx-1);
-     return `<tr class="${a.me?'me':''}"><td>${a.nm}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(c?c.v:0)}">${sgn(c?c.v:0,1)}</td><td class="${a.me?'':cls(-dv)}">${a.me?'—':(dv>=0?'+':'−')+Math.abs(dv*100).toFixed(1)+' pts'}</td></tr>`}).join('')}
+   <table class="qt"><thead><tr><th>Fonds</th><th>Trim.</th><th>Cumul</th></tr></thead><tbody>
+   ${all.map(a=>{const c=cums.find(z=>z.nm===(a.me?S.fundName:a.nm.split(' · ')[0]));return {a,cv:c?c.v:0}}).sort((x,y)=>y.cv-x.cv).map(({a,cv})=>
+     `<tr class="${a.me?'me':''}"><td>${a.nm}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(cv)}">${sgn(cv,1)}</td></tr>`).join('')}
    </tbody></table></div>
 
-  <div class="block"><div class="blockhead"><h2>Du brut au net</h2><span class="hint">en % de l'encours</span></div>
-   <div class="attr"><span class="an">Positions directionnelles</span><span class="av">${sgn(o.P.grossM/o.q0,2)} · ${inU(o.P.grossM,UQ)}</span></div>
-   <div class="attr"><span class="an">Dépêches, incidents et desk</span><span class="av">${sgn((o.P.evM+o.P.incM)/o.q0,2)} · ${inU(o.P.evM+o.P.incM,UQ)}</span></div>
-   <div class="attr"><span class="an">Rémunération du collatéral</span><span class="av">${sgn(o.P.collM/o.q0,2)} · ${inU(o.P.collM,UQ)}</span></div>
-   <div class="attr"><span class="an">Coûts de transaction</span><span class="av">${sgn(o.P.tcM/o.q0,2)} · ${inU(o.P.tcM,UQ)}</span></div>
-   <div class="attr"><span class="an">Frais de gestion et de performance</span><span class="av">${sgn(o.P.feeM/o.q0,2)} · ${inU(o.P.feeM,UQ)}</span></div>
-   <div class="attr"><span class="an" style="color:var(--txt)">Résultat du trimestre</span><span class="av">${sgn(o.qTotal,2)} · ${inU(o.P.perfM,UQ)}</span></div>
+  <div class="block"><div class="blockhead"><h2>Du brut au net</h2><span class="hint">en ${UQ.s.trim()}</span></div>
+   <div class="attr"><span class="an">Positions directionnelles</span><span class="av">${inU(o.P.grossM,UQ)}</span></div>
+   <div class="attr"><span class="an">Dépêches, incidents et desk</span><span class="av">${inU(o.P.evM+o.P.incM,UQ)}</span></div>
+   <div class="attr"><span class="an">Rémunération du collatéral</span><span class="av">${inU(o.P.collM,UQ)}</span></div>
+   <div class="attr"><span class="an">Coûts de transaction</span><span class="av">${inU(o.P.tcM,UQ)}</span></div>
+   <div class="attr"><span class="an">Frais de gestion et de performance</span><span class="av">${inU(o.P.feeM,UQ)}</span></div>
+   <div class="attr"><span class="an" style="color:var(--txt)">Résultat du trimestre</span><span class="av">${inU(o.P.perfM,UQ)}</span></div>
    <div class="attr"><span class="an">Souscriptions et rachats</span><span class="av ${Math.abs(o.P.flowM)>1e-9?cls(o.P.flowM):''}">${Math.abs(o.P.flowM)>1e-9?inU(o.P.flowM,UQ):'aucun mouvement'}</span></div>
    ${S.poachMsg?`<div class="note" style="margin:4px 0 8px">${S.poachMsg}</div>`:''}<div class="attr"><span class="an">Encours en fin de trimestre</span><span class="av"><b>${moneyB(S.nav)}</b></span></div>
-   <details style="margin-top:8px"><summary>Détails</summary><p class="note">Les pourcentages sont exprimés sur l'encours de début de trimestre (${moneyB(o.q0)}). Les dépêches, interactions et incidents ont été comptabilisés au fil du trimestre ; les positions, le collatéral et les frais le sont à la clôture. Les souscriptions et rachats sont des mouvements de capital : ils changent l'encours sans compter dans la performance.</p></details>
+   <details style="margin-top:8px"><summary>Détails</summary><p class="note">Encours de début de trimestre : ${moneyB(o.q0)}. Les dépêches, interactions et incidents ont été comptabilisés au fil du trimestre ; les positions, le collatéral et les frais le sont à la clôture. Les souscriptions et rachats sont des mouvements de capital : ils changent l'encours sans compter dans la performance.</p></details>
   </div>
   <div class="block"><div class="blockhead"><h2>Vos gains</h2><span class="hint">le score</span></div>
    <div class="attr"><span class="an">Net du trimestre</span><span class="av">${inU(S.mgrQ.fees-S.mgrQ.ops-S.mgrQ.rum,UG)}</span></div>
@@ -4059,6 +4065,7 @@ function screenBoard(){
   ${ev.ch.map((c,i)=>`<button class="choice" data-i="${i}"><b>${c.b}</b><span>${c.s}</span></button>`).join('')}</div>`;
  const pickB=idx=>{clearTimer();
   const e=ev.ch[idx].e;
+  if(e.lp||e.rc)S.lastG={lp:e.lp||0,rc:e.rc||0,lp0:S.lp,rc0:S.rc};
   if(e.lp)S.lp=Math.max(0,Math.min(100,S.lp+e.lp));
   if(e.rc)S.rc=Math.max(0,Math.min(100,S.rc+e.rc));
   if(e.aum){S.flows=(S.flows||0)+e.aum*S.nav;S.nav*=(1+e.aum)}
