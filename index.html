@@ -134,6 +134,11 @@ em{font-style:italic;color:var(--txt)}
 .opayleg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--dim)}
 .opayleg em{font-style:normal}
 .opayleg b{font-family:var(--mono)}
+.choice.evopt .evs{display:block;color:var(--dim);font-size:12.5px}
+.choice .ptab{display:grid;grid-template-columns:minmax(0,1.5fr) repeat(4,minmax(0,1fr));gap:2px 8px;margin-top:9px;padding-top:7px;border-top:1px solid var(--line);font-size:12px;color:var(--txt);align-items:baseline}
+.choice .ptab span{font-size:12px;color:var(--txt)}
+.choice .ptab .ph{font-size:10.5px;color:var(--dimmer)}
+.choice .ptab .pn{text-align:right;font-family:var(--mono);white-space:nowrap}
 .gzr{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:12.5px;padding:1px 0}
 .gzr span{color:var(--dim)}
 .gzr b{font-family:var(--mono)}
@@ -1832,7 +1837,7 @@ const STAKE=[
  {who:"Comité des risques",t:"« Stop-loss automatique à −4 % pour le reste du trimestre »",p:"Une clause de la charte, dormante jusqu'ici. Réveillée par la nervosité du conseil.",
   ch:[{b:"Accepter",s:"Le book sera coupé de moitié si le trimestre passe −8 % brut. Comité +4.",e:{stopQ:true,rc:4}},{b:"Refuser",s:"Comité −8.",e:{rc:-8}},{b:"Accepter contre une hausse de limite au prochain trimestre",s:"Comité +1. Une promesse orale, de leur part.",e:{stopQ:true,rc:1}}]},
  {who:"Comité des risques",t:"« Interdiction de renforcer quoi que ce soit jusqu'à la clôture »",p:"Le comité juge le trimestre trop agité pour laisser un gérant discrétionnaire discrétionner.",
-  ch:[{b:"Se conformer",s:"Comité +2. Les dépêches ne pourront plus que vous faire couper ou tenir.",e:{noAddQ:true,rc:2}},{b:"Refuser",s:"Comité −7.",e:{rc:-7}},{b:"Accepter pour les matières premières seulement",s:"Comité −2.",e:{rc:-2}}]},
+  ch:[{b:"Se conformer",s:"Comité +2. Suivre une dépêche coûtera ensuite 6 points de comité.",e:{noAddQ:true,rc:2}},{b:"Refuser",s:"Comité −7.",e:{rc:-7}},{b:"Accepter pour les matières premières seulement",s:"Comité −2.",e:{rc:-2}}]},
  {who:"Comité des risques",t:"« Nous exigeons un audit externe des positions, à vos frais »",p:"Un cabinet de conseil, trois semaines, un rapport que personne ne lira.",
   ch:[{b:"Payer l'audit",s:"−3 pb, comité +5.",e:{cash:-0.0003,rc:5}},{b:"Refuser",s:"Comité −6, investisseurs −2 (ils ont été copiés).",e:{rc:-6,lp:-2}},{b:"Proposer un audit interne",s:"−1 pb, comité +1.",e:{cash:-0.0001,rc:1}}]},
  {who:"Comité des risques",t:"« Votre exposition croissance est monolithique. Coupez-la de moitié »",cond:()=>Math.abs(factorExpo(weights(S.k))[0])>0.05,p:"Le rapport factoriel est arrivé sur le bureau du président du conseil. Il a entouré une ligne.",
@@ -2505,11 +2510,21 @@ function gauge(dlp,drc,why){
   toast(`${gz(dlp,drc)}<br><span style="color:var(--dim)">${why}</span>`)}
  refreshStatus();return {lp:dlp,rc:drc};
 }
-function pnlGauge(pnl,why){
+function pnlGz(pnl){
  const lpM=(S.flighty?1.25:1)*PROF().lpMult*VOL().lpMult;
  const dlp=(pnl>0?Math.min(4,110*pnl):Math.max(-9,230*pnl)*SIZE().lpNeg)*lpM;
  const drc=(pnl>0?Math.min(2,50*pnl):Math.max(-6,140*pnl)*SIZE().rcNeg)*VOL().rcPerf;
- return gauge(dlp,drc,why);
+ const c=x=>Math.max(-15,Math.min(15,x||0));
+ return {lp:c(dlp),rc:c(drc)};
+}
+function pnlGauge(pnl,why){const z=pnlGz(pnl);return gauge(z.lp,z.rc,why)}
+/* note du comité sur un book donné, sans l'appliquer */
+function riskRc(k){
+ const w=weights(k),sp=pvol(w),vd=varDecomp(w),fmax=Math.max(...vd.fv)/vd.tot;
+ const band=bandNow(),dev=Math.abs(sp-S.tgt)/S.tgt;
+ let d=dev<band?3:-Math.min(12,(dev-band)*18)*SIZE().rcNeg;
+ if(fmax>0.75)d-=3*SIZE().rcNeg;if(sp<0.02)d-=4;
+ return d;
 }
 function midFlows(total,lines){
  if(total<-0.008&&rng()<0.45){const out=uni(0.01,0.04)*(1+Math.max(0,-total)*20);S.flows-=out*S.nav;S.qFlow=(S.qFlow||0)-out*S.nav;S.nav*=(1-out);lines.push(`Un allocataire a retiré ${(out*100).toFixed(1)} % de l'encours dans la foulée.`);gauge(-1,0,"Retrait après une mauvaise dépêche")}
@@ -3135,7 +3150,7 @@ function commitOrders(){
 const GAMEHINTS={
  comm:["Ce que vous annoncez","<p>Vous promettez un rendement <em>et</em> une fourchette de volatilité réalisée. Les deux doivent être tenus : livrer la performance avec le double du risque annoncé compte comme un échec.</p><p>Ne rien promettre coûte peu, mais coûte à coup sûr. Promettre fort rapporte gros et coûte davantage encore si ça casse : c'est le seul endroit du jeu où vous choisissez votre propre asymétrie.</p>"],
  exec:["L'exécution","<p>Le book est décidé, reste à le passer. Chaque interlocuteur vous propose un arbitrage entre le coût d'exécution, le risque pris, et ce que le comité acceptera de voir.</p><p>Les chiffres annoncés dans les options sont exacts : « coûts −40 % » réduit vraiment de 40 % la facture de transaction du trimestre sur les marchés concernés. Les économies d'exécution se paient presque toujours en points de comité.</p>"],
- event:["Les dépêches du trimestre","<p>Chaque dépêche déplace un ou plusieurs marchés immédiatement, sur les positions que vous détenez déjà. Vous choisissez ensuite comment réagir : couper, alléger, suivre, ou ne rien faire.</p><p>Ne rien faire est un choix légitime et souvent le bon : réagir coûte des frais de transaction à chaque fois, et le marché a déjà bougé quand la dépêche vous parvient.</p>"],
+ event:["Les dépêches du trimestre","<p>Chaque dépêche déplace un ou plusieurs marchés immédiatement, sur les positions que vous détenez déjà. Vous choisissez ensuite de suivre le mouvement ou de ne pas réagir. La suite se joue à deux issues, poursuite ou retournement, dont chaque bouton donne la probabilité, le P&amp;L et l'effet sur les jauges.</p><p>Suivre est toujours un pari : frais de transaction, écart au book que vous aviez construit, et un comité qui n'aime pas les réactions qui coûtent.</p>"],
  debrief:["Le débriefing","<p>Le détail du trimestre se déplie : ce que les positions ont rapporté, ce que le collatéral a ajouté, ce que les transactions et les frais ont retiré. Les jauges bougent ensuite, et chaque mouvement est justifié ligne par ligne.</p><p>Ce que vous encaissez, vous, n'est pas la performance du fonds : c'est la commission de gestion, plus la commission de performance au-dessus du plus haut historique, moins vos propres dépenses.</p>"],
  board:["Le conseil","<p>Entre deux trimestres, le conseil et la presse commentent. Rien ne s'y décide mécaniquement, mais ce qui s'y dit annonce ce que les jauges feront ensuite.</p>"]
 };
@@ -3257,148 +3272,128 @@ function screenMacroEvent(ev){
  const navB=S.nav;S.nav*=(1+imm);S.qEvM+=imm*navB;
  if(ev.liq)S.liq*=ev.liq;
  const prof=PROF();
- const g=pnlGauge(imm,`${ev.t} — effet immédiat`);
+ const g=pnlGauge(imm,`${ev.t} — P&L immédiat`);
  const mh=Math.max(...Object.values(ev.hit).map(Math.abs));
  const gn=mh>0.8?gauge(-(0.4+0.5*mh),-(0.2+0.2*mh),"Nervosité : investisseurs et comité lisent les mêmes dépêches que vous"):{lp:0,rc:0};
  /* on retient le total explicitement : le relire dans le journal par décalage d'indice
     donnait la nervosité seule et faisait perdre des points sur une dépêche gagnante */
  S.evImmG={lp:g.lp+gn.lp,rc:g.rc+gn.rc};
- /* scénarios de la suite du mouvement, tirés maintenant, révélés après */
- if(!S.sc){
-  const raw=[0.10+Math.pow(rng(),1.6)*1.6,0.10+Math.pow(rng(),1.6)*1.2,0.08+Math.pow(rng(),1.8)*1.4];
-  const tot=raw[0]+raw[1]+raw[2];const pr=raw.map(z=>z/tot);
-  S.sc={p:pr,m:[0.55+rng()*0.35,0.04,-0.30-rng()*0.30]}}
- const SC=S.sc,names=['le mouvement continue','le mouvement s\'arrête','le mouvement se retourne'];
+ /* suite du mouvement : binaire, poursuite (p) ou retournement (1−p), tirée maintenant, révélée après */
+ if(!S.sc||!S.sc.m||S.sc.m.length!==2){
+  S.sc={p:0.30+0.40*rng(),m:[0.45+0.40*rng(),-(0.30+0.40*rng())]}}
+ const SC=S.sc,PR=[SC.p,1-SC.p];
  const chips=Object.keys(ev.hit).map(sy=>{const m=ev.hit[sy]*INSTR[IDX[sy]].sigQ;return `<span style="color:${m>0?'var(--long)':'var(--short)'}">${sy} ${sgn(m,1)}</span>`}).join('');
- const inBook=touched.filter(i=>S.k[i]!==0);
- /* positions cibles par option */
- const targets=a=>{const t=[...S.k];touched.forEach(i=>{const sh=Math.sign(ev.hit[INSTR[i].sym]);
-   if(a==='cut')t[i]=Math.trunc(S.k[i]/2);
-   else if(a==='fade')t[i]=Math.max(-S.maxk,Math.min(S.maxk,S.k[i]-sh*2));
-   else if(a==='follow')t[i]=Math.max(-S.maxk,Math.min(S.maxk,S.k[i]+sh*2))});
-  return t};
- const costOf=t=>{let c=0;touched.forEach(i=>{const d=t[i]-S.k[i];if(d)c+=tcost(d,i).cost*1.35*S.tcMultQ*(S.leakQ?1.45:1)});return c};
- const payoff=(t,mult)=>{const we=weights(t);let v=0;touched.forEach(i=>{v+=we[i]*mult*ev.hit[INSTR[i].sym]*INSTR[i].sigQ});return v};
- const noAdd=S.noAddQ;
- const opts=[];
- if(prof.noAdj){
-  opts.push({a:'none',b:'Laisser tourner le modèle',s:'Le processus ne bouge pas : il rééquilibrera au prochain signal.'});
-  opts.push({a:'cut',b:'Dérogation : couper de moitié',s:'Vous passez outre le modèle, qui recale vite.',rc:-2});
-  if(!noAdd)opts.push({a:'follow',b:'Dérogation : renforcer',s:'Vous passez outre le modèle dans le sens du choc.',rc:-3});
- } else if(!inBook.length){
-  opts.push({a:'follow',b:'Ouvrir dans le sens du choc',s:'2 unités sur chaque marché touché.'});
-  opts.push({a:'fade',b:'Ouvrir à contre-sens',s:'2 unités contre le mouvement : vous pariez sur un excès.'});
-  opts.push({a:'none',b:'Ne rien faire',s:'Aucun ordre, aucun coût.'});
- } else {
-  opts.push({a:'cut',b:'Couper de moitié',s:inBook.map(i=>INSTR[i].sym).join(', ')});
-  if(!noAdd)opts.push({a:'follow',b:'Renforcer dans le sens du choc',s:'+2 unités sur les marchés touchés.'});
-  opts.push({a:'none',b:'Tenir la position',s:'Aucun coût de transaction.'});
- }
- opts.forEach(o=>{const t=targets(o.a);o.t=t;o.cost=o.a==='none'?0:costOf(t);
-  o.pay=SC.m.map(m=>payoff(t,m)-o.cost/S.nav);
-  o.ev=o.pay.reduce((x,v,i)=>x+v*SC.p[i],0)});
- const UM=pickU(opts.flatMap(o=>o.pay.map(v=>v*S.nav)).concat(opts.map(o=>o.ev*S.nav)));
- const matOLD=`<table class="qt payt"><thead><tr><th>Option<br><span style="color:var(--dimmer);font-weight:400">${UM.s.trim()}</span></th>${['Continue','Stoppe','Retourne'].map((n,i)=>`<th>${n}<br><span style="color:var(--gold)">${Math.round(SC.p[i]*100)}%</span></th>`).join('')}<th>Moy.</th></tr></thead><tbody>
-  ${opts.map((o,i)=>`<tr><td>${({cut:'Couper',follow:'Renforcer',fade:'Contre-sens',none:prof.noAdj?'Modèle':'Tenir'})[o.a]}</td>${o.pay.map(v=>`<td class="${cls(v)}">${uShort(v*S.nav,UM)}</td>`).join('')}<td class="${cls(o.ev)}"><b>${uShort(o.ev*S.nav,UM)}</b></td></tr>`).join('')}
- </tbody></table>`;
- const SCN=['Le mouvement continue','Il s\'arrête','Il se retourne'];
- const mat=opts.map(o=>{
-  const nm={cut:'Couper de moitié',follow:'Renforcer',fade:'Prendre le contre-sens',none:prof.noAdj?'Laisser le modèle':'Tenir la position'}[o.a];
-  const segs=o.pay.map((v,i)=>`<span class="opseg ${v>0.0005?'up':v<-0.0005?'dn':'flat'}" style="flex:${Math.max(4,SC.p[i]*100)}"></span>`).join('');
-  const leg=o.pay.map((v,i)=>`<span><em>${SCN[i]}</em><span style="color:var(--dimmer)"> ${Math.round(SC.p[i]*100)} %</span> <b class="${cls(v)}">${uShort(v*S.nav,UM)}</b></span>`).join('');
-  return `<div class="opay">
-   <div class="opayhead"><b>${nm}</b><span class="opayev ${cls(o.ev)}">${uShort(o.ev*S.nav,UM)}<em>en moyenne</em></span></div>
-   <div class="opaybar">${segs}</div>
-   <div class="opayleg">${leg}</div>
-  </div>`}).join('');
+ const plan=evPlans(ev,touched);
+ const UM=pickU(plan.flatMap(o=>o.pay.map(v=>v*S.nav)));
+ const unitLab=UM.s.trim();
+ const gcell=v=>{const r=Math.round(v);return `<span class="pn" style="color:${r>0?'var(--long)':r<0?'var(--short)':'var(--dim)'}">${r>0?'+':r<0?'−':''}${Math.abs(r)}</span>`};
+ const ptab=o=>`<span class="ptab"><span class="ph">Mouvement</span><span class="ph pn">Proba</span><span class="ph pn">P&amp;L ${unitLab}</span><span class="ph pn">Invest.</span><span class="ph pn">Comité</span>
+  ${['Poursuite','Retournement'].map((nm,s)=>`<span class="pl">${nm}</span><span class="pn">${Math.round(PR[s]*100)} %</span><span class="pn" style="color:${o.pay[s]>0?'var(--long)':o.pay[s]<0?'var(--short)':'var(--dim)'}">${uNum(o.pay[s]*S.nav,UM)}</span>${gcell(o.gz[s].lp)}${gcell(o.gz[s].rc)}`).join('')}</span>`;
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard">${evHead(ev.who,'news')}<h3>${ev.t}</h3><p>${ev.p}</p>
    <div class="shock">${chips}</div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px">
-   <div class="kv nowrp"><span>Effet immédiat</span><b>${sgn(imm,2)} · ${mn(imm*navB)}</b></div>
+   <div class="kv nowrp"><span>P&amp;L immédiat</span><b>${sgn(imm,1)} · ${mn(imm*navB)}</b></div>
    <div class="kv nowrp"><span>Effets</span><b>${gz(S.evImmG.lp,S.evImmG.rc,'always')}</b></div>
   </div>
-  <div class="block"><div class="blockhead"><h2>Ce que rapporte chaque option</h2><span class="hint">sur la suite du mouvement</span></div>
-   ${mat}
-   <details style="margin-top:6px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix. Le reste dépend de trois scénarios dont les probabilités sont affichées ; les montants incluent les coûts d'ajustement (fourchette élargie ×1,35) et supposent que vous êtes en position à temps — votre profil capte ${(prof.capture*100).toFixed(0)} % de l'ajustement, c'est déjà déduit. « Moy. » est l'espérance sur les trois scénarios.</p></details>
+  <div class="block"><div class="blockhead"><h2>Votre réaction</h2><span class="hint">sur la suite du mouvement</span></div>
+   ${plan.map((o,i)=>`<button class="choice evopt" data-i="${i}"><b>${o.b}</b><span class="evs">${o.s}</span>${ptab(o)}</button>`).join('')}
+   <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se joue à pile ou face pondéré : il se poursuit (probabilité affichée) ou se retourne. Les montants portent sur votre book entier, coûts d'ajustement déduits ; votre desk n'est en place qu'à ${(prof.capture*100).toFixed(0)} % quand le marché repart, c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
    <details style="margin-top:6px"><summary>Le détail, marché par marché</summary>
-    <p class="note" style="margin:6px 0 4px">1 · Effet immédiat — la moitié du choc déjà passée dans les prix, appliquée à votre position actuelle.</p>
     ${tbl(touched.map(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ;
-     return [INSTR[i].sym,S.k[i]===0?'plat':`${S.k[i]>0?'+':''}${S.k[i]} · ${moneyB(Math.abs(notionalBn(S.k[i],i)))}`,sgn(0.5*m,1),mn(w[i]*0.5*m*navB)]}),['Marché','Position','Choc passé','Encaissé'])}
-    <p class="note" style="margin:10px 0 4px">2 · La suite du mouvement — l'autre moitié, si le mouvement continue jusqu'au bout.</p>
-    ${tbl(touched.map(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ;
-     return [INSTR[i].sym,sgn(0.5*m,1),mn(w[i]*0.5*m*navB),sgn(m,1)]}),['Marché','Reste à venir','Si ça continue','Mouvement total'])}
-    <p class="note" style="margin:10px 0 4px">3 · Total si le mouvement va jusqu'au bout, position inchangée.</p>
-    ${tbl([['<b>Tous marchés</b>',`<b>${sgn(imm,1)}</b>`,`<b>${mn(imm*navB)}</b>`,`<b>${sgn(2*imm,1)} · ${mn(2*imm*navB)}</b>`]],['','Déjà acquis','En montant','Total potentiel'])}
+     return [INSTR[i].sym,S.k[i]===0?'plat':`${S.k[i]>0?'+':''}${S.k[i]} · ${moneyB(Math.abs(notionalBn(S.k[i],i)))}`,sgn(0.5*m,1),mn(w[i]*0.5*m*navB),mn(w[i]*SC.m[0]*m*S.nav),mn(w[i]*SC.m[1]*m*S.nav)]}),['Marché','Position','Choc passé','Encaissé','Si poursuite','Si retournement'])}
+    <p class="note" style="margin:6px 0 0">Les deux dernières colonnes supposent que vous ne touchez à rien.</p>
    </details>
   </div>
-  ${opts.map((o,i)=>{const gg=o.a==='none'?{lp:0,rc:0}:(o.a==='cut'?{lp:-1,rc:2}:{lp:1,rc:-3});
-   return `<button class="choice" data-i="${i}"><b>${o.b}</b><span>${o.s}${o.cost>0?` · coût ${mm(o.cost)}`:''}${o.rc?` · dérogation comité ${o.rc}`:''}${(gg.lp||gg.rc)?` · ${gz(gg.lp,gg.rc)} inv. ${sd1(gg.rc)} com.`:''}</span></button>`}).join('')}
  </div>`;
- const go=i=>{clearTimer();const o=opts[i];
-  if(o.rc)gauge(0,o.rc,`Dérogation au modèle — ${ev.t}`);
-  resolveEvent(ev,touched,o.a,imm,navB)};
+ const go=i=>{clearTimer();resolveEvent(ev,touched,plan[i],imm,navB)};
  app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>go(+b.dataset.i));
- armTimer(()=>go(opts.length-1));
+ armTimer(()=>go(plan.length-1));
 }
-function resolveEvent(ev,touched,a,imm,navB){
- const prof=PROF(),free=prof.freeAdj&&!S.freeAdjUsed;S.kBefore=[...S.k];
- let cost=0;const kEff=[...S.k];const trades=[];
- if(a!=='none'){
-  touched.forEach(i=>{
-   const sh=Math.sign(ev.hit[INSTR[i].sym]);let target;
-   if(a==='cut')target=Math.trunc(S.k[i]/2);
-   else if(a==='fade')target=Math.max(-S.maxk,Math.min(S.maxk,S.k[i]-sh*2));
-   else target=Math.max(-S.maxk,Math.min(S.maxk,S.k[i]+sh*2));
-   const d=target-S.k[i];
-   if(Math.abs(d)>0){const t=tcost(d,i);const c=t.cost*(1.6+0.9*rng())*S.tcMultQ*(S.leakQ?1.45:1)+t.bn*uni(0,0.0025);cost+=c;
-    kEff[i]=S.k[i]+(a==='cut'?1:prof.capture)*(target-S.k[i]);
-    trades.push(`${INSTR[i].sym} ${S.k[i]>0?'+':''}${S.k[i]} → ${target>0?'+':''}${target} (${moneyB(t.bn)}, ${mm(c)})`);
-    S.k[i]=target}
-  });
+/* les deux réactions possibles, chiffrées exactement : ce qui est affiché est ce qui arrive */
+function evPlans(ev,touched){
+ const prof=PROF(),SC=S.sc,syst=!!prof.noAdj;
+ const pieces=[];
+ /* suivre le mouvement */
+ const t=[...S.k],kE=[...S.k],trades=[];let cost=0,drift=0;
+ touched.forEach(i=>{const sh=Math.sign(ev.hit[INSTR[i].sym]);
+  const tg=Math.max(-S.maxk,Math.min(S.maxk,S.k[i]+sh*2)),d=tg-S.k[i];if(!d)return;
+  const tc=tcost(d,i);const c=tc.cost*1.9*S.tcMultQ*(S.leakQ?1.45:1)+tc.bn*0.00125;
+  cost+=c;drift+=Math.abs(d);t[i]=tg;kE[i]=S.k[i]+prof.capture*d;
+  trades.push({i,from:S.k[i],to:tg,bn:tc.bn,c})});
+ const free=cost>0&&prof.freeAdj&&!S.freeAdjUsed;
+ const costP=free?0:cost;
+ const band0=riskRc(S.k),band1=riskRc(t),v0=pvol(weights(S.k)),v1=pvol(weights(t));
+ const payF=SC.m.map(m=>{const we=weights(kE);let v=0;touched.forEach(i=>v+=we[i]*m*ev.hit[INSTR[i].sym]*INSTR[i].sigQ);return v-costP/S.nav});
+ const fixRc=[];
+ if(trades.length){
+  fixRc.push([-Math.min(3,0.25*drift+0.5),`Écart au book de départ (${drift} unité${drift>1?'s':''})`]);
+  const db=Math.max(-3,Math.min(3,0.5*(band1-band0)));if(Math.abs(db)>=0.05)fixRc.push([db,`Vol ex-ante ${pctc(v0)} → ${pctc(v1)}`]);
+  if(syst)fixRc.push([-3,'Dérogation au modèle']);
+  if(S.noAddQ)fixRc.push([-6,"Renforcement malgré l'interdiction du comité"]);
  }
- let freeTxt='';
- if(free&&cost>0){S.freeAdjUsed=true;freeTxt=` Votre desk vous offre cet ajustement (un par trimestre) : ${mm(cost)} économisés.`;cost=0}
- S.pendingTC+=cost/S.nav;S.totalTC+=cost;
- /* la suite du mouvement se réalise maintenant, avec du bruit */
- const SC=S.sc||{p:[.4,.3,.3],m:[0.55,0.04,-0.38]};
- let u=rng(),si=0,acc=0;for(let z=0;z<3;z++){acc+=SC.p[z];if(u<=acc){si=z;break}}
- const mult=SC.m[si]*(0.75+0.5*rng());
- const scName=['Le mouvement a continué.','Le mouvement s\'est arrêté net.','Le mouvement s\'est retourné.'][si];
+ const gzF=payF.map(p=>{const a=pnlGz(p);let lp=a.lp,rc=a.rc;
+  if(trades.length){const r=reactGz(p);lp+=r.lp;rc+=r.rc;fixRc.forEach(x=>rc+=x[0])}
+  return {lp,rc,pnl:a}});
+ const syms=trades.map(x=>INSTR[x.i].sym).join(', ');
+ const fS=!trades.length?'Déjà au maximum autorisé sur les marchés touchés : aucun ordre possible.'
+  :`${syst?'Dérogation au modèle : ':''}+2 unités dans le sens du choc sur ${syms}. ${free?`Coût ${nb(mm(cost))} offert par le desk`:`Coût ${nb(mm(cost))}`} · vol ex-ante ${pctc(v0)} → ${pctc(v1)}${S.noAddQ?' · interdit par le comité':''}.`;
+ pieces.push({a:'follow',b:'Suivre le mouvement',s:fS,t,kE,trades,cost:costP,costRaw:cost,free,pay:payF,gz:gzF,fixRc});
+ /* ne pas réagir */
+ const payN=SC.m.map(m=>{const we=weights(S.k);let v=0;touched.forEach(i=>v+=we[i]*m*ev.hit[INSTR[i].sym]*INSTR[i].sigQ);return v});
+ pieces.push({a:'none',b:syst?'Laisser le modèle':'Ne pas réagir',
+  s:syst?'Le modèle rééquilibrera au prochain signal. Aucun ordre, aucun coût.':'Aucun ordre, aucun coût : le book reste tel quel.',
+  t:[...S.k],kE:[...S.k],trades:[],cost:0,costRaw:0,free:false,pay:payN,gz:payN.map(p=>{const a=pnlGz(p);return {lp:a.lp,rc:a.rc,pnl:a}}),fixRc:[]});
+ return pieces;
+}
+const nb=t=>String(t).replace(/ /g,'\u00a0');
+const pctc=x=>(x*100).toFixed(1).replace('.',',')+'\u00a0%';
+const uNum=(x,u)=>`${x<0?'−':x>0?'+':''}${(Math.abs(x)*u.k).toFixed(u.d).replace('.',',')}`;
+function reactGz(p){return p>0.004?{lp:3,rc:1}:p>=0?{lp:1,rc:0}:{lp:-2,rc:-3}}
+function resolveEvent(ev,touched,o,imm,navB){
+ const prof=PROF(),syst=!!prof.noAdj;S.kBefore=[...S.k];
+ const SC=S.sc;
+ const si=rng()<SC.p?0:1;
+ const mult=SC.m[si];
  S.sc=null;
- const wE=weights(kEff);let resid=0;const moves=[],perM=[];const k0e=S.kBefore||[];
- touched.forEach(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ*mult;const pi=wE[i]*m;resid+=pi;moves.push(`${INSTR[i].sym} ${sgn(m,1)}`);
-   perM.push([INSTR[i].sym,`${(k0e[i]!==undefined?k0e[i]:S.k[i])>0?'+':''}${k0e[i]!==undefined?k0e[i]:S.k[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,`${sgn(m,1)}`,pi])});
+ const k0=[...S.k];
+ const acted=o.trades.length>0;
+ if(acted){S.k=[...o.t];if(o.free)S.freeAdjUsed=true}
+ const cost=o.cost;
+ S.pendingTC+=cost/S.nav;S.totalTC+=cost;
+ const wE=weights(o.kE);let resid=0;const perM=[];
+ touched.forEach(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ*mult;const pi=wE[i]*m;resid+=pi;
+   perM.push([INSTR[i].sym,`${k0[i]>0?'+':''}${k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,`${sgn(m,1)}`,pi])});
  const navR=S.nav;S.nav*=(1+resid);S.nav-=cost;S.qEvM+=resid*navR-cost;
- const total=imm+resid-cost/navB;
- if(a==='follow'&&(resid-cost/navB)>0.01){S.fl.coche=1;award('coche')}
- const g=pnlGauge(resid-cost/navB,`${ev.t} — suite du mouvement${a!=='none'?' et ajustement':''}`);
+ const react=resid-cost/navR;
+ const total=imm+resid*navR/navB-cost/navB;
+ if(acted&&react>0.01){S.fl.coche=1;award('coche')}
+ /* on applique exactement les pièces affichées dans le bouton */
+ const pz=o.gz[si].pnl;
+ const g=gauge(pz.lp,pz.rc,`${ev.t} — suite du mouvement${acted?' et ajustement':''}`);
  let gr={lp:0,rc:0};
- /* la réaction est jugée sur ce qu'elle a rapporté, pas sur l'intention qu'elle affichait */
- const react=resid-cost/navB;
- if(a==='cut'){gr=riskGauge('Position coupée en cours de trimestre',1);
-   const g2=react>=0?gauge(1,2,'Coupe qui a protégé le book'):gauge(-2,1,'Coupe qui a laissé filer le mouvement');
-   gr={lp:gr.lp+g2.lp,rc:gr.rc+g2.rc}}
- else if(a==='follow'||a==='fade'){gr=riskGauge('Position renforcée en cours de trimestre',react>0?0:-2);
-   const g2=react>0.004?gauge(3,1,'Réaction offensive qui a payé'):react>=0?gauge(1,0,'Réaction offensive sans dégât'):gauge(-2,-3,'Réaction offensive qui a coûté');
-   gr={lp:gr.lp+g2.lp,rc:gr.rc+g2.rc}}
+ if(acted){
+  const r=reactGz(react),add=(z)=>{gr.lp+=z.lp;gr.rc+=z.rc};
+  add(gauge(r.lp,r.rc,react>0.004?'Réaction offensive qui a payé':react>=0?'Réaction offensive sans dégât':'Réaction offensive qui a coûté'));
+  o.fixRc.forEach(x=>add(gauge(0,x[0],`${x[1]} — ${ev.t}`)));
+ }
  const flowLines=[];midFlows(total,flowLines);
  const ev0=S.evImmG||{lp:0,rc:0};S.evImmG=null;
- S.evLog.push({t:ev.t,pnl:total,m:total*navB,lp:(ev0?ev0.lp:0)+g.lp+gr.lp,rc:(ev0?ev0.rc:0)+g.rc+gr.rc});
+ S.evLog.push({t:ev.t,pnl:total,m:total*navB,lp:ev0.lp+g.lp+gr.lp,rc:ev0.rc+g.rc+gr.rc});
  const flav=pk(EVFLAV,S.q*3+S.evIdx);
  const UE=pickU([imm*navB,resid*navR,cost,total*navB]);
- const what=a==='none'?(prof.noAdj?"Le modèle n'a rien fait, comme prévu.":"Vous tenez votre book sans bouger.")
-   :a==='cut'?`Vous coupez : ${trades.join(' ; ')}. Le desk exécute dans une liquidité dégradée (×1,35).${freeTxt}`
-   :a==='fade'?`Vous ouvrez à contre-sens : ${trades.join(' ; ')}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${freeTxt}`
-   :`Vous renforcez : ${trades.join(' ; ')}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${freeTxt}`;
- const keyRows=[['<b>Bilan de la dépêche</b>',`${sgn(total,2)} · ${inU(total*navB,UE)}`],
-  ['Effets',gz((ev0?ev0.lp:0)+g.lp+gr.lp,(ev0?ev0.rc:0)+g.rc+gr.rc,'always')]];
- resultCard(`DÉPÊCHE · ${ev.t.toUpperCase()}`,['Le mouvement a continué','Le mouvement s\'est arrêté','Le mouvement s\'est retourné'][si],
-  [`<b>${scName}</b> ${flav} ${what}`,...flowLines,`La suite du mouvement, marché par marché :`,tbl(perM.map(r=>[r[0],r[1],r[2],inU(r[3]*S.nav,UE)]),['Marché','Position','Mouvement','Sur le book']),`Votre book capte au total <em class="${cls(resid)}">${sgn(resid,2)}</em> sur la suite du mouvement.`],
-  [['Effet immédiat',`${sgn(imm,2)} · ${inU(imm*navB,UE)}`],
-   ['Suite du mouvement',`${sgn(resid,2)} · ${inU(resid*navR,UE)}`],
+ const scName=['Le mouvement s\'est poursuivi.','Le mouvement s\'est retourné.'][si];
+ const tr=o.trades.map(x=>`${INSTR[x.i].sym} ${x.from>0?'+':''}${x.from} → ${x.to>0?'+':''}${x.to} (${moneyB(x.bn)}, ${mm(x.c)})`).join(' ; ');
+ const what=!acted?(syst?"Le modèle n'a rien fait, comme prévu.":"Vous tenez votre book sans bouger.")
+   :`${syst?'Vous passez outre le modèle et suivez le mouvement':'Vous suivez le mouvement'} : ${tr}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${o.free?` Votre desk vous offre cet ajustement (un par trimestre) : ${mm(o.costRaw)} économisés.`:''}`;
+ const keyRows=[['<b>Bilan de la dépêche</b>',`${sgn(total,1)} · ${inU(total*navB,UE)}`],
+  ['Effets',gz(ev0.lp+g.lp+gr.lp,ev0.rc+g.rc+gr.rc,'always')]];
+ resultCard(`DÉPÊCHE · ${ev.t.toUpperCase()}`,['Le mouvement s\'est poursuivi','Le mouvement s\'est retourné'][si],
+  [`<b>${scName}</b> ${flav} ${what}`,...flowLines,`La suite du mouvement, marché par marché :`,tbl(perM.map(r=>[r[0],r[1],r[2],inU(r[3]*navR,UE)]),['Marché','Position','Mouvement','Sur le book']),`Votre book capte au total <em class="${cls(resid)}">${sgn(resid,1)}</em> sur la suite du mouvement.`],
+  [['P&amp;L immédiat',`${sgn(imm,1)} · ${inU(imm*navB,UE)}`],
+   ['Suite du mouvement',`${sgn(resid,1)} · ${inU(resid*navR,UE)}`],
    ['Coûts d\'ajustement',cost>1e-9?inU(-cost,UE):'<b class="dim-g">aucun</b>'],
-   ['<b>Bilan de la dépêche</b>',`${sgn(total,2)} · ${inU(total*navB,UE)}`],
+   ['<b>Bilan de la dépêche</b>',`${sgn(total,1)} · ${inU(total*navB,UE)}`],
   ],
   "Continuer le trimestre",stepEvents,{key:keyRows});
 }
