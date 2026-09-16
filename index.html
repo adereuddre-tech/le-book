@@ -610,19 +610,18 @@ const SIG=[
 
 /* ════════════════════ 2. CHOIX D'OUVERTURE ════════════════════ */
 const PROFILES=[
- {id:'syst',lvl:'Débutant',who:"« Le modèle ne lit pas les journaux, et il dort très bien »",nm:"Gestion systématique",
-  p:"Vous ne lisez pas les journaux, vous lisez des estimations. Le desk vous livre des chiffres, pas des récits — et le modèle passe les ordres.",
-  ef:[['g',"book conseillé : toutes les sources et tous les signaux, pondérés sans préférence"],['g',"incidents opérationnels −40 % (tout est automatisé et journalisé)"],['g',"le modèle recale vite : 60 % du mouvement capté après un ajustement"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"]],
+ {id:'syst',lvl:'Débutant',who:"« Le modèle ne lit pas les journaux, et il dort très bien »",nm:"Gérant quantitatif systématique",
+  p:"Vous ne formez pas d'opinion, vous estimez des paramètres. Les sources deviennent un vecteur de vraisemblance, les signaux une matrice de covariance, et la décision tombe d'un programme d'optimisation que personne dans la salle ne relit plus depuis trois ans. Vous ne savez pas pourquoi le book est long du yen. Le modèle, lui, le sait.",
+  ef:[['g',"<b>Pouvoir propre — le book du modèle</b> : un portefeuille optimisé sur toutes les sources et tous les signaux, pondérés par leur vraisemblance, appliqué d'un bouton"],['g',"incidents opérationnels −40 % : tout est automatisé, journalisé, horodaté"],['g',"le modèle recale vite : 60 % du mouvement capté après un ajustement"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"],['b',"aucune intuition : ce que le modèle n'a pas mesuré n'existe pas"]],
   sigBonus:0,capture:0.60,tcMult:1.0,rumBonus:0.05,lpMult:1.0,incMult:0.60,numeric:true,noAdj:true},
  {id:'fonda',lvl:'Normal',who:"« Je peux avoir raison plus longtemps que le marché ne peut rester solvable »",nm:"Gérant fondamental discrétionnaire",
-  p:"Vous construisez une vue du monde, vous la tenez, et vous laissez le marché venir à vous. Vous avez raison souvent — parfois trop tôt.",
-  ef:[['g',"+2 rumeurs par trimestre"],['g',"book conseillé : priorité aux sources macro et à la valeur"],['g',"les pré-annonces d'événements vous parviennent 10 pts plus souvent"],['b',"réaction lente : vous ne captez que 45 % d'un mouvement en cours de trimestre"],['b',"coûts de transaction +12 % (vous arbitrez tard)"]],
-  sigBonus:2,capture:0.45,tcMult:1.12,rumBonus:0.18,lpMult:1.0,incMult:1.0,numeric:false},
+  p:"Vous construisez une vue du monde, ligne par ligne, et vous la défendez contre le marché, contre le comité, contre vos propres analystes. Vous avez passé trois nuits sur la balance courante d'un pays que personne ne regarde. Vous aurez raison. La seule question est de savoir si votre mandat vous survivra jusque-là.",
+  ef:[['g',"<b>Pouvoir propre — la source vérifiée</b> : chaque trimestre, une rumeur est recoupée par votre réseau et vous est donnée pour certaine"],['g',"+2 rumeurs par trimestre : on vous rappelle, on vous parle"],['g',"les pré-annonces d'événements vous parviennent 10 pts plus souvent"],['b',"réaction lente : vous ne captez que 45 % d'un mouvement en cours de trimestre"],['b',"coûts de transaction +12 % : vous arbitrez tard, et cher"]],
+  sigBonus:2,capture:0.45,tcMult:1.12,rumBonus:0.18,lpMult:1.0,incMult:1.0,numeric:false,verified:true},
  {id:'flux',lvl:'Expert',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
-  p:"Vous ne prédisez pas, vous réagissez. Le prix vous dit ce que le monde pense avant que les données ne le confirment.",
-  ef:[['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"book conseillé : priorité aux rumeurs de marché, à la tendance et au positionnement des autres"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les LP suivent votre courbe au jour le jour : jauge LP 30 % plus nerveuse"],['b',"aucun indicateur supplémentaire"]],
-  sigBonus:0,capture:0.85,tcMult:0.90,rumBonus:0.05,lpMult:1.30,incMult:1.0,numeric:false,freeAdj:true}
-
+  p:"Vous ne prédisez rien. Vous écoutez. Le marché parle en permanence et la plupart des gens sont trop occupés à avoir des opinions pour l'entendre. Vous regardez un carnet d'ordres comme d'autres regardent la mer. Vos analystes ont renoncé à vous demander vos raisons ; votre comité a renoncé à les consigner. Il vous arrive d'avoir raison avant d'avoir compris pourquoi.",
+  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, un facteur macro vous révèle le sens de sa réalisation avant tout le monde. Ne demandez pas comment"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : jauge 30 % plus nerveuse"],['b',"aucune source supplémentaire : vous n'en demandez pas"]],
+  sigBonus:0,capture:0.85,tcMult:0.90,rumBonus:0.05,lpMult:1.30,incMult:1.0,numeric:false,freeAdj:true,hunch:true}
 ];
 const RISKARCH=[
  {id:'inst',lvl:'Débutant',nm:"Contrôle des risques institutionnel",who:"« La conformité d'abord, le rendement si possible »",
@@ -647,36 +646,36 @@ const DESKS=[
  {id:'inhouse',lvl:'Normal',nm:"Desk d'exécution intégré",who:"« On connaît chaque teneur de marché par son prénom »",
   p:"Douze traders maison, un par zone horaire, qui connaissent chaque teneur de marché par son prénom.",
   ef:[['g',"coûts d'exécution −20 % sur tous les marchés"],['g',"vous voyez le flux : positionnement consensuel plus fiable"],['b',"masse salariale fixe de 4 pb par trimestre"],['b',"un débauchage vous coûte cher : impact durable sur l'exécution"]],
-  mult:()=>0.80,fixed:0.0004,poachPain:1.4},
+  mult:()=>1.00,fixed:0.0005,poachPain:1.4},
  {id:'algo',lvl:'Expert',nm:"Exécution algorithmique interne",who:"« Le slippage se mesure au demi-point de base, la nuit »",
   p:"Quatre quants, un moteur d'exécution maison, un book de slippage suivi au demi-point de base.",
   ef:[['g',"coûts −38 % sur actions, taux et devises"],['g',"l'impact de marché croît moins vite avec la taille"],['b',"coûts +35 % sur les matières premières (marchés trop étroits pour l'algo)"],['b',"risque de bug d'exécution : +3 pts de probabilité d'incident"]],
   mult:(x)=>x.grp==='Matières premières'?1.35:0.62,fixed:0.0001,poachPain:0.8,algo:true,impPow:0.42}
 ];
 const SIZES=[
- {id:'small',lvl:'Débutant',nav:0.075,capX:6,nm:"Boutique — 75 M$",who:"« Trois personnes, deux écrans, un mandat »",
+ {id:'small',lvl:'Débutant',nav:0.075,capX:6,nm:"La boutique de Mayfair — 75 M$",who:"« Trois personnes, deux écrans, un mandat »",
   p:"Un fonds de niche. Vous ne bougez aucun marché, personne ne vous surveille vraiment, et les commissions sont modestes. Seuls les trois premiers marchés de chaque classe vous sont ouverts.",
   ef:[["g","impact de marché négligeable : les coûts de transaction sont marginaux"],["g","investisseurs et comité indulgents"],["g","concurrents moins aguerris que la moyenne de la place"],["b","trois marchés par classe seulement : moins de diversification"],["b","les commissions se comptent en millions, pas en dizaines de millions"]],
   rivSkill:-0.050,rivVol:0.85,lpNeg:0.75,rcNeg:0.75,lp0:8,flowMult:0.7,goalMult:1},
- {id:'mid',lvl:'Normal',nav:0.1,capX:10,nm:"Fonds établi — 100 M$",who:"« La taille où l'on commence à être regardé »",
+ {id:'mid',lvl:'Normal',nav:0.1,capX:10,nm:"Le full-floor de Hudson Yards — 100 M$",who:"« Un étage entier, et un loyer qui va avec »",
   p:"Assez gros pour intéresser les allocataires institutionnels et les chasseurs de têtes, assez petit pour encore bouger vite. Quatre marchés par classe.",
   ef:[["g","quatre marchés par classe : la diversification devient exploitable"],["g","commissions substantielles"],["b","impact de marché sensible sur les marchés étroits"],["b","investisseurs exigeants, comité vigilant"],["b","quatre concurrents sérieux, qui battent le marché plus souvent qu'à leur tour"]],
   rivSkill:0.020,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1},
- {id:'mega',lvl:'Expert',nav:0.15,capX:22,nm:"Mastodonte — 150 M$",who:"« À cette taille, vous êtes le marché »",
+ {id:'mega',lvl:'Expert',nav:0.15,capX:22,nm:"Le mastodonte de Greenwich — 150 M$",who:"« À cette taille, vous êtes le marché »",
   p:"Chaque ordre déplace les prix, chaque trimestre est commenté, et les meilleurs gérants du monde vous attendent au tournant. Les cinq marchés de chaque classe sont ouverts, y compris les plus étroits.",
   ef:[["g","cinq marchés par classe : l'univers complet, marchés étroits compris"],["g","les commissions atteignent des sommes considérables"],["b","impact de marché lourd : les gros ordres coûtent cher"],["b","investisseurs impitoyables, comité sur votre dos"],["b","concurrents au sommet de leur art : à cette taille, vous jouez contre les meilleurs du monde"]],
   rivSkill:0.085,rivVol:1.15,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:1.35,goalMult:1}
 ];
 const UNIVS=[
- {id:'fin',lvl:'Débutant',nm:"Macro restreint — financier",who:"« Actions, taux, devises. Le triangle classique »",
-  p:"Le mandat le plus simple à vendre et le plus difficile à diversifier : trois classes qui partagent les mêmes facteurs de croissance et de dollar.",
+ {id:'fin',lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
+  p:"Le mandat le plus simple à vendre et à comprendre : les trois classes financières pour se faire les dents. On y apprend à tenir une position, à lire un facteur, à encaisser un trimestre rouge sans tout défaire. Ce qu'on n'y apprend pas, c'est ce qui arrive quand un tuyau explose quelque part et que le pétrole décide seul du trimestre.",
   ef:[["g","univers lisible : chaque position se raconte en une phrase"],["g","marchés profonds, coûts d'exécution faibles"],["b","trois classes fortement liées : la diversification plafonne vite"],["b","aucun refuge quand la croissance et l'appétit pour le risque tournent ensemble"]]},
- {id:'com',lvl:'Normal',nm:"Macro classique — matières premières incluses",who:"« Le mandat global macro standard »",
-  p:"Les trois classes financières plus les matières premières : de quoi jouer l'inflation sans dépendre uniquement des taux.",
+ {id:'com',lvl:'Normal',nm:"Le grand bassin",who:"« Le mandat global macro standard »",
+  p:"On a enlevé les brassards. Les trois classes financières plus les matières premières : de quoi jouer l'inflation par l'or, le pétrole, le cuivre ou le blé plutôt que par les seuls taux, et découvrir que l'offre a ses raisons que la demande ignore.",
   ef:[["g","l'inflation devient un pari à part entière"],["g","l'or et le pétrole décorrèlent le book des actions"],["b","marchés plus étroits : fourchettes et impact plus lourds"],["b","des chocs d'offre que personne ne voit venir"]]},
- {id:'ext',lvl:'Expert',nm:"Macro étendu — exotiques compris",who:"« Tout ce qui cote, et quelques choses qui ne devraient pas »",
-  p:"Les cinq classes, jusqu'au carbone, au fret et aux dérivés climatiques. Le meilleur potentiel de diversification, dans les marchés les plus hostiles.",
-  ef:[["g","cinq classes : le meilleur potentiel de diversification du jeu"],["g","des marchés presque indépendants des facteurs macro classiques"],["b","fourchettes très larges, liquidité qui disparaît sans prévenir"],["b","comité et investisseurs mal à l'aise avec ce qu'ils ne comprennent pas"]]}
+ {id:'ext',lvl:'Expert',nm:"Le monde est votre huître",who:"« Tout ce qui cote, et quelques choses qui ne devraient pas »",
+  p:"Les cinq classes. Le bitcoin, qui ne dort jamais et n'obéit à personne ; la volatilité, qui vous paie un portage négatif tous les jours en échange du droit de vous sauver un jour ; le carbone, dont le prix est une décision politique déguisée en marché. Le meilleur potentiel de diversification du jeu, dans les carnets les plus hostiles. Les marchés les plus étroits de cette classe ne s'ouvrent qu'aux plus gros fonds.",
+  ef:[["g","cinq classes : le meilleur potentiel de diversification du jeu"],["g","des marchés presque indépendants des facteurs macro classiques"],["b","fourchettes très larges, liquidité qui disparaît sans prévenir"],["b","le fret et les dérivés climatiques restent réservés au mastodonte"],["b","comité et investisseurs mal à l'aise avec ce qu'ils ne comprennent pas"]]}
 ];
 const RECO={prof:'flux',arch:'std',desk:'inhouse',size:'mid',univ:'com',vol:'std',dur:'normal'};
 function SIZE(){return SIZES.find(x=>x.id===S.size)||SIZES[1]}
@@ -2081,6 +2080,10 @@ function planQuarter(){
  const R=REG[S.truth];
  S.f=[];for(let k=0;k<K;k++)S.f.push(R.m[k]+R.sf*gauss());
  S.liq=R.liq*(1+0.15*gauss());S.liq=Math.max(0.7,S.liq);
+ /* pouvoir du gérant de flux : le sens d'un facteur, connu d'avance */
+ S.hunch=null;
+ if(PROF().hunch){const k=S.f.map((v,i)=>[Math.abs(v),i]).sort((a,b)=>b[0]-a[0])[Math.floor(rng()*2)][1];
+   S.hunch={k,up:S.f[k]>0};}
  /* événements macro du trimestre : 2 à 5, plus une interaction avec le desk */
  const nb=2+Math.floor(rng()*4);
  S.evQueue=[];
@@ -2095,7 +2098,7 @@ function planQuarter(){
    const top=pool.slice().sort((a,b)=>mag(b)-mag(a)).slice(0,12);
    if(top.length){const e=pick(top);S.evQueue.splice(Math.floor(rng()*(S.evQueue.length+1)),0,e);S.usedMacro.push(e.t);S.majorDone=1;S.majorQ=S.q}
  }
- const tav=TRADER_MID.filter(e=>!S.usedTrader.includes(e.t)&&!(e.who.startsWith('Sœur')&&S.prof!=='syst')&&!(e.who.startsWith('Dwight')&&S.desk!=='algo'));
+ const tav=TRADER_MID.filter(e=>!S.usedTrader.includes(e.t)&&!(e.who.startsWith('Sœur')&&S.prof!=='syst'));
  if(tav.length){const te=pick(tav);S.usedTrader.push(te.t);S.evQueue.splice(Math.floor(rng()*(S.evQueue.length+1)),0,{trader:true,...te})}
  S.usedStake=S.usedStake||[];
  const nStake=1+(rng()<0.5?1:0);
@@ -2224,7 +2227,7 @@ function renderNews(){
    <details style="margin-top:6px"><summary>Détails</summary><p class="note">Chaque source achetée est pondérée par sa fiabilité (une source forte pèse environ trois fois une source faible) et ses impacts prétendus sont additionnés. Score net par facteur : ${FACT.map((f,k)=>{let z=0;b.forEach(r=>{const p=r.p||RELP[r.rel];z+=(2*p-1)*r.v[k]/2});return `${f.id} ${z>=0?'+':'−'}${Math.abs(z).toFixed(1)}`}).join(' · ')}.</p></details>`
   :`<p class="note" style="margin:0">Aucune source achetée : le desk n'a rien à consolider.</p>`;
  const fe=document.getElementById('factest');
- if(fe){
+ if(fe&&PROF().id==='syst'){   /* le book du modèle est le pouvoir propre du quant */
   const R=recoBook();
   const reco=R.k.map((k,i)=>({i,k})).filter(o=>o.k!==0).sort((a,b)=>Math.abs(b.k)-Math.abs(a.k));
   S.modelK=R.k;
@@ -2258,6 +2261,12 @@ function genRumors(){
    const agrees=Math.abs(d)<0.25?null:d>0;
    if(agrees!==null&&agrees!==wantTrue)continue;
    used.add(r.t);out.push({...r,truth:wantTrue,p});
+ }
+ /* pouvoir du gérant fondamental : une source recoupée, donnée pour certaine */
+ if(PROF().verified){
+   const cand=out.filter(r=>!r.ev);
+   if(cand.length){const r=pick(cand);r.truth=true;r.p=0.97;r.rel='forte';r.sure=true;
+     r.src='Source vérifiée · '+r.src}
  }
  for(let i=out.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[out[i],out[j]]=[out[j],out[i]]}
  const PM={faible:1.4,moyenne:3.5,forte:8.0},RM=[1.3,1.0,0.6][S.bud.res];
@@ -2305,7 +2314,7 @@ const sgnp=(x,d=1)=>(x>=0?'+':'−')+Math.abs(x*100).toFixed(d)+' %';
 const bn=(x,d=1)=>`<b class="${cls(x)}">${x>=0?'+':'−'}${moneyB(Math.abs(x))}</b>`;
 const mn=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${mm(Math.abs(x))}</b>`;
 const cls=x=>x>0.00005?'pos-g':(x<-0.00005?'neg-g':'dim-g');
-let setup={prof:'flux',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'com',dur:'normal'};
+let setup={prof:'flux',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'com',dur:'normal'};/* arch et desk sont figés : redondants avec les budgets */
 let TUTO=true;
 let SHOWHINTS=true;
 const SETUPHINTS={
@@ -2410,18 +2419,16 @@ function renderPicks(){
   </div>`;
  document.getElementById('picks').innerHTML=
    grp("Votre style de gestion","1 sur 3",PROFILES,'prof')+
-   grp("L'architecture de contrôle des risques","1 sur 3",RISKARCH,'arch')+
-   grp("L'organisation de l'exécution","1 sur 3",DESKS,'desk')+
+   grp("Le niveau de risque du mandat","1 sur 3 · la volatilité que vous facturez",VOLP,'vol')+
    grp("La taille du fonds","1 sur 3 · la difficulté et le nombre de marchés par classe",SIZES,'size')+
    grp("L'univers d'investissement","1 sur 3 · les classes d'actifs autorisées",UNIVS,'univ')+
-   grp("La durée du mandat","1 sur 3 · le nombre de trimestres",DUREES,'dur')+
-   grp("Le niveau de risque du mandat","1 sur 3",VOLP,'vol');
+   grp("La durée du mandat","1 sur 3 · le nombre de trimestres",DUREES,'dur');
  app.querySelectorAll('[data-hintx]').forEach(b=>b.onclick=e=>{e.stopPropagation();delete SETUPHINTS[b.dataset.hintx];renderPicks()});
  app.querySelectorAll('.card').forEach(b=>b.onclick=()=>{
    setup[b.dataset.key]=b.dataset.id;renderPicks();const fl=document.getElementById('feeline');if(fl)fl.innerHTML=feeLine();
-   const ok=setup.prof&&setup.arch&&setup.desk&&setup.vol&&setup.size&&setup.univ&&setup.dur;
+   const ok=setup.prof&&setup.vol&&setup.size&&setup.univ&&setup.dur;
    const g=document.getElementById('go');g.disabled=!ok;
-   g.textContent=ok?"Prendre le book":"Choisissez vos sept options";
+   g.textContent=ok?"Prendre le book":"Choisissez vos cinq options";
  });
 }
 
@@ -2839,7 +2846,7 @@ function phaseDesk(){
  let cEx=0;for(let i=0;i<N;i++)cEx+=tcost(1,i).cost;
  const cBp=cEx/Math.max(1e-9,S.nav)*1e4;
  phase(`TRIMESTRE ${S.q+1} · LE DESK`,"Le desk vous attend",
-  [`Budget validé : <b>${budgetBp().toFixed(0)} pb</b>, soit ${mm(budgetBp()*1e-4*S.nav)}.`,`${nr} rumeurs ont été collectées${S.rupture?', et une rupture factorielle signalée':''}.`,`Liquidité des marchés : <b>${lqNm}</b>. Ouvrir une unité sur chacun de vos ${N} marchés coûterait <b>${mm(cEx)}</b>, soit ${cBp.toFixed(1)} pb de l'encours — ${L>1.2?'nettement plus cher que d\'habitude : mieux vaut réfléchir à deux fois avant de tout réarranger':L>1.05?'un peu plus cher que d\'habitude':L<0.95?'moins cher que d\'habitude, c\'est le moment de remettre le book en ordre':'le tarif habituel'}.`,`Le trimestre sera ${nev>=4?'très agité':nev>=3?'agité':'relativement calme'} : des dépêches sont attendues, dont certaines annoncées dans les rumeurs.`,"Vous positionnez le book pour les trois prochains mois."],
+  [`Budget validé : <b>${budgetBp().toFixed(0)} pb</b>, soit ${mm(budgetBp()*1e-4*S.nav)}.`,`${nr} rumeurs ont été collectées${S.rupture?', et une rupture factorielle signalée':''}.`,...(S.hunch?[`<b>Votre intuition</b> : quelque chose vous dit que <b>${FACT[S.hunch.k].nm.toLowerCase()}</b> va ${S.hunch.up?'surprendre à la hausse':'surprendre à la baisse'} ce trimestre. Vous ne sauriez pas dire d'où ça vient.`]:[]),`Liquidité des marchés : <b>${lqNm}</b>. Ouvrir une unité sur chacun de vos ${N} marchés coûterait <b>${mm(cEx)}</b>, soit ${cBp.toFixed(1)} pb de l'encours — ${L>1.2?'nettement plus cher que d\'habitude : mieux vaut réfléchir à deux fois avant de tout réarranger':L>1.05?'un peu plus cher que d\'habitude':L<0.95?'moins cher que d\'habitude, c\'est le moment de remettre le book en ordre':'le tarif habituel'}.`,`Le trimestre sera ${nev>=4?'très agité':nev>=3?'agité':'relativement calme'} : des dépêches sont attendues, dont certaines annoncées dans les rumeurs.`,"Vous positionnez le book pour les trois prochains mois."],
   "Voir le desk",()=>{if(S.preDesk&&(!S.preDesk.cond||S.preDesk.cond())){const ev=S.preDesk;S.preDesk=null;screenTraderEvent(ev,screenPlay)}else screenPlay()});
 }
 function phaseExec(){
@@ -3172,7 +3179,7 @@ function screenExec(){
  save('screenExec');
  const orders=[];let tot=0;
  for(let i=0;i<N;i++){const d=S.k[i]-S.k0[i];if(Math.abs(d)>1e-9){const t=tcost(d,i);tot+=t.cost;orders.push({i,d,t})}}
- const av=TRADER_EXEC.filter(e=>!S.usedExec.includes(e.t)&&!(e.who.startsWith('Sœur')&&S.prof!=='syst')&&!(e.who.startsWith('Dwight')&&S.desk!=='algo')
+ const av=TRADER_EXEC.filter(e=>!S.usedExec.includes(e.t)&&!(e.who.startsWith('Sœur')&&S.prof!=='syst')
    &&(!e.need||e.need.some(sy=>orders.find(o=>INSTR[o.i].sym===sy)))&&(!e.need3||S.k.some(v=>Math.abs(v)===3)));
  const ev=av.length?pick(av):null;if(ev)S.usedExec.push(ev.t);
  const mult=EXECM[S.bud.exec]*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult;
