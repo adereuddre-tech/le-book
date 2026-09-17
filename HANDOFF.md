@@ -91,8 +91,9 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
 7. `pk(arr,n)` est un tirage déterministe à mélange avalanche ; le XOR final doit rester `>>>0`
    sinon l'indice devient négatif.
 8. Pourcentages à **une** décimale partout (les multiplicateurs et le Sharpe gardent deux).
-9. Dépêches : ce qui est affiché dans un bouton est ce qui est appliqué. Aucun tirage aléatoire
-   dans `resolveEvent` hors le choix poursuite/retournement.
+9. Dépêches : montants et jauges affichés dans un bouton = montants et jauges appliqués. La
+   probabilité affichée `S.sc.ph` est une **lecture** (bruit selon recherche et style) ; l'issue
+   est tirée sur la vraie probabilité `S.sc.p`.
 10. `S.sc` est validé par forme (`m.length===2`) : une sauvegarde d'avant le lot Q le fait retirer.
 
 ## Livré
@@ -106,6 +107,53 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
 - **Nettoyage** : CSS de l'ancienne barre de couleurs et `applyEventChoice` supprimés,
   lignes « Achat de sources » (toujours nulles) retirées des tableaux, derniers `sgn(x,2)`
   passés à une décimale, coût des ordres affiché en pb. Harnais versionné dans `tools/`.
+
+- **Lot S — simplifications et équilibrage** :
+  - `RISKARCH`/`DESKS` réduits à une entrée figée ; achat de sources retiré (`buyRumor`, `qRumor`,
+    `mgrQ.rum`, `c.info`) ; haut fait « Tout entendre » = trimestre positif avec recherche renforcée ;
+    volet « détail marché par marché » des dépêches retiré ; virgule décimale partout (`dec`).
+  - Dépêches : `S.sc={p,ph,ver,m}`. Lecture ±16/±10/±5 pts selon la recherche, ×0,6 pour le flux,
+    +4 pts de biais de poursuite pour le quant, une probabilité vérifiée par trimestre pour le
+    fondamental (`S.evVerified`).
+  - Pop-up des coûts : « payé par le fonds » / « payé par vous » ; valeur du point de base corrigée.
+  - Bogue corrigé : la source « vérifiée » du fondamental pouvait être fausse.
+  - Intuition du flux affichée sous la lecture du desk (écran du book).
+  - Univers : champs `edge` (rendement des signaux T/C/V) et `lpMult` (nervosité investisseurs) :
+    bac à sable 0,75 / 0,90, grand bassin 1 / 1, monde entier 1,5 / 1,05.
+  - Styles : quant F 0,85 et T/C/V 0,45, capture 0,50, investisseurs ×0,90, et son modèle
+    (`recoBook`) ne vise que 80 % de la vol cible (`modelScale`) ; fondamental +4 sources,
+    coûts ×1,08.
+  - Budgets : salle de marché 4/18/36 pb (réduit : coûts ×1,45) ; contrôle des risques 4/12/16 pb,
+    incidents de base 9 %, gravité `RISKS=[2,1.5,0.75]`, comité −1/0/+2 à chaque clôture ;
+    recherche 4/18/80 pb.
+
+## Calibration (bot intelligent, `tools/bot.js`)
+
+Méthode : parties appariées (même graine, même style) entre une option et le standard ;
+`tools/calib.py`. Le bruit est grand (σ du score ≈ 30 M$ sur 2 ans) : compter 150 parties par
+option pour un écart de 2 M$. Les budgets sont payés par la société de gestion, qui ne touche que
+20 % de la performance : un budget n'est rentable que si son effet sur le fonds vaut environ cinq
+fois son coût. Campagnes : `tools/runner.js` + `tools/loop.sh` sur une **copie figée** du jeu (champ `file`
+du plan) : `loop.sh` relit le fichier à chaque tranche, une modification en cours de campagne
+fausse les résultats.
+
+### Résultats de calibration (parties de 2 ans, bot intelligent)
+
+| Option | Mesure | Verdict |
+|---|---|---|
+| Durée longue / courte | score +18 / −16 vs standard, σ plus / moins élevé | conforme |
+| Grande / petite taille | +14 / −5, σ 44 / 20 vs 27 | conforme |
+| Mandat agressif / prudent | +16 / −6, σ 47 / 18 | conforme |
+| Monde entier / bac à sable | ≈ +6 σ 41 / −5 σ 24 (après `edge` 1,5 / 0,75) | conforme |
+| Styles quant / fondamental / flux | 28,7 σ 26 / 36,7 σ 33 / 52,6 σ 38 (70 graines appariées) | conforme ; survie du quant 43 % à surveiller |
+| Recherche renforcée | rapportait 2,3× son coût à 60 pb → 80 pb (visé ≈ 1,5×) | réglé par proportion, non remesuré |
+| Contrôle renforcé | ne rapportait rien à 20 pb → 16 pb et comité +2 | réglé, non remesuré |
+| Salle de marché renforcée | ≈ 5,6× ± 2,4 à 30 pb → 36 pb | réglé, incertain |
+| Niveaux réduits | recherche et contrôle : perte > économie ; salle de marché : bruit ± 4 M$ | à remesurer |
+
+Limites : le budget total ne pèse qu'environ 13 % des commissions, et l'effet d'un niveau
+(2 à 6 M$ sur 2 ans) est de l'ordre de l'erreur type à 80 parties. Remesurer les budgets
+demande environ 300 parties appariées par niveau, sur copie figée.
 
 ## Reste à faire
 
