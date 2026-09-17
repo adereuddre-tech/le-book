@@ -2482,7 +2482,7 @@ function statusBar(done){
   </div>
   <div class="srow">
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
-   <button class="tile" data-gauge="lp" style="flex:1.05"><span><i>Investisseurs</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,S.lp):Math.round(S.lp)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.lp)>=0.05?`<span class="${cls(S._pv.lp)}">→${Math.round(Math.max(0,Math.min(100,S.lp+S._pv.lp)))}</span>`:''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
+   <button class="tile" data-gauge="lp" style="flex:1.05"><span><i>Invest.</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,S.lp):Math.round(S.lp)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.lp)>=0.05?`<span class="${cls(S._pv.lp)}">→${Math.round(Math.max(0,Math.min(100,S.lp+S._pv.lp)))}</span>`:''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
    <button class="tile" data-gauge="rc" style="flex:1.05"><span><i>Comité</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.rc0,S.rc):Math.round(S.rc)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?`<span class="${cls(S._pv.rc)}">→${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
    <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Vos gains</span><b id="gaintile" class="${(S.mgrFees-S.mgrCosts)>=0?'':'neg-g'}">${score(S.mgrFees-S.mgrCosts)}</b></button>
   </div>
