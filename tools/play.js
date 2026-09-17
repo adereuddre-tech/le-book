@@ -5,7 +5,7 @@ const sage=a.includes('--sage');
 const cfg={prof:opt('prof')||['syst','fonda','flux'][seed%3],vol:'std',size:opt('size')||'mid',univ:opt('univ')||'ext',dur:opt('dur')||'express'};
 let errs=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>errs.push('jsdom:'+(e.message||e)));
 vc.on('error',e=>errs.push('console.error:'+e));
-const html=fs.readFileSync(file,'utf8'); /* lancer depuis la racine du dépôt, jsdom installé */
+const html=fs.readFileSync(file,'utf8');
 function mk(pre){return new JSDOM(html,{runScripts:'dangerously',url:'https://x.test/',pretendToBeVisual:true,virtualConsole:vc,
  beforeParse(w){w.scrollTo=()=>{};w.onerror=(m,s,l,c,e)=>errs.push('onerror:'+m+' @'+l+':'+c);
   let x=seed*9301+49297;w.Math.random=()=>{x=(x*9301+49297)%233280;return x/233280};
