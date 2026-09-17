@@ -45,7 +45,7 @@ function playGame(o){
           if(S.tcvEst)v+=0.24*W.T*S.tcvEst.t[i]+0.20*W.C*S.tcvEst.c[i]+0.18*W.V*S.tcvEst.v[i];
           v+=W.X*0.30*S.crowd[i];return v});
         const mx=Math.max(0.001,...sc.map(Math.abs));const raw=sc.map(v=>v/mx*3);
-        const tg=S.tgt*0.95;let a=tg/Math.max(1e-9,pvol(weights(raw)));
+        const tg=S.tgt*0.95*(PROF().modelScale||1);let a=tg/Math.max(1e-9,pvol(weights(raw)));
         let k=raw.map(z=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(z*a))));
         for(let it=0;it<8;it++){const v=pvol(weights(k));if(v<1e-9)break;const r=tg/v;if(r>0.95&&r<1.05)break;a*=r;k=raw.map(z=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(z*a))))}
         S.k=k;})()`);
