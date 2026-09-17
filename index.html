@@ -424,10 +424,12 @@ const MG={};INSTR_ALL.forEach(x=>{MG[x.sym]=x.mg});
 /* ══════════ univers actif : marchés ouverts + pools d'événements filtrés ══════════ */
 /* le book étant à plat avant le desk, ces exigences ne peuvent pas s'y appliquer */
 const STAKE_POS=new Set();
+const POSRX=/IDX\.|zeroOn|halfOn|cutTop|cutFactor|\bcut\b|scaleAll|kContra|kToward|invert|S\.k\b/;
+function evTouchesBook(e){return POSRX.test((e.cond?e.cond.toString():'')+JSON.stringify(e.ch||[],(k,v)=>typeof v==='function'?v.toString():v))}
 function markStakePos(){
  STAKE.forEach(e=>{
   const src=(e.cond?e.cond.toString():'')+JSON.stringify(e.ch||[],(k,v)=>typeof v==='function'?v.toString():v);
-  if(/IDX\.|zeroOn|halfOn|cutTop1|scaleAll|kContra|kToward|invert/.test(src))STAKE_POS.add(e.t);
+  if(POSRX.test(src))STAKE_POS.add(e.t);
  });
 }
 const POOLS={};let poolsSnap=false;
@@ -609,16 +611,16 @@ const SIG=[
 const PROFILES=[
  {id:'syst',lvl:'Débutant',who:"« Le modèle ne lit pas les journaux, et il dort très bien »",nm:"Gérant quantitatif systématique",
   p:"Vous ne formez pas d'opinion, vous estimez des paramètres. Les sources deviennent un vecteur de vraisemblance, les signaux une matrice de covariance, et la décision tombe d'un programme d'optimisation que personne dans la salle ne relit plus depuis trois ans. Vous ne savez pas pourquoi le book est long du yen. Le modèle, lui, le sait.",
-  ef:[['g',"<b>Pouvoir propre — le book du modèle</b> : un portefeuille optimisé sur toutes les sources et tous les signaux, pondérés par leur vraisemblance, appliqué d'un bouton"],['g',"rapports réguliers : jauge investisseurs 10 % moins nerveuse"],['b',"le modèle ne vise que 80 % de la vol cible : régulier, mais il laisse du rendement"],['g',"incidents opérationnels −40 % : tout est automatisé, journalisé, horodaté"],['g',"le modèle recale vite : 60 % du mouvement capté après un ajustement"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"],['b',"aucune intuition : ce que le modèle n'a pas mesuré n'existe pas"]],
-  sigBonus:0,capture:0.50,tcMult:1.0,rumBonus:0.05,lpMult:0.90,modelScale:0.80,incMult:0.60,numeric:true,noAdj:true},
+  ef:[['g',"<b>Pouvoir propre — le book du modèle</b> : un portefeuille optimisé sur toutes les sources et tous les signaux, pondérés par leur vraisemblance, appliqué d'un bouton"],['g',"rapports réguliers : jauge investisseurs 10 % moins nerveuse"],['g',"des investisseurs qui connaissent la stratégie : liquidation à 40 % de perte au lieu de 28 %"],['b',"le modèle ne vise que 80 % de la vol cible : régulier, mais il laisse du rendement"],['g',"incidents opérationnels −40 % : tout est automatisé, journalisé, horodaté"],['g',"le modèle recale vite : 60 % du mouvement capté après un ajustement"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"],['b',"aucune intuition : ce que le modèle n'a pas mesuré n'existe pas"]],
+  sigBonus:0,capture:0.50,tcMult:1.0,rumBonus:0.05,lpMult:0.90,modelScale:0.80,ddMax:0.40,incMult:0.60,numeric:true,noAdj:true},
  {id:'fonda',lvl:'Normal',who:"« Je peux avoir raison plus longtemps que le marché ne peut rester solvable »",nm:"Gérant fondamental discrétionnaire",
   p:"Vous construisez une vue du monde, ligne par ligne, et vous la défendez contre le marché, contre le comité, contre vos propres analystes. Vous avez passé trois nuits sur la balance courante d'un pays que personne ne regarde. Vous aurez raison. La seule question est de savoir si votre mandat vous survivra jusque-là.",
   ef:[['g',"<b>Pouvoir propre — la source vérifiée</b> : chaque trimestre, une rumeur est recoupée par votre réseau et vous est donnée pour certaine"],['g',"+4 sources par trimestre : on vous rappelle, on vous parle"],['g',"les pré-annonces d'événements vous parviennent 10 pts plus souvent"],['b',"réaction lente : vous ne captez que 45 % d'un mouvement en cours de trimestre"],['b',"coûts de transaction +8 % : vous arbitrez tard, et cher"]],
   sigBonus:4,capture:0.45,tcMult:1.08,rumBonus:0.18,lpMult:1.0,incMult:1.0,numeric:false,verified:true},
  {id:'flux',lvl:'Expert',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez rien. Vous écoutez. Le marché parle en permanence et la plupart des gens sont trop occupés à avoir des opinions pour l'entendre. Vous regardez un carnet d'ordres comme d'autres regardent la mer. Vos analystes ont renoncé à vous demander vos raisons ; votre comité a renoncé à les consigner. Il vous arrive d'avoir raison avant d'avoir compris pourquoi.",
-  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, un facteur macro vous révèle le sens de sa réalisation avant tout le monde. Ne demandez pas comment"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : jauge 30 % plus nerveuse"],['b',"aucune source supplémentaire : vous n'en demandez pas"]],
-  sigBonus:0,capture:0.85,tcMult:0.90,rumBonus:0.05,lpMult:1.30,incMult:1.0,numeric:false,freeAdj:true,hunch:true}
+  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, un facteur macro vous souffle le sens de sa réalisation avant tout le monde, et elle ne se trompe qu'une fois sur quatorze environ. Ne demandez pas comment"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : jauge 60 % plus nerveuse"],['b',"de l'argent rapide : liquidation dès 16 % de perte au lieu de 28 %"],['b',"votre desk vise 120 % de la vol cible : plus de rendement, plus de secousses"],['b',"aucune source supplémentaire : vous n'en demandez pas"]],
+  sigBonus:0,capture:0.85,tcMult:0.90,rumBonus:0.05,lpMult:1.60,ddMax:0.16,modelScale:1.20,incMult:1.0,numeric:false,freeAdj:true,hunch:true}
 ];
 /* figés depuis le retrait de ces deux choix de l'écran d'accueil */
 const RISKARCH=[{id:'std',nm:"Contrôle des risques standard",band:0.30,incMult:1.0,sev:1.0,stop:false,lp0:0}];
@@ -669,24 +671,24 @@ function VOL(){return VOLP.find(v=>v.id===S.vol)}
 const BUDGET=[
  {id:'exec',ico:'📈',nm:"La salle de marché",
   d:"Traders, moteurs d'exécution, accès aux blocs, et ce que vous payez pour garder vos gérants. La salle décide de ce que coûte chaque changement de position, de votre résistance au débauchage, et de la finesse avec laquelle vos écrans mesurent la tendance, le portage et la valeur — ces chiffres-là sortent du desk, pas de la recherche.",
-  lv:[{nm:"Réduit",bp:4,ef:"coûts ×1,45 · débauchage ×2,0 · indicateurs très bruités"},
+  lv:[{nm:"Réduit",bp:2,ef:"coûts ×1,80 · débauchage ×2,0 · indicateurs très bruités"},
       {nm:"Standard",bp:18,ef:"coûts ×1,00 · débauchage ×1,0 · indicateurs corrects"},
-      {nm:"Renforcé",bp:36,ef:"coûts ×0,66 · débauchage ×0,3 · indicateurs précis · vous pouvez recruter"}]},
+      {nm:"Renforcé",bp:50,ef:"coûts ×0,66 · débauchage ×0,3 · indicateurs précis · vous pouvez recruter"}]},
  {id:'risk',ico:'⚖️',nm:"Le contrôle des risques",
   d:"Surveillance pré-trade, réconciliation quotidienne, contrôle des communications, audit interne. Un contrôle sérieux évite les incidents et, surtout, achète la confiance du comité : mieux vous êtes tenu, plus large est la bande de volatilité qu'on vous laisse.",
   lv:[{nm:"Réduit",bp:4,ef:"incidents ×2,2 et plus graves · bande du comité ±18 % seulement · comité −1 par trimestre"},
       {nm:"Standard",bp:12,ef:"incidents ×1,0 · bande du comité ±25 %"},
-      {nm:"Renforcé",bp:16,ef:"incidents ×0,3 · gravité ÷2 · bande du comité ±34 % · comité +2 par trimestre"}]},
+      {nm:"Renforcé",bp:24,ef:"incidents ×0,2 · gravité ÷2 · bande du comité ±40 % · comité +2 par trimestre"}]},
  {id:'res',ico:'🔭',nm:"La recherche macro",
   d:"Économistes, réseau de terrain, données alternatives, abonnements que personne ne relit. La recherche décide du nombre de sources qui arrivent sur votre bureau chaque trimestre et de la part d'entre elles qui sont dignes de foi.",
   lv:[{nm:"Réduit",bp:4,ef:"6 sources · fiabilité −8 pts · peu de pré-annonces · probabilités des dépêches floues"},
       {nm:"Standard",bp:18,ef:"9 sources · fiabilité de référence · pré-annonces fréquentes"},
-      {nm:"Renforcé",bp:80,ef:"12 sources · fiabilité +8 pts · pré-annonces quasi systématiques · probabilités des dépêches précises"}]}
+      {nm:"Renforcé",bp:64,ef:"12 sources · fiabilité +8 pts · pré-annonces quasi systématiques · probabilités des dépêches précises"}]}
 ];
-const EXECM=[1.45,1.00,0.66],RISKM=[2.2,1.0,0.30],RISKS=[2.0,1.5,0.75],RETM=[2.0,1.0,0.30];
+const EXECM=[1.80,1.00,0.66],RISKM=[2.2,1.0,0.20],RISKS=[2.0,1.5,0.75],RETM=[2.0,1.0,0.30];
 const RESN=[6,9,12],RESREL=[-0.08,0,0.08],RESR=[0.30,0.60,0.95];
 /* la finesse des indicateurs vient du desk, la tolérance du comité du contrôle des risques */
-const TCVQ=[0.9,0.6,0.35],BANDB=[0.18,0.25,0.34];
+const TCVQ=[0.9,0.6,0.35],BANDB=[0.18,0.25,0.40];
 function bandNow(){return BANDB[(S&&S.bud)?S.bud.risk:1]}
 
 /* Objectifs trimestriels. c = contexte de fin de trimestre (voir goalCtx).
@@ -2013,6 +2015,7 @@ function tcost(dk,i){
  const cost=bn*bp*1e-4;
  return {cost,bp,bn};
 }
+function ddMax(){return (S&&PROF().ddMax)||0.28}
 function PROF(){return PROFILES.find(p=>p.id===S.prof)}
 function ARCH(){return RISKARCH.find(r=>r.id===S.arch)}
 function DESK(){return DESKS.find(d=>d.id===S.desk)}
@@ -2063,7 +2066,7 @@ function planQuarter(){
  /* pouvoir du gérant de flux : le sens d'un facteur, connu d'avance */
  S.hunch=null;
  if(PROF().hunch){const k=S.f.map((v,i)=>[Math.abs(v),i]).sort((a,b)=>b[0]-a[0])[Math.floor(rng()*2)][1];
-   S.hunch={k,up:S.f[k]>0};}
+   S.hunch={k,up:(rng()<0.93)===(S.f[k]>0)};  /* une intuition, pas une certitude */}
  /* événements macro du trimestre : 2 à 5, plus une interaction avec le desk */
  const nb=2+Math.floor(rng()*4);
  S.evQueue=[];
@@ -2351,7 +2354,7 @@ function screenSetup(){
  <details class="wire" style="margin-top:16px"><summary>Comment on gagne, comment on perd, ce que ça coûte</summary>
  <div class="rules" style="margin-top:0">
   <div class="rule"><b>Gagner</b><span>Encaisser le plus de commissions possible sur deux ans : la gestion sur l'encours, la performance au-dessus du plus haut historique. C'est votre score.</span></div>
-  <div class="rule"><b>Perdre</b><span>Trois façons : les investisseurs retirent tout (jauge sous <strong>8</strong>), le comité vous remercie (jauge sous <strong>4</strong>), ou le fonds perd plus de <strong>28 %</strong> depuis son plus haut.</span></div>
+  <div class="rule"><b>Perdre</b><span>Trois façons : les investisseurs retirent tout (jauge sous <strong>8</strong>), le comité vous remercie (jauge sous <strong>4</strong>), ou le fonds perd plus de <strong>28 %</strong> depuis son plus haut (40 % pour le gérant quantitatif, 16 % pour le gérant de flux).</span></div>
   <div class="rule"><b>Frais</b><span id="feeline">${feeLine()}</span></div>
   <div class="rule"><b>Le piège</b><span>Quinze marchés, mais seulement quatre grandes forces derrière eux — croissance, inflation, dollar, appétit pour le risque. Un book qui a l'air diversifié peut n'être qu'un seul pari.</span></div>
  </div></details>
@@ -2610,7 +2613,7 @@ function showGauge(id){
   const dd=1-S.nav/S.peak;
   openModal('Capital',`<p>Encours net du fonds, en milliards de dollars, tel que le voient les investisseurs. Il bouge avec la performance nette, les incidents, les frais, et les flux d'encours provoqués par votre position face aux concurrents.</p>
    ${tbl([['Encours initial',moneyB(S.aum0)],['Encours actuel',moneyB(S.nav)],['Plus haut historique (seuil de commission de performance)',moneyB(S.hwm)],['Repli depuis le pic',dd>0.0005?'−'+(dd*100).toFixed(1)+' %':'aucun'],['Perte maximale subie','−'+(S.maxdd*100).toFixed(1)+' %'],['Flux nets d\'encours (collecte − rachats)',bn(S.flows||0)],['Classement cumulé sur cinq fonds',(1+S.rivals.filter(r=>r.cum>S.idx).length)+'e']])}
-   <p style="margin-top:10px">Au-delà de <em>28 % de perte</em> depuis le pic, le fonds est liquidé.</p>`);
+   <p style="margin-top:10px">Au-delà de <em>${Math.round(ddMax()*100)} % de perte</em> depuis le pic, le fonds est liquidé.</p>`);
  } else if(id==='perf'){
   const rows=S.rets.map((r,i)=>[`T${i+1} · ${REG[S.regimes[i]].nm}`,`<span class="${cls(r)}">${sgn(r,1)}</span>`,`<span class="${cls(r)}">${M$(r*S.navs[i])}</span>`]);
   openModal('Performance cumulée nette',`<p>Ce qu'un investisseur entré au premier jour a gagné ou perdu, <em>après tout</em> : frais de gestion (${(VOL().mgmt*400).toFixed(1)} % par an), commission de performance (${(VOL().perf*100).toFixed(0)} % au-dessus du plus haut historique), coûts de transaction, budget d'exploitation refacturé et incidents. Le collatéral rapporte le taux au jour le jour (${(S.rate*100).toFixed(1)} % actuellement), inclus.</p>
@@ -2644,7 +2647,7 @@ function showGauge(id){
    <p style="margin:12px 0 4px">D'où vient la majoration</p>
    <p class="note">La majoration de corrélation stresse chaque paire de ${(RS.kap*100).toFixed(0)} % vers le signe qui vous coûte : ρ* = ρ + κ(1−|ρ|)·signe(wᵢwⱼ). Une couverture dont la corrélation négative se relâche cesse de couvrir, et c'est ce cas-là qui est chiffré. κ monte avec la dégradation de liquidité du régime. La part « dépêches » est l'écart-type des impacts du vivier d'actualités appliqué à <em>votre</em> book, pour ${RS.nev.toFixed(1)} dépêches attendues en moyenne — le vivier entier, pas les dépêches effectivement tirées : ce chiffre ne vous dit rien de ce qui va arriver.</p>
    <p class="note">Votre comité, lui, juge sur le σ du modèle (${pct(RS.base)}) face à la cible et à sa bande : il a son propre calcul et il ne majore pas. L'écart entre les deux chiffres est votre information, pas la sienne.</p>
-   ${tbl([['Cible · bande du comité',`${(S.tgt*100).toFixed(0)} % · ${(S.tgt*(1-bandNow())*100).toFixed(1)}–${(S.tgt*(1+bandNow())*100).toFixed(1)} %`],['Perte à −2 σ trimestriels',`−${moneyB(RS.total*S.nav)}`],['Notionnel brut',`${moneyB(grossBn(S.k))} · ${(grossBn(S.k)/S.nav).toFixed(2)}×`],['Marge utilisée · seuil d\'appel',`${(MGU*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} % de l\'encours`]])}
+   ${tbl([['Marge utilisée · seuil d\'appel',`${(marginPct(S.k)*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} %`],['Cible · bande du comité',`${(S.tgt*100).toFixed(0)} % · ${(S.tgt*(1-bandNow())*100).toFixed(1)}–${(S.tgt*(1+bandNow())*100).toFixed(1)} %`],['Perte à −2 σ trimestriels',`−${moneyB(RS.total*S.nav)}`],['Notionnel brut',`${moneyB(grossBn(S.k))} · ${(grossBn(S.k)/S.nav).toFixed(2)}×`],['Marge utilisée · seuil d\'appel',`${(MGU*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} % de l\'encours`]])}
    <p style="margin:12px 0 4px">Part de la variance par facteur</p>
    ${tbl([...FACT.map((f,k)=>[f.nm,(vd.fv[k]/vd.tot*100).toFixed(0)+' %']),['Propre aux marchés',(vd.idio/vd.tot*100).toFixed(0)+' %']])}
    ${top.length?`<p style="margin:12px 0 4px">Contributeurs au risque</p>${tbl(top.map(o=>[INSTR[o.i].sym+' '+INSTR[o.i].nm,(o.v/sp*100).toFixed(0)+' %']))}`:''}`);
@@ -2821,7 +2824,7 @@ function phaseOpen(){
  save('phaseOpen');
  const OUV=["Écrans allumés, café servi, tout est encore possible.","Personne n'a encore rien perdu. Profitez-en.","Le marché ouvre dans quelques minutes et ne vous attend pas.","Trois mois devant vous, et une page blanche.","Le desk est en place. On y va.","Nouveau trimestre, compteur remis à zéro, mémoire longue chez les investisseurs.","Tout le monde repart à égalité. Enfin, presque.","Les positions dorment encore. Réveillez-les."];
  phase(`TRIMESTRE ${S.q+1} SUR ${QT()} · OUVERTURE`,`Le trimestre ${S.q+1} commence`,
-  [pick(OUV),...(S.goal?[`Objectif du trimestre — <b>${S.goal.nm.toLowerCase()}</b> : ${S.goal.d} Bonus de ${moneyB(S.goal.b*S.aum0)} sur votre score.`]:[]),"Première décision : le budget d'exploitation."],
+  [pick(OUV),...(S.goal?[`Objectif du trimestre — <b>${S.goal.nm.toLowerCase()}</b> : ${S.goal.d} Bonus de ${moneyB(S.goal.b*S.aum0)} sur votre score.${/marge/i.test(S.goal.d)?' La marge utilisée se lit dans la jauge Risque et sous le book.':''}`]:[]),"Première décision : le budget d'exploitation."],
   "Fixer le budget",screenBudget);
 }
 function phaseDesk(){
@@ -2832,7 +2835,7 @@ function phaseDesk(){
  let cEx=0;for(let i=0;i<N;i++)cEx+=tcost(1,i).cost;
  const cBp=cEx/Math.max(1e-9,S.nav)*1e4;
  phase(`TRIMESTRE ${S.q+1} · LE DESK`,"Le desk vous attend",
-  [`Budget validé : <b>${budgetBp().toFixed(0)} pb</b>, soit ${mm(budgetBp()*1e-4*S.nav)}.`,`${nr} rumeurs ont été collectées${S.rupture?', et une rupture factorielle signalée':''}.`,...(S.hunch?[`<b>Votre intuition</b> : quelque chose vous dit que <b>${FACT[S.hunch.k].nm.toLowerCase()}</b> va ${S.hunch.up?'surprendre à la hausse':'surprendre à la baisse'} ce trimestre. Vous ne sauriez pas dire d'où ça vient.`]:[]),`Liquidité des marchés : <b>${lqNm}</b>. Ouvrir une unité sur chacun de vos ${N} marchés coûterait <b>${mm(cEx)}</b>, soit ${cBp.toFixed(1)} pb de l'encours — ${L>1.2?'nettement plus cher que d\'habitude : mieux vaut réfléchir à deux fois avant de tout réarranger':L>1.05?'un peu plus cher que d\'habitude':L<0.95?'moins cher que d\'habitude, c\'est le moment de remettre le book en ordre':'le tarif habituel'}.`,`Le trimestre sera ${nev>=4?'très agité':nev>=3?'agité':'relativement calme'} : des dépêches sont attendues, dont certaines annoncées dans les rumeurs.`,"Vous positionnez le book pour les trois prochains mois."],
+  [`Budget validé : <b>${budgetBp().toFixed(0)} pb</b>, soit ${mm(budgetBp()*1e-4*S.nav)}.`,`${nr} rumeurs ont été collectées${S.rupture?', et une rupture factorielle signalée':''}.`,...(S.hunch?[`<b>Votre intuition</b> : quelque chose vous dit, sans certitude, que <b>${FACT[S.hunch.k].nm.toLowerCase()}</b> va ${S.hunch.up?'surprendre à la hausse':'surprendre à la baisse'} ce trimestre. Vous ne sauriez pas dire d'où ça vient.`]:[]),`Liquidité des marchés : <b>${lqNm}</b>. Ouvrir une unité sur chacun de vos ${N} marchés coûterait <b>${mm(cEx)}</b>, soit ${cBp.toFixed(1)} pb de l'encours — ${L>1.2?'nettement plus cher que d\'habitude : mieux vaut réfléchir à deux fois avant de tout réarranger':L>1.05?'un peu plus cher que d\'habitude':L<0.95?'moins cher que d\'habitude, c\'est le moment de remettre le book en ordre':'le tarif habituel'}.`,`Le trimestre sera ${nev>=4?'très agité':nev>=3?'agité':'relativement calme'} : des dépêches sont attendues, dont certaines annoncées dans les rumeurs.`,"Vous positionnez le book pour les trois prochains mois."],
   "Voir le desk",()=>{if(S.preDesk&&(!S.preDesk.cond||S.preDesk.cond())){const ev=S.preDesk;S.preDesk=null;screenTraderEvent(ev,screenPlay)}else screenPlay()});
 }
 function phaseExec(){
@@ -3626,7 +3629,7 @@ function resolveQuarter(){
  S.prevRel=qTotal-med;
  S.regimes.push(S.truth);S.regime=S.truth;S.q++;
  S.press=pressFeed({qTotal});S.lastPress=S.press[0]?S.press[0].t:null;
- if(S.maxdd>=0.28)S.over='dd';
+ if(S.maxdd>=ddMax())S.over='dd';
  else if(S.lp<=8)S.over='lp';
  else if(S.rc<=4)S.over='rc';
  else if(S.rc<=13&&S.maxk>3){S.maxk=3;S.k=S.k.map(v=>Math.max(-3,Math.min(3,v)));S.qLog.push('mandat')}
@@ -3991,14 +3994,14 @@ function screenDebrief(o){
   ${lines.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Par marché · rendement et contribution</summary>${byl}</details></div>`:''}  <button class="cta" id="nx">${S.over?'Voir le rapport final':(S.q>=QT()?`Clôturer les ${DUR().ans} an${DUR().ans>1?'s':''}`:'Trimestre suivant')}</button></div>`;
  document.getElementById('nx').onclick=()=>{
   if(S.over||S.q>=QT()){screenFinal();window.scrollTo(0,0);return}
-  if(rng()<0.42&&BOARDEV.filter(e=>!S.usedEv.includes(e.t)).length){screenBoard();window.scrollTo(0,0)}
+  if(rng()<0.42&&BOARDEV.filter(e=>!S.usedEv.includes(e.t)&&!evTouchesBook(e)).length){screenBoard();window.scrollTo(0,0)}
   else{planQuarter();phaseOpen()}
  };
 }
 function screenBoard(){
  hint('board');
  save('screenBoard');
- const av=BOARDEV.filter(e=>!S.usedEv.includes(e.t));
+ const av=BOARDEV.filter(e=>!S.usedEv.includes(e.t)&&!evTouchesBook(e));
  const ev=pick(av);S.usedEv.push(ev.t);
  app.innerHTML=statusBar(true)+`<div class="evwrap fade">
   <div class="evcard">${evHead(ev.who,'inv')}<h3>${ev.t}</h3><p>${ev.p}</p>${evTimerHTML}</div>
@@ -4043,7 +4046,7 @@ function screenFinal(){
   commNone:S.commNone||0,qNeg:S.qNeg||0,mguMax:S.mguMax||0,resMin:S.resMinQ||0};
  FEATS.forEach(f=>{if(f.tf){try{if(f.tf(S.finalCtx))award(f.id)}catch(e){}}});
  let verdict,vtxt;
- if(S.over==='dd'){verdict="Le fonds est liquidé";vtxt=`La perte a dépassé 28 %. Les clauses de rachat se sont déclenchées en cascade au trimestre ${S.q}.`}
+ if(S.over==='dd'){verdict="Le fonds est liquidé";vtxt=`La perte a dépassé ${Math.round(ddMax()*100)} %. Les clauses de rachat se sont déclenchées en cascade au trimestre ${S.q}.`}
  else if(S.over==='lp'){verdict="Les rachats l'ont emporté";vtxt="La base d'investisseurs s'est vidée avant que la thèse n'ait le temps de se réaliser. C'est la façon la plus courante de perdre en gestion."}
  else if(S.over==='rc'){verdict="Vous êtes remercié";vtxt="Le comité des risques a retiré le mandat. Le book pouvait être bon ; il n'était pas défendable."}
  else if(cagr>0.18&&S.maxdd<0.15&&rank===1){verdict="Deux années de référence";vtxt="Performance, discipline de risque, et vous avez battu les quatre. Reste à savoir ce qui, là-dedans, se reproduira."}
