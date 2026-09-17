@@ -137,6 +137,31 @@ fois son coût. Campagnes : `tools/runner.js` + `tools/loop.sh` sur une **copie 
 du plan) : `loop.sh` relit le fichier à chaque tranche, une modification en cours de campagne
 fausse les résultats.
 
+### Styles, budgets et lisibilité (dernier lot)
+
+- Quant : `modelScale` 0,80 (le modèle ne vise que 80 % de la vol cible), `ddMax` 0,40.
+- Flux : intuition juste 93 fois sur 100 (`rng()<0.93`), `modelScale` 1,20, `lpMult` 1,60,
+  `ddMax` 0,16. Le bot pondère l'intuition et applique `modelScale` comme un joueur le ferait.
+- `ddMax()` centralise le seuil de liquidation (défaut 0,28) : test de fin de partie,
+  pop-up de la jauge, verdict final, écran des règles.
+- Budgets : salle de marché 2/18/50 pb (réduit : coûts ×1,80), contrôle 4/12/24 pb
+  (renforcé : incidents ×0,2, bande ±40 %, comité +2), recherche 4/18/64 pb.
+- Marge utilisée : affichée dans la pop-up de la jauge Risque et sous le book ; rappelée
+  dans l'intro quand l'objectif du trimestre la mentionne.
+- `POSRX` / `evTouchesBook()` écartent du début de trimestre et du conseil les exigences et
+  événements qui coupent des positions : le book y est à plat. L'ancienne regex ratait
+  `cutTopN`, `cutFactor` et les conditions sur `S.k` (13 exigences sur 24, 1 événement sur 8).
+
+Piège de méthode : `sed 's/a.html/b.html/'` sur un plan JSON d'une seule ligne ne remplace
+que la première occurrence. Trois campagnes ont ainsi rejoué le même fichier et rendu des
+résultats identiques ; générer les plans en Python.
+
+| Style | Score moyen | σ | Survie |
+|---|---|---|---|
+| Quant | 30,9 M$ | 25 | 56 % |
+| Fondamental | 36,7 M$ | 33 | 53 % |
+| Flux | 45,0 M$ | 41 | 44 % |
+
 ### Résultats de calibration (parties de 2 ans, bot intelligent)
 
 | Option | Mesure | Verdict |
