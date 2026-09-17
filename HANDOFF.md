@@ -10,15 +10,26 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
 - **Patchs Python ciblés**, jamais de réécriture du fichier. Chaque patch utilise une
   fonction `rep(old, new, k=1)` qui *assert* le nombre d'occurrences avant de remplacer :
   une ancre ambiguë doit faire échouer le patch, pas produire un remplacement au hasard.
-- **Test jsdom d'une partie complète avant publication.** Harnais dans le bac à sable :
-  - `play.js <fichier> <graine> [--sage] [--size small|mid|mega] [--univ fin|com|ext] [--dur express|normal|saison] [--prof syst|fonda|flux]`
+- **Test jsdom d'une partie complète avant publication.** Le bac à sable est réinitialisé
+  entre les sessions : le harnais n'y survit pas et doit être reconstruit (`npm i jsdom`).
+  - `play.js <fichier> <graine> [--sage] [--size small|mid|mega] [--univ fin|com|ext] [--dur express|normal|saison] [--prof syst|fonda|flux] [--resume N]`
     joue une partie entière jusqu'à `#again` et compte les erreurs (`window.onerror` + jsdomError).
+    Le book est posé via `recoBook()`. Une sonde enveloppe `resolveEvent` et compte les écarts
+    entre jauges affichées dans le bouton de dépêche et jauges appliquées (0 exigé).
+    `--resume N` capture la sauvegarde à la N-ième dépêche, recharge la page à froid et finit la partie.
     Régression type : 9 combinaisons taille × univers, deux styles de jeu, 0 erreur exigée.
+    Une partie « normal » prend 3 à 10 s sur un seul cœur : lancer les lots détachés
+    (`setsid nohup … &`) et relire le fichier de résultats, sinon la limite de 300 s tombe.
+  - `cover3.js` : appelle `evPlans` sur toutes les dépêches ouvertes × 3 styles × 2 univers,
+    avec et sans interdiction du comité ; vérifie la forme, l'absence de NaN, que suivre gagne
+    plus en poursuite et perd plus en retournement.
+  - Captures mobiles (380 px) : Playwright avec `/opt/pw-browsers/chromium-1194/chrome-linux/chrome` ;
+    fermer les info-bulles (`.mbox`) et attendre la fin de l'animation `fade` avant la capture.
   - `cover.js` / `cover2.js` : couverture forcée des nouvelles anecdotes / dépêches, chaque choix.
   - `goalchk.js` : rejoue les 108 prédicats d'objectif sur des contextes réels.
-  - `resumechk.js` : capture la sauvegarde à chaque point, recharge la page à froid, vérifie la reprise.
-  - `featchk.js`, `evchk.js`, `flowchk.js`, `mprobe2.js` : difficulté des hauts faits, cohérence
-    jauges/résultat des dépêches, corrélation flux/performance, marge utilisée.
+  - Anciens outils perdus, non reconstruits : `cover.js`/`cover2.js` (anecdotes/dépêches),
+    `goalchk.js` (108 prédicats d'objectif), `resumechk.js` (reprise à chaque point de sauvegarde),
+    `featchk.js`, `flowchk.js`, `mprobe2.js`.
 - Publication par l'API GitHub (`GET` du sha puis `PUT` sur `contents/index.html`).
 
 ## Architecture du fichier
@@ -47,6 +58,19 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   `tf` (rapport final) ; quatre restent attribués par le code au moment de l'action.
 - **Qualificatifs de trimestre** : `QNAMES` (89), prédicats sur le vecteur factoriel réalisé `S.f`,
   les trois génériques marqués `gen:1` ne sortent qu'en dernier recours. `qRegime()`.
+- **Dépêches** (lot Q) : `screenMacroEvent` → `evPlans(ev,touched)` chiffre deux options,
+  `follow` (+2 unités dans le sens du choc) et `none` (« Laisser le modèle » pour `syst`,
+  « Ne pas réagir » sinon ; toujours en dernier, c'est le choix du minuteur). Suite du mouvement
+  binaire : `S.sc={p,m:[mPoursuite,mRetournement]}`, p ∈ [0,30 ; 0,70]. Tout est déterministe
+  une fois `S.sc` tiré : `resolveEvent(ev,touched,plan,imm,navB)` applique exactement les montants
+  et les jauges affichés. Coût de suivre : frais (×1,9 + 1,25 pb de glissement), écart au book de
+  départ (≤ −3 comité), variation de note de vol ex-ante (±3), dérogation au modèle (−3, `syst`),
+  interdiction du comité `S.noAddQ` (−6). Aides pures : `pnlGz`, `riskRc`, `reactGz`.
+- **Jauges** : `gauge()` mémorise `S.lastG={lp,rc,lp0,rc0}` ; la barre d'état affiche `lp0 →lp`
+  via `gArrow` hors page de book. La clôture du trimestre et les événements du conseil écrivent
+  aussi `S.lastG`.
+- **Annonce** : ids `none`/`prud`/`fort`. `prud` = « Communication standard », objectif entier,
+  sélectionnée par défaut ; `fort` = deux fois l'objectif.
 - **Textes** : `MACROEV` (269 dépêches), `TRADER_EXEC` (145 anecdotes d'exécution), `TRADER_MID`,
   `STAKE`, `INCIDENTS`, `BOARDEV`, `RUMORS`, `PRESS_SRC` (24), `PRESS_EXTRA`.
 - **Sauvegarde** : clé `lebook_save_v2`, `save(point,extra)` / `loadGame()`, table `RESUME`.
@@ -66,32 +90,21 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
 7. `pk(arr,n)` est un tirage déterministe à mélange avalanche ; le XOR final doit rester `>>>0`
    sinon l'indice devient négatif.
 8. Pourcentages à **une** décimale partout (les multiplicateurs et le Sharpe gardent deux).
+   Des `sgn(x,2)` subsistent (en-têtes de débriefing, bilan) : à passer à 1 au fil de l'eau.
+9. Dépêches : ce qui est affiché dans un bouton est ce qui est appliqué. Aucun tirage aléatoire
+   dans `resolveEvent` hors le choix poursuite/retournement.
+10. `S.sc` est validé par forme (`m.length===2`) : une sauvegarde d'avant le lot Q le fait retirer.
 
-## Reste à faire (demandé, non livré)
+## Livré
 
-### Lot Q — refonte des événements trimestriels
-- Garder le texte descriptif du haut, parfait tel quel.
-- « Effet immédiat » → **« P&L immédiat »**.
-- Ne garder que **deux options**, nommées selon le style de gestion :
-  « suivre le mouvement » et « laisser le modèle » / « ne pas réagir ».
-- Supprimer la barre de couleurs des cartes d'option (jugée illisible).
-- Chaque description d'option doit tenir **dans le bouton**.
-- Mouvement de marché **binaire** : poursuite ou retournement, probabilités **binomiales**.
-- Dans chaque bouton, un tableau épuré donnant pour chacun des deux mouvements :
-  probabilité, P&L en M$ ou k$, impact investisseurs, impact comité.
-- Le choix doit toujours être une prise de risque : gain possible, au prix de coûts de
-  transaction, de jauges, et d'un décalage du book par rapport au portefeuille cible.
+- **Lot Q** (commit `f2723a2`) : dépêches à deux options, mouvement binaire, tableau
+  probabilité / P&L / investisseurs / comité dans chaque bouton, « P&L immédiat ».
+- **Lot R** (commit `0e5f5a6`) : jauges Risque et Coûts T alignées, valeurs entières,
+  annonce standard par défaut (objectif entier, forte = ×2), flèches `61 →58`,
+  concurrence classée par cumul sans « vs vous », brut au net en montants seuls.
+  Libellé de jauge raccourci en « Invest. ».
 
-### Lot R — affichage
-- Jauges « Risque » et « Coûts T » : aligner en hauteur sur les jauges de facteurs macro.
-- Jauges de facteurs et de risque : valeurs **entières**, sans décimale.
-- « Ce que vous annoncez » : communication standard = **l'objectif trimestriel entier**
-  (et non la moitié), **sélectionnée par défaut** ; conviction forte = **deux fois** l'objectif.
-- Jauges investisseurs et comité en cours de trimestre : afficher `61 → 58` avec flèche et
-  couleurs, comme sur la page de book, au lieu de la valeur entre parenthèses.
-- Résultat du trimestre → « La concurrence » : classer par **performance cumulée**,
-  supprimer la colonne « vs vous ».
-- Résultat du trimestre → « Du brut au net » : supprimer la colonne en % de l'encours.
+## Reste à faire
 
 ### Plus loin
 - Production de texte : objectif de 200 anecdotes d'exécution (145 aujourd'hui) et
