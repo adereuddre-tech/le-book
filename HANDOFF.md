@@ -10,8 +10,9 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
 - **Patchs Python ciblés**, jamais de réécriture du fichier. Chaque patch utilise une
   fonction `rep(old, new, k=1)` qui *assert* le nombre d'occurrences avant de remplacer :
   une ancre ambiguë doit faire échouer le patch, pas produire un remplacement au hasard.
-- **Test jsdom d'une partie complète avant publication.** Le bac à sable est réinitialisé
-  entre les sessions : le harnais n'y survit pas et doit être reconstruit (`npm i jsdom`).
+- **Test jsdom d'une partie complète avant publication.** Le harnais est versionné dans
+  `tools/` (voir `tools/README.md`) : le récupérer depuis le dépôt en début de session,
+  puis `npm i jsdom`.
   - `play.js <fichier> <graine> [--sage] [--size small|mid|mega] [--univ fin|com|ext] [--dur express|normal|saison] [--prof syst|fonda|flux] [--resume N]`
     joue une partie entière jusqu'à `#again` et compte les erreurs (`window.onerror` + jsdomError).
     Le book est posé via `recoBook()`. Une sonde enveloppe `resolveEvent` et compte les écarts
@@ -90,7 +91,6 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
 7. `pk(arr,n)` est un tirage déterministe à mélange avalanche ; le XOR final doit rester `>>>0`
    sinon l'indice devient négatif.
 8. Pourcentages à **une** décimale partout (les multiplicateurs et le Sharpe gardent deux).
-   Des `sgn(x,2)` subsistent (en-têtes de débriefing, bilan) : à passer à 1 au fil de l'eau.
 9. Dépêches : ce qui est affiché dans un bouton est ce qui est appliqué. Aucun tirage aléatoire
    dans `resolveEvent` hors le choix poursuite/retournement.
 10. `S.sc` est validé par forme (`m.length===2`) : une sauvegarde d'avant le lot Q le fait retirer.
@@ -103,6 +103,9 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   annonce standard par défaut (objectif entier, forte = ×2), flèches `61 →58`,
   concurrence classée par cumul sans « vs vous », brut au net en montants seuls.
   Libellé de jauge raccourci en « Invest. ».
+- **Nettoyage** : CSS de l'ancienne barre de couleurs et `applyEventChoice` supprimés,
+  lignes « Achat de sources » (toujours nulles) retirées des tableaux, derniers `sgn(x,2)`
+  passés à une décimale, coût des ordres affiché en pb. Harnais versionné dans `tools/`.
 
 ## Reste à faire
 
