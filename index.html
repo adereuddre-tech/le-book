@@ -62,6 +62,12 @@ em{font-style:italic;color:var(--txt)}
 .navdraw{stroke-dasharray:1600;stroke-dashoffset:1600;animation:navdr 1.6s cubic-bezier(.35,0,.2,1) forwards}
 @keyframes navdr{to{stroke-dashoffset:0}}
 @media (prefers-reduced-motion:reduce){.navdraw{animation:none;stroke-dashoffset:0}}
+.tape{margin:10px -2px 0;padding:6px 8px 2px;border:1px solid var(--line);border-radius:8px;
+ background:linear-gradient(180deg,rgba(21,32,47,.55),rgba(21,32,47,0))}
+.tapehead{display:flex;justify-content:space-between;align-items:baseline;
+ font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--dimmer);margin-bottom:2px}
+.tapehead b{font-size:12px}
+.tape .navdraw{animation-duration:1.4s}
 .navbox{margin:14px 0 0;padding:10px 10px 7px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg,var(--panel),rgba(21,32,47,0))}
 .navrow{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:10px;color:var(--dimmer);margin-top:3px}
 .navcap{font-family:var(--mono);font-size:10px;color:var(--dimmer);letter-spacing:.05em;margin-bottom:5px}
@@ -1944,6 +1950,19 @@ let rng,spare=null,rngState=0;
 function hash32(str,seed){let h=(seed>>>0)^0x9E3779B9;
  for(let i=0;i<str.length;i++)h=Math.imul(h^str.charCodeAt(i),2654435761)>>>0;
  h^=h>>>15;h=Math.imul(h,2246822507)>>>0;h^=h>>>13;return h>>>0}
+/* Générateur PUR pour le décor : il ne touche pas à rngState, contrairement à mulberry32.
+   Y toucher décalerait les flux nommés et casserait l'appariement des campagnes. */
+function prng32(a){let s=a|0;return function(){s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);
+ t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+/* Pont brownien géométrique : m points de v0 à v1, texture de cours, extrémités clouées. */
+function bridgePts(v0,v1,m,seed,vol){
+ const r=prng32(seed),a=Math.log(Math.max(1e-9,v0)),b=Math.log(Math.max(1e-9,v1));
+ const raw=[];let w=0;
+ for(let i=0;i<m;i++){w+=(r()*2-1)*vol;raw.push(w)}
+ const last=raw[m-1]||0,out=[];
+ for(let i=1;i<=m;i++)out.push(Math.exp(a+(b-a)*(i/m)+(raw[i-1]-last*(i/m))));
+ return out;
+}
 function reseed(ch,q){rng=mulberry32(hash32(ch+'#'+(q===undefined?(S?S.q:0):q),S?S.seed:0));spare=null}
 function mulberry32(a){rngState=a|0;return function(){rngState=rngState+0x6D2B79F5|0;let t=Math.imul(rngState^rngState>>>15,1|rngState);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function gauss(){if(spare!==null){const t=spare;spare=null;return t}
@@ -2387,7 +2406,8 @@ function navChart(vals,o){
  const mn=Math.min(...v),li=v.indexOf(mn);
  if(o.trough&&mn<base*0.97&&li>0&&li<v.length-1)
   mk+=`<circle cx="${px(li).toFixed(1)}" cy="${py(mn).toFixed(1)}" r="3" fill="#C4576F"><animate attributeName="r" values="3;5.5;3" dur="2.6s" repeatCount="indefinite"/></circle>`;
- mk+=`<circle cx="${px(v.length-1).toFixed(1)}" cy="${py(v[v.length-1]).toFixed(1)}" r="3.2" fill="${col}"/>`;
+ mk+=`<circle cx="${px(v.length-1).toFixed(1)}" cy="${py(v[v.length-1]).toFixed(1)}" r="3.2" fill="${col}">`
+  +(o.pulse?`<animate attributeName="r" values="3.2;6;3.2" dur="1.8s" repeatCount="indefinite"/>`:'')+`</circle>`;
  return `<svg class="navc" viewBox="0 0 ${W} ${H}" aria-hidden="true">
   <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".32"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
   <path d="${area}" fill="url(#${id})"/>
@@ -2570,6 +2590,49 @@ function costsNow(){
  const tc=S.phase==='book'?liveTC()/S.nav:(S.pendingTC||0);
  return {ops:budgetBp(),tc:tc*1e4,mgmt:VOL().mgmt*1e4,info:0};
 }
+/* Fraction du trimestre écoulée, lue sur l'avancement de la file de dépêches. */
+function qElapsed(){const n=(S.evQueue||[]).length||1;return Math.max(0,Math.min(1,(S.evIdx||0)/n))}
+/* Rendement du trimestre à cet instant. C'est `grQ` de resolveQuarter avec t au lieu de 1 :
+   au bout du trimestre, le ruban tombe exactement sur le chiffre du débriefing. */
+function liveRet(){
+ if(!S.rBase)return 0;
+ const t=qElapsed(),w=weights(S.k);
+ let g=0;for(let i=0;i<N;i++)g+=w[i]*S.rBase[i];
+ g+=S.rate/4;   /* le collatéral court aussi : sans lui le ruban ratait la clôture de ~108 pb */
+ return (t*g*S.nav+(S.qEvM||0)+(S.qIncM||0)-(S.qMgmtM||0))/Math.max(1e-9,S.navQ0);
+}
+/* Indice de performance nette, base 100 au premier jour de l'année en cours. */
+function ytdIdx(){
+ const y0=Math.floor(S.q/4)*4;let v=1;
+ for(let i=0;i<y0;i++)v*=(1+S.rets[i]);
+ let cur=1;for(let i=0;i<S.q;i++)cur*=(1+S.rets[i]);
+ return {y0,base:v,now:cur*(1+liveRet())/v*100,closes:S.rets.slice(y0,S.q)};
+}
+/* Le ruban. Le passé est stocké, jamais recalculé ; seul le présent s'allonge. */
+function tapeTick(){
+ const y=ytdIdx(),yk=y.y0;
+ if(!S.tape||S.tape.y!==yk||S.tape.q!==S.q){
+  const pts=[100];let v=1;
+  y.closes.forEach((r,i)=>{const nv=v*(1+r);
+    bridgePts(v*100,nv*100,16,hash32('tape'+(yk+i),S.seed),0.010).forEach(x=>pts.push(x));v=nv});
+  S.tape={y:yk,q:S.q,pts,seg:0};
+ }
+ const tgt=y.now,last=S.tape.pts[S.tape.pts.length-1];
+ if(Math.abs(tgt/last-1)>1e-9){
+  const vol=Math.max(0.004,(S.tgt||0.05)/6);
+  bridgePts(last,tgt,9,hash32('tapeq'+S.q+'_'+(S.tape.seg++),S.seed),vol).forEach(x=>S.tape.pts.push(x));
+  if(S.tape.pts.length>420)S.tape.pts.splice(0,S.tape.pts.length-420);
+ }
+}
+function tapeBand(){
+ try{tapeTick()}catch(err){return ticker()}
+ const p=S.tape&&S.tape.pts||[];
+ if(p.length<3)return ticker();
+ const v=p[p.length-1],up=v>=100;
+ return `<div class="tape"><div class="tapehead"><span>P&amp;L DU FONDS · ANNÉE ${1+Math.floor(S.q/4)}</span>
+   <b class="${up?'pos-g':'neg-g'}">${up?'+':'−'}${dec(Math.abs(v-100),1)} %</b></div>
+  ${navChart(p,{h:78,base:100,anim:1,pulse:1})}</div>`;
+}
 function statusBar(done){
  S.statusDone=!!done;
  const dd=1-S.idx/S.peakIdx,cum=S.idx-1;
@@ -2602,7 +2665,7 @@ function statusBar(done){
    ${[0,1,2,3].map(fg).join('')}
    <button class="fg" data-gauge="risk"><span class="fl">Risque</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><span class="band" style="left:${(1-band)*50}%;width:${band*100}%"></span><em style="left:50%"></em><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b>${Math.round(sp*100)}/${Math.round(S.tgt*100)}</b></button>
    <button class="fg" data-gauge="cost"><span class="fl">Coûts T</span><span class="tri none">&nbsp;</span><span class="ft2"><i style="left:0;width:${Math.min(100,ctot/1.6)}%;background:${ctot>90?'var(--short)':ctot>65?'var(--warn)':'var(--dim)'}"></i></span><b>${ctot.toFixed(0)} pb</b></button>
-  </div>${ticker()}</div>`;
+  </div>${S.phase==='events'?tapeBand():ticker()}</div>`;
 }
 /* « 61 → 58 » : valeur avant le dernier mouvement, puis valeur actuelle en couleur */
 function gArrow(v0,v){const a=Math.round(v),b=v0===undefined?a:Math.round(v0);
@@ -4135,10 +4198,16 @@ function screenDebrief(o){
  const R=S.qName||(S.qName=qRegime());const V=verdicts(o);
  const lines=INSTR.map((x,i)=>({sym:x.sym,nm:x.nm,r:o.r[i],p:o.w[i]*o.r[i],k:S.k[i]}))
    .filter(z=>z.k!==0).sort((a,b)=>b.p-a.p);
- const amx=Math.max(0.001,...o.attr.map(Math.abs));
+ /* ce que les quatre facteurs n'expliquent pas : part propre des marchés, portage, stop */
+ const resid=o.gross-o.attr.reduce((a,b)=>a+b,0);
+ const amx=Math.max(0.001,...o.attr.map(Math.abs),Math.abs(resid));
  let att='';FACT.forEach((f,k)=>{const v=o.attr[k],wd=Math.abs(v)/amx*50;
   att+=`<div class="attr"><span class="an">${f.nm} <span style="font-family:var(--mono);font-size:11px;color:var(--dimmer)">f = ${S.f[k]>=0?'+':'−'}${Math.abs(S.f[k]).toFixed(2)} σ</span></span><span class="av ${cls(v)}">${sgn(v,1)} · ${M$(v*o.nav0)}</span></div>
    <div class="bar2"><span class="mid"></span><i style="${v>=0?'left:50%':'right:50%'};width:${wd}%;background:${v>=0?'var(--long)':'var(--short)'}"></i></div>`});
+ {const wd=Math.abs(resid)/amx*50;
+  att+=`<div class="attr"><span class="an">Part propre des marchés <span style="font-family:var(--mono);font-size:11px;color:var(--dimmer)">hors macro</span></span><span class="av ${cls(resid)}">${sgn(resid,1)} · ${M$(resid*o.nav0)}</span></div>
+   <div class="bar2"><span class="mid"></span><i style="${resid>=0?'left:50%':'right:50%'};width:${wd}%;background:${resid>=0?'var(--long)':'var(--short)'};opacity:.55"></i></div>
+   <p class="note" style="margin-top:6px">Les quatre facteurs plus la part propre font le brut des positions, ${sgn(o.gross,1)}. La part propre est ce qui a bougé pour des raisons de marché et non de macro : c'est la portion de votre trimestre qui ne dit rien de la justesse de vos paris.</p>`;}
  let byl=lines.map(z=>`<div class="attr"><span class="an"><span class="num" style="color:var(--txt)">${z.sym}</span> <span style="font-family:var(--mono);font-size:11px;color:var(--dimmer)">${z.k>0?'+':'−'}${Math.abs(z.k)} · marché ${sgn(z.r,1)}</span></span><span class="av ${cls(z.p)}">${sgn(z.p,1)} · ${mn(z.p*S.nav)}</span></div>`).join('');
  const all=[{nm:S.fundName,v:o.qTotal,me:1},...S.rivals.map(r=>({nm:r.nm+' · '+r.boss,v:r.last}))].sort((a,b)=>b.v-a.v);
  const cums=[{nm:S.fundName,v:S.idx-1,me:1},...S.rivals.map(r=>({nm:r.nm,v:r.cum-1}))].sort((a,b)=>b.v-a.v);
