@@ -85,8 +85,14 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   `S.qMgmtM`) ; **performance et bonus d'objectif à la clôture**. Les coûts d'exécution sont
   à la charge du gérant (`S.mgrCosts`), plus du fonds : `tcM` est affiché au débriefing mais
   n'entre pas dans `perfM`. On ne peut engager que ce qu'on a en caisse : niveaux de budget
-  verrouillés (`budgetBpIf`), validation du book bloquée (`refreshSend`, `fitBook`).
+  verrouillés (`budgetBpIf`), et sur le book chaque **case** de position est grisée dès que
+  son coût dépasse la trésorerie (`costIf`, `segAfford`) — mesuré : 0 % de cases grisées à
+  trésorerie confortable, 55 % à 20 k$, 91 % à zéro, la colonne « 0 » restant toujours
+  ouverte pour pouvoir se mettre à plat. La validation reste gardée (`refreshSend`, `fitBook`).
   Un book inchangé ne coûte rien et n'est jamais bloqué — pas d'impasse possible.
+  La tuile « Vos gains » affiche `mgrCash()`, donc exactement ce qui reste à dépenser ; le
+  score conservé pour le palmarès et les campagnes reste `mgrNet()`, qui en diffère du capital
+  de départ (50 pb de l'encours initial).
 - **Coûts de transaction** : `TCK=3` multiplie le tarif de base dans `tcost`. Un ordre préparé
   revient à ~5 pb du notionnel, ~13 à 38 pb de l'encours pour ouvrir un book complet. Suivre
   une dépêche coûte `tc.cost*1.6` (prime d'urgence) — l'ancien glissement forfaitaire de
