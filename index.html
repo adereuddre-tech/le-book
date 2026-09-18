@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Le Book — prenez les commandes d'un fonds global macro de 100 milliards</title>
-<meta name="description" content="Un jeu de gestion : quinze marchés, huit trimestres, quatre concurrents, des investisseurs nerveux et un comité des risques qui vous surveille. Prouvez que ce n'était pas de la chance.">
-<meta property="og:title" content="Le Book — un fonds global macro de 100 milliards">
-<meta property="og:description" content="Quinze marchés, trois tailles de fonds, huit trimestres, quatre concurrents, des rumeurs à acheter et des dépêches qui vous interrompent. Prouvez que ce n'était pas de la chance.">
+<title>Le Book — prenez les commandes d'un fonds global macro</title>
+<meta name="description" content="Un jeu de gestion : vingt-cinq marchés, huit trimestres, quatre concurrents, des investisseurs nerveux et un comité des risques qui vous surveille. Prouvez que ce n'était pas de la chance.">
+<meta property="og:title" content="Le Book — un fonds global macro">
+<meta property="og:description" content="Vingt-cinq marchés, trois tailles de fonds, huit trimestres, quatre concurrents, des sources incertaines et des dépêches qui vous interrompent. Prouvez que ce n'était pas de la chance.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230E1725'/%3E%3Crect x='10' y='34' width='8' height='20' fill='%234FA98C'/%3E%3Crect x='22' y='22' width='8' height='32' fill='%23C4576F'/%3E%3Crect x='34' y='14' width='8' height='40' fill='%234FA98C'/%3E%3Crect x='46' y='28' width='8' height='26' fill='%23D9B06A'/%3E%3C/svg%3E">
@@ -2456,7 +2456,7 @@ function screenSetup(){
   <div class="sub">quatre choix, puis le premier trimestre</div>
  </div>
  <div class="prose">
-  <p>À vous de décider vos positions sur <strong>15 marchés</strong> — actions, taux, devises, matières premières, exotiques — à l'achat ou à la vente. Le desk vous remonte des rumeurs à acheter, le monde vous envoie des dépêches, et vos investisseurs comme votre comité des risques jugent chacun de vos gestes en direct.</p>
+  <p>À vous de décider vos positions sur <strong>jusqu'à 25 marchés</strong> — actions, taux, devises, matières premières, exotiques — à l'achat ou à la vente. Le desk vous remonte ses sources, le monde vous envoie des dépêches, et vos investisseurs comme votre comité des risques jugent chacun de vos gestes en direct.</p>
   <p><strong>Votre objectif : encaisser le plus de commissions possible en deux ans sans vous faire débarquer.</strong> Vous gagnez une commission de gestion sur l'encours, trimestre après trimestre, et une commission de performance sur ce que le fonds gagne au-dessus de son plus haut historique. Un gros encours et une belle performance font un gros score — mais si les investisseurs retirent leur argent, si le comité des risques vous retire le mandat ou si le fonds perd plus de 28 %, la partie s'arrête et vous ne toucherez plus rien. Tout le jeu tient dans cette tension : prendre assez de risque pour gagner, pas assez pour être débarqué.</p>
  </div>
  <details class="wire" style="margin-top:16px"><summary>Comment on gagne, comment on perd, ce que ça coûte</summary>
@@ -2468,7 +2468,7 @@ function screenSetup(){
  </div></details>
  <details class="wire" style="margin-top:14px"><summary>Comment ça marche sous le capot</summary>
   <p class="note">Les rendements des douze marchés sont engendrés par quatre facteurs orthonormés plus une part propre : r<sub>i</sub> = σ<sub>i</sub>(Σ<sub>k</sub> b<sub>ik</sub>f<sub>k</sub> + e<sub>i</sub>z<sub>i</sub>), avec Σ<sub>k</sub> b<sub>ik</sub>² + e<sub>i</sub>² = 1, ce qui rend la matrice de covariance semi-définie positive par construction. Le régime macro du trimestre fixe la moyenne et la volatilité des facteurs ; il suit une chaîne de Markov à sept états. S'y ajoutent, par marché, des dérives de tendance, de portage et de valeur.</p>
-  <p class="note">Une unité de position vaut un huitième de la vol cible du mandat en volatilité standalone, dimensionnée en inverse de la vol du marché ; le notionnel correspondant s'affiche en milliards. La vol ex-ante du book est √(wᵀΣw). Chaque changement de position paie une demi-fourchette plus un impact en racine carrée du notionnel, multiplié par le budget desk, l'organisation, la liquidité du régime et le taux au jour le jour.</p>
+  <p class="note">Une unité de position vaut un huitième de la vol cible du mandat en volatilité standalone, dimensionnée en inverse de la vol du marché ; le notionnel correspondant s'affiche à côté de chaque ordre. La vol ex-ante du book est √(wᵀΣw). Chaque changement de position paie une demi-fourchette plus un impact en racine carrée du notionnel, multiplié par le budget desk, l'organisation, la liquidité du régime et le taux au jour le jour.</p>
   <p class="note">Les rumeurs sont vraies avec la probabilité de leur classe de fiabilité ; une rumeur vraie est tirée parmi celles dont l'impact prétendu s'aligne sur les facteurs réalisés. Le rapport final calcule le Sharpe probabiliste de Bailey et López de Prado, qui vous dira si deux ans suffisent à distinguer la compétence de la chance. Ils ne suffisent presque jamais.</p>
  </details>
  <div id="picks"></div>
@@ -2726,7 +2726,7 @@ function showGauge(id){
  const w=weights(S.k),ex=factorExpo(w),sp=pvol(w);
  if(id==='cap'){
   const dd=1-S.nav/S.peak;
-  openModal('Capital',`<p>Encours net du fonds, en milliards de dollars, tel que le voient les investisseurs. Il bouge avec la performance nette, les incidents, les frais, et les flux d'encours provoqués par votre position face aux concurrents.</p>
+  openModal('Capital',`<p>Encours net du fonds, tel que le voient les investisseurs. Il bouge avec la performance nette, les incidents, les frais, et les flux d'encours provoqués par votre position face aux concurrents.</p>
    ${tbl([['Encours initial',moneyB(S.aum0)],['Encours actuel',moneyB(S.nav)],['Plus haut historique (seuil de commission de performance)',moneyB(S.hwm)],['Repli depuis le pic',dd>0.0005?'−'+(dd*100).toFixed(1)+' %':'aucun'],['Perte maximale subie','−'+(S.maxdd*100).toFixed(1)+' %'],['Flux nets d\'encours (collecte − rachats)',bn(S.flows||0)],['Classement cumulé sur cinq fonds',(1+S.rivals.filter(r=>r.cum>S.idx).length)+'e']])}
    <p style="margin-top:10px">Au-delà de <em>${Math.round(ddMax()*100)} % de perte</em> depuis le pic, le fonds est liquidé.</p>`);
  } else if(id==='perf'){
