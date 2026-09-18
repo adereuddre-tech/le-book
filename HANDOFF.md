@@ -31,9 +31,20 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   - Captures mobiles (380 px) : Playwright avec `/opt/pw-browsers/chromium-1194/chrome-linux/chrome` ;
     fermer les info-bulles (`.mbox`) et attendre la fin de l'animation `fade` avant la capture.
   - `cover.js` / `cover2.js` : couverture forcée des nouvelles anecdotes / dépêches, chaque choix.
-  - `goalchk.js` : rejoue les 108 prédicats d'objectif sur des contextes réels.
   - `camp.sh` : campagne n graines × 3 styles sur une copie figée, vers un fichier de résultats
     dépouillé par `summ2.py` (score, écart-type, médiane, survie, causes de fin).
+  - `cover.js` : audit **statique** des effets d'événement. Compare les clés écrites dans les
+    anecdotes avec celles que le code lit réellement (une clé que personne ne lit est un effet
+    mort : le joueur paie, rien n'arrive), vérifie qu'aucun effet de jauge ne dépasse la borne
+    ±15 de `gauge()` — au-delà le texte promet plus que ce qui est appliqué — et qu'aucun
+    effet de trésorerie ne sort d'une bande plausible de l'encours.
+  - `cover2.js` : couverture **forcée**. Ouvre chaque anecdote de chaque pool et clique chaque
+    choix (662 choix), en vérifiant qu'aucune erreur n'est levée, qu'aucun « undefined »,
+    « NaN » ni « [object » n'apparaît dans ce que le joueur lit, et que l'état reste fini.
+    Signale aussi les textes libellés en milliards, hérités du fonds à 100 Md$.
+  - `evgchk.js` : vérifie que la flèche de la barre d'état, sur le bilan d'une dépêche,
+    raconte la même chose que la ligne « Effets » de la carte.
+  - `budchk.js` : contrôle la contrainte de trésorerie au premier trimestre, aux trois tailles.
   - `goalchk.js` : rejoue les 108 prédicats d'objectif et les 36 prédicats de haut fait sur
     des contextes **réels**, capturés à chaque clôture et à chaque fin de partie par une sonde
     injectée dans la page (`playGame({probe,collect})`). Signale : prédicat qui lève, prédicat
@@ -44,9 +55,8 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
     Il imprime aussi la distribution du coût d'exécution par trimestre.
   - `powerchk.js` : vérifie les pouvoirs propres des styles. À rejouer **avant et après** tout
     lot touchant aux sources ou aux dépêches, et à comparer au fichier publié.
-  - Anciens outils perdus, non reconstruits : `cover.js`/`cover2.js` (couverture forcée des
-    anecdotes et dépêches, chaque choix), `flowchk.js`, `mprobe2.js`. `goalchk.js` est
-    reconstruit et couvre aussi ce que faisait `featchk.js`.
+  - Anciens outils perdus, non reconstruits : `flowchk.js`, `mprobe2.js`. `goalchk.js` couvre
+    ce que faisait `featchk.js`.
 - Publication par l'API GitHub (`GET` du sha puis `PUT` sur `contents/index.html`). Le bac à
   sable ne contient aucun jeton : il faut en fournir un (fine-grained PAT, *Contents:
   read and write*) à chaque session, ou publier à la main.
@@ -292,6 +302,26 @@ réactions aux dépêches comprises. C'est la référence à laquelle caler tout
   vraiment il faudrait faire varier la politique du bot, ce qui reste à faire.
 - « Rien d'appelé » (pas d'appel de marge) est toujours vrai sur 104 trimestres : les appels
   de marge sont, en pratique, inexistants pour un joueur qui tient son book.
+
+### Lot 10 — ce que la couverture forcée a trouvé
+
+- **Deux effets d'événement que personne n'appliquait.** `carry` (« Un book de portage vous
+  est proposé ») et `leak` (« Nouvelle obligation de reporting position par position ») étaient
+  écrits dans les anecdotes, et le moteur savait parfaitement les traiter — `resolveQuarter`
+  contient la règle du portage (+0,6 % par trimestre, −3,5 % en crise), `tcost` applique le
+  ×1,45 sur les grosses positions publiées. Mais aucun gestionnaire ne posait `S.carry` ni
+  `S.leak` : le joueur acceptait un book de portage qui n'existait pas. Deux lignes.
+- **`halfOn:'ZW'`** : une anecdote écrivait une chaîne là où toutes les autres écrivent un
+  tableau. Le gestionnaire des anecdotes tolérait les deux, celui du conseil appelait
+  `.forEach` et cassait. Normalisé, et le gestionnaire accepte désormais les deux formes.
+- **Violation de l'invariant 3** dans le même gestionnaire : `setK(IDX[sy], …)` sans garde
+  `IDX[sy]!==undefined`. Sur un univers réduit, le marché cité peut ne pas exister et on
+  écrivait dans `S.k[undefined]` — silencieux, et pire qu'une exception. Gardé.
+- **Deux textes offraient des milliards à un fonds de cent millions** : un bloc de Brent de
+  4 Md$ et une souscription souveraine de 12 Md$ (dont l'effet, lui, valait 12 % de l'encours).
+  Les 25 autres mentions de milliards parlent du monde extérieur et sont légitimes.
+- Après correction : 662 choix forcés, **aucune erreur, aucun « undefined », aucun « NaN »**,
+  aucune clé d'effet morte, aucune jauge au-delà de ±15.
 
 ### Difficulté : mesurée, laissée en l'état, et pourquoi
 
