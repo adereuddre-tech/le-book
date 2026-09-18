@@ -67,7 +67,12 @@ em{font-style:italic;color:var(--txt)}
 .tapehead{display:flex;justify-content:space-between;align-items:baseline;
  font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--dimmer);margin-bottom:2px}
 .tapehead b{font-size:12px}
-.tape .navdraw{animation-duration:1.4s}
+.tape .navdraw{animation-duration:3s;animation-timing-function:linear}
+/* l'événement se découvre une fois le ruban tracé : on voit le marché bouger, puis on
+   apprend pourquoi. Sous « mouvement réduit », tout est visible d'emblée. */
+.evhold{opacity:0;pointer-events:none;animation:evshow .5s ease-out 3s forwards}
+@keyframes evshow{to{opacity:1;pointer-events:auto}}
+@media (prefers-reduced-motion:reduce){.evhold{opacity:1;pointer-events:auto;animation:none}}
 .navbox{margin:14px 0 0;padding:10px 10px 7px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg,var(--panel),rgba(21,32,47,0))}
 .navrow{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:10px;color:var(--dimmer);margin-top:3px}
 .navcap{font-family:var(--mono);font-size:10px;color:var(--dimmer);letter-spacing:.05em;margin-bottom:5px}
@@ -3518,7 +3523,7 @@ function screenMacroEvent(ev){
  const gcell=v=>{const r=Math.round(v);return `<span class="pn" style="color:${r>0?'var(--long)':r<0?'var(--short)':'var(--dim)'}">${r>0?'+':r<0?'−':''}${Math.abs(r)}</span>`};
  const ptab=o=>`<span class="ptab"><span class="ph">Mouvement</span><span class="ph pn">${SC.ver?'Proba ✓':'Proba'}</span><span class="ph pn">P&amp;L ${unitLab}</span><span class="ph pn">Invest.</span><span class="ph pn">Comité</span>
   ${['Poursuite','Retournement'].map((nm,s)=>`<span class="pl">${nm}</span><span class="pn">${Math.round(PR[s]*100)} %</span><span class="pn" style="color:${o.pay[s]>0?'var(--long)':o.pay[s]<0?'var(--short)':'var(--dim)'}">${uNum(o.pay[s]*S.nav,UM)}</span>${gcell(o.gz[s].lp)}${gcell(o.gz[s].rc)}`).join('')}</span>`;
- app.innerHTML=statusBar()+`<div class="evwrap fade">
+ app.innerHTML=statusBar()+`<div class="evwrap fade${S.phase==='events'?' evhold':''}">
   <div class="evcard">${evHead(ev.who,'news')}<h3>${ev.t}</h3><p>${ev.p}</p>
    <div class="shock">${chips}</div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px">
@@ -3636,7 +3641,7 @@ function screenRivalEvent(e){
  const t1=`${rv.nm} a misé sur ${x.nm.toLowerCase()} et gagné ; ${S.fundName} a raté le coche`;
  const p=`${rv.boss} l'a dit à qui voulait l'entendre : « ${x.sym} ${dir>0?'monte':'baisse'}, c'était écrit ». Le marché a déjà fait ${sgn(half,1)} depuis le début du trimestre ; vous êtes ${S.k[i]===0?'plat':'du mauvais côté'} dessus. Vos investisseurs ont lu l'article.`;
  const g0=gauge(-2.5,-0.5,`${src} : ${rv.nm} a eu raison sur ${x.sym}, pas vous`);
- app.innerHTML=statusBar()+`<div class="evwrap fade">
+ app.innerHTML=statusBar()+`<div class="evwrap fade${S.phase==='events'?' evhold':''}">
   <div class="evcard">${evHead(rv.boss+' · '+src,'rival')}<h3>${t1}</h3><p>${p}</p>
    <div class="shock"><span style="color:${dir>0?'var(--long)':'var(--short)'}">${x.sym} ${sgn(half,1)} déjà réalisé</span><span>vous : ${S.k[i]===0?'plat':(S.k[i]>0?'+':'')+S.k[i]}</span><span>${rv.nm} : ${dir>0?'long':'court'}</span></div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px"><div class="kv"><span>Effet de l'article</span><b><span class="${cls(g0.lp)}">investisseurs ${sd1(g0.lp)}</span> · <span class="${cls(g0.rc)}">comité ${sd1(g0.rc)}</span></b></div></div>
@@ -3664,7 +3669,7 @@ function screenRivalEvent(e){
 }
 function screenTraderEvent(ev,next){
  next=next||stepEvents;
- app.innerHTML=statusBar()+`<div class="evwrap fade">
+ app.innerHTML=statusBar()+`<div class="evwrap fade${S.phase==='events'?' evhold':''}">
   <div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p>${evTimerHTML}</div>
   ${ev.ch.map((c,i)=>`<button class="choice" data-i="${i}"><b>${c.b}</b><span>${c.s}</span></button>`).join('')}</div>`;
  const pickCh=idx=>{clearTimer();
@@ -3731,12 +3736,14 @@ function screenMidMark(){
  rows.sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
  const g=pnlGauge(p*0.8,"Point de mi-trimestre : performance latente des positions");
  const navB=S.nav;
+ /* part du gain de l'année portée par les positions ouvertes, en points d'indice */
+ const y=ytdIdx(),tot=y.now-100;
+ const dir=(p*S.nav/Math.max(1e-9,S.navQ0))*(S.idx/Math.max(1e-9,y.base))*100;
  resultCard(`TRIMESTRE ${S.q+1} · MI-PARCOURS`,p>=0?"Le book est en gains latents":"Le book est en pertes latentes",
-  [`À mi-trimestre, vos positions directionnelles valent <em class="${cls(p)}">${sgn(p,1)} · ${mn(p*navB)}</em>, non réalisés. Rien n'est encaissé, mais les investisseurs et le comité reçoivent le rapport hebdomadaire et réagissent : ${gz(g.lp,g.rc,'always')}.`,
+  [`Le fonds est à <em class="${cls(tot)}">${sgn(tot/100,1)}</em> depuis le début de l'année. Sur ce total, <em class="${cls(dir)}">${dir>=0?'+':'−'}${dec(Math.abs(dir),1)} point${Math.abs(dir)>=2?'s':''}</em> viennent des positions directionnelles que vous portez en ce moment — <em class="${cls(p)}">${sgn(p,1)} · ${mn(p*navB)}</em> de gains latents, rien n'est encaissé. Le reste est déjà acquis : dépêches soldées, collatéral, incidents. Les investisseurs et le comité reçoivent le rapport hebdomadaire et réagissent : ${gz(g.lp,g.rc,'always')}.`,
    rows.length?`Principaux contributeurs : ${rows.slice(0,4).map(o=>`${INSTR[o.i].sym} <span class="${cls(o.v)}">${mn(o.v*navB)}</span>`).join(', ')}.`:"Aucune position ouverte : rien à marquer."],
   [['Jauges',`<span class="${cls(g.lp)}">${sd1(g.lp)}</span> · <span class="${cls(g.rc)}">${sd1(g.rc)}</span>`]],
-  "Poursuivre le trimestre",stepEvents,
-  {top:navBox(`PERFORMANCE NETTE CUMULÉE · T1 À T${S.q+1} EN COURS`,idxSeries(p*0.5),{anim:1,trough:1,prov:1})});
+  "Poursuivre le trimestre",stepEvents);   /* le ruban est déjà à l'écran : pas de doublon */
 }
 function screenIncident(){
  const desk=DESK();
@@ -3747,7 +3754,7 @@ function screenIncident(){
  const navB=S.nav;S.nav*=(1-loss);S.qIncM-=loss*navB;
  const g=gauge(inc.lp*sev,inc.rc*sev,inc.t);
  S.incidents.push({t:inc.t,loss});S.evLog.push({t:inc.t,pnl:-loss,m:-loss*navB,lp:g.lp,rc:g.rc});
- app.innerHTML=statusBar()+`<div class="evwrap fade">
+ app.innerHTML=statusBar()+`<div class="evwrap fade${S.phase==='events'?' evhold':''}">
   <div class="evcard bad">${evHead(inc.who,'risk')}<h3>${inc.t}</h3><p>${inc.p}</p></div>
   <div class="wire" style="margin-top:12px">
    <div class="kv"><span>Coût direct</span><b class="neg-g">−${mm(loss*navB)} · ${sgn(-loss,1).replace(/<\/?b[^>]*>/g,'')}</b></div>
