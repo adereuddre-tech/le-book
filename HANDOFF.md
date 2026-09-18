@@ -138,7 +138,13 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   tombe donc exactement sur le chiffre du débriefing (46 clôtures sur 52 à moins de 0,5 pb ;
   les 6 autres sont les trimestres où le stop, l'appel de marge ou le portage s'appliquent
   **dans** la clôture, après le dernier événement — le ruban ne peut pas les connaître).
-  Les points déjà tracés sont stockés dans `S.tape` et jamais recalculés.
+  Les points déjà tracés sont stockés dans `S.tape` et jamais recalculés. Le tracé dure
+  **3 s** et les quatre écrans d'événement du trimestre (dépêche, desk, rivalité, incident)
+  portent la classe `.evhold`, qui les révèle une fois le ruban tracé : on voit le marché
+  bouger avant d'apprendre pourquoi. Les cartes de bilan, elles, s'affichent tout de suite —
+  ce ne sont pas des événements. Le mi-parcours n'a plus de courbe : elle faisait doublon
+  avec le ruban ; son texte dit à la place quelle part du gain de l'année vient des positions
+  encore ouvertes.
   **Piège** : `mulberry32` écrit dans le `rngState` global. Tout décor aléatoire doit passer
   par `prng32`, qui est pur — sinon les flux nommés du lot 11 se décalent en silence.
 - **Courbes de NAV** : `navChart(vals,opts)` dessine, `navBox(cap,vals,opts)` encadre avec
