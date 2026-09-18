@@ -67,6 +67,14 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   `MKPERCL={small:3,mid:4,mega:5}` (marchés par classe), `NCLASS={fin:3,com:4,ext:5}` (classes).
   `setUniverse(size,univ)` reconstruit `INSTR`, `N`, `IDX`, `GRP` **et filtre les sept pools
   d'événements** pour qu'aucun marché fermé ne soit cité.
+- **Flux aléatoires nommés** : `reseed(canal)` reseme le générateur depuis
+  `hash32(graine, canal, trimestre)` à chaque frontière de phase — `mkt` (régime et vecteur
+  factoriel), `ev` (file d'événements), `mat` (dérive de la matrice, ruptures, T/C/V,
+  rendements réalisés), `riv`, `rum`, `sc<N>` (l'issue de la N-ième dépêche), `res` (clôture).
+  Le chemin de marché d'un trimestre ne dépend donc plus de ce que les autres phases ont
+  consommé. Ne pas ajouter de tirage avant un `reseed` en croyant que c'est sans effet : c'est
+  précisément l'inverse, tout tirage inséré **après** un resemis décale son canal.
+  La sauvegarde est inchangée : `rngState` enregistre la position, les resemis sont rejoués.
 - **Corrélation** : modèle à 4 facteurs (croissance, inflation, dollar, appétit).
   `b` = charges par marché, `COV` construite dans `buildCov()`. Définie-positivité par construction.
   λmin ≈ 0,21 (9 marchés) à 0,12 (25 marchés). |b| moyen 0,369, aucune charge sous 0,15.
@@ -355,13 +363,20 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   plus la démultiplication des débriefings.
 - Rentabilité des budgets : non remesurée depuis le changement d'économie. Avec un seul cœur,
   une campagne de 90 parties prend ~7 minutes ; compter ~300 parties appariées par niveau.
-- **Réduction de variance** : le générateur est un flux séquentiel unique (`mulberry32`,
-  `rngState` global). Dès qu'une option consomme un tirage de plus, les deux bras d'une partie
-  appariée divergent et ne partagent plus aucun chemin de marché : l'appariement ne réduit
-  presque rien, d'où σ ≈ 30 M$ et les 300 parties par niveau. Dériver un générateur par usage
-  et par trimestre — `rngFor('mkt',q)`, `rngFor('ev',q)`, `rngFor('inc',q)` — depuis
-  `hash(graine, canal, q)` rendrait le chemin factoriel identique entre bras. C'est une
-  centaine de lignes et ça rend faisable tout le reste de la calibration.
+- **Réduction de variance : fait au lot 11**, et mesuré. Expérience appariée, 25 graines,
+  style fondamental, budget recherche au niveau 0 contre le niveau 2, sur le fichier d'avant
+  et celui d'après :
+
+  | | écart-type de la différence appariée | erreur type sur 25 parties |
+  |---|---|---|
+  | Flux séquentiel unique | 13,5 M$ | 2,69 |
+  | Flux nommés | **6,7 M$** | **1,34 |
+
+  La variance de la différence est divisée par quatre : **il faut quatre fois moins de parties**
+  pour la même précision. Ce n'est pas le facteur dix espéré, parce qu'il reste une divergence
+  irréductible — deux budgets différents produisent deux books différents, donc deux P&L
+  différents même sur le même marché. Mais une campagne de 300 parties par niveau tombe à 75.
+  Prochaine étape naturelle : les variables antithétiques, chaque graine jouée avec `+f` et `−f`.
 - **Attribution de P&L** à la clôture : `S.f` et les charges `b` sont là, la décomposition
   croissance / inflation / dollar / appétit + résidu est quasi gratuite. C'est ce qui manque
   pour que le joueur comprenne pourquoi il perd.
