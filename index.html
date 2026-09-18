@@ -2087,7 +2087,7 @@ function newGame(seed,prof,arch,desk,vol,size,univ,dur){
    execPenalty:1,star:-1,leak:DESKS.find(d=>d.id===desk).leak||false,
    stop:A.stop,carry:false,noise:false,flighty:false,
    totalTC:0,totalOps:0,incidents:[],poaches:[],usedEv:[],usedMacro:[],usedTrader:[],usedExec:[],poachBoost:0,tcMultQ:1,leakQ:false,qLog:[],
-   idx:1,hwmIdx:1,peakIdx:1,fl:{},rumBought:0,outBand:0,mgrCap0:0.02*Z.nav,qMgmtM:0,
+   idx:1,hwmIdx:1,peakIdx:1,fl:{},rumBought:0,outBand:0,mgrCap0:0.005*Z.nav,qMgmtM:0,
    rivals:RIVALS.map(r=>({...r,skill:Math.max(0.5,Math.min(0.82,r.skill+Z.rivSkill)),vol:r.vol*Z.rivVol,cum:1,last:0})),
    over:null,truth:null,f:[],rumor:null,pending:[],shock:new Array(N).fill(0),
    evQueue:[],log:[],flows:0,press:[],lastPress:null,rankPrev:1,phase:'budget',hotFactor:null,lpD:null,rcD:null,fLast:null,gLog:[],navQ0:100,qEvM:0,qIncM:0,qRumor:0,evLog:[]};
@@ -2464,12 +2464,12 @@ function screenSetup(){
   <div class="rule"><b>Gagner</b><span>Encaisser le plus de commissions possible sur deux ans : la gestion sur l'encours, la performance au-dessus du plus haut historique. C'est votre score.</span></div>
   <div class="rule"><b>Perdre</b><span>Trois façons : les investisseurs retirent tout (jauge sous <strong>8</strong>), le comité vous remercie (jauge sous <strong>4</strong>), ou le fonds perd plus de <strong>28 %</strong> depuis son plus haut (40 % pour le gérant quantitatif, 16 % pour le gérant de flux).</span></div>
   <div class="rule"><b>Frais</b><span id="feeline">${feeLine()}</span></div>
-  <div class="rule"><b>Le piège</b><span>Quinze marchés, mais seulement quatre grandes forces derrière eux — croissance, inflation, dollar, appétit pour le risque. Un book qui a l'air diversifié peut n'être qu'un seul pari.</span></div>
+  <div class="rule"><b>Le piège</b><span>Vingt-cinq marchés, mais seulement quatre grandes forces derrière eux — croissance, inflation, dollar, appétit pour le risque. Un book qui a l'air diversifié peut n'être qu'un seul pari.</span></div>
  </div></details>
  <details class="wire" style="margin-top:14px"><summary>Comment ça marche sous le capot</summary>
-  <p class="note">Les rendements des douze marchés sont engendrés par quatre facteurs orthonormés plus une part propre : r<sub>i</sub> = σ<sub>i</sub>(Σ<sub>k</sub> b<sub>ik</sub>f<sub>k</sub> + e<sub>i</sub>z<sub>i</sub>), avec Σ<sub>k</sub> b<sub>ik</sub>² + e<sub>i</sub>² = 1, ce qui rend la matrice de covariance semi-définie positive par construction. Le régime macro du trimestre fixe la moyenne et la volatilité des facteurs ; il suit une chaîne de Markov à sept états. S'y ajoutent, par marché, des dérives de tendance, de portage et de valeur.</p>
+  <p class="note">Les rendements des marchés sont engendrés par quatre facteurs orthonormés plus une part propre : r<sub>i</sub> = σ<sub>i</sub>(Σ<sub>k</sub> b<sub>ik</sub>f<sub>k</sub> + e<sub>i</sub>z<sub>i</sub>), avec Σ<sub>k</sub> b<sub>ik</sub>² + e<sub>i</sub>² = 1, ce qui rend la matrice de covariance semi-définie positive par construction. Le régime macro du trimestre fixe la moyenne et la volatilité des facteurs ; il suit une chaîne de Markov à sept états. S'y ajoutent, par marché, des dérives de tendance, de portage et de valeur.</p>
   <p class="note">Une unité de position vaut un huitième de la vol cible du mandat en volatilité standalone, dimensionnée en inverse de la vol du marché ; le notionnel correspondant s'affiche à côté de chaque ordre. La vol ex-ante du book est √(wᵀΣw). Chaque changement de position paie une demi-fourchette plus un impact en racine carrée du notionnel, multiplié par le budget desk, l'organisation, la liquidité du régime et le taux au jour le jour.</p>
-  <p class="note">Les rumeurs sont vraies avec la probabilité de leur classe de fiabilité ; une rumeur vraie est tirée parmi celles dont l'impact prétendu s'aligne sur les facteurs réalisés. Le rapport final calcule le Sharpe probabiliste de Bailey et López de Prado, qui vous dira si deux ans suffisent à distinguer la compétence de la chance. Ils ne suffisent presque jamais.</p>
+  <p class="note">Les sources disent vrai avec la probabilité de leur classe de fiabilité ; une source vraie est tirée parmi celles dont l'impact prétendu s'aligne sur les facteurs réalisés. Le rapport final calcule le Sharpe probabiliste de Bailey et López de Prado, qui vous dira si deux ans suffisent à distinguer la compétence de la chance. Ils ne suffisent presque jamais.</p>
  </details>
  <div id="picks"></div>
  <details class="wire" style="margin-top:16px"><summary>Réglages avancés</summary>
@@ -2520,8 +2520,8 @@ function readScore(k){
 function readTri(k){
  const z=readScore(k);
  if(z===null)return '<span class="tri none">···</span>';
- const n=Math.min(3,Math.max(1,Math.round(Math.abs(z)/0.7)));
- if(Math.abs(z)<0.3)return '<span class="tri none">···</span>';
+ const n=Math.min(5,Math.max(1,Math.round(Math.abs(z)/0.45)));   /* cinq crans, pas trois */
+ if(Math.abs(z)<0.25)return '<span class="tri none">···</span>';
  return `<span class="tri ${z>0?'up':'dn'}">${(z>0?'▲':'▼').repeat(n)}</span>`;
 }
 function factorExpo(w){return FACT.map((f,k)=>{let e=0;for(let i=0;i<N;i++)e+=w[i]*INSTR[i].sig*INSTR[i].b[k];return e})}
@@ -2774,7 +2774,8 @@ function showGauge(id){
      ...(S.totalTC?[['&nbsp;&nbsp;dont exécution depuis le début',`<span class="dim-g">−${mm(S.totalTC)}</span>`]]:[]),
      ['<b>Gains nets</b>',`<b class="${mgrNet()>=0?'pos-g':'neg-g'}">${score(mgrNet())}</b>`],
      ['Capital de départ de la société',`<span class="dim-g">+${mm(S.mgrCap0||0)}</span>`],
-     ['<b>Trésorerie disponible</b>',`<b class="${mgrCash()>=0?'':'neg-g'}">${mm(mgrCash())}</b>`]])}
+     ['<b>Trésorerie disponible</b>',`<b class="${mgrCash()>=0?'gold-g':'neg-g'}">${mm(mgrCash())}</b>`]])}
+   <p class="note" style="margin-top:10px">Votre société a démarré avec <em>${mm(S.mgrCap0||0)}</em> en caisse, soit un trimestre de commission de gestion. Tout ce que vous engagez — budget d'exploitation et coûts d'exécution — sort de cette trésorerie : ${mgrCash()>=0?`il vous reste <em>${mm(mgrCash())}</em> à dépenser`:`vous êtes à découvert de <em>${mm(-mgrCash())}</em>, vos dépenses sont bloquées jusqu'à la prochaine commission`}.</p>
    ${q?`<p style="margin:12px 0 4px">Dernier trimestre</p>${tbl([['Commission de gestion (${(VOL().mgmt*400).toFixed(1)} % par an)'.replace('${(VOL().mgmt*400).toFixed(1)}',(VOL().mgmt*400).toFixed(1)),`<b class="pos-g">+${mm(q.mgmt)}</b>`],['Commission de performance',`<b class="${q.perf>0?'pos-g':'dim-g'}">+${mm(q.perf)}</b>`],['Budget d\'exploitation',`<b class="neg-g">−${mm(q.ops)}</b>`],['<b>Net du trimestre</b>',`<b class="${(q.fees-q.ops)>=0?'pos-g':'neg-g'}">${mm(q.fees-q.ops)}</b>`]])}`:''}
    <details><summary>Comment c'est calculé</summary><p class="note">La commission de gestion vous est versée <em>à l'ouverture</em> de chaque trimestre, sur l'encours du moment : c'est votre seul revenu certain. La commission de performance et le bonus d'objectif tombent <em>à la clôture</em>, et la performance ne se déclenche qu'au-dessus du plus haut historique du fonds. En face, le budget d'exploitation et les coûts d'exécution sont à votre charge, pas à celle des investisseurs, et vous ne pouvez engager que ce que vous avez en caisse : à sec, les niveaux de budget renforcés se verrouillent et vous ne pouvez plus passer d'ordres coûteux. Un gros encours et une performance régulière font un gros score ; un fonds qui perd ne vous rapporte que la gestion, et un fonds liquidé ne vous rapporte plus rien.</p></details>`);
  } else if(id==='cost'){
@@ -3078,7 +3079,7 @@ function screenPlay(){
  drawRows();renderRisk();refreshSend();
  document.getElementById('send').onclick=()=>{
    const c=liveTC();
-   if(c>0&&c>Math.max(0,mgrCash()+c)){toast("Votre société de gestion ne peut pas payer ces ordres.");return}
+   if(c>0&&c>Math.max(0,mgrCash()+c)){refreshSend();toast("Votre société de gestion ne peut pas payer ces ordres.");return}
    commitOrders();screenComm();window.scrollTo(0,0);
  };
 }
@@ -3284,21 +3285,21 @@ function screenComm(){
   {id:'none',ico:'🤐',nm:"Silence radio",who:"« On verra à la fin du trimestre »",p:"Pas de lettre, pas de réunion, aucun chiffre avancé. Vous ne risquez rien et vous ne gagnez rien : personne ne pourra vous reprocher une promesse manquée, personne ne vous créditera d'un bon trimestre annoncé d'avance.",
    ret:null,win:{lp:0,rc:0},lose:{lp:0,rc:0},neutre:true},
   {id:'prud',ico:'📄',nm:"Communication standard",who:"« Nous visons l'objectif du mandat »",p:`Vous annoncez l'objectif trimestriel de votre mandat, soit ${pctc(g)}. C'est ce que les investisseurs attendent de toute façon : le tenir rassure, le manquer se remarque.`,
-   ret:g,win:{lp:4,rc:3},lose:{lp:-4,rc:-3}},
+   ret:g,win:{lp:4,rc:4},lose:{lp:-4,rc:-4}},
   {id:'fort',ico:'📣',nm:"Conviction forte",who:"« C'est le trimestre de l'année »",p:`Vous annoncez deux fois l'objectif de votre mandat, soit ${pctc(2*g)}. Si vous y arrivez, on vous croira sur parole pendant deux ans. Sinon, on s'en souviendra aussi longtemps.`,
-   ret:2*g,win:{lp:10,rc:7},lose:{lp:-12,rc:-8}}
+   ret:2*g,win:{lp:12,rc:12},lose:{lp:-12,rc:-12}}
  ];
  app.innerHTML=statusBar()+`<div class="fade">
-  <div class="block"><div class="blockhead"><h2>Ce que vous annoncez</h2><span class="hint">investisseurs · comité</span></div>
+  <div class="block"><div class="blockhead"><h2>Ce que vous annoncez</h2><span class="hint">investisseurs et comité</span></div>
    <p class="note" style="margin-top:0">Avant l'exécution, vous rencontrez les investisseurs et le comité des risques. Que promettez-vous pour ce trimestre ? Touchez votre réponse, elle est validée aussitôt.</p>
    <div class="kv"><span>Objectif trimestriel du mandat</span><b>${pct(g,1)} · ${mm(g*S.nav)}</b></div>
   </div>
   ${opts.map((o,i)=>`<div class="cardwrap"><button class="card commgo" data-i="${i}">
    <div class="who">${o.who}</div><b><span class="commico">${o.ico}</span>${o.nm}</b><p>${o.p}</p>
-   ${o.ret===null?`<div class="commrow"><span>En fin de trimestre, quoi qu'il arrive</span>${gzRows(o.lose.lp,o.lose.rc)}</div>`
+   ${o.ret===null?`<div class="commrow"><span>En fin de trimestre, quoi qu'il arrive</span><b class="dim-g">investisseurs et comité inchangés</b></div>`
     :`<div class="commrow"><span>Vous promettez pour ce trimestre</span><b>au moins ${sgnp(o.ret,1)} · ${mm(o.ret*S.nav)}</b></div>
-      <div class="commrow"><span>En fin de trimestre, si c'est tenu</span>${gzRows(o.win.lp,o.win.rc)}</div>
-      <div class="commrow"><span>En fin de trimestre, si c'est manqué</span>${gzRows(o.lose.lp,o.lose.rc)}</div>`}
+      <div class="commrow"><span>Si c'est tenu</span><b class="pos-g">investisseurs et comité +${o.win.lp}</b></div>
+      <div class="commrow"><span>Si c'est manqué</span><b class="neg-g">investisseurs et comité −${-o.lose.lp}</b></div>`}
    </button></div>`).join('')}
   <p class="note">L'annonce ne change rien tout de suite : elle se solde à la fin du trimestre, sur le résultat tout compris, commissions et coûts déduits.</p></div>`;
  app.querySelectorAll('.card[data-i]').forEach(b=>b.onclick=()=>{
@@ -3399,7 +3400,7 @@ function screenMacroEvent(ev){
  S.evImmG={lp:g.lp+gn.lp,rc:g.rc+gn.rc};
  /* suite du mouvement : binaire, poursuite (p) ou retournement (1−p), tirée maintenant, révélée après */
  if(!S.sc||!S.sc.m||S.sc.m.length!==2){
-  S.sc={p:0.25+0.50*rng(),m:[0.45+0.40*rng(),-(0.30+0.40*rng())]};
+  S.sc={p:0.40+0.50*rng(),m:[0.45+0.40*rng(),-(0.30+0.40*rng())]};   /* poursuite dans [0,40 ; 0,90] */
   /* ce que le desk lit : précision selon la recherche, le style, et la source vérifiée du fondamental */
   const pr=PROF(),sd=[0.16,0.10,0.05][S.bud.res]*(pr.id==='flux'?0.6:1);
   const ver=pr.id==='fonda'&&!S.evVerified;if(ver)S.evVerified=true;
