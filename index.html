@@ -57,6 +57,30 @@ em{font-style:italic;color:var(--txt)}
 .prose strong{color:var(--txt);font-weight:500}
 .spineart{display:flex;gap:3px;align-items:center;height:52px;margin:26px 0 0}
 .spineart i{flex:1;display:block;border-radius:1px}
+/* courbe de NAV : même dessin à l'accueil, à mi-parcours, à la clôture et au rapport final */
+.navc{display:block;width:100%;height:auto}
+.navdraw{stroke-dasharray:1600;stroke-dashoffset:1600;animation:navdr 1.6s cubic-bezier(.35,0,.2,1) forwards}
+@keyframes navdr{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.navdraw{animation:none;stroke-dashoffset:0}}
+.navbox{margin:14px 0 0;padding:10px 10px 7px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg,var(--panel),rgba(21,32,47,0))}
+.navrow{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:10px;color:var(--dimmer);margin-top:3px}
+.navcap{font-family:var(--mono);font-size:10px;color:var(--dimmer);letter-spacing:.05em;margin-bottom:5px}
+/* mur des vingt-cinq marchés */
+.mwall{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:10px}
+.mw{font-style:normal;font-family:var(--mono);font-size:9.5px;text-align:center;padding:9px 1px 10px;border-radius:4px;background:var(--panel);border:1px solid var(--line);color:var(--dimmer);position:relative;overflow:hidden}
+.mw::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--c);opacity:.6}
+.mw.up{animation:mwp 7s ease-in-out infinite}
+.mw.dn{animation:mwn 7s ease-in-out infinite}
+@keyframes mwp{0%,70%,100%{color:var(--dimmer);background:var(--panel)}78%,90%{color:var(--long);background:rgba(79,169,140,.14)}}
+@keyframes mwn{0%,62%,100%{color:var(--dimmer);background:var(--panel)}70%,86%{color:var(--short);background:rgba(196,87,111,.14)}}
+@media (prefers-reduced-motion:reduce){.mw{animation:none}}
+/* concurrents de l'accueil */
+.rivs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.riv{display:flex;gap:9px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.riv .ava{width:38px;height:38px}
+.riv b{display:block;font-size:12.5px;line-height:1.2}
+.riv span{display:block;font-family:var(--mono);font-size:9px;color:var(--dimmer);margin-top:2px}
+.isec{font-family:var(--mono);font-size:11px;color:var(--dimmer);letter-spacing:.06em;margin:26px 0 0;padding-top:16px;border-top:1px solid var(--line)}
 .rules{border-top:1px solid var(--line);margin-top:22px}
 .rule{display:flex;gap:13px;padding:12px 0;border-bottom:1px solid var(--line);align-items:baseline}
 .rule b{font-family:var(--mono);font-size:11.5px;color:var(--dimmer);font-weight:500;min-width:88px;flex-shrink:0}
@@ -105,6 +129,8 @@ em{font-style:italic;color:var(--txt)}
 .chips i.rel{margin-left:auto;color:var(--dim)}
 .chips i.rel.forte{color:var(--gold);background:rgba(217,176,106,.12)}
 .chips i.rel.faible{color:var(--dimmer)}
+.chips i.sure{color:var(--gold);background:rgba(217,176,106,.16)}
+.news .src{overflow-wrap:anywhere}
 .news.rum .src{color:var(--gold)}
 .news.rum>span{color:var(--txt)}
 .tcv{margin-top:5px}
@@ -386,27 +412,27 @@ const GRPC={'Actions':'var(--eq)','Taux':'var(--rt)','Devises':'var(--fx)','Mati
    s = demi-fourchette en pb ; c = impact en pb par √(Md$) — loi en racine carrée
    b = charges factorielles [Croissance, Inflation, Dollar, Appétit] */
 const INSTR_ALL=[
- {sym:'ES',  rk:1,nm:'Actions américaines',    sub:'S&P 500 · long = hausse des actions US',              grp:'Actions', sig:0.16, s:0.40, c:0.45, b:[ 0.45,-0.22, 0.18, 0.62], mg:0.07},
+ {sym:'ES',  rk:1,nm:'Actions américaines',    sub:'S&P 500 · long = hausse des actions US',              grp:'Actions', sig:0.16, s:0.40, c:0.45, b:[ 0.45,-0.22, 0.18, 0.46], mg:0.07},
  {sym:'ESTX',rk:2,nm:'Actions européennes',    sub:'Euro Stoxx 50 · long = hausse des actions de la zone euro', grp:'Actions', sig:0.18, s:1.00, c:0.90, b:[ 0.40,-0.30,-0.52, 0.45], mg:0.07},
  {sym:'TOPX',rk:3,nm:'Actions japonaises',     sub:'TOPIX · long = hausse des actions japonaises',        grp:'Actions', sig:0.18, s:1.10, c:0.95, b:[ 0.26,-0.18,-0.62, 0.38], mg:0.07},
- {sym:'MXEF',rk:4,nm:'Actions émergentes',     sub:'MSCI EM · long = hausse des émergents',               grp:'Actions', sig:0.21, s:2.60, c:2.00, b:[ 0.58, 0.24,-0.42, 0.34], mg:0.09},
- {sym:'NQ',  rk:5,nm:'Technologie américaine', sub:'Nasdaq 100 · long = hausse de la tech US',            grp:'Actions', sig:0.22, s:0.50, c:0.55, b:[ 0.30,-0.48, 0.26, 0.72], mg:0.08},
- {sym:'TN',  rk:1,nm:'Taux 10 ans américain',  sub:'T-Note · long = baisse des taux US',                  grp:'Taux', sig:0.065, s:0.35, c:0.30, b:[-0.50,-0.40, 0.22,-0.42], mg:0.025},
- {sym:'GBL', rk:2,nm:'Taux 10 ans allemand',   sub:'Bund · long = baisse des taux allemands',             grp:'Taux', sig:0.060, s:0.70, c:0.55, b:[-0.16,-0.66, 0.34,-0.18], mg:0.025},
+ {sym:'MXEF',rk:4,nm:'Actions émergentes',     sub:'MSCI EM · long = hausse des émergents',               grp:'Actions', sig:0.21, s:2.60, c:2.00, b:[ 0.58, 0.24,-0.34, 0.58], mg:0.09},
+ {sym:'NQ',  rk:5,nm:'Technologie américaine', sub:'Nasdaq 100 · long = hausse de la tech US',            grp:'Actions', sig:0.22, s:0.50, c:0.55, b:[ 0.62,-0.34, 0.16, 0.58], mg:0.08},
+ {sym:'TN',  rk:1,nm:'Taux 10 ans américain',  sub:'T-Note · long = baisse des taux US',                  grp:'Taux', sig:0.065, s:0.35, c:0.30, b:[-0.50,-0.40,-0.42,-0.42], mg:0.025},
+ {sym:'GBL', rk:2,nm:'Taux 10 ans allemand',   sub:'Bund · long = baisse des taux allemands',             grp:'Taux', sig:0.060, s:0.70, c:0.55, b:[-0.16,-0.58, 0.34,-0.58], mg:0.025},
  {sym:'JGB', rk:3,nm:'Taux 10 ans japonais',   sub:'JGB · long = baisse des taux japonais',               grp:'Taux', sig:0.040, s:1.30, c:1.30, b:[-0.16,-0.28, 0.58,-0.18], mg:0.020},
- {sym:'R',   rk:4,nm:'Taux 10 ans britannique',sub:'Gilt · long = baisse des taux britanniques',          grp:'Taux', sig:0.070, s:1.10, c:1.00, b:[-0.34,-0.52,-0.30,-0.44], mg:0.030},
- {sym:'OAT', rk:5,nm:'Taux 10 ans français',   sub:'OAT · long = baisse des taux français',               grp:'Taux', sig:0.065, s:1.20, c:1.10, b:[-0.20,-0.58, 0.26,-0.52], mg:0.025},
+ {sym:'R',   rk:4,nm:'Taux 10 ans britannique',sub:'Gilt · long = baisse des taux britanniques',          grp:'Taux', sig:0.070, s:1.10, c:1.00, b:[-0.34,-0.52, 0.24,-0.44], mg:0.030},
+ {sym:'OAT', rk:5,nm:'Taux 10 ans français',   sub:'OAT · long = baisse des taux français',               grp:'Taux', sig:0.065, s:1.20, c:1.10, b:[-0.20,-0.58, 0.26,-0.08], mg:0.025},
  {sym:'EUR', rk:1,nm:'Euro',     sub:'EUR/USD · long = euro fort',                          grp:'Devises', sig:0.080, s:0.30, c:0.22, b:[ 0.20,-0.18,-0.86, 0.18], mg:0.030},
  {sym:'JPY', rk:2,nm:'Yen',      sub:'JPY/USD · long = yen fort',                           grp:'Devises', sig:0.100, s:0.40, c:0.32, b:[-0.26,-0.20,-0.46,-0.58], mg:0.030},
  {sym:'GBP', rk:3,nm:'Sterling', sub:'GBP/USD · long = sterling fort',                      grp:'Devises', sig:0.090, s:0.60, c:0.45, b:[ 0.30, 0.16,-0.64, 0.36], mg:0.030},
  {sym:'AUD', rk:4,nm:'Dollar australien',      sub:'AUD/USD · long = dollar australien fort',             grp:'Devises', sig:0.110, s:1.30, c:1.10, b:[ 0.54, 0.34,-0.44, 0.30], mg:0.040},
  {sym:'MXP', rk:5,nm:'Peso mexicain',          sub:'MXN/USD · long = peso fort · portage élevé',          grp:'Devises', sig:0.140, s:3.00, c:2.40, b:[ 0.34,-0.18,-0.52, 0.56], mg:0.060},
- {sym:'GC',  rk:1,nm:'Or',                     sub:'Comex · long = hausse de l\'or',                       grp:'Matières premières', sig:0.15, s:1.80, c:1.60, b:[-0.18, 0.56,-0.58,-0.30], mg:0.07},
+ {sym:'GC',  rk:1,nm:'Or',                     sub:'Comex · long = hausse de l\'or',                       grp:'Matières premières', sig:0.15, s:1.80, c:1.60, b:[-0.18, 0.62,-0.58,-0.30], mg:0.07},
  {sym:'CL',  rk:2,nm:'Pétrole brut',           sub:'WTI · long = hausse du pétrole',                      grp:'Matières premières', sig:0.32, s:2.50, c:2.20, b:[ 0.60, 0.54,-0.20, 0.20], mg:0.12},
  {sym:'ZW',  rk:3,nm:'Blé',                    sub:'CBOT · long = hausse du blé · marché étroit',         grp:'Matières premières', sig:0.25, s:6.50, c:5.20, b:[-0.18, 0.52,-0.26,-0.20], mg:0.09},
  {sym:'HG',  rk:4,nm:'Cuivre',                 sub:'Comex · long = hausse du cuivre · thermomètre industriel', grp:'Matières premières', sig:0.24, s:2.20, c:1.90, b:[ 0.68, 0.22,-0.38, 0.36], mg:0.10},
  {sym:'KC',  rk:5,nm:'Café',                   sub:'ICE · long = hausse du café · marché très étroit',    grp:'Matières premières', sig:0.38, s:8.00, c:6.50, b:[ 0.16, 0.44,-0.22, 0.30], mg:0.12},
- {sym:'BTC', rk:1,nm:'Bitcoin',                sub:'CME · long = hausse du bitcoin',                      grp:'Exotiques', sig:0.55, s:4.00, c:3.00, b:[ 0.24, 0.20,-0.36, 0.74], mg:0.25},
+ {sym:'BTC', rk:1,nm:'Bitcoin',                sub:'CME · long = hausse du bitcoin',                      grp:'Exotiques', sig:0.55, s:4.00, c:3.00, b:[ 0.24, 0.40,-0.34, 0.70], mg:0.25},
  {sym:'VX',  rk:2,nm:'Volatilité actions',     sub:'VIX · long = hausse de la peur · portage négatif',    grp:'Exotiques', sig:0.80, s:6.00, c:5.00, b:[-0.42, 0.18, 0.28,-0.76], mg:0.20, drift:-0.085},
  {sym:'EUA', rk:3,nm:'Quota carbone européen', sub:'EUA · long = hausse du prix du carbone',              grp:'Exotiques', sig:0.45, s:5.00, c:4.50, b:[ 0.46,-0.24,-0.30, 0.42], mg:0.15},
  {sym:'BDI', rk:4,nm:'Fret maritime sec',      sub:'Baltic Dry · long = hausse des taux de fret',         grp:'Exotiques', sig:0.60, s:9.00, c:8.00, b:[ 0.66, 0.38,-0.22, 0.28], mg:0.18},
@@ -693,6 +719,11 @@ function bandNow(){return BANDB[(S&&S.bud)?S.bud.risk:1]}
 
 /* Objectifs trimestriels. c = contexte de fin de trimestre (voir goalCtx).
    bonus exprimé en fraction de l'encours initial. */
+/* Mesuré avant réglage : sur dix parties, les bonus d'objectif pesaient autant que la
+   commission de performance et davantage que la commission de gestion — le bonus ÉTAIT le
+   score. Ramené au quart, il redevient un accessoire de la performance. */
+const GOALB=0.25;
+function goalBon(g){return g?g.b*GOALB*S.aum0:0}
 const QGOALS=[
  /* — performance absolue — */
  {nm:"Le trimestre vert",d:"Terminer le trimestre en positif, tout compris.",t:c=>c.q>0,b:0.04},
@@ -1105,7 +1136,7 @@ TRADER_EXEC.push(
  {who:"Le prime broker",t:"« Votre ligne de crédit est saturée. On exécute quand on aura le collatéral »",p:"Le book est trop gros pour la ligne. Il faut du collatéral ou du temps.",
   ch:[{b:"Poster du collatéral supplémentaire",s:"−3 pb de rendement du collatéral, exécution immédiate.",e:{cash:-0.0003}},{b:"Attendre le règlement de demain",s:"Plein tarif, 35 % de ±0,25 %.",e:{risk:[0.35,0.0025],riskMsg:"L'attente vous a servi",safeTxt:"L'attente vous a coûté −0,25 %.",safePnl:-0.0025}},{b:"Réduire tous les ordres de 20 %",s:"Coûts −20 %, positions réduites d'un cinquième.",e:{tcMult:0.8,scaleAll:0.8}}]},
  {who:"Un vendeur de données",t:"« Notre flux d'ordres institutionnels prédit le slippage. 5 M$ par trimestre »",p:"Un fournisseur vend une lecture du flux. Sa démo était convaincante.",
-  ch:[{b:"Acheter le flux",s:"−5 M$, coûts −20 % ce trimestre.",e:{cashM:-5,tcMult:0.8}},{b:"Refuser",s:"Plein tarif.",e:{}},{b:"Acheter et le revendre à un concurrent",s:"−5 M$, coûts −20 %, +8 M$, comité −7.",e:{cashM:3,tcMult:0.8,rc:-7}}]},
+  ch:[{b:"Acheter le flux",s:"−25 pb, coûts −20 % ce trimestre.",e:{cash:-0.0025,tcMult:0.8}},{b:"Refuser",s:"Plein tarif.",e:{}},{b:"Acheter et le revendre à un concurrent",s:"−25 pb, coûts −20 %, +40 pb, comité −7.",e:{cash:0.0015,tcMult:0.8,rc:-7}}]},
  {who:"Ingrid Bergström · taux",t:"« Quelqu'un tape le 10 ans avant nous. On est suivis »",need:['TN','GBL'],p:"Le marché bouge dans votre sens avant vos ordres. Quelqu'un lit vos intentions.",
   ch:[{b:"Changer de courtier immédiatement",s:"Coûts +15 %, fuite colmatée.",e:{tcMult:1.15}},{b:"Continuer",s:"Coûts +30 % sur les taux (impact anticipé).",e:{tcMultOn:['TN','GBL'],tcMult:1.3}},{b:"Envoyer de faux ordres pour piéger le suiveur",s:"Coûts −10 %, comité −5, 30 % de +0,3 %.",e:{tcMult:0.9,rc:-5,risk:[0.3,0.003],riskMsg:"Le suiveur est tombé dans le piège",safeTxt:"Le suiveur ne s'est pas montré."}}]},
  {who:"Bartolomeo « Tuco » Ossobuco · énergie",t:"« Il y a une grève chez le principal courtier énergie »",need:['CL'],p:"Les ordres passent, mais lentement, et mal.",
@@ -1161,11 +1192,11 @@ TRADER_EXEC.push(
  {who:"Jean-Kevin Lévêque-Charbonnier · junior",t:"« J'ai envoyé les bitcoins sur la mauvaise plateforme »",need:['BTC'],p:"« Ce n'est pas perdu, c'est juste... ailleurs. Ils disent trois à cinq jours ouvrés. »",
   ch:[{b:"Attendre le rapatriement",s:"Comité −4. Trois jours sans exposition : 50 % de ±0,5 %.",e:{rc:-4,risk:[0.5,0.005],riskMsg:"Les trois jours sans position vous ont épargné la baisse",safeTxt:"Les trois jours sans position vous ont coûté −0,50 %.",safePnl:-0.005}},
       {b:"Racheter l'exposition ailleurs immédiatement",s:"Coûts sur le bitcoin ×2,2, comité −2. Position en place ce soir.",e:{tcMultOn:['BTC'],tcMult:2.2,rc:-2}},
-      {b:"Racheter l'exposition en dérivés cotés",s:"Coûts ×1,5, comité −1, base de financement défavorable : −15 M$.",e:{tcMultOn:['BTC'],tcMult:1.5,rc:-1,cashM:-15}}]},
+      {b:"Racheter l'exposition en dérivés cotés",s:"Coûts ×1,5, comité −1, base de financement défavorable : −75 pb.",e:{tcMultOn:['BTC'],tcMult:1.5,rc:-1,cash:-0.0075}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« La volatilité ne se traite pas comme un indice, et votre ordre dit le contraire »",need:['VX'],p:"« Votre position sur la volatilité a une convexité que votre calcul de risque ignore. Je peux la laisser passer, mais je l'écris. »",
   ch:[{b:"Réduire la position de moitié",s:"VIX ramené à la moitié, 70 % du coût de l'ajustement vous est rendu. Comité +3.",e:{halfOn:['VX'],rc:3}},
       {b:"Passer outre et signer",s:"Comité −6. La position part telle quelle.",e:{rc:-6}},
-      {b:"Garder la taille et acheter une protection",s:"Coûts sur le VIX ×1,5, comité +1, prime payée : −20 M$.",e:{tcMultOn:['VX'],tcMult:1.5,rc:1,cashM:-20}}]},
+      {b:"Garder la taille et acheter une protection",s:"Coûts sur le VIX ×1,5, comité +1, prime payée : −100 pb.",e:{tcMultOn:['VX'],tcMult:1.5,rc:1,cash:-0.01}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« Votre exposition au dollar est la même sur cinq lignes différentes »",need3:true,p:"« Vous croyez avoir cinq paris. Vous en avez un. Le modèle de risque le voit, votre book ne le dit pas. »",
   ch:[{b:"Réduire la concentration la plus forte",s:"La plus grosse contribution au risque est ramenée d'un cran, 80 % du coût vous est rendu. Comité +4.",e:{cutTop1:true,rc:4}},
       {b:"Assumer le pari",s:"Comité −5. La concentration reste entière.",e:{rc:-5}},
@@ -1175,17 +1206,17 @@ TRADER_EXEC.push(
       {b:"Accepter et demander le double de la taille",s:"Coûts −55 %, comité −4, et 30 % de risque que le meunier sache quelque chose : −0,35 %.",e:{tcMultOn:['ZW'],tcMult:0.45,rc:-4,risk:[0.3,-0.0035],riskMsg:"Le meunier avait vu la récolte avant vous",safeTxt:"Le meunier couvrait simplement sa récolte. Bonne affaire."}},
       {b:"Passer par le carnet",s:"Plein tarif, exécution visible de tous.",e:{}}]},
  {who:"Le prime broker",t:"« Votre appel de marge du trimestre sera calculé en modèle interne ou en méthode standard »",p:"« Le modèle interne vous coûte trente pour cent de marge en moins, mais il se recalibre chaque semaine, et il se recalibre quand ça va mal. »",
-  ch:[{b:"Modèle interne",s:"+25 M$ de trésorerie libérée. 30 % de risque de rappel de marge en cours de trimestre : −0,3 %.",e:{cashM:25,risk:[0.3,-0.003],riskMsg:"Le modèle s'est recalibré au mauvais moment",safeTxt:"Le modèle est resté stable tout le trimestre."}},
+  ch:[{b:"Modèle interne",s:"+125 pb de trésorerie libérée. 30 % de risque de rappel de marge en cours de trimestre : −0,3 %.",e:{cash:0.0125,risk:[0.3,-0.003],riskMsg:"Le modèle s'est recalibré au mauvais moment",safeTxt:"Le modèle est resté stable tout le trimestre."}},
       {b:"Méthode standard",s:"Marge plus lourde, aucune surprise. Comité +2.",e:{rc:2}},
-      {b:"Modèle interne et redéploiement immédiat de la marge libérée",s:"+45 M$, comité −4, et 40 % de risque de rappel : −0,45 %.",e:{cashM:45,rc:-4,risk:[0.4,-0.0045],riskMsg:"Le rappel de marge est tombé alors que tout était investi"}}]},
+      {b:"Modèle interne et redéploiement immédiat de la marge libérée",s:"+225 pb, comité −4, et 40 % de risque de rappel : −0,45 %.",e:{cash:0.0225,rc:-4,risk:[0.4,-0.0045],riskMsg:"Le rappel de marge est tombé alors que tout était investi"}}]},
  {who:"Le prime broker",t:"« Le financement de vos positions or est devenu cher »",need:['GC'],p:"« Le marché du prêt de métal est tendu. Je peux vous facturer le taux du jour, ou vous bloquer un taux pour le trimestre, plus cher aujourd'hui. »",
-  ch:[{b:"Bloquer le taux pour le trimestre",s:"−12 M$ tout de suite, aucune surprise ensuite.",e:{cashM:-12}},
+  ch:[{b:"Bloquer le taux pour le trimestre",s:"−60 pb tout de suite, aucune surprise ensuite.",e:{cash:-0.006}},
       {b:"Prendre le taux du jour",s:"Gratuit aujourd'hui. 40 % de risque que la tension s'aggrave : −0,25 %.",e:{risk:[0.4,-0.0025],riskMsg:"Le prêt de métal s'est encore tendu",safeTxt:"Le marché du prêt de métal s'est détendu : rien à payer."}},
       {b:"Passer l'exposition en contrats à terme cotés",s:"Coûts sur l'or ×1,4, plus aucun financement à négocier.",e:{tcMultOn:['GC'],tcMult:1.4}}]},
  {who:"Un vendeur de données",t:"« J'ai le carnet d'ordres complet des trois bourses asiatiques, en temps réel »",need:['ESTX','MXEF'],p:"« Profondeur complète, cinq millisecondes de latence. Vos concurrents l'ont déjà. La licence se facture au fonds, à l'année, payable d'avance. »",
-  ch:[{b:"Acheter le flux",s:"−18 M$ de licence. Coûts sur les actions internationales et émergentes −20 %.",e:{cashM:-18,tcMultOn:['ESTX','MXEF'],tcMult:0.8}},
+  ch:[{b:"Acheter le flux",s:"−90 pb de licence. Coûts sur les actions internationales et émergentes −20 %.",e:{cash:-0.009,tcMultOn:['ESTX','MXEF'],tcMult:0.8}},
       {b:"Refuser",s:"Plein tarif, et le sentiment désagréable d'être le dernier.",e:{}},
-      {b:"Acheter le flux et le revendre à un concurrent",s:"Coûts −20 %, comité −7 (la licence l'interdit expressément).",e:{tcMultOn:['ESTX','MXEF'],tcMult:0.8,rc:-7,cashM:10}}]},
+      {b:"Acheter le flux et le revendre à un concurrent",s:"+50 pb, coûts −20 %, comité −7 (la licence l'interdit expressément).",e:{tcMultOn:['ESTX','MXEF'],tcMult:0.8,rc:-7,cash:0.005}}]},
  {who:"Le desk, unanime",t:"« La volatilité se traite mal en fin de journée »",need:['VX'],p:"Les fourchettes doublent après 16 heures sur les contrats de volatilité, et le règlement du matin est souvent très loin de la clôture de la veille.",
   ch:[{b:"Exécuter en ouverture",s:"Coûts sur le VIX −30 %.",e:{tcMultOn:['VX'],tcMult:0.7}},
       {b:"Exécuter en clôture",s:"Coûts ×1,5, mais collé au niveau de référence du soir.",e:{tcMultOn:['VX'],tcMult:1.5}},
@@ -1195,7 +1226,7 @@ TRADER_EXEC.push(
       {b:"Exécuter par petites touches sur trois jours",s:"Coûts −20 %. 40 % de risque que la porte se referme avant vous : −0,35 %.",e:{tcMult:0.8,risk:[0.4,-0.0035],riskMsg:"La porte s'est refermée pendant l'exécution"}},
       {b:"Exécuter immédiatement, avant tout le monde",s:"Coûts ×1,4, et 45 % de chances de sortir avant la bousculade : +0,35 %.",e:{tcMult:1.4,risk:[0.45,0.0035],riskMsg:"Vous étiez devant la bousculade",safeTxt:"Il n'y a pas eu de bousculade. Vous avez payé la vitesse pour rien."}}]},
  {who:"Le desk, unanime",t:"« Les trois quarts du trimestre passent dans deux ordres. Il faut un algorithme dédié »",p:"Le développement d'un profil d'exécution sur mesure coûte du temps de quant et de l'argent, et ne servira qu'à partir du trimestre prochain.",
-  ch:[{b:"Financer le développement",s:"−22 M$ de frais de développement, coûts d'exécution −10 % dès maintenant.",e:{cashM:-22,tcMult:0.9}},
+  ch:[{b:"Financer le développement",s:"−110 pb de frais de développement, coûts d'exécution −10 % dès maintenant.",e:{cash:-0.011,tcMult:0.9}},
       {b:"Utiliser l'algorithme du courtier",s:"Coûts −15 %, mais le courtier voit tout : impact ×1,45 sur les ajustements en cours de trimestre.",e:{tcMult:0.85,leakQ:true}},
       {b:"Rester sur les outils actuels",s:"Plein tarif, aucune dépense.",e:{}}]},
  {who:"Ingrid Bergström · taux",t:"« Le Bund, le BTP et l'OAT vont dans le même sens aujourd'hui, sauf un »",need:['GBL'],p:"« Le carnet allemand est sec, les autres souverains européens sont liquides. Je peux vous construire la même duration avec un panier, et vous récupérez la base. »",
@@ -1211,13 +1242,13 @@ TRADER_EXEC.push(
       {b:"Exécuter sur les plateformes multilatérales",s:"Plein tarif, traçabilité complète. Comité +2.",e:{rc:2}},
       {b:"Demander à l'ami de Boris un prix sur le double",s:"Coûts −50 %, comité −7, et 30 % de risque d'être du mauvais côté : −0,4 %.",e:{tcMultOn:['EUR'],tcMult:0.5,rc:-7,risk:[0.3,-0.004],riskMsg:"L'ami de Boris savait pourquoi il donnait ce prix",safeTxt:"L'ami de Boris cherchait vraiment de la contrepartie."}}]},
  {who:"Wing-Fat « Winnie » Leung · Asie",t:"« Le bitcoin ne dort jamais, mais les équipes de règlement, si »",need:['BTC'],p:"« La liquidité la plus profonde est à 3 heures du matin, heure de Paris. Personne n'est là pour valider les mouvements de garantie. »",
-  ch:[{b:"Exécuter en séance asiatique avec astreinte",s:"Coûts sur le bitcoin −30 %, −8 M$ d'astreinte de nuit.",e:{tcMultOn:['BTC'],tcMult:0.7,cashM:-8}},
+  ch:[{b:"Exécuter en séance asiatique avec astreinte",s:"Coûts sur le bitcoin −30 %, −40 pb d'astreinte de nuit.",e:{tcMultOn:['BTC'],tcMult:0.7,cash:-0.004}},
       {b:"Exécuter en séance européenne",s:"Plein tarif, tout le monde est éveillé.",e:{}},
       {b:"Exécuter en séance asiatique sans astreinte",s:"Coûts −30 %, comité −5, et 30 % de risque d'incident de règlement : −0,35 %.",e:{tcMultOn:['BTC'],tcMult:0.7,rc:-5,risk:[0.3,-0.0035],riskMsg:"Un mouvement de garantie a échoué pendant la nuit"}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« Votre book passe le test de tension, mais pas celui de liquidation »",p:"« Vous pouvez porter ces positions. La question est de savoir en combien de jours vous les sortez si tout le monde sort en même temps. Réponse : onze. »",
   ch:[{b:"Réduire l'ensemble du book d'un quart",s:"Toutes les positions sont ramenées à 75 %. Comité +4, investisseurs rassurés.",e:{scaleAll:0.75,rc:4}},
       {b:"Ne rien changer",s:"Comité −4. Le rapport est archivé.",e:{rc:-4}},
-      {b:"Ne rien changer et négocier une ligne de liquidité",s:"−25 M$ de commission d'engagement, comité +1.",e:{cashM:-25,rc:1}}]}
+      {b:"Ne rien changer et négocier une ligne de liquidité",s:"−125 pb de commission d'engagement, comité +1.",e:{cash:-0.0125,rc:1}}]}
 );
 TRADER_EXEC.push(
  {who:"Wing-Fat « Winnie » Leung · Asie",t:"« Le TOPIX se règle sur le fixing d'ouverture, pas sur la clôture »",need:['TOPX'],p:"« Le prix de référence de tous les fonds indiciels japonais se fait à l'ouverture. Trois milliards passent en dix minutes, et je peux y être. »",
@@ -1229,7 +1260,7 @@ TRADER_EXEC.push(
       {b:"Prendre l'autre côté et absorber le flux",s:"Coûts ×1,4, et 45 % de chances que le vendeur paie votre liquidité : +0,3 %.",e:{tcMultOn:['TOPX'],tcMult:1.4,risk:[0.45,0.003],riskMsg:"Le vendeur a payé votre liquidité",safeTxt:"Le vendeur savait quelque chose : −0,25 %.",safePnl:-0.0025}},
       {b:"Ne rien changer aux ordres",s:"Plein tarif.",e:{}}]},
  {who:"Dwight Tannenbaum · exécution quantitative",t:"« Le Nasdaq se traite à cinq décimales et je n'ai que quatre »",need:['NQ'],p:"« Nos ordres sont systématiquement derrière. Ce n'est pas une question de vitesse, c'est une question de pas de cotation. »",
-  ch:[{b:"Financer la mise à niveau du routeur",s:"−16 M$, coûts sur le Nasdaq −30 % durablement.",e:{cashM:-16,tcMultOn:['NQ'],tcMult:0.7}},
+  ch:[{b:"Financer la mise à niveau du routeur",s:"−80 pb, coûts sur le Nasdaq −30 % durablement.",e:{cash:-0.008,tcMultOn:['NQ'],tcMult:0.7}},
       {b:"Passer par les blocs négociés",s:"Coûts ×1,3, mais aucune trace dans le carnet public.",e:{tcMultOn:['NQ'],tcMult:1.3}},
       {b:"Continuer comme aujourd'hui",s:"Plein tarif, et une seconde place structurelle.",e:{}}]},
  {who:"Dwight Tannenbaum · exécution quantitative",t:"« Les cinq premières valeurs font la moitié de l'indice »",need:['NQ'],p:"« Votre position Nasdaq est un pari sur cinq sociétés, pas sur cent. Le modèle de risque l'ignore, moi non. »",
@@ -1293,9 +1324,9 @@ TRADER_EXEC.push(
       {b:"Garder le contrat tel quel",s:"Comité −4, et 25 % de risque de base sur la station : −0,35 %.",e:{rc:-4,risk:[0.25,-0.0035],riskMsg:"La station de référence a été défaillante"}},
       {b:"Fermer la position climatique",s:"Précipitations à zéro, comité +2.",e:{zeroOn:['NRAM'],rc:2}}]},
  {who:"Le desk, unanime",t:"« Personne ne sait vraiment valoriser ce contrat climatique »",need:['NRAM'],p:"Trois banques donnent trois prix écartés de huit pour cent. La valorisation de fin de trimestre sera une négociation, pas un calcul.",
-  ch:[{b:"Prendre la valorisation la plus prudente",s:"−9 M$ de valorisation, comité +4.",e:{cashM:-9,rc:4}},
+  ch:[{b:"Prendre la valorisation la plus prudente",s:"−45 pb de valorisation, comité +4.",e:{cash:-0.0045,rc:4}},
       {b:"Prendre la moyenne des trois prix",s:"Rien de particulier, comité +1.",e:{rc:1}},
-      {b:"Prendre la valorisation la plus favorable",s:"+9 M$ maintenant, comité −6, et le trimestre prochain corrigera.",e:{cashM:9,rc:-6}}]},
+      {b:"Prendre la valorisation la plus favorable",s:"+45 pb maintenant, comité −6, et le trimestre prochain corrigera.",e:{cash:0.0045,rc:-6}}]},
  {who:"Jean-Kevin Lévêque-Charbonnier · junior",t:"« J'ai couvert le gilt avec du Bund, c'est pareil non ? »",need:['R','GBL'],p:"« Même duration, même sens. » Sauf que l'écart entre les deux a fait cent trente points de base en six semaines.",
   ch:[{b:"Défaire la couverture et corriger",s:"Coûts sur le gilt et le Bund ×1,6, comité −2.",e:{tcMultOn:['R','GBL'],tcMult:1.6,rc:-2}},
       {b:"Garder et expliquer le risque de base au junior",s:"Comité −4, 40 % de risque de base : −0,35 %.",e:{rc:-4,risk:[0.4,-0.0035],riskMsg:"L'écart gilt-Bund s'est écarté contre vous",safeTxt:"L'écart gilt-Bund est resté sage."}},
@@ -1305,9 +1336,9 @@ TRADER_EXEC.push(
       {b:"Corriger la taille sans annuler",s:"Coûts ×1,4, comité −1.",e:{tcMultOn:['KC'],tcMult:1.4,rc:-1}},
       {b:"Laisser courir et voir",s:"Comité −7, et 45 % de ±0,5 %.",e:{rc:-7,risk:[0.45,0.005],riskMsg:"L'erreur de taille a joué pour vous",safeTxt:"L'erreur de taille a coûté −0,50 %.",safePnl:-0.005}}]},
  {who:"Le prime broker",t:"« Le carbone et le fret ne sont pas éligibles à votre ligne de crédit »",need:['EUA','BDI'],p:"« Ces deux marchés sortent du périmètre standard. Soit vous postez du collatéral en propre, soit vous les sortez du book. »",
-  ch:[{b:"Poster du collatéral supplémentaire",s:"−14 M$ mobilisés, positions maintenues.",e:{cashM:-14}},
+  ch:[{b:"Poster du collatéral supplémentaire",s:"−70 pb mobilisés, positions maintenues.",e:{cash:-0.007}},
       {b:"Sortir le carbone et le fret",s:"Les deux positions à zéro, comité +3.",e:{zeroOn:['EUA','BDI'],rc:3}},
-      {b:"Négocier une extension du périmètre",s:"−6 M$ de frais juridiques, comité −1, 35 % de refus : −0,25 %.",e:{cashM:-6,rc:-1,risk:[0.35,-0.0025],riskMsg:"Le comité de crédit du prime broker a refusé l'extension",safeTxt:"L'extension de périmètre a été accordée."}}]},
+      {b:"Négocier une extension du périmètre",s:"−30 pb de frais juridiques, comité −1, 35 % de refus : −0,25 %.",e:{cash:-0.003,rc:-1,risk:[0.35,-0.0025],riskMsg:"Le comité de crédit du prime broker a refusé l'extension",safeTxt:"L'extension de périmètre a été accordée."}}]},
  {who:"Wing-Fat « Winnie » Leung · Asie",t:"« Le cuivre de Shanghai et celui de Londres ne cotent pas pareil »",need:['HG'],p:"« Quatre cents dollars d'écart, et une fenêtre de six heures où les deux marchés sont ouverts. Après, c'est un pari sur la nuit. »",
   ch:[{b:"Exécuter dans la fenêtre commune",s:"Coûts sur le cuivre −35 %.",e:{tcMultOn:['HG'],tcMult:0.65}},
       {b:"Exécuter à Shanghai, hors fenêtre",s:"Coûts −45 %, comité −3, 35 % de risque de base : −0,35 %.",e:{tcMultOn:['HG'],tcMult:0.55,rc:-3,risk:[0.35,-0.0035],riskMsg:"L'écart Shanghai-Londres s'est retourné pendant la nuit"}},
@@ -1333,9 +1364,9 @@ TRADER_EXEC.push(
  {who:"Le desk, unanime",t:"« Notre fournisseur de prix a changé de méthodologie sans prévenir »",p:"Les valorisations de clôture ont bougé de quelques points de base partout. Personne ne sait encore si c'est mieux ou juste différent.",
   ch:[{b:"Suspendre les ordres le temps de comprendre",s:"Coûts −10 %, 40 % de risque de rater le mouvement : −0,3 %.",e:{tcMult:0.9,risk:[0.4,-0.003],riskMsg:"Le marché est parti pendant la vérification"}},
       {b:"Exécuter sur les nouveaux prix",s:"Plein tarif, et une réconciliation à faire plus tard.",e:{rc:-1}},
-      {b:"Payer un second fournisseur pour arbitrer",s:"−7 M$, comité +3.",e:{cashM:-7,rc:3}}]},
+      {b:"Payer un second fournisseur pour arbitrer",s:"−35 pb, comité +3.",e:{cash:-0.0035,rc:3}}]},
  {who:"Le desk, unanime",t:"« Tous nos ordres passent par le même tuyau depuis six mois »",p:"Un seul routeur, un seul prestataire, aucune redondance. Ça marche parfaitement, jusqu'au jour où ça ne marche plus.",
-  ch:[{b:"Financer une seconde route d'exécution",s:"−13 M$, comité +4.",e:{cashM:-13,rc:4}},
+  ch:[{b:"Financer une seconde route d'exécution",s:"−65 pb, comité +4.",e:{cash:-0.0065,rc:4}},
       {b:"Ne rien faire",s:"Comité −3, et 20 % de risque de panne dans le trimestre : −0,45 %.",e:{rc:-3,risk:[0.2,-0.0045],riskMsg:"Le routeur unique est tombé en pleine séance"}},
       {b:"Répartir la moitié des ordres chez le courtier",s:"Coûts ×1,2, redondance de fait, comité +2.",e:{tcMult:1.2,rc:2}}]},
  {who:"Le desk, unanime",t:"« On nous propose une place d'exécution alternative, moins chère »",p:"Fourchettes annoncées 30 % plus serrées, volumes minces, et deux ans d'existence.",
@@ -1343,9 +1374,9 @@ TRADER_EXEC.push(
       {b:"Rester sur les places réglementées",s:"Plein tarif, comité +2.",e:{rc:2}},
       {b:"Tout y router",s:"Coûts −35 %, comité −6, 40 % de risque : −0,4 %.",e:{tcMult:0.65,rc:-6,risk:[0.4,-0.004],riskMsg:"La place alternative a été saturée au mauvais moment"}}]},
  {who:"Le desk, unanime",t:"« Le régulateur demande la liste de nos ordres annulés »",p:"Une revue de routine sur les pratiques d'annulation. Elle mobilisera le desk une semaine entière.",
-  ch:[{b:"Répondre complètement et vite",s:"−9 M$ de temps mobilisé, comité +4.",e:{cashM:-9,rc:4}},
+  ch:[{b:"Répondre complètement et vite",s:"−45 pb de temps mobilisé, comité +4.",e:{cash:-0.0045,rc:4}},
       {b:"Répondre au minimum légal",s:"Comité −2, et 25 % de relance plus lourde : −0,2 %.",e:{rc:-2,risk:[0.25,-0.002],riskMsg:"Le régulateur a demandé un complément, avec un ton différent"}},
-      {b:"Confier la réponse à un cabinet",s:"−16 M$, comité +5, aucune mobilisation du desk.",e:{cashM:-16,rc:5}}]},
+      {b:"Confier la réponse à un cabinet",s:"−80 pb, comité +5, aucune mobilisation du desk.",e:{cash:-0.008,rc:5}}]},
  {who:"Le desk, unanime",t:"« Nos ordres apparaissent sur un fil d'information payant »",p:"Quelqu'un revend l'information de flux. Ce n'est pas illégal, c'est juste vous qui payez.",
   ch:[{b:"Changer de courtier immédiatement",s:"Coûts ×1,35 ce trimestre, la fuite s'arrête.",e:{tcMult:1.35}},
       {b:"Demander des explications et continuer",s:"Impact ×1,45 sur les ajustements, comité −2.",e:{leakQ:true,rc:-2}},
@@ -1355,7 +1386,7 @@ TRADER_EXEC.push(
       {b:"Exécuter chaque zone à son heure",s:"Plein tarif, et un décalage entre les jambes : 35 % de ±0,25 %.",e:{risk:[0.35,0.0025],riskMsg:"Le décalage entre zones a joué pour vous",safeTxt:"Le décalage entre zones a coûté −0,25 %.",safePnl:-0.0025}},
       {b:"Concentrer sur la clôture américaine",s:"Coûts ×1,2, liquidité maximale sur une seule zone.",e:{tcMult:1.2}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« Votre limite de perte journalière n'a jamais été testée »",p:"« Elle existe dans le document de politique de risque. Elle n'est câblée nulle part dans le système. »",
-  ch:[{b:"Faire câbler la limite",s:"−11 M$, comité +5, coupe automatique en cas de choc.",e:{cashM:-11,rc:5}},
+  ch:[{b:"Faire câbler la limite",s:"−55 pb, comité +5, coupe automatique en cas de choc.",e:{cash:-0.0055,rc:5}},
       {b:"Laisser la limite sur le papier",s:"Comité −5.",e:{rc:-5}},
       {b:"Supprimer la limite du document",s:"Comité −9. Au moins c'est cohérent.",e:{rc:-9}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« Deux de vos gérants ont le même modèle et ne le savent pas »",need3:true,p:"« Ils sont partis de la même publication universitaire. Vous avez payé deux fois pour le même pari. »",
@@ -1363,39 +1394,39 @@ TRADER_EXEC.push(
       {b:"Leur demander de se différencier",s:"Comité +1, effet au trimestre prochain.",e:{rc:1}},
       {b:"Ne rien changer : deux avis valent mieux qu'un",s:"Comité −5.",e:{rc:-5}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« Le scénario de choc que vous utilisez date de 2008 »",p:"« Il ne contient ni crypto, ni carbone, ni fret. Votre test de résistance ne teste que ce qui existait il y a quinze ans. »",
-  ch:[{b:"Financer un nouveau jeu de scénarios",s:"−14 M$, comité +5.",e:{cashM:-14,rc:5}},
+  ch:[{b:"Financer un nouveau jeu de scénarios",s:"−70 pb, comité +5.",e:{cash:-0.007,rc:5}},
       {b:"Garder l'ancien",s:"Comité −4.",e:{rc:-4}},
       {b:"Réduire les marchés non couverts par le scénario",s:"Book à 80 %, comité +3, investisseurs −1.",e:{scaleAll:0.8,rc:3,lp:-1}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« Vous avez vendu de la volatilité sans le savoir »",need:['VX'],p:"« La combinaison de vos positions reproduit une vente d'options. Le profil est joli tant que rien ne bouge. »",
   ch:[{b:"Couper la position sur la volatilité",s:"VX à zéro, comité +3.",e:{zeroOn:['VX'],rc:3}},
-      {b:"Acheter une protection de queue",s:"−18 M$ de prime, comité +2.",e:{cashM:-18,rc:2}},
+      {b:"Acheter une protection de queue",s:"−90 pb de prime, comité +2.",e:{cash:-0.009,rc:2}},
       {b:"Assumer le profil",s:"Comité −6, et 25 % de choc de volatilité : −0,55 %.",e:{rc:-6,risk:[0.25,-0.0055],riskMsg:"Le choc de volatilité est arrivé sur un book vendeur"}}]},
  {who:"Le prime broker",t:"« Nous changeons de modèle de marge le mois prochain »",p:"« Le nouveau calcul est plus sensible aux corrélations. Sur un book diversifié, il est plus doux ; sur un book concentré, il est brutal. »",
   ch:[{b:"Diversifier avant le changement",s:"Book à 85 %, comité +3, coûts ×1,15.",e:{scaleAll:0.85,rc:3,tcMult:1.15}},
       {b:"Attendre de voir",s:"25 % de risque d'appel de marge supplémentaire : −0,35 %.",e:{risk:[0.25,-0.0035],riskMsg:"Le nouveau modèle de marge a mordu dès le premier calcul",safeTxt:"Le nouveau modèle vous a été favorable."}},
-      {b:"Négocier une période de transition",s:"−8 M$ de commission, aucune surprise.",e:{cashM:-8}}]},
+      {b:"Négocier une période de transition",s:"−40 pb de commission, aucune surprise.",e:{cash:-0.004}}]},
  {who:"Le prime broker",t:"« Votre collatéral est investi dans un fonds monétaire qui a des créances immobilières »",p:"« Rien d'alarmant. Une ligne de 4 % du portefeuille, notée correctement, peu liquide. »",
   ch:[{b:"Exiger un compte ségrégué en titres d'État",s:"−4 pb de rendement du collatéral, comité +4.",e:{cash:-0.0004,rc:4}},
       {b:"Laisser tel quel",s:"Comité −3, et 20 % de gel du collatéral : −0,4 %.",e:{rc:-3,risk:[0.2,-0.004],riskMsg:"Le fonds monétaire a suspendu les rachats"}},
       {b:"Répartir sur deux fonds monétaires",s:"−2 pb, comité +2.",e:{cash:-0.0002,rc:2}}]},
  {who:"Le prime broker",t:"« On vous propose de financer une partie du book en devise étrangère »",need:['JPY'],p:"« Le taux en yen est plus bas de trois cents points de base. Le financement coûte moins cher, à condition que le yen ne monte pas. »",
-  ch:[{b:"Financer en yen",s:"+22 M$ d'économie de financement, 35 % de risque de change : −0,4 %.",e:{cashM:22,risk:[0.35,-0.004],riskMsg:"Le yen s'est apprécié contre votre financement",safeTxt:"Le yen est resté faible : l'économie est acquise."}},
+  ch:[{b:"Financer en yen",s:"+110 pb d'économie de financement, 35 % de risque de change : −0,4 %.",e:{cash:0.011,risk:[0.35,-0.004],riskMsg:"Le yen s'est apprécié contre votre financement",safeTxt:"Le yen est resté faible : l'économie est acquise."}},
       {b:"Financer en dollar, comme d'habitude",s:"Rien ne change.",e:{}},
-      {b:"Financer en yen et couvrir le change",s:"+8 M$ net, comité +2.",e:{cashM:8,rc:2}}]},
+      {b:"Financer en yen et couvrir le change",s:"+40 pb net, comité +2.",e:{cash:0.004,rc:2}}]},
  {who:"Le prime broker",t:"« Un de vos concurrents vient de sauter, et nous révisons toutes nos lignes »",p:"« Votre profil ressemble au sien. Ce n'est pas un jugement, c'est une classification. »",
   ch:[{b:"Réduire le levier avant qu'on vous l'impose",s:"Book à 75 %, comité +5, investisseurs +1.",e:{scaleAll:0.75,rc:5,lp:1}},
       {b:"Contester la comparaison",s:"Comité −2, 35 % de réduction imposée : −0,35 %.",e:{rc:-2,risk:[0.35,-0.0035],riskMsg:"Le prime broker a réduit votre ligne d'office"}},
-      {b:"Poster du collatéral supplémentaire",s:"−20 M$ mobilisés, ligne maintenue.",e:{cashM:-20}}]},
+      {b:"Poster du collatéral supplémentaire",s:"−100 pb mobilisés, ligne maintenue.",e:{cash:-0.01}}]},
  {who:"Un vendeur de données",t:"« J'ai les données de cartes bancaires agrégées, à J+2 »",need:['ES','NQ'],p:"« Consommation américaine, deux jours de retard au lieu de six semaines. Trois fonds l'ont déjà, ils ne le disent pas. »",
-  ch:[{b:"Acheter l'abonnement",s:"−15 M$ de licence, signaux plus précis ce trimestre.",e:{cashM:-15,tcMultOn:['ES','NQ'],tcMult:0.85}},
+  ch:[{b:"Acheter l'abonnement",s:"−75 pb de licence, signaux plus précis ce trimestre.",e:{cash:-0.0075,tcMultOn:['ES','NQ'],tcMult:0.85}},
       {b:"Refuser",s:"Rien.",e:{}},
-      {b:"Acheter et demander l'exclusivité régionale",s:"−28 M$, comité −2.",e:{cashM:-28,rc:-2}}]},
+      {b:"Acheter et demander l'exclusivité régionale",s:"−140 pb, comité −2.",e:{cash:-0.014,rc:-2}}]},
  {who:"Un vendeur de données",t:"« J'ai des images satellite des cuves de stockage »",need:['CL'],p:"« Les stocks réels, une semaine avant la statistique officielle. La méthode est publiée, la couverture est partielle. »",
-  ch:[{b:"Acheter",s:"−12 M$, coûts sur le pétrole −20 %.",e:{cashM:-12,tcMultOn:['CL'],tcMult:0.8}},
+  ch:[{b:"Acheter",s:"−60 pb, coûts sur le pétrole −20 %.",e:{cash:-0.006,tcMultOn:['CL'],tcMult:0.8}},
       {b:"Refuser",s:"Plein tarif.",e:{}},
-      {b:"Acheter et parier gros dessus",s:"−12 M$, comité −4, 55 % de +0,45 %.",e:{cashM:-12,rc:-4,risk:[0.55,0.0045],riskMsg:"Les images satellite avaient raison",safeTxt:"La couverture satellite était trop partielle : −0,4 %.",safePnl:-0.004}}]},
+      {b:"Acheter et parier gros dessus",s:"−60 pb, comité −4, 55 % de +0,45 %.",e:{cash:-0.006,rc:-4,risk:[0.55,0.0045],riskMsg:"Les images satellite avaient raison",safeTxt:"La couverture satellite était trop partielle : −0,4 %.",safePnl:-0.004}}]},
  {who:"Un vendeur de données",t:"« Nos données de positionnement viennent de vos concurrents »",p:"« Ils nous vendent leurs flux agrégés, nous vous les revendons. Et nous leur vendons les vôtres. »",
-  ch:[{b:"Acheter quand même",s:"−10 M$, impact ×1,45 sur les ajustements du trimestre.",e:{cashM:-10,leakQ:true}},
+  ch:[{b:"Acheter quand même",s:"−50 pb, impact ×1,45 sur les ajustements du trimestre.",e:{cash:-0.005,leakQ:true}},
       {b:"Refuser et sortir du panel",s:"Comité +3, aucune donnée.",e:{rc:3}},
       {b:"Refuser mais rester dans le panel",s:"Comité −4 : vous alimentez sans rien recevoir.",e:{rc:-4}}]},
  {who:"Jean-Kevin Lévêque-Charbonnier · junior",t:"« J'ai mis les ordres dans le mauvais compte »",p:"Le book de test, pas le book réel. Rien n'est passé, personne n'a rien vu, et il vient de s'en rendre compte à 17h30.",
@@ -1409,14 +1440,14 @@ TRADER_EXEC.push(
  {who:"Jean-Kevin Lévêque-Charbonnier · junior",t:"« J'ai trouvé une anomalie de prix, je crois »",p:"Il a passé trois nuits dessus. L'anomalie est réelle, sur six observations, et disparaît si on retire deux d'entre elles.",
   ch:[{b:"Lui expliquer le sur-ajustement et refuser",s:"Rien ce trimestre, comité +2.",e:{rc:2}},
       {b:"Parier une petite taille dessus",s:"Comité −2, 45 % de ±0,25 %.",e:{rc:-2,risk:[0.45,0.0025],riskMsg:"L'anomalie du junior a tenu",safeTxt:"L'anomalie du junior était du bruit : −0,25 %.",safePnl:-0.0025}},
-      {b:"Lui faire refaire l'étude proprement",s:"−5 M$ de temps quantitatif, comité +3.",e:{cashM:-5,rc:3}}]},
+      {b:"Lui faire refaire l'étude proprement",s:"−25 pb de temps quantitatif, comité +3.",e:{cash:-0.0025,rc:3}}]},
  {who:"Boris Rasoumovsky · devises",t:"« Une banque centrale intervient et ça se voit à l'écran »",need:['JPY'],p:"« Trois ordres de deux milliards en quatre minutes, toujours au même niveau. Ce n'est pas un fonds, c'est un ministère. »",
   ch:[{b:"Se mettre dans le sens de l'intervention",s:"Coûts sur le yen −30 %, 50 % de +0,4 %.",e:{tcMultOn:['JPY'],tcMult:0.7,risk:[0.5,0.004],riskMsg:"L'intervention a été soutenue",safeTxt:"L'intervention a été ponctuelle : −0,3 %.",safePnl:-0.003}},
       {b:"Prendre le contre-pied",s:"Coûts ×1,3, comité −5, 35 % de +0,6 %.",e:{tcMultOn:['JPY'],tcMult:1.3,rc:-5,risk:[0.35,0.006],riskMsg:"L'intervention n'a pas tenu",safeTxt:"Le ministère avait les moyens : −0,5 %.",safePnl:-0.005}},
       {b:"Attendre que ça se calme",s:"Plein tarif après l'épisode.",e:{}}]},
  {who:"Boris Rasoumovsky · devises",t:"« Le peso paie trois cents points de portage et tout le monde le sait »",need:['MXP'],p:"« C'est la position la plus consensuelle du marché des changes. Elle rapporte tous les mois, sauf un. »",
   ch:[{b:"Prendre le portage comme tout le monde",s:"Coûts sur le peso −20 %, comité −2.",e:{tcMultOn:['MXP'],tcMult:0.8,rc:-2}},
-      {b:"Prendre le portage et acheter une protection",s:"−14 M$ de prime, comité +2.",e:{cashM:-14,rc:2}},
+      {b:"Prendre le portage et acheter une protection",s:"−70 pb de prime, comité +2.",e:{cash:-0.007,rc:2}},
       {b:"Rester à l'écart",s:"Peso à zéro, comité +2.",e:{zeroOn:['MXP'],rc:2}}]},
  {who:"Boris Rasoumovsky · devises",t:"« L'euro se traite mal le dernier jour ouvré du mois »",need:['EUR'],p:"« Les rééquilibrages de couverture de tous les gérants passent au fixing de 16 heures. Trente milliards en cinq minutes, dans un sens connu d'avance. »",
   ch:[{b:"Exécuter devant le fixing de fin de mois",s:"Coûts sur l'euro ×1,4, 45 % de +0,3 %.",e:{tcMultOn:['EUR'],tcMult:1.4,risk:[0.45,0.003],riskMsg:"Le flux de fin de mois est allé dans votre sens",safeTxt:"Le flux a été plus faible que prévu."}},
@@ -1433,7 +1464,7 @@ TRADER_EXEC.push(
  {who:"Ingrid Bergström · taux",t:"« Le Bund est plus cher que le taux sans risque, ce qui n'a pas de sens »",need:['GBL'],p:"« La rareté du collatéral pousse le contrat au-dessus de sa juste valeur. C'est une anomalie structurelle, pas une opportunité. »",
   ch:[{b:"Ignorer l'anomalie",s:"Plein tarif.",e:{}},
       {b:"Vendre la cherté du Bund",s:"Coûts sur le Bund −20 %, comité −4, 40 % de +0,3 %.",e:{tcMultOn:['GBL'],tcMult:0.8,rc:-4,risk:[0.4,0.003],riskMsg:"La cherté du Bund s'est normalisée",safeTxt:"La rareté du collatéral s'est aggravée : −0,35 %.",safePnl:-0.0035}},
-      {b:"Prêter votre collatéral dans le marché tendu",s:"+11 M$, comité −2.",e:{cashM:11,rc:-2}}]}
+      {b:"Prêter votre collatéral dans le marché tendu",s:"+55 pb, comité −2.",e:{cash:0.0055,rc:-2}}]}
 );
 TRADER_EXEC.push(
  {who:"Bartolomeo « Tuco » Ossobuco · énergie",t:"« L'or de Londres et celui de New York ne sont plus au même prix »",need:['GC'],p:"« Quarante dollars d'écart depuis que les avions ne transportent plus de lingots. L'arbitrage existe, il faut juste pouvoir livrer. »",
@@ -1445,13 +1476,13 @@ TRADER_EXEC.push(
       {b:"Devancer ses achats",s:"Coûts ×1,4, comité −6, 45 % de +0,35 %.",e:{tcMultOn:['GC'],tcMult:1.4,rc:-6,risk:[0.45,0.0035],riskMsg:"Vous avez devancé le programme d'achat",safeTxt:"Le programme s'est interrompu : −0,3 %.",safePnl:-0.003}},
       {b:"Ne rien faire de cette information",s:"Plein tarif, comité +2.",e:{rc:2}}]},
  {who:"Bartolomeo « Tuco » Ossobuco · énergie",t:"« Le contrat pétrole peut coter en négatif, techniquement »",need:['CL'],p:"« C'est déjà arrivé une fois. Notre système d'ordres ne sait pas traiter un prix négatif. Personne n'a jamais corrigé ça. »",
-  ch:[{b:"Faire corriger le système",s:"−9 M$, comité +4.",e:{cashM:-9,rc:4}},
+  ch:[{b:"Faire corriger le système",s:"−45 pb, comité +4.",e:{cash:-0.0045,rc:4}},
       {b:"Sortir du contrat rapproché",s:"Coûts sur le pétrole ×1,3, risque évité.",e:{tcMultOn:['CL'],tcMult:1.3}},
       {b:"Ne rien faire",s:"Comité −4, et 15 % d'incident majeur : −0,6 %.",e:{rc:-4,risk:[0.15,-0.006],riskMsg:"Le prix est passé sous zéro et le système a bloqué"}}]},
  {who:"Bartolomeo « Tuco » Ossobuco · énergie",t:"« On me propose des quotas carbone d'origine douteuse »",need:['EUA'],p:"« Un registre d'Europe de l'Est, quinze pour cent sous le marché. Les quotas sont valides, leur histoire l'est moins. »",
   ch:[{b:"Refuser",s:"Plein tarif, comité +3.",e:{rc:3}},
       {b:"Accepter une petite quantité",s:"Coûts sur le carbone −35 %, comité −6.",e:{tcMultOn:['EUA'],tcMult:0.65,rc:-6}},
-      {b:"Accepter et faire vérifier l'origine",s:"−6 M$ d'audit, coûts −20 %, comité −1.",e:{cashM:-6,tcMultOn:['EUA'],tcMult:0.8,rc:-1}}]},
+      {b:"Accepter et faire vérifier l'origine",s:"−30 pb d'audit, coûts −20 %, comité −1.",e:{cash:-0.003,tcMultOn:['EUA'],tcMult:0.8,rc:-1}}]},
  {who:"Wing-Fat « Winnie » Leung · Asie",t:"« Les émergents ferment trois jours pour le nouvel an lunaire »",need:['MXEF'],p:"« Personne ne cote, mais les nouvelles continuent d'arriver. À la réouverture, le rattrapage se fait d'un coup. »",
   ch:[{b:"Réduire avant la fermeture",s:"Émergents divisés par deux, 70 % du coût rendu, comité +2.",e:{halfOn:['MXEF'],rc:2}},
       {b:"Garder la position",s:"45 % de ±0,4 % à la réouverture.",e:{risk:[0.45,0.004],riskMsg:"La réouverture a joué pour vous",safeTxt:"La réouverture s'est faite contre vous : −0,4 %.",safePnl:-0.004}},
@@ -1475,7 +1506,7 @@ TRADER_EXEC.push(
  {who:"Le courtier de Chicago",t:"« Vos ordres arrivent toujours à la même seconde »",p:"« 9h30 pile, tous les jours, depuis trois mois. Les algorithmes de la place l'ont remarqué avant moi. »",
   ch:[{b:"Randomiser l'heure d'envoi",s:"Coûts −20 %, la signature disparaît.",e:{tcMult:0.8}},
       {b:"Ne rien changer",s:"Impact ×1,45 sur les ajustements du trimestre.",e:{leakQ:true}},
-      {b:"Financer un moteur d'exécution adaptatif",s:"−17 M$, coûts −30 % durablement.",e:{cashM:-17,tcMult:0.7}}]},
+      {b:"Financer un moteur d'exécution adaptatif",s:"−85 pb, coûts −30 % durablement.",e:{cash:-0.0085,tcMult:0.7}}]},
  {who:"Courtier principal",t:"« Nous fusionnons avec un concurrent, votre couverture change d'équipe »",p:"« Les mêmes écrans, d'autres visages, et une période de transition qu'on annonce fluide. Elle ne l'est jamais.",
   ch:[{b:"Attendre que la fusion se termine",s:"Coûts ×1,3 ce trimestre, aucune décision.",e:{tcMult:1.3}},
       {b:"Répartir les ordres sur deux autres maisons",s:"Coûts ×1,15, indépendance retrouvée, comité +2.",e:{tcMult:1.15,rc:2}},
@@ -1495,21 +1526,21 @@ TRADER_EXEC.push(
  {who:"Sœur Marie-Alpha · exécution systématique",t:"« Le modèle a été réajusté sur les données de la semaine dernière »",p:"« Personne ne l'a validé. Il performe mieux sur l'historique et c'est précisément ce qui m'inquiète. »",
   ch:[{b:"Revenir à la version validée",s:"Comité +4.",e:{rc:4}},
       {b:"Garder la nouvelle version",s:"Comité −5, 40 % de sur-ajustement : −0,35 %.",e:{rc:-5,risk:[0.4,-0.0035],riskMsg:"Le réajustement récent ne tenait pas hors échantillon",safeTxt:"Le réajustement a tenu ce trimestre."}},
-      {b:"Faire tourner les deux versions en parallèle",s:"−8 M$ de calcul, comité +2.",e:{cashM:-8,rc:2}}]},
+      {b:"Faire tourner les deux versions en parallèle",s:"−40 pb de calcul, comité +2.",e:{cash:-0.004,rc:2}}]},
  {who:"Dwight Tannenbaum · exécution quantitative",t:"« Notre algorithme se fait détecter en douze minutes »",p:"« Le profil d'envoi est régulier au point d'être signé. Trois maisons nous suivent en temps réel. »",
-  ch:[{b:"Réécrire le profil d'envoi",s:"−12 M$, coûts −25 % durablement.",e:{cashM:-12,tcMult:0.75}},
+  ch:[{b:"Réécrire le profil d'envoi",s:"−60 pb, coûts −25 % durablement.",e:{cash:-0.006,tcMult:0.75}},
       {b:"Passer en blocs négociés",s:"Coûts ×1,3, plus aucune signature.",e:{tcMult:1.3}},
       {b:"Ne rien changer",s:"Impact ×1,45 sur les ajustements.",e:{leakQ:true}}]},
  {who:"Dwight Tannenbaum · exécution quantitative",t:"« La latence du fournisseur a doublé depuis le déménagement »",p:"« Quatre-vingts microsecondes de plus. Sur un ordre de fonds macro, c'est indifférent. Sur cent ordres fractionnés, ça ne l'est plus. »",
-  ch:[{b:"Repayer une colocalisation",s:"−10 M$, coûts −20 %.",e:{cashM:-10,tcMult:0.8}},
+  ch:[{b:"Repayer une colocalisation",s:"−50 pb, coûts −20 %.",e:{cash:-0.005,tcMult:0.8}},
       {b:"Fractionner moins",s:"Coûts ×1,2, impact plus visible.",e:{tcMult:1.2,leakQ:true}},
       {b:"Accepter la latence",s:"Coûts ×1,15.",e:{tcMult:1.15}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« Votre plus gros risque n'est pas dans le book, il est dans une feuille de calcul »",p:"« Le calcul de taille de position vit dans un fichier que trois personnes modifient sans historique. »",
-  ch:[{b:"Industrialiser le calcul",s:"−13 M$, comité +5.",e:{cashM:-13,rc:5}},
-      {b:"Verrouiller le fichier en lecture seule",s:"−2 M$, comité +2.",e:{cashM:-2,rc:2}},
+  ch:[{b:"Industrialiser le calcul",s:"−65 pb, comité +5.",e:{cash:-0.0065,rc:5}},
+      {b:"Verrouiller le fichier en lecture seule",s:"−10 pb, comité +2.",e:{cash:-0.001,rc:2}},
       {b:"Continuer comme ça",s:"Comité −5, 25 % d'erreur de dimensionnement : −0,4 %.",e:{rc:-5,risk:[0.25,-0.004],riskMsg:"Une erreur de formule a mal dimensionné tout le book"}}]},
  {who:"Le prime broker",t:"« Vos positions les plus étroites ne sont pas valorisables de façon indépendante »",p:"« Le café, le fret et le climatique : c'est votre courtier qui donne le prix, et c'est lui qui vous porte. »",
-  ch:[{b:"Payer une valorisation indépendante",s:"−11 M$, comité +4.",e:{cashM:-11,rc:4}},
+  ch:[{b:"Payer une valorisation indépendante",s:"−55 pb, comité +4.",e:{cash:-0.0055,rc:4}},
       {b:"Réduire ces marchés de moitié",s:"Café, fret et climatique divisés par deux, comité +3.",e:{halfOn:['KC','BDI','NRAM'],rc:3}},
       {b:"Garder la valorisation du courtier",s:"Comité −5.",e:{rc:-5}}]},
  {who:"Le desk, unanime",t:"« Le marché du cuivre est fermé pour un jour férié chilien »",need:['HG'],p:"Londres cote, mais sans le producteur. Les prix affichés sont techniques, les volumes symboliques.",
@@ -1525,7 +1556,7 @@ TRADER_EXEC.push(
       {b:"Absorber la hausse",s:"Coûts sur ces marchés ×1,25 durablement.",e:{tcMultOn:['BTC','VX'],tcMult:1.25}},
       {b:"Sortir de ces marchés",s:"Bitcoin et volatilité à zéro, comité +2.",e:{zeroOn:['BTC','VX'],rc:2}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« Vous avez une position sur un marché que personne ici ne comprend »",need:['NRAM'],p:"« J'ai demandé à trois personnes de m'expliquer le règlement du contrat. J'ai eu trois réponses différentes. »",
-  ch:[{b:"Faire une note explicative pour le comité",s:"−4 M$ de temps, comité +4.",e:{cashM:-4,rc:4}},
+  ch:[{b:"Faire une note explicative pour le comité",s:"−20 pb de temps, comité +4.",e:{cash:-0.002,rc:4}},
       {b:"Fermer la position",s:"Précipitations à zéro, comité +3.",e:{zeroOn:['NRAM'],rc:3}},
       {b:"Garder sans expliquer",s:"Comité −7.",e:{rc:-7}}]},
  {who:"Boris Rasoumovsky · devises",t:"« La livre bouge sur un chiffre d'inflation qui sort dans huit minutes »",need:['GBP'],p:"« Le carnet est déjà vide. Après la publication, il y a trois secondes où tout se décide et où personne ne cote. »",
@@ -1625,7 +1656,7 @@ TRADER_MID.push(
  {who:"Le desk, hilare",t:"Le stagiaire a renversé un café sur le clavier de Boris",p:"Boris a acheté 500 contrats de yen sans le vouloir. Ou peut-être avec.",
   ch:[{b:"Garder les contrats",s:"JPY +1. 50 % de ±0,4 %.",e:{kAddAbs:['JPY',1],gamble2:[0.5,0.004,-0.004]}},{b:"Les revendre tout de suite",s:"−1 pb de coûts.",e:{cash:-0.0001}},{b:"Faire payer le stagiaire",s:"Investisseurs −1 (l'histoire circule), −1 pb.",e:{lp:-1,cash:-0.0001}}]},
  {who:"Le desk, hilare",t:"Tuco a gagné le concours de chili du prime broker",p:"Le prime broker veut sa recette. Tuco veut une baisse de marge.",
-  ch:[{b:"Échanger la recette contre la baisse de marge",s:"Coûts d'ajustement ×0,9 ce trimestre.",e:{tcMultQ:0.9}},{b:"Garder la recette",s:"Rien ne change, Tuco est fier.",e:{}},{b:"Vendre la recette au concurrent",s:"+1 M$, prime broker vexé : coûts ×1,1.",e:{cashM:1,tcMultQ:1.1}}]},
+  ch:[{b:"Échanger la recette contre la baisse de marge",s:"Coûts d'ajustement ×0,9 ce trimestre.",e:{tcMultQ:0.9}},{b:"Garder la recette",s:"Rien ne change, Tuco est fier.",e:{}},{b:"Vendre la recette au concurrent",s:"+5 pb, prime broker vexé : coûts ×1,1.",e:{cash:0.0005,tcMultQ:1.1}}]},
  {who:"Le desk, hilare",t:"Une équipe de télévision veut filmer la salle",p:"Un documentaire sur la finance. Ils veulent « du vrai ».",
   ch:[{b:"Accepter",s:"Investisseurs +3, 30 % de risque d'une séquence embarrassante : investisseurs −5.",e:{lp:3,risk:[0.3,-0.0001],riskLp:-5,riskMsg:"La séquence du costume de poulet est passée"}},{b:"Refuser",s:"Rien.",e:{}},{b:"Accepter avec droit de regard",s:"Investisseurs +1, −0,5 pb (avocats).",e:{lp:1,cash:-0.00005}}]},
  {who:"Un chasseur de têtes",t:"Millénaire Partners fait une offre à Ingrid",p:"Le double, un pod, une place de parking.",
@@ -1639,13 +1670,13 @@ TRADER_MID.push(
  {who:"Le prime broker",t:"« On peut vous prêter vos positions pour un rendement supplémentaire »",p:"Prêt de titres sur le collatéral. Quelques points de base, quelques risques.",
   ch:[{b:"Accepter",s:"+3 pb, comité −2.",e:{cash:0.0003,rc:-2}},{b:"Refuser",s:"Rien.",e:{}},{b:"Accepter pour la moitié du collatéral",s:"+1,5 pb, comité −1.",e:{cash:0.00015,rc:-1}}]},
  {who:"Un économiste de renom",t:"« Je peux vous vendre mon modèle de nowcast. Il a prédit les trois dernières récessions »",p:"Et sept des deux dernières, selon les mauvaises langues.",
-  ch:[{b:"Acheter",s:"−6 M$, précision des signaux marché améliorée ce trimestre.",e:{cashM:-6,tcvBoost:true}},{b:"Refuser",s:"Rien.",e:{}},{b:"Lui proposer un poste",s:"−3 pb par trimestre... enfin, −3 pb, et investisseurs +2 (prestige).",e:{cash:-0.0003,lp:2}}]},
+  ch:[{b:"Acheter le modèle",s:"−1,5 M$ de votre poche ; le bruit de vos indicateurs de tendance, portage et valeur est divisé par trois, pour tout le reste du mandat.",e:{mgrM:-1.5,tcvPerm:true}},{b:"Refuser",s:"Rien.",e:{}},{b:"Lui proposer un poste",s:"−3 pb par trimestre... enfin, −3 pb, et investisseurs +2 (prestige).",e:{cash:-0.0003,lp:2}}]},
  {who:"La conformité",t:"« Un gérant a acheté des actions d'une société que nous avons dans le book »",p:"Compte personnel, petite somme, mauvais moment.",
   ch:[{b:"Le signaler au régulateur",s:"Comité +4, investisseurs −2.",e:{rc:4,lp:-2}},{b:"Faire vendre et classer",s:"Comité −2.",e:{rc:-2}},{b:"Ne rien faire",s:"Comité −5, 15 % de risque d'enquête : −0,6 %.",e:{rc:-5,risk:[0.15,-0.006],riskMsg:"Le régulateur a ouvert une enquête",riskRc:-8}}]},
  {who:"Le desk, unanime",t:"« On veut un bonus garanti cette année »",p:"Ils ont fait le calcul. Ils ont aussi les offres de la concurrence.",
   ch:[{b:"Accepter",s:"−5 pb, débauchage −30 % ce trimestre.",e:{cash:-0.0005,poach:-0.3}},{b:"Refuser",s:"Débauchage +25 %.",e:{poach:0.25}},{b:"Promettre un bonus lié à la performance du trimestre",s:"−3 pb si le trimestre est positif, débauchage −10 %.",e:{poach:-0.1,cashIfPos:-0.0003}}]},
  {who:"Un ancien du desk",t:"« Je monte mon fonds. Vous voulez être mon premier investisseur ? »",p:"Un bon trader, un mauvais gestionnaire, un ami.",
-  ch:[{b:"Investir 50 M$",s:"−5 pb, 35 % de récupérer +15 pb dans un an... enfin ce trimestre.",e:{cash:-0.0005,risk:[0.35,0.0015],riskMsg:"Son fonds a bien démarré",safeTxt:"Son fonds ne décolle pas."}},{b:"Refuser gentiment",s:"Rien.",e:{}},{b:"L'embaucher à la place",s:"−2 pb, coûts d'exécution −4 % durablement.",e:{cash:-0.0002,execBoost:0.96}}]}
+  ch:[{b:"Placer 1 % de l'encours chez lui",s:"−100 pb tout de suite ; 35 % de chances que sa première année rende +260 pb, sinon l'argent y dort.",e:{cash:-0.010,risk:[0.35,0.026],riskMsg:"Son fonds a très bien démarré",safeTxt:"Son fonds ne décolle pas : votre argent y dort."}},{b:"Refuser gentiment",s:"Rien.",e:{}},{b:"L'embaucher à la place",s:"−2 pb, coûts d'exécution −4 % durablement.",e:{cash:-0.0002,execBoost:0.96}}]}
 );
 MACROEV.push(
  {t:"Un pays adopte le bitcoin comme monnaie légale",who:"Communiqué présidentiel",p:"Réserves nationales converties, mineurs subventionnés, FMI furieux.",rum:"Le desk crypto entend parler d'un décret présidentiel en préparation.",hit:{BTC:2.2,MXEF:-0.4,GC:-0.4}},
@@ -1999,6 +2030,10 @@ function riskShown(w){
 }
 
 /* coût d'un changement de position : demi-fourchette + impact en racine carrée du notionnel */
+/* Échelle générale des coûts d'exécution : fourchette, impact et glissement d'un desk
+   discrétionnaire. Un ordre préparé revient à environ 5 pb du notionnel traité, davantage
+   sur les marchés étroits (émergents, crypto, volatilité, carbone, fret). */
+const TCK=3;
 function tcost(dk,i){
  if(Math.abs(dk)<1e-9)return {cost:0,bp:0,bn:0};
  const x=INSTR[i],bn=Math.abs(dk*U/x.sig*S.nav);
@@ -2007,7 +2042,7 @@ function tcost(dk,i){
  let bp=x.s+x.c*Math.pow(bn,pw)*(pw===0.5?1:Math.pow(bn,0.5-pw)*0+1);
  const Z=SIZES.find(z=>z.id===S.size)||SIZES[1];
  const bnE=bn*(Z.capX||1)*capFactor();
- bp=x.s+x.c*Math.pow(bnE,pw)*(pw===0.5?1:1.9);
+ bp=(x.s+x.c*Math.pow(bnE,pw)*(pw===0.5?1:1.9))*TCK;
  let m=EXECM[S.bud.exec]*desk.mult(x)*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult;
  if(S.leak&&Math.abs(S.k[i])>2)m*=1.45;
  if(S.star===i)m*=0.35;
@@ -2045,14 +2080,14 @@ function newGame(seed,prof,arch,desk,vol,size,univ,dur){
    lp:62+A.lp0+Z.lp0,rc:70+Z.lp0/2,tgt:V.tgt,maxk:5,rate:0.0425,liq:1.0,
    tcv:{c:INSTR.map(()=>0.6*gauss()),v:INSTR.map(()=>0.6*gauss())},lastR2:new Array(N).fill(0),
    bPrev:INSTR.map(x=>[...x.b]),rupture:null,rumors:[],
-   k:new Array(N).fill(0),rets:[],navs:[100],regimes:[],
+   k:new Array(N).fill(0),rets:[],navs:[Z.nav],regimes:[],
    regime:'range',crowd:new Array(N).fill(0),lastR:new Array(N).fill(0),
    bud:{exec:1,risk:1,res:1,ret:1},goal:null,everMarginCall:0,capWarned:0,
    streak:0,streakMax:0,goalsWon:0,sweeps:0,commNone:0,qNeg:0,mguMax:0,resMinQ:0,budBp:0,mgrFees:0,mgrCosts:0,mgrQ:null,
    execPenalty:1,star:-1,leak:DESKS.find(d=>d.id===desk).leak||false,
    stop:A.stop,carry:false,noise:false,flighty:false,
    totalTC:0,totalOps:0,incidents:[],poaches:[],usedEv:[],usedMacro:[],usedTrader:[],usedExec:[],poachBoost:0,tcMultQ:1,leakQ:false,qLog:[],
-   idx:1,hwmIdx:1,peakIdx:1,fl:{},rumBought:0,outBand:0,
+   idx:1,hwmIdx:1,peakIdx:1,fl:{},rumBought:0,outBand:0,mgrCap0:0.02*Z.nav,qMgmtM:0,
    rivals:RIVALS.map(r=>({...r,skill:Math.max(0.5,Math.min(0.82,r.skill+Z.rivSkill)),vol:r.vol*Z.rivVol,cum:1,last:0})),
    over:null,truth:null,f:[],rumor:null,pending:[],shock:new Array(N).fill(0),
    evQueue:[],log:[],flows:0,press:[],lastPress:null,rankPrev:1,phase:'budget',hotFactor:null,lpD:null,rcD:null,fLast:null,gLog:[],navQ0:100,qEvM:0,qIncM:0,qRumor:0,evLog:[]};
@@ -2128,6 +2163,9 @@ function planQuarter(){
  S.k=new Array(N).fill(0);S.k0=new Array(N).fill(0);
  S.rumors=[];S.evVerified=false;S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
  S.pendingTC=0;S.freeAdjUsed=false;
+ /* la commission de gestion est prélevée sur le fonds et vous est versée dès l'ouverture ;
+    la performance et le bonus d'objectif attendent la clôture */
+ S.qMgmtM=VOL().mgmt*S.nav;S.nav-=S.qMgmtM;S.mgrFees+=S.qMgmtM;refreshGain();
 }
 function eventFactorVec(ev){
  const v=[0,0,0,0];
@@ -2190,7 +2228,7 @@ function rumorEst(){
 }
 function renderNews(){
  const el=document.getElementById('news');if(!el)return;
- el.innerHTML=S.rumors.map(r=>`<div class="news ${r.ev?'rum':''}"><span class="src">${r.src.toUpperCase()}</span><span>${r.t}<div class="chips">${r.v.map((z,k)=>`<i class="${z>0?'up':z<0?'dn':''}">${FACT[k].id} ${chip(z)}</i>`).join('')}<i class="rel ${r.rel}">fiabilité ${r.rel}</i></div></span></div>`).join('');
+ el.innerHTML=S.rumors.map(r=>`<div class="news ${r.ev?'rum':''}"><span class="src">${r.src.toUpperCase()}</span><span>${r.t}<div class="chips">${r.v.map((z,k)=>`<i class="${z>0?'up':z<0?'dn':''}">${FACT[k].id} ${chip(z)}</i>`).join('')}${r.sure?'<i class="sure">✓ vérifiée</i>':''}<i class="rel ${r.rel}">fiabilité ${r.rel}</i></div></span></div>`).join('');
  const rs=document.getElementById('rsum');
  const b=S.rumors.filter(r=>r.bought);
  if(rs)rs.innerHTML=b.length?`<table class="qt"><thead><tr><th>Facteur</th><th>Lecture du desk</th></tr></thead><tbody>`+FACT.map((f,k)=>{
@@ -2211,7 +2249,7 @@ function renderNews(){
      <button class="buy" id="applymodel" style="margin:8px 0 0">Appliquer ce book</button>`
    :`<p class="note" style="margin:0">Votre desk ne voit rien de tranché : il resterait à plat.</p>`;
   const am=document.getElementById('applymodel');
-  if(am)am.onclick=()=>{S.k=[...S.modelK];drawRows();renderRisk();refreshStatus();refreshGain();toast('Book du desk appliqué — à vous de l\'ajuster.')};
+  if(am)am.onclick=()=>{S.k=[...S.modelK];drawRows();renderRisk();refreshStatus();refreshGain();refreshSend();toast('Book du desk appliqué — à vous de l\'ajuster.')};
  }
 }
 function genRumors(){
@@ -2221,7 +2259,7 @@ function genRumors(){
  const dot=v=>v.reduce((a,z,k)=>a+z*S.f[k],0);
  /* pré-annonces d'événements */
  const pr=Math.max(0.2,Math.min(1,RESR[S.bud.res]+PROF().rumBonus));
- S.evQueue.filter(ev=>!ev.trader).slice(0,3).forEach(ev=>{if(rng()<pr){out.push({src:'Pré-annonce',t:ev.rum||`Le desk entend parler de : « ${ev.t} »`,v:eventFactorVec(ev),rel:'moyenne',ev:true,truth:true})}});
+ S.evQueue.filter(ev=>!ev.trader&&!ev.rivalEv&&!ev.stake&&ev.t&&ev.hit).slice(0,3).forEach(ev=>{if(rng()<pr){out.push({src:'Pré-annonce',t:ev.rum||`Le desk entend parler de : « ${ev.t} »`,v:eventFactorVec(ev),rel:'moyenne',ev:true,truth:true})}});
  if(rng()<pr*0.45){const f=pick(MACROEV.filter(e=>!S.evQueue.includes(e)&&!S.usedMacro.includes(e.t)));
    if(f)out.push({src:'Pré-annonce',t:f.rum||`Le desk entend parler de : « ${f.t} »`,v:eventFactorVec(f),rel:'faible',ev:true,truth:false})}
  /* rumeurs factorielles */
@@ -2238,8 +2276,7 @@ function genRumors(){
  /* pouvoir du gérant fondamental : une source recoupée, donnée pour certaine */
  if(PROF().verified){
    const cand=out.filter(r=>!r.ev&&r.truth);
-   if(cand.length){const r=pick(cand);r.truth=true;r.p=0.97;r.rel='forte';r.sure=true;
-     r.src='Source vérifiée · '+r.src}
+   if(cand.length){const r=pick(cand);r.truth=true;r.p=0.97;r.rel='forte';r.sure=true}
  }
  for(let i=out.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[out[i],out[j]]=[out[j],out[i]]}
  const PM={faible:1.4,moyenne:3.5,forte:8.0},RM=[1.3,1.0,0.6][S.bud.res];
@@ -2252,7 +2289,7 @@ function genRumors(){
  });
  S.rumors=out.filter(r=>r&&r.t&&r.src&&Array.isArray(r.v)&&r.rel);S.rumors.forEach(r=>{if(!r.teaser)r.teaser=r.t});rumorEst();
  /* estimations trend / carry / value avec bruit selon la recherche */
- const e=TCVQ[S.bud.exec];
+ const e=TCVQ[S.bud.exec]*(S.tcvPerm?0.33:1);   /* le modèle de nowcast acheté sert tout le mandat */
  S.tcvEst={t:S.tcv.t.map(z=>quant(z+e*gauss())),c:S.tcv.c.map(z=>quant(z+e*gauss())),v:S.tcv.v.map(z=>quant(z+e*gauss()))};
 }
 /* rendements du trimestre */
@@ -2306,17 +2343,81 @@ const NAME2=["Capital","Capital Partners","Asset Management","Global Advisors","
 let fundName='';
 function randName(){return pick2(NAME1)+' '+pick2(NAME2)}
 function pick2(a){return a[Math.floor(Math.random()*a.length)]}
+let NGID=0;
+/* Courbe de NAV. Un seul dessin pour tout le jeu : aire dégradée, ligne qui se trace,
+   repère au creux, point final. Le viewBox garde son rapport, donc pas de trait déformé. */
+function navChart(vals,o){
+ o=o||{};
+ const v=(vals||[]).filter(x=>isFinite(x));
+ if(v.length<2)return '';
+ const W=o.w||320,H=o.h||110,pad=9;
+ const base=o.base!==undefined?o.base:v[0];
+ let lo=Math.min(base,...v),hi=Math.max(base,...v);
+ const sp=(hi-lo)||Math.abs(base)*0.1||1;lo-=sp*0.14;hi+=sp*0.14;
+ const px=i=>pad+i*(W-2*pad)/(v.length-1);
+ const py=x=>H-pad-(x-lo)/(hi-lo)*(H-2*pad);
+ const pts=v.map((x,i)=>px(i).toFixed(1)+','+py(x).toFixed(1));
+ const col=o.col||(v[v.length-1]>=base?'#4FA98C':'#C4576F');
+ const id='ng'+(NGID++);
+ const area='M'+pts[0]+' L'+pts.join(' L')+' L'+px(v.length-1).toFixed(1)+','+(H-pad)+' L'+pad+','+(H-pad)+'Z';
+ let mk='';
+ const mn=Math.min(...v),li=v.indexOf(mn);
+ if(o.trough&&mn<base*0.97&&li>0&&li<v.length-1)
+  mk+=`<circle cx="${px(li).toFixed(1)}" cy="${py(mn).toFixed(1)}" r="3" fill="#C4576F"><animate attributeName="r" values="3;5.5;3" dur="2.6s" repeatCount="indefinite"/></circle>`;
+ mk+=`<circle cx="${px(v.length-1).toFixed(1)}" cy="${py(v[v.length-1]).toFixed(1)}" r="3.2" fill="${col}"/>`;
+ return `<svg class="navc" viewBox="0 0 ${W} ${H}" aria-hidden="true">
+  <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".32"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+  <path d="${area}" fill="url(#${id})"/>
+  <line x1="0" y1="${py(base).toFixed(1)}" x2="${W}" y2="${py(base).toFixed(1)}" stroke="#35496A" stroke-width="1" stroke-dasharray="3 4"/>
+  <polyline class="${o.anim?'navdraw':''}" points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  ${mk}</svg>`;
+}
+/* la performance nette cumulée, base 100 — exactement ce que lit la jauge « Perf. » */
+function idxSeries(extra){
+ const a=[1];(S.rets||[]).forEach(r=>a.push(a[a.length-1]*(1+r)));
+ if(extra!==undefined&&isFinite(extra))a.push(a[a.length-1]*(1+extra));
+ return a.map(x=>x*100);
+}
+function navBox(cap,vals,o){
+ o=o||{};if(!vals||vals.length<2)return '';
+ const last=vals[vals.length-1],base=vals[0];
+ let pk=base,dd=0;vals.forEach(v=>{pk=Math.max(pk,v);dd=Math.max(dd,1-v/pk)});
+ return `<div class="navbox"><div class="navcap">${cap}</div>${navChart(vals,o)}
+  <div class="navrow"><span>DÉPART ${dec(base,0)}</span><span class="${dd>0.005?'neg-g':'dim-g'}">${dd>0.005?'REPLI MAX −'+dec(dd*100,1)+' %':'AUCUN REPLI'}</span><span class="${last>=base?'pos-g':'neg-g'}">${last>=base?'+':'−'}${dec(Math.abs(last/base-1)*100,1)} %${o.prov?' LATENT':''}</span></div></div>`;
+}
+/* la courbe de l'accueil : une partie imaginaire, toujours la même */
+function heroNav(){
+ const st=[1.9,2.6,-0.7,3.4,1.9,4.2,1.1,-2.6,-5.8,-4.4,-6.3,-2.1,1.5,3.2,2.1,4.6,3.0,5.2,2.4,3.9,4.7,6.4];
+ const a=[100];st.forEach(x=>a.push(a[a.length-1]*(1+x/100)));return a;
+}
+function introTicker(){
+ const T=["OUVERTURE DE MANDAT","BRENT \u25B23,2\u00a0%","RUMEUR : LA BANQUE CENTRALE AVANCERAIT SON CALENDRIER","YEN \u25BC1,8\u00a0%",
+  "LE COMIT\u00c9 DES RISQUES DEMANDE UN POINT DANS L'HEURE","M\u00c9DAILLON D'OR \u25B24,1\u00a0% SUR LE TRIMESTRE","BITCOIN \u25BC6,4\u00a0%",
+  "UN TRADER D\u00c9MISSIONNE PAR MESSAGE VOCAL","OR \u25B20,9\u00a0%","APPEL DE MARGE CHEZ UN CONCURRENT","LE MARCH\u00c9 VOUS ATTEND"];
+ const line=T.join('   \u00b7   ')+'   \u00b7   ';
+ return `<div class="tick" style="margin:0 -14px 18px"><span class="tlab">DIRECT</span><div class="twrap"><div class="tmove">${line}${line}</div></div></div>`;
+}
+function mktWall(){
+ const ord=['Actions','Taux','Devises','Matières premières','Exotiques'];
+ return `<div class="mwall">${INSTR_ALL.slice().sort((a,b)=>ord.indexOf(a.grp)-ord.indexOf(b.grp)||a.rk-b.rk)
+  .map((x,i)=>`<i class="mw ${Math.sin(i*2.7)>0?'up':'dn'}" style="--c:${GRPC[x.grp]};animation-delay:${((i*3)%11)*0.6}s">${x.sym}</i>`).join('')}</div>`;
+}
+function introRivals(){
+ return `<div class="rivs">${RIVALS.map(r=>`<div class="riv">${avatar(r.boss,'rival')}<div><b>${r.boss}</b><span>${r.nm.toUpperCase()}</span></div></div>`).join('')}</div>`;
+}
 function screenIntro(){
  if(!fundName)fundName=randName();
- const cols=['var(--eq)','var(--rt)','var(--fx)','var(--cm)','var(--long)','var(--short)','var(--gold)'];
- let art='';for(let i=0;i<28;i++){const h=0.25+Math.abs(Math.sin(i*1.7))*0.75;art+=`<i style="height:${h*100}%;background:${cols[i%cols.length]};opacity:${0.35+h*0.6}"></i>`}
- const [n1,n2]=[fundName.split(' ').slice(0,-1).join(' '),fundName.split(' ').slice(-1)[0]];
+ const nv=heroNav();let pk=nv[0],dd=0;nv.forEach(v=>{pk=Math.max(pk,v);dd=Math.max(dd,1-v/pk)});
  app.innerHTML=`<div class="splash fade">
-  <div class="spineart big">${art}</div>
+  ${introTicker()}
   <div class="kicker" style="color:var(--gold)">BIENVENUE À BORD</div>
   <h1 class="splash-h1">Vous prenez les commandes<br>d'un <em>fonds global macro</em></h1>
-  <p class="splash-p"><b style="color:var(--gold)">Le but : encaisser un maximum de commissions en deux ans sans vous faire débarquer.</b> Ce matin, le conseil vous a confié le book. Quinze marchés, quatre concurrents qui n'attendent que votre faux pas, des investisseurs qui vous adorent tant que ça monte, un comité des risques qui vous surveille, et deux ans pour prouver que vous valez votre commission. À vous de choisir la taille du fonds — et donc la difficulté.</p>
-  <p class="splash-p">Le monde ne vous attendra pas : guerres, élections, sécheresses, faillites, rumeurs de couloir et traders à fort caractère. Vous allez adorer. Ou pas.</p>
+  <div class="navbox">
+   <div class="navcap">UNE PARTIE, HUIT TRIMESTRES</div>
+   ${navChart(nv,{col:'#D9B06A',anim:1,trough:1,h:118})}
+   <div class="navrow"><span>DÉPART ${dec(nv[0],0)}</span><span class="neg-g">REPLI −${dec(dd*100,0)} %</span><span class="pos-g">ARRIVÉE ${dec(nv[nv.length-1],0)}</span></div>
+  </div>
+  <p class="splash-p"><b style="color:var(--gold)">Le but : encaisser un maximum de commissions en deux ans sans vous faire débarquer.</b> Ce matin, le conseil vous a confié le book. Des marchés à tenir, quatre concurrents qui n'attendent que votre faux pas, des investisseurs qui vous adorent tant que ça monte, et un comité des risques qui vous surveille. À vous de choisir la taille du fonds — et donc la difficulté.</p>
   <div class="namebox">
    <div class="kicker">D'ABORD, UN NOM POUR VOTRE FONDS</div>
    <input id="fname" class="namein" value="${fundName}" maxlength="42" spellcheck="false" autocomplete="off">
@@ -2325,6 +2426,13 @@ function screenIntro(){
   <button class="cta gold" id="found">Fonder le fonds</button>
   ${hasSave()?`<button class="cta ghost" id="resume">Reprendre la partie en cours</button><button class="cta ghost" id="dropsave" style="margin-top:6px;font-size:12px;opacity:.6">Abandonner cette partie</button>`:''}
   <button class="cta ghost" id="hall">Palmarès et hauts faits</button>
+  <div class="isec">LES VINGT-CINQ MARCHÉS</div>
+  <p class="splash-p" style="margin-top:8px">Actions, taux, devises, matières premières, et quelques objets moins recommandables. La taille de votre fonds décide de ceux qui vous sont ouverts.</p>
+  ${mktWall()}
+  <div class="isec">CEUX D'EN FACE</div>
+  <p class="splash-p" style="margin-top:8px">Quatre fonds jouent le même trimestre que vous. Vos investisseurs comparent — et c'est l'écart à la médiane qui décide des rachats, pas votre performance absolue.</p>
+  ${introRivals()}
+  <p class="splash-p" style="margin:18px 0 0">Le monde ne vous attendra pas : guerres, élections, sécheresses, faillites, rumeurs de couloir et traders à fort caractère. Vous allez adorer. Ou pas.</p>
  </div>`;
  const inp=document.getElementById('fname');
  inp.oninput=()=>{fundName=inp.value};
@@ -2418,6 +2526,13 @@ function readTri(k){
 }
 function factorExpo(w){return FACT.map((f,k)=>{let e=0;for(let i=0;i<N;i++)e+=w[i]*INSTR[i].sig*INSTR[i].b[k];return e})}
 function budgetBp(){return BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK().fixed*1e4}
+/* budget si l'on basculait un seul poste sur un autre niveau */
+function budgetBpIf(id,lv){return BUDGET.reduce((a,b)=>a+b.lv[b.id===id?lv:S.bud[b.id]].bp,0)+DESK().fixed*1e4}
+/* Le score : commissions encaissées moins tout ce que le gérant a payé, coûts d'exécution
+   du trimestre en cours compris — ils bougent pendant qu'on construit le book. */
+function mgrNet(){return S.mgrFees-S.mgrCosts-(S.phase==='book'?liveTC():(S.pendingTC||0)*S.nav)}
+/* Ce qu'il peut encore engager : son score plus le capital de départ de la société. */
+function mgrCash(){return (S.mgrCap0||0)+mgrNet()}
 function liveTC(){let tot=0;const k0=S.k0||S.k;for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}return tot}
 function costsNow(){
  const tc=S.phase==='book'?liveTC()/S.nav:(S.pendingTC||0);
@@ -2444,7 +2559,7 @@ function statusBar(done){
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
    <button class="tile" data-gauge="lp" style="flex:1.05"><span><i>Invest.</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,S.lp):Math.round(S.lp)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.lp)>=0.05?`<span class="${cls(S._pv.lp)}">→${Math.round(Math.max(0,Math.min(100,S.lp+S._pv.lp)))}</span>`:''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
    <button class="tile" data-gauge="rc" style="flex:1.05"><span><i>Comité</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.rc0,S.rc):Math.round(S.rc)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?`<span class="${cls(S._pv.rc)}">→${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
-   <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Vos gains</span><b id="gaintile" class="${(S.mgrFees-S.mgrCosts)>=0?'':'neg-g'}">${score(S.mgrFees-S.mgrCosts)}</b></button>
+   <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Vos gains</span><b id="gaintile" class="${mgrNet()>=0?'':'neg-g'}">${score(mgrNet())}</b></button>
   </div>
   <div class="srow">
    ${[0,1,2,3].map(fg).join('')}
@@ -2528,7 +2643,7 @@ function resultCard(kick,title,paras,rows,btn,next,extra){
  const head=paras.length?paras[0]:'',rest=paras.slice(1).filter(Boolean);
  const key=(extra&&extra.key)||[];
  app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="kicker">${kick}</div>
-  <div class="rescard"><h3>${title}</h3><p>${head}</p>
+  <div class="rescard"><h3>${title}</h3>${(extra&&extra.top)||''}<p>${head}</p>
   ${key.length?tbl(key):''}
   ${(rest.length||rows.length)?`<details style="margin-top:10px"><summary>Le détail</summary>
     ${rest.map(t=>`<p style="margin-top:8px">${t}</p>`).join('')}
@@ -2537,7 +2652,7 @@ function resultCard(kick,title,paras,rows,btn,next,extra){
  document.getElementById('rgo').onclick=()=>{next();window.scrollTo(0,0)};window.scrollTo(0,0);
 }
 function refreshGain(){const e=document.getElementById('gaintile');if(!e||!S)return;
- const v=S.mgrFees-S.mgrCosts;e.textContent=score(v);e.className=v>=0?'':'neg-g'}
+ const v=mgrNet();e.textContent=score(v);e.className=v>=0?'':'neg-g'}
 function refreshStatus(){const el=app.querySelector('.status');if(el)el.outerHTML=statusBar(S.statusDone)}
 function openModal(title,html){
  let m=document.getElementById('modal');
@@ -2616,8 +2731,8 @@ function showGauge(id){
    <p style="margin-top:10px">Au-delà de <em>${Math.round(ddMax()*100)} % de perte</em> depuis le pic, le fonds est liquidé.</p>`);
  } else if(id==='perf'){
   const rows=S.rets.map((r,i)=>[`T${i+1} · ${REG[S.regimes[i]].nm}`,`<span class="${cls(r)}">${sgn(r,1)}</span>`,`<span class="${cls(r)}">${M$(r*S.navs[i])}</span>`]);
-  openModal('Performance cumulée nette',`<p>Ce qu'un investisseur entré au premier jour a gagné ou perdu, <em>après tout</em> : frais de gestion (${(VOL().mgmt*400).toFixed(1)} % par an), commission de performance (${(VOL().perf*100).toFixed(0)} % au-dessus du plus haut historique), coûts de transaction, budget d'exploitation refacturé et incidents. Le collatéral rapporte le taux au jour le jour (${(S.rate*100).toFixed(1)} % actuellement), inclus.</p>
-   ${tbl([['Depuis le début',`<span class="${cls(S.nav/S.aum0-1)}">${sgn(S.nav/S.aum0-1,1)}</span>`,`<span class="${cls(S.nav-S.aum0)}">${bn(S.nav-S.aum0,2)}</span>`],['Coûts de transaction cumulés','',`−${mm(S.totalTC)}`],['Budget d\'exploitation cumulé','',`−${mm(S.totalOps)}`],...rows],['Période','Net','Md$'])}
+  openModal('Performance cumulée nette',`<p>Ce qu'un investisseur entré au premier jour a gagné ou perdu, <em>après tout</em> : frais de gestion (${(VOL().mgmt*400).toFixed(1)} % par an), commission de performance (${(VOL().perf*100).toFixed(0)} % au-dessus du plus haut historique) et incidents. Les coûts de transaction et le budget d'exploitation sont payés par votre société de gestion : ils ne pèsent pas sur cette courbe. Le collatéral rapporte le taux au jour le jour (${(S.rate*100).toFixed(1)} % actuellement), inclus.</p>
+   ${tbl([['Depuis le début',`<span class="${cls(S.nav/S.aum0-1)}">${sgn(S.nav/S.aum0-1,1)}</span>`,`<span class="${cls(S.nav-S.aum0)}">${bn(S.nav-S.aum0,2)}</span>`],['Coûts d\'exécution payés par vous','',`−${mm(S.totalTC)}`],['Budget d\'exploitation payé par vous','',`−${mm(S.totalOps)}`],...rows],['Période','Net','Md$'])}
    <p style="margin-top:10px">L'objectif de votre mandat est <em>${(VOL().goal*100).toFixed(0)} % net annualisés</em> sur deux ans, soit environ +${((Math.pow(1+VOL().goal,2)-1)*100).toFixed(0)} % cumulés.</p>`);
  } else if(id==='lp'){
   const d=S.lpD;
@@ -2654,11 +2769,14 @@ function showGauge(id){
  } else if(id==='gain'){
   const q=S.mgrQ;
   openModal('Vos gains de gérant',`<p>C'est votre score. Ce que la société de gestion — vous — a réellement encaissé depuis le premier jour, une fois payé tout ce que vous avez décidé de dépenser.</p>
-   ${tbl([['Commissions de gestion et de performance encaissées',`<b class="pos-g">+${mm(S.mgrFees)}</b>`],
-     ['Budget d\'exploitation payé',`<b class="neg-g">−${mm(S.mgrCosts)}</b>`],
-     ['<b>Gains nets</b>',`<b class="${(S.mgrFees-S.mgrCosts)>=0?'pos-g':'neg-g'}">${score(S.mgrFees-S.mgrCosts)}</b>`]])}
+   ${tbl([['Commissions encaissées, bonus d\'objectif compris',`<b class="pos-g">+${mm(S.mgrFees)}</b>`],
+     ['Budget d\'exploitation et coûts d\'exécution',`<b class="neg-g">−${mm(S.mgrCosts)}</b>`],
+     ...(S.totalTC?[['&nbsp;&nbsp;dont exécution depuis le début',`<span class="dim-g">−${mm(S.totalTC)}</span>`]]:[]),
+     ['<b>Gains nets</b>',`<b class="${mgrNet()>=0?'pos-g':'neg-g'}">${score(mgrNet())}</b>`],
+     ['Capital de départ de la société',`<span class="dim-g">+${mm(S.mgrCap0||0)}</span>`],
+     ['<b>Trésorerie disponible</b>',`<b class="${mgrCash()>=0?'':'neg-g'}">${mm(mgrCash())}</b>`]])}
    ${q?`<p style="margin:12px 0 4px">Dernier trimestre</p>${tbl([['Commission de gestion (${(VOL().mgmt*400).toFixed(1)} % par an)'.replace('${(VOL().mgmt*400).toFixed(1)}',(VOL().mgmt*400).toFixed(1)),`<b class="pos-g">+${mm(q.mgmt)}</b>`],['Commission de performance',`<b class="${q.perf>0?'pos-g':'dim-g'}">+${mm(q.perf)}</b>`],['Budget d\'exploitation',`<b class="neg-g">−${mm(q.ops)}</b>`],['<b>Net du trimestre</b>',`<b class="${(q.fees-q.ops)>=0?'pos-g':'neg-g'}">${mm(q.fees-q.ops)}</b>`]])}`:''}
-   <details><summary>Comment c'est calculé</summary><p class="note">La commission de gestion est prélevée chaque trimestre sur l'encours ; la commission de performance ne se déclenche qu'au-dessus du plus haut historique du fonds. Le budget d'exploitation est à votre charge, pas à celle des investisseurs : chaque point de base dépensé sort de votre poche. Un gros encours et une performance régulière font un gros score ; un fonds qui perd ne vous rapporte que la gestion, et un fonds liquidé ne vous rapporte plus rien.</p></details>`);
+   <details><summary>Comment c'est calculé</summary><p class="note">La commission de gestion vous est versée <em>à l'ouverture</em> de chaque trimestre, sur l'encours du moment : c'est votre seul revenu certain. La commission de performance et le bonus d'objectif tombent <em>à la clôture</em>, et la performance ne se déclenche qu'au-dessus du plus haut historique du fonds. En face, le budget d'exploitation et les coûts d'exécution sont à votre charge, pas à celle des investisseurs, et vous ne pouvez engager que ce que vous avez en caisse : à sec, les niveaux de budget renforcés se verrouillent et vous ne pouvez plus passer d'ordres coûteux. Un gros encours et une performance régulière font un gros score ; un fonds qui perd ne vous rapporte que la gestion, et un fonds liquidé ne vous rapporte plus rien.</p></details>`);
  } else if(id==='cost'){
   const c=costsNow();const k0=S.k0||S.k;
   const rows=[];for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9&&S.phase==='book'){const t=tcost(d,i);rows.push([`${INSTR[i].sym} ${k0[i]>0?'+':''}${k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,`${t.bp.toFixed(1)} pb`,`−${mm(t.cost)}`])}}
@@ -2666,10 +2784,11 @@ function showGauge(id){
   if(DESK().fixed)b.push(['Masse salariale du desk',(DESK().fixed*1e4).toFixed(0)+' pb','',DESK().fixed*S.nav]);
   const tot=c.ops+c.tc+c.mgmt,tf=c.tc+c.mgmt;
   const UC=pickU([VOL().mgmt*S.nav,...b.map(x=>x[3]||0),c.tc*1e-4*S.nav,tot*1e-4*S.nav]);
-  openModal('Coûts du trimestre',`<p>La jauge additionne deux factures. Les <em>frais de gestion</em> et les <em>coûts de transaction</em> sont payés par le fonds et pèsent sur sa performance. Le <em>budget d'exploitation</em> est payé par votre société de gestion : il ne touche pas le fonds, il vient en déduction de vos gains. Un point de base vaut <em>${mm(S.nav*1e-4)}</em>.</p>
-   ${tbl([['<b>Payé par le fonds</b>','',''],[`Frais de gestion (${(VOL().mgmt*400).toFixed(1).replace('.',',')} % par an)`,`${(VOL().mgmt*1e4).toFixed(0)} pb`,inU(-VOL().mgmt*S.nav,UC)],['Coûts de transaction'+(S.phase==='book'?' (en préparation)':' (engagés)'),c.tc.toFixed(0)+' pb',inU(-c.tc*1e-4*S.nav,UC)],['Sous-total fonds',`${tf.toFixed(0)} pb`,inU(-tf*1e-4*S.nav,UC)],
-     ['<b>Payé par vous</b>','',''],...b.map(x=>[x[0],x[1],inU(-(x[3]||0),UC)]),['Sous-total société',`${c.ops.toFixed(0)} pb`,inU(-c.ops*1e-4*S.nav,UC)],
-     ['<b>Total</b>',`<b>${tot.toFixed(0)} pb</b>`,inU(-tot*1e-4*S.nav,UC)]],['Poste','pb',UC.s.trim()])}`);
+  openModal('Coûts du trimestre',`<p>La jauge additionne deux factures. Seuls les <em>frais de gestion</em> sont payés par le fonds et pèsent sur sa performance — et ils vous sont versés dès l'ouverture du trimestre. Le <em>budget d'exploitation</em> et les <em>coûts de transaction</em> sont payés par votre société de gestion : ils ne touchent pas le fonds, ils viennent en déduction de vos gains, et vous ne pouvez engager que ce que vous avez en caisse. Un point de base vaut <em>${mm(S.nav*1e-4)}</em>.</p>
+   ${tbl([['<b>Payé par le fonds</b>','',''],[`Frais de gestion (${(VOL().mgmt*400).toFixed(1).replace('.',',')} % par an)`,`${(VOL().mgmt*1e4).toFixed(0)} pb`,inU(-VOL().mgmt*S.nav,UC)],
+     ['<b>Payé par vous</b>','',''],['Coûts de transaction'+(S.phase==='book'?' (en préparation)':' (engagés)'),c.tc.toFixed(0)+' pb',inU(-c.tc*1e-4*S.nav,UC)],...b.map(x=>[x[0],x[1],inU(-(x[3]||0),UC)]),['Sous-total société',`${(c.ops+c.tc).toFixed(0)} pb`,inU(-(c.ops+c.tc)*1e-4*S.nav,UC)],
+     ['<b>Total</b>',`<b>${tot.toFixed(0)} pb</b>`,inU(-tot*1e-4*S.nav,UC)],
+     ['Trésorerie de votre société','',inU(mgrCash(),UC)]],['Poste','pb',UC.s.trim()])}`);
  }
 }
 app.addEventListener('click',e=>{const g=e.target.closest('[data-gauge]');if(g&&S)showGauge(g.dataset.gauge)});
@@ -2796,7 +2915,7 @@ function loadGame(){
   if(S.goal&&S.goal.nm)S.goal=QGOALS.find(g=>g.nm===S.goal.nm)||null;
   S.evQueue=(d.evQ||[]).map(evFromTag).filter(Boolean);S.preDesk=evFromTag(d.preD);
   const P={phaseOpen:()=>phaseOpen(),screenBudget:()=>screenBudget(),phaseDesk:()=>phaseDesk(),screenPlay:()=>screenPlay(),
-   screenComm:()=>screenComm(),phaseExec:()=>phaseExec(),screenExec:()=>screenExec(),phaseLive:()=>phaseLive(),
+   screenComm:()=>screenComm(),phaseExec:()=>screenExec(),screenExec:()=>screenExec(),phaseLive:()=>phaseLive(),
    stepEvents:()=>stepEvents(),phaseClose:()=>screenDebrief(S.resumeO),screenDebrief:()=>screenDebrief(S.resumeO),
    screenFinal:()=>screenFinal(),screenBoard:()=>screenBoard()};
   (P[S.resume]||P.phaseOpen)();window.scrollTo(0,0);return true;
@@ -2824,7 +2943,7 @@ function phaseOpen(){
  save('phaseOpen');
  const OUV=["Écrans allumés, café servi, tout est encore possible.","Personne n'a encore rien perdu. Profitez-en.","Le marché ouvre dans quelques minutes et ne vous attend pas.","Trois mois devant vous, et une page blanche.","Le desk est en place. On y va.","Nouveau trimestre, compteur remis à zéro, mémoire longue chez les investisseurs.","Tout le monde repart à égalité. Enfin, presque.","Les positions dorment encore. Réveillez-les."];
  phase(`TRIMESTRE ${S.q+1} SUR ${QT()} · OUVERTURE`,`Le trimestre ${S.q+1} commence`,
-  [pick(OUV),...(S.goal?[`Objectif du trimestre — <b>${S.goal.nm.toLowerCase()}</b> : ${S.goal.d} Bonus de ${moneyB(S.goal.b*S.aum0)} sur votre score.${/marge/i.test(S.goal.d)?' La marge utilisée se lit dans la jauge Risque et sous le book.':''}`]:[]),"Première décision : le budget d'exploitation."],
+  [pick(OUV),...(S.goal?[`Objectif du trimestre — <b>${S.goal.nm.toLowerCase()}</b> : ${S.goal.d} Bonus de ${moneyB(goalBon(S.goal))} sur votre score.${/marge/i.test(S.goal.d)?' La marge utilisée se lit dans la jauge Risque et sous le book.':''}`]:[]),"Première décision : le budget d'exploitation."],
   "Fixer le budget",screenBudget);
 }
 function phaseDesk(){
@@ -2837,13 +2956,6 @@ function phaseDesk(){
  phase(`TRIMESTRE ${S.q+1} · LE DESK`,"Le desk vous attend",
   [`Budget validé : <b>${budgetBp().toFixed(0)} pb</b>, soit ${mm(budgetBp()*1e-4*S.nav)}.`,`${nr} rumeurs ont été collectées${S.rupture?', et une rupture factorielle signalée':''}.`,...(S.hunch?[`<b>Votre intuition</b> : quelque chose vous dit, sans certitude, que <b>${FACT[S.hunch.k].nm.toLowerCase()}</b> va ${S.hunch.up?'surprendre à la hausse':'surprendre à la baisse'} ce trimestre. Vous ne sauriez pas dire d'où ça vient.`]:[]),`Liquidité des marchés : <b>${lqNm}</b>. Ouvrir une unité sur chacun de vos ${N} marchés coûterait <b>${mm(cEx)}</b>, soit ${cBp.toFixed(1)} pb de l'encours — ${L>1.2?'nettement plus cher que d\'habitude : mieux vaut réfléchir à deux fois avant de tout réarranger':L>1.05?'un peu plus cher que d\'habitude':L<0.95?'moins cher que d\'habitude, c\'est le moment de remettre le book en ordre':'le tarif habituel'}.`,`Le trimestre sera ${nev>=4?'très agité':nev>=3?'agité':'relativement calme'} : des dépêches sont attendues, dont certaines annoncées dans les rumeurs.`,"Vous positionnez le book pour les trois prochains mois."],
   "Voir le desk",()=>{if(S.preDesk&&(!S.preDesk.cond||S.preDesk.cond())){const ev=S.preDesk;S.preDesk=null;screenTraderEvent(ev,screenPlay)}else screenPlay()});
-}
-function phaseExec(){
- save('phaseExec');
- const n=INSTR.filter((x,i)=>S.k[i]!==S.k0[i]).length;
- phase(`TRIMESTRE ${S.q+1} · EXÉCUTION`,n?"Les traders passent vos ordres":"Aucun ordre à passer",
-  n?[`${n} marché${n>1?'s':''} à travailler, ${mm(S.pendingTC*S.nav)} de coûts estimés au tarif standard.`,`Liquidité du régime ×${S.liq.toFixed(2)} · taux au jour le jour ${(S.rate*100).toFixed(1)} %.`,"Le desk a son mot à dire sur la manière de faire."]:["Le book est reconduit tel quel. Le desk en profite pour vous parler d'autre chose."],
-  "Aller sur le desk",screenExec);
 }
 function phaseLive(){
  save('phaseLive');
@@ -2864,9 +2976,9 @@ const TUTOS=[
  {id:0,t:"Les six jauges, en haut de l'écran",
   h:`<p>Tout le jeu se lit dans cette barre. <b>Investisseurs</b> et <b>Comité des risques</b> sont les deux jauges qui peuvent mettre fin à la partie : sous 4, le comité vous retire le mandat ; à zéro, les investisseurs partent. Elles ne réagissent pas à la même chose — les investisseurs regardent la performance et les rachats, le comité regarde la discipline de risque.</p>
   <p><b>Risque du book</b> affiche votre volatilité ex-ante majorée, à comparer à la cible de votre mandat. <b>Vos gains</b> est votre score : les commissions encaissées, moins ce que vous dépensez. Chaque jauge s'ouvre d'un clic et explique son propre calcul.</p>`},
- {id:1,t:"Acheter des sources, ou s'en passer",
-  h:`<p>Les rumeurs sont à vendre, et elles sont payées <em>par vous</em>, pas par le fonds : chaque achat sort de votre score. Une rumeur porte une orientation par facteur et une classe de fiabilité — faible, moyenne, forte — qui est la probabilité qu'elle soit vraie.</p>
-  <p>Acheter plusieurs sources qui pointent dans le même sens vaut mieux qu'en acheter une chère : c'est l'accumulation d'indices indépendants qui déplace l'estimation, pas le prix payé. Ne rien acheter est une stratégie viable, le desk n'aura que les signaux de marché.</p>`},
+ {id:1,t:"Les sources, et ce qu'elles valent",
+  h:`<p>Chaque trimestre un certain nombre de sources arrivent sur votre bureau : leur nombre et leur fiabilité dépendent du budget de recherche macro que vous avez fixé et de votre style. Une source porte une orientation par facteur et une classe de fiabilité — faible, moyenne, forte — qui est la probabilité qu'elle dise vrai.</p>
+  <p>Plusieurs sources qui pointent dans le même sens valent mieux qu'une seule très fiable : c'est l'accumulation d'indices indépendants qui déplace l'estimation. Une <em>pré-annonce</em> concerne une dépêche qui peut tomber en cours de trimestre — ou pas.</p>`},
  {id:2,t:"Facteurs et signaux : d'où vient la performance",
   h:`<p>Chaque marché porte quatre sensibilités, affichées sur sa ligne : <b>C</b>roissance, <b>I</b>nflation, <b>D</b>ollar, <b>A</b>ppétit pour le risque. Un <em>+</em> ou <em>−</em> indique le sens, doublé quand la sensibilité est forte, <em>0</em> quand le marché y est insensible. Le rendement d'un trimestre est d'abord la réalisation de ces quatre facteurs appliquée à vos positions.</p>
   <p>Les trois colonnes <b>tendance</b>, <b>portage</b> et <b>valeur</b> sont des signaux de marché, indépendants des rumeurs. Votre style de gestion décide du poids relatif accordé aux sources et à ces signaux : c'est ce qui construit le book que le desk vous recommande.</p>`}
@@ -2888,8 +3000,9 @@ function screenBudget(){
  save('screenBudget');S.hotFactor=null;
  S.mgrCosts-=S.qOps||0;S.qOps=budgetBp()*1e-4*S.nav;S.mgrCosts+=S.qOps;
  app.innerHTML=statusBar()+`<div class="fade">
-  <div class="block"><div class="blockhead"><h2>Budget d'exploitation du trimestre</h2><span class="hint">refacturé au fonds</span></div>
-   <p class="note" style="margin-top:0">Ces dépenses sortent de <em>votre poche de gérant</em> : elles viennent en déduction de vos gains, pas de la performance du fonds. Un point de base vaut <em>${(S.nav*0.1).toFixed(0)} M$</em>.</p>
+  <div class="block"><div class="blockhead"><h2>Budget d'exploitation du trimestre</h2><span class="hint">à votre charge</span></div>
+   <p class="note" style="margin-top:0">Ces dépenses sortent de <em>votre poche de gérant</em> : elles viennent en déduction de vos gains, pas de la performance du fonds. Vous ne pouvez engager que ce que votre société a en caisse — les commissions encaissées, moins ce que vous avez déjà payé. Un point de base vaut <em>${(S.nav*0.1).toFixed(0)} M$</em>.</p>
+   <div class="kv"><span>Trésorerie disponible ce trimestre</span><b id="btre">${mm(mgrCash()+(S.qOps||0))}</b></div>
    <div id="buds"></div>
    <div class="budtot"><span>Total du trimestre</span><b id="btot"></b></div>
   </div>
@@ -2910,13 +3023,17 @@ function planSignalsAfterBudget(){
  if(S.bud.exec===2&&rng()<0.30)S.star=Math.floor(rng()*N);
 }
 function drawBuds(){
+ /* caisse avant le budget de ce trimestre : un niveau qui la dépasse est verrouillé */
+ const purse=mgrCash()+(S.qOps||0);
+ const ok=(id,i)=>i===0||budgetBpIf(id,i)*1e-4*S.nav<=purse;
  document.getElementById('buds').innerHTML=BUDGET.map(b=>`<div class="brow">
    <div class="bh"><b><span class="bico">${b.ico}</span>${b.nm}</b><span>${b.lv[S.bud[b.id]].bp} pb · ${mm(b.lv[S.bud[b.id]].bp*1e-4*S.nav)}</span></div><p>${b.d}</p>
-   <div class="lvls">${b.lv.map((l,i)=>`<button class="lvl ${S.bud[b.id]===i?'on':''}" data-b="${b.id}" data-i="${i}">
-     <b>${l.nm}</b><span>${l.bp} pb</span></button>`).join('')}</div>
+   <div class="lvls">${b.lv.map((l,i)=>`<button class="lvl ${S.bud[b.id]===i?'on':''}" data-b="${b.id}" data-i="${i}"${ok(b.id,i)?'':' disabled'}>
+     <b>${l.nm}</b><span>${ok(b.id,i)?l.bp+' pb':'hors caisse'}</span></button>`).join('')}</div>
    <details style="margin-top:8px"><summary>Détails</summary><ul class="efl">${b.lv.map(l=>`<li><b>${l.nm}</b> · ${l.bp} pb · ${l.ef}</li>`).join('')}</ul></details></div>`).join('');
  const bp=BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK().fixed*1e4;
  document.getElementById('btot').textContent=`${bp.toFixed(0)} pb · ${mm(bp*1e-4*S.nav)} · ${(bp*4/100).toFixed(1)} % par an`;
+ {const t=document.getElementById('btre');if(t){const v=mgrCash()+(S.qOps||0)-bp*1e-4*S.nav;t.textContent=mm(v);t.className=v>=0?'':'neg-g'}}
  app.querySelectorAll('.lvl').forEach(x=>x.onclick=()=>{
   const b0=budgetBp();S.mgrCosts-=S.qOps||0;S.bud[x.dataset.b]=+x.dataset.i;if(x.dataset.b==='exec')S.bud.ret=S.bud.exec;
   S.qOps=budgetBp()*1e-4*S.nav;S.mgrCosts+=S.qOps;drawBuds();refreshStatus();
@@ -2932,7 +3049,7 @@ function screenPlay(){
   <div class="block"><div class="blockhead"><h2>Bruits de salle et rumeurs</h2><span class="hint">T${S.q+1} · ${S.rumors.length} sources</span></div>
    ${S.rupture?`<div class="flag" style="margin:0 0 10px"><span><b>Rupture factorielle sur ${INSTR[S.rupture.i].sym}</b> — sa sensibilité au facteur « ${FACT[S.rupture.k].nm.toLowerCase()} » passe de ${S.rupture.old>=0?'+':'−'}${Math.abs(S.rupture.old).toFixed(2)} à ${S.rupture.nw>=0?'+':'−'}${Math.abs(S.rupture.nw).toFixed(2)} : ${S.rupture.why}.</span></div>`:''}
    <div class="wire" id="news"></div>
-   <details style="margin-top:8px"><summary>Comment lire ces sources</summary><p class="note">Une source non achetée ne livre que son origine, le facteur qu'elle concerne et le début de son propos. L'acheter révèle le contenu, l'effet prétendu sur les quatre facteurs et la <em>fiabilité</em> — la probabilité qu'elle dise vrai. Les prix dépendent de la qualité de la source et de votre budget de recherche (×${[1.3,1.0,0.6][S.bud.res].toFixed(1)}). Les achats sont à votre charge de gérant.</p></details>
+   <details style="margin-top:8px"><summary>Comment lire ces sources</summary><p class="note">Une source non achetée ne livre que son origine, le facteur qu'elle concerne et le début de son propos. L'acheter révèle le contenu, l'effet prétendu sur les quatre facteurs et la <em>fiabilité</em> — la probabilité qu'elle dise vrai. Le nombre de sources et leur fiabilité dépendent de votre budget de recherche macro et de votre style ; elles ne s'achètent pas à l'unité.</p></details>
    <div class="blockhead" style="margin-top:14px"><h2>Lecture consolidée</h2><span class="hint">sources achetées</span></div>
    ${PROF().numeric?`<div class="wire" style="margin-bottom:8px"><div class="kv" style="padding-bottom:6px"><span><b>Le book que le modèle construirait</b></span></div><div id="factest"></div>
     <details style="margin-top:6px"><summary>Comment votre desk raisonne</summary><p class="note">${STYLEW[S.prof].txt} Il agrège les impacts prétendus de vos sources achetées, pondérés par leur fiabilité (2p−1) et par la famille de la source, puis traduit le tout en positions via la matrice factorielle, en y ajoutant les signaux de tendance, de portage et de valeur selon les poids de votre style. La lecture consolidée ci-dessus dit <em>ce que pensent les sources</em> ; ce book dit <em>ce qu'il faudrait acheter ou vendre</em> si vous suiviez votre desk. À vous de suivre, de nuancer ou d'ignorer.</p></details></div>`:''}
@@ -2950,17 +3067,46 @@ function screenPlay(){
    <div class="wire" id="risk" style="margin-top:8px"></div></details></div>
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Coût des ordres à passer</summary>
    <div class="wire" id="tc" style="margin-top:8px"></div></details></div>
+  <div class="kv" id="purse"></div>
   <button class="cta" id="send">Passer les ordres</button>
-  <p class="note" style="text-align:center">Le book est reconduit tel quel au trimestre suivant tant que vous ne le modifiez pas — seuls les changements coûtent.</p></div>`;
+  <p class="note" style="text-align:center">Le book est reconduit tel quel au trimestre suivant tant que vous ne le modifiez pas — seuls les changements coûtent, et c'est vous qui les payez.</p></div>`;
  S.k0=[...S.k];S.phase='book';S.hotFactor=null;refreshStatus();save('screenPlay');
  renderNews();
  const col=v=>v>0.35?'var(--long)':v>0.15?'#8FC7B3':v<-0.35?'var(--short)':v<-0.15?'#D9909F':'var(--dimmer)';
  document.getElementById('bmat').innerHTML=`<table class="qt"><thead><tr><th>Marché</th>${FACT.map(f=>`<th>${f.nm.split(' ')[0].slice(0,7)}</th>`).join('')}</tr></thead><tbody>`+
   INSTR.map((x,i)=>`<tr><td style="color:var(--txt);white-space:nowrap">${x.nm}</td>${x.b.map((v,k)=>{const d=v-S.bPrev[i][k];const ar=Math.abs(d)>0.10?`<span style="color:var(--warn)">${d>0?'↑':'↓'}</span>`:'';return `<td style="color:${col(v)}">${v>=0?'+':'−'}${Math.abs(v).toFixed(2)}${ar}</td>`}).join('')}</tr>`).join('')+`</tbody></table>`;
- drawRows();renderRisk();
+ drawRows();renderRisk();refreshSend();
  document.getElementById('send').onclick=()=>{
+   const c=liveTC();
+   if(c>0&&c>Math.max(0,mgrCash()+c)){toast("Votre société de gestion ne peut pas payer ces ordres.");return}
    commitOrders();screenComm();window.scrollTo(0,0);
  };
+}
+/* Les ordres sortent de la poche du gérant : le bouton reste bloqué tant que la caisse ne suit
+   pas. Un book inchangé ne coûte rien et n'est donc jamais bloqué — pas d'impasse possible. */
+function refreshSend(){
+ const b=document.getElementById('send'),p=document.getElementById('purse');if(!b)return;
+ const c=liveTC(),rest=mgrCash(),avail=Math.max(0,rest+c),ko=c>0&&c>avail;
+ if(p)p.innerHTML=`<span>Ordres ${mm(c)} · trésorerie après paiement</span><b class="${rest>=0?'':'neg-g'}">${mm(rest)}</b>`
+   +(ko?` <button class="buy" id="fitbook" style="margin-left:8px">Ramener le book au payable</button>`:'');
+ b.disabled=ko;
+ b.textContent=ko?`Trésorerie insuffisante : ${mm(c-avail)} de trop`:'Passer les ordres';
+ const f=document.getElementById('fitbook');
+ if(f)f.onclick=()=>{fitBook()};
+}
+/* Réduit les positions les plus chères jusqu'à ce que la facture rentre dans la caisse. */
+function fitBook(){
+ for(let g=0;g<400;g++){
+  const c=liveTC(),avail=Math.max(0,mgrCash()+c);
+  if(c<=avail)break;
+  let bi=-1,bv=0;
+  for(let i=0;i<N;i++){const d=S.k[i]-S.k0[i];if(Math.abs(d)<1e-9)continue;
+   const t=tcost(d,i).cost;if(t>bv){bv=t;bi=i}}
+  if(bi<0)break;
+  S.k[bi]-=Math.sign(S.k[bi]-S.k0[bi]);
+ }
+ drawRows();renderRisk();refreshStatus();refreshGain();refreshSend();
+ toast('Book ramené à ce que votre trésorerie permet.');
 }
 function drawRows(){
  let h='';
@@ -2994,7 +3140,7 @@ function drawRows(){
    const sp1=pvol(weights(S.k)),c1=liveTC();
    S.hotFactor=null;const ex=factorExpo(weights(S.k));
    let big=-1,bv=0;INSTR[i].b.forEach((bb,kk)=>{if(Math.abs(bb)>bv){bv=Math.abs(bb);big=kk}});S.hotFactor=big;
-   updateRow(i);renderRisk();refreshStatus();refreshGain();
+   updateRow(i);renderRisk();refreshStatus();refreshGain();refreshSend();
    const pv=previewGauge();
    toast(`<span style="color:${GRPC[INSTR[i].grp]}">${INSTR[i].sym}</span> ${k1>0?'+':''}${k1} → ${S.k[i]>0?'+':''}${S.k[i]} · σ ${(sp0*100).toFixed(1)} → <b>${(sp1*100).toFixed(1)} %</b> · ordres <b>${((c1-c0)>=0?'+':'−')+mm(Math.abs((c1-c0)))}</b><br><span class="${cls(pv.lp)}">investisseurs ${sd1(pv.lp)}</span> · <span class="${cls(pv.rc)}">comité ${sd1(pv.rc)}</span> à la validation${pv.why?' — '+pv.why:''}`);
  });
@@ -3135,8 +3281,8 @@ function screenComm(){
  const w=weights(S.k),sp=pvol(w),g=VOL().goal/4;
  const spD=Math.max(sp,0.04);
  const opts=[
-  {id:'none',ico:'🤐',nm:"Silence radio",who:"« On verra à la fin du trimestre »",p:"Pas de lettre, pas de réunion, aucun chiffre avancé. Vous ne risquez pas de manquer une promesse, mais personne ne saura vous créditer d'un bon trimestre annoncé d'avance.",
-   ret:null,win:{lp:-2,rc:-2},lose:{lp:-2,rc:-2}},
+  {id:'none',ico:'🤐',nm:"Silence radio",who:"« On verra à la fin du trimestre »",p:"Pas de lettre, pas de réunion, aucun chiffre avancé. Vous ne risquez rien et vous ne gagnez rien : personne ne pourra vous reprocher une promesse manquée, personne ne vous créditera d'un bon trimestre annoncé d'avance.",
+   ret:null,win:{lp:0,rc:0},lose:{lp:0,rc:0},neutre:true},
   {id:'prud',ico:'📄',nm:"Communication standard",who:"« Nous visons l'objectif du mandat »",p:`Vous annoncez l'objectif trimestriel de votre mandat, soit ${pctc(g)}. C'est ce que les investisseurs attendent de toute façon : le tenir rassure, le manquer se remarque.`,
    ret:g,win:{lp:4,rc:3},lose:{lp:-4,rc:-3}},
   {id:'fort',ico:'📣',nm:"Conviction forte",who:"« C'est le trimestre de l'année »",p:`Vous annoncez deux fois l'objectif de votre mandat, soit ${pctc(2*g)}. Si vous y arrivez, on vous croira sur parole pendant deux ans. Sinon, on s'en souviendra aussi longtemps.`,
@@ -3144,23 +3290,21 @@ function screenComm(){
  ];
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Ce que vous annoncez</h2><span class="hint">investisseurs · comité</span></div>
-   <p class="note" style="margin-top:0">Avant l'exécution, vous rencontrez les investisseurs et le comité des risques. Que promettez-vous pour ce trimestre ?</p>
+   <p class="note" style="margin-top:0">Avant l'exécution, vous rencontrez les investisseurs et le comité des risques. Que promettez-vous pour ce trimestre ? Touchez votre réponse, elle est validée aussitôt.</p>
    <div class="kv"><span>Objectif trimestriel du mandat</span><b>${pct(g,1)} · ${mm(g*S.nav)}</b></div>
   </div>
-  ${opts.map((o,i)=>`<div class="cardwrap ${S.commPick===o.id?'sel':''}"><button class="card" data-i="${i}">
+  ${opts.map((o,i)=>`<div class="cardwrap"><button class="card commgo" data-i="${i}">
    <div class="who">${o.who}</div><b><span class="commico">${o.ico}</span>${o.nm}</b><p>${o.p}</p>
    ${o.ret===null?`<div class="commrow"><span>En fin de trimestre, quoi qu'il arrive</span>${gzRows(o.lose.lp,o.lose.rc)}</div>`
     :`<div class="commrow"><span>Vous promettez pour ce trimestre</span><b>au moins ${sgnp(o.ret,1)} · ${mm(o.ret*S.nav)}</b></div>
       <div class="commrow"><span>En fin de trimestre, si c'est tenu</span>${gzRows(o.win.lp,o.win.rc)}</div>
       <div class="commrow"><span>En fin de trimestre, si c'est manqué</span>${gzRows(o.lose.lp,o.lose.rc)}</div>`}
    </button></div>`).join('')}
-  <p class="note">L'annonce ne change rien tout de suite : elle se solde à la fin du trimestre, sur le résultat tout compris, commissions et coûts déduits.</p>
-  <button class="cta gold" id="commok" ${S.commPick?'':'disabled'}>${S.commPick?'Annoncer : '+opts.find(o=>o.id===S.commPick).nm.toLowerCase():'Choisissez votre annonce'}</button></div>`;
- app.querySelectorAll('.card[data-i]').forEach(b=>b.onclick=()=>{S.commPick=opts[+b.dataset.i].id;screenComm()});
- document.getElementById('commok').onclick=()=>{
-  const o=opts.find(x=>x.id===S.commPick);S.comm={id:o.id,nm:o.nm,ret:o.ret,win:o.win,lose:o.lose};
-  S.commPick=null;phaseExec();
- };
+  <p class="note">L'annonce ne change rien tout de suite : elle se solde à la fin du trimestre, sur le résultat tout compris, commissions et coûts déduits.</p></div>`;
+ app.querySelectorAll('.card[data-i]').forEach(b=>b.onclick=()=>{
+  const o=opts[+b.dataset.i];S.comm={id:o.id,nm:o.nm,ret:o.ret,win:o.win,lose:o.lose};
+  S.commPick=null;screenExec();window.scrollTo(0,0);
+ });
 }
 /* ---------- exécution ---------- */
 function screenExec(){
@@ -3172,15 +3316,24 @@ function screenExec(){
    &&(!e.need||e.need.some(sy=>orders.find(o=>INSTR[o.i].sym===sy)))&&(!e.need3||S.k.some(v=>Math.abs(v)===3)));
  const ev=av.length?pick(av):null;if(ev)S.usedExec.push(ev.t);
  const mult=EXECM[S.bud.exec]*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult;
+ /* l'enjeu réel de chaque option, en monnaie, sur la facture d'ouverture du trimestre */
+ const stake=c=>{const x=c.e||{};if(!x.tcMult)return '';
+  let sub=0;if(x.tcMultOn){orders.forEach(o=>{if(x.tcMultOn.includes(INSTR[o.i].sym))sub+=o.t.cost})}else sub=tot;
+  const d=sub*(x.tcMult-1);if(Math.abs(d)<1e-9)return '';
+  return ` <b class="${d<0?'pos-g':'neg-g'}">${d<0?'−':'+'}${mm(Math.abs(d))}</b> sur les ordres${x.tcMultOn?'':', et le même tarif sur vos ajustements du trimestre'}`};
+ const lqNm=S.liq>1.5?'très dégradée':S.liq>1.2?'dégradée':S.liq>1.05?'un peu tendue':S.liq<0.92?'excellente':'normale';
  app.innerHTML=statusBar()+`<div class="fade">
-  <div class="block"><details open><summary style="font-size:15px;color:var(--txt);font-weight:600">Récapitulatif des ordres · ${orders.length} marché${orders.length>1?'s':''}</summary>
-   <div class="wire">${orders.length?orders.map(o=>`<div class="attr"><span class="an"><span class="num" style="color:${GRPC[INSTR[o.i].grp]}">${INSTR[o.i].sym}</span> <span class="recap" style="color:var(--dimmer)">${S.k0[o.i]>0?'+':''}${S.k0[o.i]} → ${S.k[o.i]>0?'+':''}${S.k[o.i]} · ${moneyB(o.t.bn)}</span></span><span class="av neg-g">${o.t.bp.toFixed(1)} pb · ${mm(o.t.cost)}</span></div>`).join('')
-    +`<div class="kv" style="margin-top:8px"><span>Total au tarif standard</span><b class="neg-g">${mm(tot)} · ${sgn(-tot/S.nav,3)}</b></div>`
-    :`<p class="note" style="margin:0">Aucun ordre. Le book est reconduit.</p>`}
-   <p class="note">Multiplicateur du trimestre ×${mult.toFixed(2)} : budget desk ×${EXECM[S.bud.exec].toFixed(2)}, liquidité ×${S.liq.toFixed(2)}, taux ×${(1+(S.rate-0.03)*4).toFixed(2)}, profil ×${PROF().tcMult.toFixed(2)}${S.execPenalty!==1?`, débauchage ×${S.execPenalty.toFixed(2)}`:''}. Organisation « ${DESK().nm.toLowerCase()} » appliquée marché par marché.${S.star>=0?` Recrue du trimestre sur ${INSTR[S.star].sym} : ÷3.`:''}</p>
+  <div class="block"><div class="blockhead"><h2>${orders.length?'Les traders passent vos ordres':'Aucun ordre à passer'}</h2><span class="hint">T${S.q+1} · exécution</span></div>
+   ${orders.length?`<div class="kv"><span>Coût total des ordres, à votre charge</span><b class="neg-g">${mm(tot)} · ${(tot/S.nav*1e4).toFixed(0)} pb de l'encours</b></div>
+   <div class="kv"><span>Trésorerie de votre société après paiement</span><b class="${(mgrCash())>=0?'':'neg-g'}">${mm(mgrCash())}</b></div>
+   <p class="note" style="margin:8px 0 0">${orders.length} marché${orders.length>1?'s':''} à travailler, liquidité ${lqNm} (×${S.liq.toFixed(2)}), taux au jour le jour ${(S.rate*100).toFixed(1)} %. Le desk a son mot à dire sur la manière de faire.</p>`
+   :`<p class="note" style="margin:0">Le book est reconduit tel quel : vous ne payez rien. Le desk en profite pour vous parler d'autre chose.</p>`}
+   ${orders.length?`<details style="margin-top:10px"><summary>Détail des ordres et des coûts, marché par marché</summary>
+    <div class="wire" style="margin-top:8px">${orders.map(o=>`<div class="attr"><span class="an"><span class="num" style="color:${GRPC[INSTR[o.i].grp]}">${INSTR[o.i].sym}</span> <span class="recap" style="color:var(--dimmer)">${S.k0[o.i]>0?'+':''}${S.k0[o.i]} → ${S.k[o.i]>0?'+':''}${S.k[o.i]} · ${moneyB(o.t.bn)}</span></span><span class="av neg-g">${o.t.bp.toFixed(1)} pb · ${mm(o.t.cost)}</span></div>`).join('')}
+    <p class="note">Multiplicateur du trimestre ×${mult.toFixed(2)} : budget desk ×${EXECM[S.bud.exec].toFixed(2)}, liquidité ×${S.liq.toFixed(2)}, taux ×${(1+(S.rate-0.03)*4).toFixed(2)}, profil ×${PROF().tcMult.toFixed(2)}${S.execPenalty!==1?`, débauchage ×${S.execPenalty.toFixed(2)}`:''}.${S.star>=0?` Recrue du trimestre sur ${INSTR[S.star].sym} : ÷3.`:''}</p></div></details>`:''}
   </div>
   ${ev?`<div class="evwrap" style="padding-top:14px"><div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p></div>
-   ${ev.ch.map((c,i)=>`<button class="choice" data-i="${i}"><b>${c.b}</b><span>${c.s}</span></button>`).join('')}</div>`
+   ${ev.ch.map((c,i)=>`<button class="choice" data-i="${i}"><b>${c.b}</b><span>${c.s}${stake(c)}</span></button>`).join('')}</div>`
    :`<button class="cta" id="go2">Lancer le trimestre</button>`}
  </div>`;
  const done=()=>{S.totalTC+=(S.pendingTC*S.nav)-tot;phaseLive()};
@@ -3190,7 +3343,8 @@ function screenExec(){
  app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
   const ch=ev.ch[+b.dataset.i],e=ch.e;let msg=[];const navB0=S.nav;
   if(e.tcMult){let sub=0;
-   if(e.tcMultOn){orders.forEach(o=>{if(e.tcMultOn.includes(INSTR[o.i].sym))sub+=o.t.cost})}else sub=tot;
+   if(e.tcMultOn){orders.forEach(o=>{if(e.tcMultOn.includes(INSTR[o.i].sym))sub+=o.t.cost})}
+   else {sub=tot;S.tcMultQ*=e.tcMult}   /* la manière d'exécuter vaut aussi pour les ajustements du trimestre */
    let m=e.tcMult;
    if(e.gamble&&rng()<e.gamble[0]){m=e.gamble[1];msg.push("Le gros acheteur s'est aperçu de la manœuvre et a tout retiré.")}
    const delta=sub*(m-1);S.pendingTC+=delta/S.nav;
@@ -3202,7 +3356,6 @@ function screenExec(){
   if(e.leakQ)S.leakQ=true;
   if(e.poach)S.poachBoost+=e.poach;
   if(e.cash){S.nav*=(1+e.cash);S.qEvM+=e.cash*navB0;msg.push(`Trésorerie ${sgn(e.cash,1)}.`)}
-  if(e.cashM){S.nav+=e.cashM/1000;S.qEvM+=e.cashM/1000;msg.push(`${e.cashM>=0?'+':'−'}${Math.abs(e.cashM)} M$.`)}
   if(e.halfOn){const arr=Array.isArray(e.halfOn)?e.halfOn:[e.halfOn];arr.forEach(sy=>{const i=IDX[sy];const nk=Math.trunc(S.k[i]/2);if(nk!==S.k[i]){const t=tcost(nk-S.k[i],i);S.pendingTC-=t.cost*0.7/S.nav;S.k[i]=nk;msg.push(`${sy} ramené à ${nk>0?'+':''}${nk}.`)}})}
   if(e.cutTop1){const w=weights(S.k),rc=riskContrib(w);const o=rc.map((v,i)=>({v:Math.abs(v),i})).sort((a,b)=>b.v-a.v)[0];if(o&&S.k[o.i]!==0){const d=-Math.sign(S.k[o.i]);const t=tcost(d,o.i);S.k[o.i]+=d;S.pendingTC-=t.cost*0.8/S.nav;msg.push(`${INSTR[o.i].sym} ramené à ${S.k[o.i]>0?'+':''}${S.k[o.i]}.`)}}
   if(e.scaleAll){for(let i=0;i<N;i++){const nk=Math.round(S.k[i]*e.scaleAll);if(nk!==S.k[i]){S.k[i]=nk;msg.push(`${INSTR[i].sym} → ${nk>0?'+':''}${nk}.`)}}}
@@ -3286,7 +3439,7 @@ function evPlans(ev,touched){
  const t=[...S.k],kE=[...S.k],trades=[];let cost=0,drift=0;
  touched.forEach(i=>{const sh=Math.sign(ev.hit[INSTR[i].sym]);
   const tg=Math.max(-S.maxk,Math.min(S.maxk,S.k[i]+sh*2)),d=tg-S.k[i];if(!d)return;
-  const tc=tcost(d,i);const c=tc.cost*1.9*S.tcMultQ*(S.leakQ?1.45:1)+tc.bn*0.00125;
+  const tc=tcost(d,i);const c=tc.cost*1.6*S.tcMultQ*(S.leakQ?1.45:1);
   cost+=c;drift+=Math.abs(d);t[i]=tg;kE[i]=S.k[i]+prof.capture*d;
   trades.push({i,from:S.k[i],to:tg,bn:tc.bn,c})});
  const free=cost>0&&prof.freeAdj&&!S.freeAdjUsed;
@@ -3432,7 +3585,8 @@ function screenTraderEvent(ev,next){
   if(e.leakQ)S.leakQ=true;
   if(e.execBoost)S.execPenalty=Math.max(0.7,S.execPenalty*e.execBoost);
   if(e.tcvBoost){const t=S.tcv;S.tcvEst={t:t.t.map(quant),c:t.c.map(quant),v:t.v.map(quant)};msg.push("Le desk dispose maintenant de signaux marché exacts pour le trimestre.")}
-  if(e.cashM){pnl+=e.cashM/1000/navB;msg.push(`${e.cashM>=0?'+':'−'}${Math.abs(e.cashM)} M$.`)}
+  if(e.tcvPerm){S.tcvPerm=true;const t=S.tcv;S.tcvEst={t:t.t.map(quant),c:t.c.map(quant),v:t.v.map(quant)};msg.push("Vos indicateurs sont recalés dès maintenant, et le resteront jusqu'à la fin du mandat.")}
+  if(e.mgrM){S.mgrCosts-=e.mgrM/1000;refreshGain();msg.push(`${e.mgrM<0?'−':'+'}${mm(Math.abs(e.mgrM)/1000)} sur vos gains de gérant.`)}
   if(e.gambleLp){const win=rng()<e.gambleLp[0];e.lp=(e.lp||0)+(win?e.gambleLp[1]:e.gambleLp[2]);msg.push(win?"L'entretien s'est bien passé.":"Il voulait des comptes.")}
   if(e.lpIfPos){const pos=(S.nav/S.navQ0-1)>0;e.lp=(e.lp||0)+(pos?e.lpIfPos[0]:e.lpIfPos[1]);msg.push(pos?"La lettre passe bien : le trimestre est positif.":"La lettre tombe mal : le trimestre est négatif.")}
   if(e.cashIfPos&&(S.nav/S.navQ0-1)>0){pnl+=e.cashIfPos;msg.push("Bonus versé.")}
@@ -3441,7 +3595,7 @@ function screenTraderEvent(ev,next){
   if(e.cutTop2){const w=weights(S.k),rc=riskContrib(w);rc.map((v,i)=>({v:Math.abs(v),i})).sort((a,b)=>b.v-a.v).slice(0,2).forEach(o=>{if(S.k[o.i]!==0)setK(o.i,S.k[o.i]-Math.sign(S.k[o.i]))})}
   if(e.risk){if(rng()<e.risk[0]){pnl+=e.risk[1];if(e.riskRc||e.riskLp)gauge(e.riskLp||0,e.riskRc||0,e.riskMsg||'Incident');if(e.leakQ)S.leakQ=true;msg.push(`${e.riskMsg||'Mauvaise surprise'} : ${sgn(e.risk[1],1)}.`)}else msg.push(e.safeTxt||"Tout s'est bien passé.")}
   if(e.tcMultQ)S.tcMultQ=e.tcMultQ;
-  if(e.cash){pnl+=e.cash}
+  if(e.cash){pnl+=e.cash;msg.push(`Trésorerie ${sgn(e.cash,1)} (${(e.cash*1e4).toFixed(0)} pb).`)}
   if(e.noise)S.noise=true;
   if(e.poach)S.poachBoost+=e.poach;
   if(pnl){S.nav*=(1+pnl);S.qEvM+=pnl*navB}
@@ -3467,7 +3621,8 @@ function screenMidMark(){
   [`À mi-trimestre, vos positions directionnelles valent <em class="${cls(p)}">${sgn(p,1)} · ${mn(p*navB)}</em>, non réalisés. Rien n'est encaissé, mais les investisseurs et le comité reçoivent le rapport hebdomadaire et réagissent.`,
    rows.length?`Principaux contributeurs : ${rows.slice(0,4).map(o=>`${INSTR[o.i].sym} <span class="${cls(o.v)}">${mn(o.v*navB)}</span>`).join(', ')}.`:"Aucune position ouverte : rien à marquer."],
   [['Jauges',`<span class="${cls(g.lp)}">${sd1(g.lp)}</span> · <span class="${cls(g.rc)}">${sd1(g.rc)}</span>`]],
-  "Poursuivre le trimestre",stepEvents);
+  "Poursuivre le trimestre",stepEvents,
+  {top:navBox(`PERFORMANCE NETTE CUMULÉE · T1 À T${S.q+1} EN COURS`,idxSeries(p*0.5),{anim:1,trough:1,prov:1})});
 }
 function screenIncident(){
  const desk=DESK();
@@ -3521,19 +3676,19 @@ function resolveQuarter(){
  }
  const collateral=S.rate/4;
  const ops=S.budBp*1e-4;
- const tc=S.pendingTC;
+ const tc=S.pendingTC;S.pendingTC=0;      /* à la charge du gérant, plus à celle du fonds */
  const navBefore=S.nav;
  const nb=S.nav,q0=Math.max(1e-9,S.navQ0);
- const grQ=((gross+collateral-tc)*nb+(S.qEvM||0)+(S.qIncM||0))/q0;
- const mgmtQ0=VOL().mgmt;
- const idxPre=S.idx*(1+grQ-mgmtQ0);
+ const mgmtM=S.qMgmtM||0;                 /* déjà prélevée à l'ouverture du trimestre */
+ const grQ=((gross+collateral)*nb+(S.qEvM||0)+(S.qIncM||0)-mgmtM)/q0;
+ const idxPre=S.idx*(1+grQ);
  const perfQ0=idxPre>S.hwmIdx?VOL().perf*(idxPre-S.hwmIdx)/Math.max(1e-9,S.idx):0;
- let mgmt=mgmtQ0*q0/nb;const perf=perfQ0*q0/nb;
- const net=gross+collateral-tc-mgmt-perf;
+ const perf=perfQ0*q0/nb;
+ const net=gross+collateral-perf;
  S.nav*=(1+net);
- const grossM=gross*navBefore,collM=collateral*navBefore,tcM=-tc*navBefore,feeM=-(mgmt+perf)*navBefore;
+ const grossM=gross*navBefore,collM=collateral*navBefore,tcM=-tc*navBefore,feeM=-(mgmtM+perf*navBefore);
  const evM=S.qEvM||0,incM=S.qIncM||0;
- const perfM=grossM+collM+tcM+feeM+evM+incM;
+ const perfM=grossM+collM+feeM+evM+incM;  /* tcM n'y est pas : c'est vous qui payez */
  const qTotal=perfM/S.navQ0;
  S.qPnl={grossM,collM,tcM,feeM,evM,incM,perfM,flowM:(S.qFlow||0)};
  S.navs.push(S.nav);S.rets.push(qTotal);
@@ -3553,8 +3708,8 @@ function resolveQuarter(){
  if(S.commRes&&S.commRes.ok&&S.comm.id==='fort')S.fl.parole=1;
  S.peakIdx=Math.max(S.peakIdx||1,S.idx);S.maxdd=Math.max(S.maxdd,1-S.idx/S.peakIdx);
  S.totalOps+=(S.qOps||0);
- S.mgrFees=(S.mgrFees||0)+(mgmt+perf)*navBefore;refreshGain();
- S.mgrQ={fees:(mgmt+perf)*navBefore,ops:S.qOps||0,rum:0,mgmt:mgmt*navBefore,perf:perf*navBefore};
+ S.mgrFees=(S.mgrFees||0)+perf*navBefore;S.mgrCosts+=tc*navBefore;refreshGain();
+ S.mgrQ={fees:mgmtM+perf*navBefore,ops:S.qOps||0,rum:0,mgmt:mgmtM,perf:perf*navBefore,tc:tc*navBefore};
  S.lastR2=S.lastR;S.lastR=r;
  S.crowd=S.crowd.map((c,i)=>Math.max(-1,Math.min(1,0.55*c+0.85*(r[i]/INSTR[i].sigQ)/3)));
  /* concurrents */
@@ -3569,7 +3724,7 @@ function resolveQuarter(){
  if(qTotal>VOL().goal/4)lpD.push(['Objectif du mandat atteint ce trimestre',5]);else if(qTotal<0)lpD.push(['Trimestre négatif tout compris',-3]);
  if(S.nav>=S.hwm-1e-9)lpD.push(['Nouveau plus haut historique',3]);
  if(S.commRes)lpD.push([`Engagement « ${S.comm.nm.toLowerCase()} » ${S.commRes.ok?'tenu':'manqué'}`,S.commRes.ok?S.comm.win.lp:S.comm.lose.lp]);
- else if(S.comm&&S.comm.id==='none')lpD.push(['Aucune communication ce trimestre',S.comm.lose.lp]);
+ else if(S.comm&&S.comm.id==='none'&&S.comm.lose.lp)lpD.push(['Aucune communication ce trimestre',S.comm.lose.lp]);
  if(dd>0.10)lpD.push(['Repli au-delà de 10 %',-(dd-0.10)*70]);
  lpD.push(['Écart à la médiane des concurrents',(net-med)*115]);
  if(S.budBp>70)lpD.push(['Facture d\'exploitation jugée lourde',-1.5]);
@@ -3585,7 +3740,7 @@ function resolveQuarter(){
  const rcD=[];
  if(S.bud.risk!==1)rcD.push([S.bud.risk>1?'Contrôle des risques renforcé : rapports rassurants':'Contrôle des risques réduit : le comité s\'inquiète',S.bud.risk>1?2:-1]);
  if(S.commRes)rcD.push([`Engagement « ${S.comm.nm.toLowerCase()} » ${S.commRes.ok?'tenu':'manqué'}`,S.commRes.ok?S.comm.win.rc:S.comm.lose.rc]);
- else if(S.comm&&S.comm.id==='none')rcD.push(['Aucune communication ce trimestre',S.comm.lose.rc]);
+ else if(S.comm&&S.comm.id==='none'&&S.comm.lose.rc)rcD.push(['Aucune communication ce trimestre',S.comm.lose.rc]);
  if(sp>1e-6&&gross<-2.2*sp/2)rcD.push(['Perte au-delà de 2,2 σ ex-ante',-10]);
  if(S.marginCall)rcD.push([`Appel de marge : ${(S.marginCall.f*100).toFixed(0)} % du book liquidé d'office`,-12]);
  rcD.push([net>0?'La performance achète de la patience':'La perte use la patience',(net>0?Math.min(12,220*net):Math.max(-9,140*net))*VOL().rcPerf]);
@@ -3617,7 +3772,7 @@ function resolveQuarter(){
  S.mguMax=Math.max(S.mguMax||0,marginPct(S.k));
  if(S.goal&&typeof S.goal.t==='function'){
   const ok=!!S.goal.t(goalCtx({qTotal,med,rank:rivalRank(),dd,navBefore:S.navQ0}));
-  const bon=ok?S.goal.b*S.aum0:0;
+  const bon=ok?goalBon(S.goal):0;
   if(ok)S.mgrFees+=bon;
   S.qGoal={nm:S.goal.nm,d:S.goal.d,ok,bonus:bon};
   if(ok)S.goalsWon=(S.goalsWon||0)+1;
@@ -3636,7 +3791,7 @@ function resolveQuarter(){
  S.kEff=null;
  S.phase='debrief';S.tcMultQ=1;S.leakQ=false;S.poachBoost=0;
  S.qPnl.flowM=S.qFlow||0;
- screenDebrief({r,gross,net,attr,w:wFin,collateral,ops,tc,mgmt,perf,dd,sp,nav0:navBefore,qTotal,q0:S.navQ0,P:S.qPnl});window.scrollTo(0,0);
+ screenDebrief({r,gross,net,attr,w:wFin,collateral,ops,tc,mgmt:mgmtM/Math.max(1e-9,navBefore),perf,dd,sp,nav0:navBefore,qTotal,q0:S.navQ0,P:S.qPnl});window.scrollTo(0,0);
 }
 
 /* ---------- portraits ---------- */
@@ -3923,7 +4078,7 @@ function screenDebrief(o){
  hint('debrief');
  save('screenDebrief',o);
  const UQ=pickU([o.P.grossM,o.P.evM+o.P.incM,o.P.collM,o.P.tcM,o.P.feeM,o.P.perfM,o.P.flowM]);
- const UG=pickU([S.mgrQ.mgmt,S.mgrQ.perf,S.mgrQ.ops,S.mgrQ.fees-S.mgrQ.ops]);
+ const UG=pickU([S.mgrQ.mgmt,S.mgrQ.perf,S.mgrQ.ops,S.mgrQ.tc||0,S.mgrQ.fees-S.mgrQ.ops]);
  const gT={lp:S.gLog.reduce((a,g)=>a+g.lp,0)+S.lpD.reduce((a,x)=>a+x[1],0),rc:S.gLog.reduce((a,g)=>a+g.rc,0)+S.rcD.reduce((a,x)=>a+x[1],0)};
  const R=S.qName||(S.qName=qRegime());const V=verdicts(o);
  const lines=INSTR.map((x,i)=>({sym:x.sym,nm:x.nm,r:o.r[i],p:o.w[i]*o.r[i],k:S.k[i]}))
@@ -3948,6 +4103,7 @@ function screenDebrief(o){
    <div class="big ${cls(o.qTotal)}">${sgn(o.qTotal,1)}</div>
    <div class="num ${cls(o.qTotal)}" style="font-size:18px;margin-top:4px">${bn(o.qTotal*o.q0,2)} sur ${moneyB(o.q0)} d'encours en début de trimestre</div>
    <div class="regime">${R.nm}</div><div class="sub">${R.d}</div></div>
+  ${navBox(`PERFORMANCE NETTE CUMULÉE · ${S.q} TRIMESTRE${S.q>1?'S':''}`,idxSeries(),{anim:1,trough:1})}
   ${warn.map(t=>`<div class="flag" style="margin-top:12px">${t}</div>`).join('')}
   <div class="block"><div class="blockhead"><h2>La concurrence</h2><span class="hint">${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur cinq</span></div>
    <table class="qt"><thead><tr><th>Fonds</th><th>Trim.</th><th>Cumul</th></tr></thead><tbody>
@@ -3959,18 +4115,17 @@ function screenDebrief(o){
    <div class="attr"><span class="an">Positions directionnelles</span><span class="av">${inU(o.P.grossM,UQ)}</span></div>
    <div class="attr"><span class="an">Dépêches, incidents et desk</span><span class="av">${inU(o.P.evM+o.P.incM,UQ)}</span></div>
    <div class="attr"><span class="an">Rémunération du collatéral</span><span class="av">${inU(o.P.collM,UQ)}</span></div>
-   <div class="attr"><span class="an">Coûts de transaction</span><span class="av">${inU(o.P.tcM,UQ)}</span></div>
    <div class="attr"><span class="an">Frais de gestion et de performance</span><span class="av">${inU(o.P.feeM,UQ)}</span></div>
    <div class="attr"><span class="an" style="color:var(--txt)">Résultat du trimestre</span><span class="av">${inU(o.P.perfM,UQ)}</span></div>
    <div class="attr"><span class="an">Souscriptions et rachats</span><span class="av ${Math.abs(o.P.flowM)>1e-9?cls(o.P.flowM):''}">${Math.abs(o.P.flowM)>1e-9?inU(o.P.flowM,UQ):'aucun mouvement'}</span></div>
    ${S.poachMsg?`<div class="note" style="margin:4px 0 8px">${S.poachMsg}</div>`:''}<div class="attr"><span class="an">Encours en fin de trimestre</span><span class="av"><b>${moneyB(S.nav)}</b></span></div>
-   <details style="margin-top:8px"><summary>Détails</summary><p class="note">Encours de début de trimestre : ${moneyB(o.q0)}. Les dépêches, interactions et incidents ont été comptabilisés au fil du trimestre ; les positions, le collatéral et les frais le sont à la clôture. Les souscriptions et rachats sont des mouvements de capital : ils changent l'encours sans compter dans la performance.</p></details>
+   <details style="margin-top:8px"><summary>Détails</summary><p class="note">Les coûts d'exécution du trimestre (${mm(-o.P.tcM)}) n'apparaissent pas ici : ils sont à votre charge, pas à celle du fonds. Encours de début de trimestre : ${moneyB(o.q0)}. Les dépêches, interactions et incidents ont été comptabilisés au fil du trimestre ; les positions, le collatéral et les frais le sont à la clôture. Les souscriptions et rachats sont des mouvements de capital : ils changent l'encours sans compter dans la performance.</p></details>
   </div>
   <div class="block"><div class="blockhead"><h2>Vos gains</h2><span class="hint">le score</span></div>
-   <div class="attr"><span class="an">Net du trimestre</span><span class="av">${inU(S.mgrQ.fees-S.mgrQ.ops,UG)}</span></div>
-   <div class="attr"><span class="an" style="color:var(--txt)">Cumul depuis le début</span><span class="av"><b class="gold-g">${score(S.mgrFees-S.mgrCosts)}</b></span></div>
+   <div class="attr"><span class="an">Net du trimestre</span><span class="av">${inU(S.mgrQ.fees-S.mgrQ.ops-(S.mgrQ.tc||0),UG)}</span></div>
+   <div class="attr"><span class="an" style="color:var(--txt)">Cumul depuis le début</span><span class="av"><b class="gold-g">${score(mgrNet())}</b></span></div>
    <details style="margin-top:6px"><summary>Détail</summary>
-    ${tbl([['Commission de gestion',inU(S.mgrQ.mgmt,UG)],['Commission de performance',inU(S.mgrQ.perf,UG)],[`Budget d'exploitation (${S.budBp} pb)`,inU(-S.mgrQ.ops,UG)]])}</details>
+    ${tbl([['Commission de gestion (versée à l\'ouverture)',inU(S.mgrQ.mgmt,UG)],['Commission de performance',inU(S.mgrQ.perf,UG)],...(S.qGoal&&S.qGoal.ok?[['Bonus d\'objectif',inU(S.qGoal.bonus,UG)]]:[]),[`Budget d'exploitation (${S.budBp} pb)`,inU(-S.mgrQ.ops,UG)],['Coûts d\'exécution',inU(-(S.mgrQ.tc||0),UG)],['<b>Trésorerie disponible</b>',`<b>${mm(mgrCash())}</b>`]])}</details>
   </div>
   <div class="block"><div class="blockhead"><h2>Ce qu'ils en disent</h2><span class="hint">${Math.round(S.lp)} · ${Math.round(S.rc)}</span></div>
    <div class="wire"><div class="kicker" style="margin-bottom:4px">LES INVESTISSEURS</div><p style="margin:0;color:var(--dim);font-size:13.5px">${V.inv}</p>
@@ -4054,26 +4209,19 @@ function screenFinal(){
  else if(cagr>0.03){verdict="Vous survivez";vtxt="Assez pour continuer, pas assez pour lever. Le fonds reste sous-dimensionné pour ses ambitions."}
  else if(cagr>-0.05){verdict="Deux ans pour rien";vtxt="Frais payés, risque pris, rien produit. Les allocataires appellent ça un coût d'option."}
  else{verdict="Sous l'eau";vtxt="Le plus haut historique est loin au-dessus. Vous travaillerez sans commission de performance jusqu'à le retrouver."}
- const W=340,H=120,pad=5;
- const series=[S.navs.map(v=>v/100),...S.rivals.map(rv=>{let c=[1];S.rets.forEach((_,i)=>c.push(c[i]*(1+(rv.hist?rv.hist[i]:0))));return c})];
- const lo=Math.min(...S.navs)/100*0.99,hi=Math.max(...S.navs)/100*1.01;
- const px=i=>pad+i*(W-2*pad)/Math.max(1,S.navs.length-1),py=v=>H-pad-(v-lo)/(hi-lo||1)*(H-2*pad);
- const pts=S.navs.map((v,i)=>`${px(i).toFixed(1)},${py(v/100).toFixed(1)}`).join(' ');
  const qrows=S.rets.map((x,i)=>`<tr><td>T${i+1}</td><td style="text-align:left">${REG[S.regimes[i]].nm}</td><td class="${cls(x)}">${sgn(x,1)}</td><td>${moneyB(S.navs[i+1])}</td></tr>`).join('');
  const lg=[{nm:S.fundName,v:S.idx-1,me:1},...S.rivals.map(x=>({nm:x.nm+' · '+x.boss,v:x.cum-1}))].sort((a,b)=>b.v-a.v);
  app.innerHTML=`<div class="fade" style="padding-top:24px">
   <div class="kicker">${S.fundName.toUpperCase()} · RAPPORT AUX INVESTISSEURS · ${S.q} TRIMESTRE${S.q>1?'S':''}</div>
   <h1 class="verdict">${verdict}</h1>
   <p class="prose" style="margin-top:12px">${vtxt}</p>
-  <svg class="curve" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-   <line x1="0" y1="${py(1)}" x2="${W}" y2="${py(1)}" stroke="#35496A" stroke-width="1" stroke-dasharray="3 3"/>
-   <polyline points="${pts}" fill="none" stroke="${tot>=1?'#4FA98C':'#C4576F'}" stroke-width="2" stroke-linejoin="round"/></svg>
+  ${navBox(`PERFORMANCE NETTE CUMULÉE · ${n} TRIMESTRE${n>1?'S':''}`,idxSeries(),{anim:1,trough:1,h:130})}
   <div class="grid2">
    <div class="cell"><div class="cl">Performance nette annualisée</div><div class="cv ${cls(cagr)}">${sgn(cagr,1)}</div></div>
    <div class="cell"><div class="cl">Volatilité réalisée</div><div class="cv">${pct(volA,1)}</div></div>
    <div class="cell"><div class="cl">Perte maximale</div><div class="cv neg-g">−${(S.maxdd*100).toFixed(1)} %</div></div>
    <div class="cell"><div class="cl">Ratio de Sharpe annualisé</div><div class="cv ${sr>=0?'':'neg-g'}">${sr.toFixed(2).replace('-','−')}</div></div>
-   <div class="cell"><div class="cl">Coûts de transaction payés</div><div class="cv">${moneyB(S.totalTC)}</div></div>
+   <div class="cell"><div class="cl">Exécution payée de votre poche</div><div class="cv">${moneyB(S.totalTC)}</div></div>
    <div class="cell"><div class="cl">Budget d'exploitation payé</div><div class="cv">${moneyB(S.totalOps)}</div></div>
    <div class="cell"><div class="cl">Encours final</div><div class="cv">${moneyB(S.nav)}</div></div>
    <div class="cell" style="background:linear-gradient(180deg,rgba(217,176,106,.14),rgba(217,176,106,.03))"><div class="cl" style="color:var(--gold)">Vos gains de gérant</div><div class="cv" style="color:var(--gold)">${score(S.mgrFees-S.mgrCosts)}</div></div>
