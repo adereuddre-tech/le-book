@@ -10,6 +10,10 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
 - **Patchs Python ciblés**, jamais de réécriture du fichier. Chaque patch utilise une
   fonction `rep(old, new, k=1)` qui *assert* le nombre d'occurrences avant de remplacer :
   une ancre ambiguë doit faire échouer le patch, pas produire un remplacement au hasard.
+- **Un lot par fichier, rejouable.** `base.html` est le fichier publié intact, `patches/NN-*.py`
+  applique un lot chacun (via `patches/_lib.py`), `build.sh` reconstruit `index.html` en
+  rejouant tout dans l'ordre. Une session coupée ne perd rien : il suffit de relancer
+  `./build.sh`. Chaque patch porte en tête le constat mesuré qui le justifie.
 - **Test jsdom d'une partie complète avant publication.** Le harnais est versionné dans
   `tools/` (voir `tools/README.md`) : le récupérer depuis le dépôt en début de session,
   puis `npm i jsdom`.
@@ -28,10 +32,15 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
     fermer les info-bulles (`.mbox`) et attendre la fin de l'animation `fade` avant la capture.
   - `cover.js` / `cover2.js` : couverture forcée des nouvelles anecdotes / dépêches, chaque choix.
   - `goalchk.js` : rejoue les 108 prédicats d'objectif sur des contextes réels.
+  - `camp.sh` : campagne n graines × 3 styles sur une copie figée, vers un fichier de résultats
+    dépouillé par `summ2.py` (score, écart-type, médiane, survie, causes de fin).
+  - `powerchk.js` : vérifie les pouvoirs propres des styles. À rejouer **avant et après** tout
+    lot touchant aux sources ou aux dépêches, et à comparer au fichier publié.
   - Anciens outils perdus, non reconstruits : `cover.js`/`cover2.js` (anecdotes/dépêches),
-    `goalchk.js` (108 prédicats d'objectif), `resumechk.js` (reprise à chaque point de sauvegarde),
-    `featchk.js`, `flowchk.js`, `mprobe2.js`.
-- Publication par l'API GitHub (`GET` du sha puis `PUT` sur `contents/index.html`).
+    `goalchk.js` (108 prédicats d'objectif), `featchk.js`, `flowchk.js`, `mprobe2.js`.
+- Publication par l'API GitHub (`GET` du sha puis `PUT` sur `contents/index.html`). Le bac à
+  sable ne contient aucun jeton : il faut en fournir un (fine-grained PAT, *Contents:
+  read and write*) à chaque session, ou publier à la main.
 
 ## Architecture du fichier
 
@@ -42,6 +51,25 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
 - **Corrélation** : modèle à 4 facteurs (croissance, inflation, dollar, appétit).
   `b` = charges par marché, `COV` construite dans `buildCov()`. Définie-positivité par construction.
   λmin ≈ 0,21 (9 marchés) à 0,12 (25 marchés). |b| moyen 0,369, aucune charge sous 0,15.
+- **Économie du gérant** : la société de gestion a une trésorerie. `mgrNet()` = commissions
+  encaissées − tout ce qui a été payé, coûts d'exécution du trimestre en cours compris ;
+  `mgrCash()` = `mgrNet()` + `S.mgrCap0` (capital de départ, 2 % de l'encours initial).
+  **Commission de gestion versée à l'ouverture** du trimestre (fin de `planQuarter`,
+  `S.qMgmtM`) ; **performance et bonus d'objectif à la clôture**. Les coûts d'exécution sont
+  à la charge du gérant (`S.mgrCosts`), plus du fonds : `tcM` est affiché au débriefing mais
+  n'entre pas dans `perfM`. On ne peut engager que ce qu'on a en caisse : niveaux de budget
+  verrouillés (`budgetBpIf`), validation du book bloquée (`refreshSend`, `fitBook`).
+  Un book inchangé ne coûte rien et n'est jamais bloqué — pas d'impasse possible.
+- **Coûts de transaction** : `TCK=3` multiplie le tarif de base dans `tcost`. Un ordre préparé
+  revient à ~5 pb du notionnel, ~13 à 38 pb de l'encours pour ouvrir un book complet. Suivre
+  une dépêche coûte `tc.cost*1.6` (prime d'urgence) — l'ancien glissement forfaitaire de
+  12,5 pb du notionnel a été supprimé, il représentait 90 % de la facture et ne se voyait
+  nulle part. Un arbitrage d'exécution non restreint à des marchés nommés agit aussi sur
+  `S.tcMultQ`, donc sur les ajustements du trimestre.
+- **Effets d'événement** : la famille `cashM` (montants fixes en M$) **n'existe plus**. Tout
+  effet de trésorerie est un `cash` proportionnel à l'encours. Les 49 anciennes valeurs,
+  calibrées pour un fonds de 100 Md$, ponctionnaient 1,6 M$ par trimestre sur un fonds de
+  100 M$ ; divisées par 20 et converties en pb, textes affichés réécrits avec elles.
 - **Choix initiaux (5)** : style (`PROFILES`), risque du mandat (`VOLP`), taille (`SIZES`),
   univers (`UNIVS`), durée (`DUREES`). `RISKARCH` et `DESKS` existent encore mais sont **figés**
   (`arch:'std'`, `desk:'inhouse'`, exécution ×1,00, masse salariale 5 pb) et retirés de l'écran.
@@ -52,7 +80,8 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   bruit des indicateurs `TCVQ` ; contrôle des risques → incidents `RISKM`/`RISKS`, bande du comité
   `BANDB` via `bandNow()` ; recherche macro → nombre `RESN`, fiabilité `RESREL`, pré-annonces `RESR`.
 - **Sources** : toutes ouvertes, `price=0`, plus d'achat. Nombre et qualité pilotés par la recherche.
-- **Objectifs** : `QGOALS` (108), tirés à chaque trimestre dans `planQuarter`, soldés à la clôture,
+- **Objectifs** : `QGOALS` (108), bonus = `goalBon(g)` = `g.b * GOALB * S.aum0` avec
+  `GOALB=0.25`. Tirés à chaque trimestre dans `planQuarter`, soldés à la clôture,
   prédicats sur le contexte de `goalCtx()`. **Le prédicat `t` ne survit pas à `JSON.stringify`** :
   `loadGame` réhydrate `S.goal` depuis `QGOALS` par son nom.
 - **Hauts faits** : `FEATS` (36) en 5 paliers (`TIERS`), prédicats `tq` (clôture de trimestre) et
@@ -74,7 +103,16 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   sélectionnée par défaut ; `fort` = deux fois l'objectif.
 - **Textes** : `MACROEV` (269 dépêches), `TRADER_EXEC` (145 anecdotes d'exécution), `TRADER_MID`,
   `STAKE`, `INCIDENTS`, `BOARDEV`, `RUMORS`, `PRESS_SRC` (24), `PRESS_EXTRA`.
+- **Courbes de NAV** : `navChart(vals,opts)` dessine, `navBox(cap,vals,opts)` encadre avec
+  légende, `idxSeries(extra)` fournit la série (produit cumulé de `S.rets`, base 100 — la
+  performance nette que lit l'investisseur, pas l'encours, donc insensible aux flux).
+  Utilisées à l'accueil (partie imaginaire, `heroNav()`), à mi-trimestre (avec le point
+  latent), à la clôture et au rapport final. `resultCard` accepte `extra.top`.
+- **Accueil** : `introTicker()`, courbe héros, `mktWall()` (les 25 marchés, 5 × 5, teintés par
+  classe), `introRivals()` (les 4 concurrents avec `avatar()`).
 - **Sauvegarde** : clé `lebook_save_v2`, `save(point,extra)` / `loadGame()`, table `RESUME`.
+  `phaseExec` n'existe plus comme écran ; la table `RESUME` la redirige vers `screenExec`
+  pour que les sauvegardes antérieures restent reprenables.
 
 ## Invariants à ne pas casser
 
@@ -95,6 +133,14 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
    probabilité affichée `S.sc.ph` est une **lecture** (bruit selon recherche et style) ; l'issue
    est tirée sur la vraie probabilité `S.sc.p`.
 10. `S.sc` est validé par forme (`m.length===2`) : une sauvegarde d'avant le lot Q le fait retirer.
+11. Les charges factorielles respectent **Σb² ≤ 0,92** (`normB` rescale au-delà et fait
+    retomber une charge d'un cran sans prévenir). Viser 0,87 au plus : la dérive trimestrielle
+    ajoute 0,035 de bruit par facteur. Crans affichés (`rowInfo`) : |b| < 0,15 → 0 ;
+    < 0,32 → 1 ; < 0,55 → 2 ; ≥ 0,55 → 3. Une charge calée à 0,58 clignote entre 2 et 3.
+12. Aucun effet d'événement ne doit être libellé en montant fixe. Le fonds fait 75 à 150 M$ ;
+    tout montant en dur se retrouve à des dizaines de pour cent de l'encours.
+13. Le gérant ne peut jamais être définitivement bloqué : la commission de gestion (50 pb)
+    dépasse toujours le budget minimum (15 pb), et un book inchangé est toujours validable.
 
 ## Livré
 
@@ -127,6 +173,25 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
     incidents de base 9 %, gravité `RISKS=[2,1.5,0.75]`, comité −1/0/+2 à chaque clôture ;
     recherche 4/18/80 pb.
 
+- **Lots 1 à 5** (méthode : `base.html` = fichier publié intact, `patches/NN-*.py` = un lot par
+  fichier avec ancres assertées, `build.sh` rejoue tout dans l'ordre — le travail est
+  reproductible depuis le fichier publié) :
+  - *Lot 1* : charges factorielles ES, MXEF, NQ, TN, GBL, R, OAT, GC, BTC ; « silence radio »
+    ramené à investisseurs 0 / comité 0. Trois demandes ne tenaient pas dans le budget de
+    variance : NQ, MXEF et GBL ont vu une charge **non demandée** rognée.
+  - *Lot 2* : économie du gérant (ci-dessus), bonus d'objectif ÷4.
+  - *Lot 3* : coûts de transaction rééquilibrés (ci-dessus), enjeu de chaque option
+    d'exécution chiffré en monnaie dans le bouton.
+  - *Lot 4* : `cashM` → `cash` ÷20 ; exécution en une seule étape (détail replié, coût total
+    toujours visible) ; annonce validée au clic ; pré-annonces « undefined » (la file
+    contenait des dépêches de rivalité sans champ `t`) ; pastille « ✓ vérifiée » au lieu d'un
+    préfixe qui débordait ; nowcast durable (`tcvPerm`, payé par le gérant via `mgrM`) ;
+    « ancien du desk » relibellé.
+  - *Lot 6* : réglage du style flux (ci-dessous).
+  - *Lot 5* : accueil refondu, courbes de NAV partout. Bug corrigé : le tracé final partait de
+    `S.navs[0]=100` contre des encours en Md$ — une falaise verticale invisible depuis
+    longtemps.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
@@ -137,53 +202,94 @@ fois son coût. Campagnes : `tools/runner.js` + `tools/loop.sh` sur une **copie 
 du plan) : `loop.sh` relit le fichier à chaque tranche, une modification en cours de campagne
 fausse les résultats.
 
-### Styles, budgets et lisibilité (dernier lot)
+### Styles, budgets et lisibilité
 
-- Quant : `modelScale` 0,80 (le modèle ne vise que 80 % de la vol cible), `ddMax` 0,40.
-- Flux : intuition juste 93 fois sur 100 (`rng()<0.93`), `modelScale` 1,20, `lpMult` 1,60,
-  `ddMax` 0,16. Le bot pondère l'intuition et applique `modelScale` comme un joueur le ferait.
-- `ddMax()` centralise le seuil de liquidation (défaut 0,28) : test de fin de partie,
-  pop-up de la jauge, verdict final, écran des règles.
-- Budgets : salle de marché 2/18/50 pb (réduit : coûts ×1,80), contrôle 4/12/24 pb
-  (renforcé : incidents ×0,2, bande ±40 %, comité +2), recherche 4/18/64 pb.
-- Marge utilisée : affichée dans la pop-up de la jauge Risque et sous le book ; rappelée
-  dans l'intro quand l'objectif du trimestre la mentionne.
+- Quant : `modelScale` 0,80, `ddMax` 0,40. Flux : intuition juste 93 fois sur 100,
+  `modelScale` 1,20, `lpMult` 1,60, `ddMax` 0,16. `ddMax()` centralise le seuil de liquidation.
+- Budgets : salle de marché 2/18/50 pb, contrôle 4/12/24 pb, recherche 4/18/64 pb.
 - `POSRX` / `evTouchesBook()` écartent du début de trimestre et du conseil les exigences et
-  événements qui coupent des positions : le book y est à plat. L'ancienne regex ratait
-  `cutTopN`, `cutFactor` et les conditions sur `S.k` (13 exigences sur 24, 1 événement sur 8).
+  événements qui coupent des positions : le book y est à plat.
 
 Piège de méthode : `sed 's/a.html/b.html/'` sur un plan JSON d'une seule ligne ne remplace
-que la première occurrence. Trois campagnes ont ainsi rejoué le même fichier et rendu des
-résultats identiques ; générer les plans en Python.
+que la première occurrence. Générer les plans en Python.
 
-| Style | Score moyen | σ | Survie |
-|---|---|---|---|
-| Quant | 30,9 M$ | 25 | 56 % |
-| Fondamental | 36,7 M$ | 33 | 53 % |
-| Flux | 45,0 M$ | 41 | 44 % |
+### Mesure de référence après les lots 1 à 5
 
-### Résultats de calibration (parties de 2 ans, bot intelligent)
+90 parties (30 graines × 3 styles), bot intelligent, copie figée, 0 erreur.
+**Les chiffres des campagnes antérieures sont périmés** : ils ont été obtenus sur une
+économie qui n'existe plus (bonus d'objectif quadruple, exécution payée par le fonds,
+effets d'événement en montants fixes).
 
-| Option | Mesure | Verdict |
-|---|---|---|
-| Durée longue / courte | score +18 / −16 vs standard, σ plus / moins élevé | conforme |
-| Grande / petite taille | +14 / −5, σ 44 / 20 vs 27 | conforme |
-| Mandat agressif / prudent | +16 / −6, σ 47 / 18 | conforme |
-| Monde entier / bac à sable | ≈ +6 σ 41 / −5 σ 24 (après `edge` 1,5 / 0,75) | conforme |
-| Styles quant / fondamental / flux | 28,7 σ 26 / 36,7 σ 33 / 52,6 σ 38 (70 graines appariées) | conforme ; survie du quant 43 % à surveiller |
-| Recherche renforcée | rapportait 2,3× son coût à 60 pb → 80 pb (visé ≈ 1,5×) | réglé par proportion, non remesuré |
-| Contrôle renforcé | ne rapportait rien à 20 pb → 16 pb et comité +2 | réglé, non remesuré |
-| Salle de marché renforcée | ≈ 5,6× ± 2,4 à 30 pb → 36 pb | réglé, incertain |
-| Niveaux réduits | recherche et contrôle : perte > économie ; salle de marché : bruit ± 4 M$ | à remesurer |
+| Style | Score moyen | σ | Médiane | Survie | Causes de fin |
+|---|---|---|---|---|---|
+| Quant | 17,1 M$ | 8,8 | 17,0 | 73 % | investisseurs 7, liquidation 1 |
+| Fondamental | 26,9 M$ | 32,7 | 17,4 | 60 % | liquidation 10, investisseurs 2 |
+| Flux *(avant lot 6)* | 30,8 M$ | 22,7 | 23,9 | 67 % | liquidation 9, investisseurs 1 |
+| **Flux** *(après lot 6)* | **31,9 M$** | **29,8** | **25,1** | **57 %** | liquidation 13 |
 
-Limites : le budget total ne pèse qu'environ 13 % des commissions, et l'effet d'un niveau
-(2 à 6 M$ sur 2 ans) est de l'ordre de l'erreur type à 80 parties. Remesurer les budgets
-demande environ 300 parties appariées par niveau, sur copie figée.
+L'ordre voulu quant < fondamental < flux est respecté sur le score. Le quant meurt des
+investisseurs, les deux autres de la liquidation.
+
+**Lot 6 — le flux paie sa prise de risque.** Il survivait mieux (67 %) que le fondamental
+(60 %) tout en gagnant plus : un style censé être le plus risqué ne peut pas être à la fois le
+plus rentable et le plus sûr. Vérifié dans `tools/bot.js` : le book est dimensionné sur
+`S.tgt*0.95*modelScale` et **pas** sur `ddMax`, donc le seuil de liquidation est un vrai
+levier — le baisser ne fait pas réduire les positions en compensation. Le repli maximal des
+vingt survivants montrait un trou net : 0,159 · 0,127 · 0,112 · 0,109 puis rien au-dessus de
+0,076. Réglages : `modelScale` 1,20 → 1,35, `ddMax` 0,16 → 0,13, `incMult` 1,0 → 1,25.
+Résultat sur les mêmes 30 graines : 20 survivants → 17, score 30,8 → 31,9, σ 22,7 → 29,8.
+La comparaison appariée avant/après est solide ; l'écart flux-fondamental (57 % contre 60 %,
+soit une partie) est en revanche **dans le bruit** — la forme est bonne, la marge n'est pas
+démontrée. La confirmer demanderait quelques centaines de parties par style.
+
+Économie par partie : bonus d'objectif ≈ 6 M$ (3,1 objectifs tenus), exécution 4,5 à 6,0 M$,
+budget 5,4 à 6,5 M$. L'exécution coûte 0,6 à 0,85 M$ par trimestre, soit environ 2 % de
+l'encours par an — haut de la fourchette réaliste, assumé pour que le poste existe dans le jeu.
+Le bonus d'objectif pèse désormais ~16 % du revenu brut du gérant, contre ~43 % avant.
+Encours final médian 184 M$ (quartiles 118 et 281) ; 67 parties sur 90 vont au bout des huit
+trimestres.
+
+### Difficulté : mesurée, laissée en l'état, et pourquoi
+
+La survie globale est de 67 % contre ~51 % dans les campagnes antérieures. **Ne pas chercher
+à revenir à 51 %** : cet écart vient de la correction des effets `cashM`, qui ponctionnaient
+1,6 M$ par trimestre au hasard des anecdotes de desk. Sur une partie mesurée avant correction,
+le fonds mourait avec des positions à −4 M$ et des anecdotes à −13,9 M$ : il était tué par le
+desk, pas par le marché. L'ancien taux de survie était donc gonflé par un défaut, pas par une
+mécanique de jeu.
+
+Le seuil de liquidation est un **levier mort** — mesuré : le repli maximal médian des
+survivants est de 0,133 (quant), 0,079 (fondamental) et 0,052 (flux), contre des seuils de
+0,40 / 0,28 / 0,16. Baisser `ddMax` de 20 % ne coûte que 3 à 10 points de survie. La partie
+est binaire : soit on explose, soit on croise loin du seuil. Si la difficulté doit être
+retouchée un jour, le levier intéressant est la patience des investisseurs (`lp`), qui est une
+pression graduelle et jouable, pas la liquidation, qui est une falaise.
 
 ## Reste à faire
 
+### En premier
+- **Publication** : les lots 1 à 5 ne sont pas encore en ligne au moment d'écrire cette note.
+  Le fichier construit est validé (régression 18 parties, 6 reprises à froid, `cover3` 2 700
+  plans, `powerchk` identique au fichier publié — toutes à 0 erreur).
+- **Reconstruire les outils perdus** : `cover.js`/`cover2.js` (couverture forcée des anecdotes
+  et dépêches, chaque choix), `goalchk.js` (108 prédicats d'objectif), `featchk.js`,
+  `flowchk.js`. Sans eux, toute production de texte est non vérifiée. `resumechk.js` est
+  partiellement couvert par `play.js --resume N`.
+
 ### Plus loin
-- Production de texte : objectif de 200 anecdotes d'exécution (145 aujourd'hui) et
-  300 dépêches (269), plus la démultiplication des textes de débriefing.
-- Équilibrage des styles : mesuré sur 24 parties seulement, l'écart est dans le bruit.
-  Une mesure sérieuse demande ~200 parties par style.
+- Production de texte : 200 anecdotes d'exécution (145 aujourd'hui) et 300 dépêches (269),
+  plus la démultiplication des débriefings.
+- Rentabilité des budgets : non remesurée depuis le changement d'économie. Avec un seul cœur,
+  une campagne de 90 parties prend ~7 minutes ; compter ~300 parties appariées par niveau.
+- **Réduction de variance** : le générateur est un flux séquentiel unique (`mulberry32`,
+  `rngState` global). Dès qu'une option consomme un tirage de plus, les deux bras d'une partie
+  appariée divergent et ne partagent plus aucun chemin de marché : l'appariement ne réduit
+  presque rien, d'où σ ≈ 30 M$ et les 300 parties par niveau. Dériver un générateur par usage
+  et par trimestre — `rngFor('mkt',q)`, `rngFor('ev',q)`, `rngFor('inc',q)` — depuis
+  `hash(graine, canal, q)` rendrait le chemin factoriel identique entre bras. C'est une
+  centaine de lignes et ça rend faisable tout le reste de la calibration.
+- **Attribution de P&L** à la clôture : `S.f` et les charges `b` sont là, la décomposition
+  croissance / inflation / dollar / appétit + résidu est quasi gratuite. C'est ce qui manque
+  pour que le joueur comprenne pourquoi il perd.
+- **Sonde étendue** : `play.js` ne vérifie l'égalité affiché/appliqué que sur `resolveEvent`.
+  Même contrôle à la clôture et sur les événements du conseil, qui écrivent aussi `S.lastG`.
