@@ -33,7 +33,8 @@ while(steps++<3000&&!done){
   const sd=$('#sd');sd.value=String(seed);click($('#go'));continue}
  if($('#send')){w.eval(`try{const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));drawRows();renderRisk()}catch(e){window.__e=e.message}`);
   if(w.__e){errs.push('reco:'+w.__e);w.__e=null}
-  stats.qs++;click($('#send'));continue}
+  if($('#send').disabled&&$('#fitbook'))click($('#fitbook'));
+  stats.qs++;if($('#send').disabled){errs.push('book bloque');break}click($('#send'));continue}
  const ev=d.querySelectorAll('.choice.evopt');
  if(ev.length){stats.events++;
   const pl=w.eval(`JSON.stringify({p:S.sc.p,s:[...document.querySelectorAll('.choice.evopt')].map(b=>b.textContent.replace(/\\s+/g,' '))})`);
@@ -45,8 +46,8 @@ while(steps++<3000&&!done){
   click(ev[i]);continue}
  const ch=d.querySelectorAll('.choice');
  if(ch.length){click(ch[sage?ch.length-1:Math.floor(rnd()*ch.length)]);continue}
- const cc=d.querySelectorAll('.card[data-i]');
- if($('#commok')){if($('#commok').disabled&&cc.length){click(cc[0]);continue}click($('#commok'));continue}
+ const cc=d.querySelectorAll('.card.commgo');
+ if(cc.length){click(cc[sage?1:Math.floor(rnd()*cc.length)]);continue}   /* annonce : un clic vaut validation */
  let hit=false;for(const id of ['#ok','#go2','#rgo','#pgo','#nx','#go']){const b=$(id);if(b&&!b.disabled){click(b);hit=true;break}}
  if(hit)continue;
  const any=[...d.querySelectorAll('button.cta,button.buy')].filter(b=>!b.disabled);
