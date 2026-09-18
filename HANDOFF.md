@@ -145,6 +145,15 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   ce ne sont pas des événements. Le mi-parcours n'a plus de courbe : elle faisait doublon
   avec le ruban ; son texte dit à la place quelle part du gain de l'année vient des positions
   encore ouvertes.
+  Densité : `TAPEM=48` points par segment, amplitude `tapeVol()` calée sur la volatilité
+  cible du mandat — un pas horaire sur treize semaines, quelques centaines de points par
+  trimestre. `tapeSvg(pts,from)` dessine **deux** polylignes : la portion déjà vue, posée
+  d'emblée, et la portion nouvelle seule, animée en 3 s. `S.tape.from` marque la frontière.
+  **Piège de CSS** : `animation` est une propriété raccourcie, pas cumulative. `.fade` et
+  `.evhold` posées sur le même élément faisaient gagner la dernière règle de la feuille ;
+  `.fade` se terminait en 0,3 s sans `fill-mode` et l'élément retombait sur le `opacity:0`
+  de `.evhold` — le texte de chaque dépêche restait invisible pour toujours. Les deux classes
+  sont exclusives ; ne jamais les recombiner.
   **Piège** : `mulberry32` écrit dans le `rngState` global. Tout décor aléatoire doit passer
   par `prng32`, qui est pur — sinon les flux nommés du lot 11 se décalent en silence.
 - **Courbes de NAV** : `navChart(vals,opts)` dessine, `navBox(cap,vals,opts)` encadre avec
