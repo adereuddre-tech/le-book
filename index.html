@@ -774,13 +774,13 @@ const QGOALS=[
  {nm:"Le levier contenu",d:"Terminer avec un notionnel brut sous trois fois l'encours.",t:c=>c.lev<3,b:0.06},
  {nm:"Le levier assumé",d:"Terminer avec un notionnel brut au-dessus de six fois l'encours, et un trimestre positif.",t:c=>c.lev>6&&c.q>0,b:0.11},
  /* — coûts, budget, sources — */
- {nm:"L'exécution frugale",d:"Garder les coûts de transaction du trimestre sous 15 points de base de l'encours.",t:c=>c.tcBp<15,b:0.06},
- {nm:"L'exécution chirurgicale",d:"Garder les coûts de transaction sous 8 points de base de l'encours.",t:c=>c.tcBp<8,b:0.10},
+ {nm:"L'exécution frugale",d:"Garder les coûts de transaction du trimestre sous 26 points de base de l'encours.",t:c=>c.tcBp<26,b:0.06},
+ {nm:"L'exécution chirurgicale",d:"Garder les coûts de transaction sous 16 points de base de l'encours.",t:c=>c.tcBp<16,b:0.10},
  {nm:"Le budget serré",d:"Garder la facture d'exploitation du trimestre sous 40 points de base.",t:c=>c.ops<40,b:0.05},
  {nm:"Le grand train",d:"Dépenser plus de 70 points de base d'exploitation et finir le trimestre positif.",t:c=>c.ops>70&&c.q>0,b:0.09},
  {nm:"À l'aveugle",d:"Traverser le trimestre avec la recherche macro au minimum et finir positif.",t:c=>c.budRes===0&&c.q>0,b:0.06},
  {nm:"Le renseignement complet",d:"Porter la recherche macro au maximum et battre la médiane des concurrents.",t:c=>c.budRes===2&&c.rel>0,b:0.07},
- {nm:"Le desk de luxe",d:"Porter la salle de marché au maximum et garder les coûts de transaction sous 12 points de base.",t:c=>c.budExec===2&&c.tcBp<12,b:0.08},
+ {nm:"Le desk de luxe",d:"Porter la salle de marché au maximum et garder les coûts de transaction sous 22 points de base.",t:c=>c.budExec===2&&c.tcBp<22,b:0.08},
  {nm:"Le renseignement rentable",d:"Gagner au moins dix fois la facture d'exploitation du trimestre.",t:c=>c.pnlM>10*c.ops*1e-4*1000*(c.pnlM?1:1)&&c.q>0,b:0.10},
  {nm:"Le book minimal",d:"Construire un book de trois lignes au plus et finir le trimestre positif.",t:c=>c.nPos<=3&&c.nPos>0&&c.q>0,b:0.09},
  {nm:"Le grand déploiement",d:"Ouvrir au moins huit lignes dans le trimestre.",t:c=>c.nPos>=8,b:0.07},
@@ -827,7 +827,7 @@ const QGOALS=[
  {nm:"Le trimestre parfait",d:"Battre la médiane, rester sous 5 % de repli et finir avec les deux jauges en hausse.",t:c=>c.rel>0&&c.dd<0.05&&c.dLp>0&&c.dRc>0,b:0.17},
  {nm:"Le rendement propre",d:"Livrer l'objectif du mandat avec une volatilité réalisée sous la cible.",t:c=>c.q>=c.goalQ&&c.vol<c.tgt,b:0.13},
  {nm:"Le ratio",d:"Livrer une performance trimestrielle supérieure à la moitié de la volatilité réalisée.",t:c=>c.vol>0.01&&c.q>c.vol/2,b:0.14},
- {nm:"Efficace et discret",d:"Battre la médiane avec moins de dix points de base de coûts de transaction.",t:c=>c.rel>0&&c.tcBp<10,b:0.12},
+ {nm:"Efficace et discret",d:"Battre la médiane avec moins de vingt points de base de coûts de transaction.",t:c=>c.rel>0&&c.tcBp<20,b:0.12},
  {nm:"Gagner sans rien dépenser",d:"Battre la médiane avec les trois budgets au minimum.",t:c=>c.rel>0&&c.budRes===0&&c.budExec===0&&c.budRisk===0,b:0.13},
  {nm:"La démonstration",d:"Battre les quatre concurrents en gardant moins de huit lignes ouvertes.",t:c=>c.beatAll&&c.nPos<8,b:0.15},
  {nm:"Le funambule",d:"Finir positif avec un notionnel brut supérieur à cinq fois l'encours et sans appel de marge.",t:c=>c.q>0&&c.lev>5&&!c.marginCall,b:0.12},
@@ -1995,7 +1995,7 @@ function goalCtx(o){
   budRes:S.bud.res,budExec:S.bud.exec,budRisk:S.bud.risk,
   pnlM:o.qTotal*navB*1000,
   tcM:(S.qPnl?S.qPnl.tcM:0),feeM:(S.qPnl?S.qPnl.feeM:0),
-  tcBp:Math.abs(S.qPnl?S.qPnl.tcM:0)/Math.max(1e-9,navB*1000)*1e4,
+  tcBp:Math.abs(S.qPnl?S.qPnl.tcM:0)/Math.max(1e-9,navB)*1e4,
   ops:S.budBp,regime:S.truth,goalQ:VOL().goal/4
  };
 }
