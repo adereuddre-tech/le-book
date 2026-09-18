@@ -25,13 +25,14 @@ w.eval(`window.__chk=[];if(typeof evPlans!=="undefined")(function(){const R=reso
  window.__chk.push({dl,dr,si,p,exp:imm+o.pay[si]*(S.nav? 1:1)});
  if(Math.abs(dl)>1e-6||Math.abs(dr)>1e-6)window.__bad=(window.__bad||0)+1;
  return r}})()`);
-while(steps++<3000&&!done){
+const SIG=[];while(steps++<3000&&!done){
+ if(steps%1===0){const h=(d.querySelector('h1,h2,h3')||{}).textContent||'?';const b=[...d.querySelectorAll('button')].filter(x=>!x.disabled).map(x=>x.id||x.className).join(',').slice(0,90);const sg=h+' :: '+b;if(SIG[SIG.length-1]!==sg)SIG.push(sg);if(SIG.length>400)SIG.shift()}
  const t=$('#tutooff');if(t){click(t);continue}
  if($('#again')){done=true;break}
  if($('#found')){click($('#found'));continue}
  if($('#go')&&$('#picks')){for(const k in cfg){const c=$(`.card[data-key="${k}"][data-id="${cfg[k]}"]`);if(c)click(c)}
   const sd=$('#sd');sd.value=String(seed);click($('#go'));continue}
- if($('#send')){w.eval(`try{const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));drawRows();renderRisk()}catch(e){window.__e=e.message}`);
+ if($('#send')){w.eval(`try{const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));drawRows();renderRisk();refreshSend()}catch(e){window.__e=e.message}`);
   if(w.__e){errs.push('reco:'+w.__e);w.__e=null}
   if($('#send').disabled&&$('#fitbook'))click($('#fitbook'));
   stats.qs++;if($('#send').disabled){errs.push('book bloque');break}click($('#send'));continue}
@@ -55,5 +56,5 @@ while(steps++<3000&&!done){
  errs.push('bloqué: '+d.body.textContent.slice(0,200));break;
 }
 const chk=w.eval('window.__chk')||[];const res={resumed,bad:w.eval('window.__bad||0'),npo:chk.filter(c=>c.si===0).length,pbar:chk.reduce((a,c)=>a+c.p,0)/Math.max(1,chk.length),seed,cfg,sage,done,steps,errs:errs.slice(0,5),nerr:errs.length,stats,over:w.eval('S&&S.over'),q:w.eval('S&&S.q'),nav:w.eval('S&&S.nav')};
-if(a.includes('--log'))res.plog=plog.slice(0,3);
+if(a.includes('--log'))res.plog=plog.slice(0,3);if(!done)res.sig=SIG.slice(-6);
 console.log(JSON.stringify(res));
