@@ -49,6 +49,8 @@ function playGame(o){
         let k=raw.map(z=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(z*a))));
         for(let it=0;it<8;it++){const v=pvol(weights(k));if(v<1e-9)break;const r=tg/v;if(r>0.95&&r<1.05)break;a*=r;k=raw.map(z=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(z*a))))}
         S.k=k;})()`);
+      if($('#send').disabled&&$('#fitbook'))click($('#fitbook'));
+      if($('#send').disabled){errs.push('book bloque');break}
       click($('#send'));continue}
     const ev=d.querySelectorAll('.choice.evopt');
     if(ev.length){st.ev++;
@@ -63,7 +65,8 @@ function playGame(o){
       if(smart){let bu=-1e9;chs.forEach((c,j)=>{const u=utilText(c.textContent);if(u>bu+1e-9){bu=u;bi=j}})}
       else bi=Math.floor(Math.random()*chs.length);
       click(chs[bi]);continue}
-    if($('#commok')){click($('#commok'));continue}
+    const cc=d.querySelectorAll('.card.commgo');
+    if(cc.length){click(cc[1]);continue}   /* annonce standard : un clic vaut validation */
     let hit=false;for(const id of ['#ok','#go2','#rgo','#pgo','#nx','#go']){const b=$(id);if(b&&!b.disabled){click(b);hit=true;break}}
     if(hit)continue;
     const any=[...d.querySelectorAll('button.cta,button.buy')].filter(b=>!b.disabled);
