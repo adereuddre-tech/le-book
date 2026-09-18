@@ -90,6 +90,9 @@ em{font-style:italic;color:var(--txt)}
 /* cartes de choix */
 .pickgrp{margin-top:26px}
 .pickhead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line2);padding-bottom:6px}
+.hintq{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;margin-left:6px;
+ border-radius:50%;border:1px solid var(--gold);background:transparent;color:var(--gold);
+ font-size:11px;font-weight:600;line-height:1;vertical-align:middle;flex-shrink:0}
 .pickhead h2{font-size:16px;font-weight:600}
 .pickhead span{font-family:var(--mono);font-size:11px;color:var(--dimmer)}
 .card{border:none;border-radius:7px;padding:13px 14px 10px;background:transparent;display:block;width:100%;text-align:left}
@@ -251,6 +254,12 @@ em{font-style:italic;color:var(--txt)}
 .gauge .gl b{font-family:var(--mono);font-weight:500;color:var(--txt)}
 .track{height:3px;background:var(--flat);border-radius:2px;overflow:hidden}
 .track i{display:block;height:100%;border-radius:2px;transition:width .4s}
+/* investisseurs et comité : la lecture centrale du jeu, elle mérite d'être épaisse */
+.tile.gauge .track{height:7px;border-radius:4px}
+.tile.gauge .track i{border-radius:4px}
+.tile.gauge{padding-bottom:7px}
+.tile.gauge.moved{box-shadow:0 0 0 1px var(--mv) inset;border-color:var(--mv)}
+.tile.gauge.moved>span i{color:var(--mv)}
 
 /* blocs */
 .block{margin:22px 0 0}
@@ -2325,8 +2334,11 @@ const bn=(x,d=1)=>`<b class="${cls(x)}">${x>=0?'+':'−'}${moneyB(Math.abs(x))}<
 const mn=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${mm(Math.abs(x))}</b>`;
 const cls=x=>x>0.00005?'pos-g':(x<-0.00005?'neg-g':'dim-g');
 let setup={prof:'flux',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'com',dur:'normal'};/* arch et desk sont figés : redondants avec les budgets */
-let TUTO=true;
-let SHOWHINTS=true;
+/* Le tutoriel ne doit revenir ni au rechargement de la page ni à la partie suivante. */
+function tutoSeen(){try{return localStorage.getItem('lebook_tuto_v1')==='1'}catch(e){return false}}
+function markTutoSeen(){try{localStorage.setItem('lebook_tuto_v1','1')}catch(e){}}
+let TUTO=!tutoSeen();
+let SHOWHINTS=!tutoSeen();
 const SETUPHINTS={
  prof:"Votre style décide du poids accordé aux rumeurs que vous achetez face aux signaux de marché — tendance, portage, valeur. Le systématique suit les signaux et se passe de conviction ; le fondamental mise sur l'information et paie pour l'avoir.",
  arch:"L'architecture fixe la largeur de la bande de tolérance autour de votre volatilité cible, et la sévérité du comité quand vous en sortez. Allégée, vous avez de la liberté et peu de filet.",
@@ -2452,10 +2464,11 @@ function feeLine(){
 function screenSetup(){
  app.innerHTML=`<div class="hero fade" style="padding-top:34px">
   <div class="kicker">${fundName.toUpperCase()}${setup.size?' · '+SIZES.find(x=>x.id===setup.size).nm.split('—')[1].trim().toUpperCase():''}</div>
-  <h1 style="font-size:clamp(36px,11vw,58px)">Composez votre équipe</h1>
-  <div class="sub">quatre choix, puis le premier trimestre</div>
+  <h1 style="font-size:clamp(36px,11vw,58px)">Créez votre fonds</h1>
+  <div class="sub">cinq choix, puis le premier trimestre</div>
  </div>
- <div class="prose">
+ <button class="cta ghost" id="howto" style="margin-top:12px">Comment on joue, comment on gagne</button>
+ <div class="prose" id="introprose" style="display:none">
   <p>À vous de décider vos positions sur <strong>jusqu'à 25 marchés</strong> — actions, taux, devises, matières premières, exotiques — à l'achat ou à la vente. Le desk vous remonte ses sources, le monde vous envoie des dépêches, et vos investisseurs comme votre comité des risques jugent chacun de vos gestes en direct.</p>
   <p><strong>Votre objectif : encaisser le plus de commissions possible en deux ans sans vous faire débarquer.</strong> Vous gagnez une commission de gestion sur l'encours, trimestre après trimestre, et une commission de performance sur ce que le fonds gagne au-dessus de son plus haut historique. Un gros encours et une belle performance font un gros score — mais si les investisseurs retirent leur argent, si le comité des risques vous retire le mandat ou si le fonds perd plus de 28 %, la partie s'arrête et vous ne toucherez plus rien. Tout le jeu tient dans cette tension : prendre assez de risque pour gagner, pas assez pour être débarqué.</p>
  </div>
@@ -2489,8 +2502,7 @@ function renderPicks(){
   desk:{inhouse:'🏛️',broker:'🤝',algo:'💻'},size:{small:'🏠',mid:'🏢',mega:'🏙️'},univ:{fin:'🏦',com:'🛢️',ext:'🌐'},dur:{express:'⏱️',normal:'📅',saison:'🗓️'},
   vol:{prud:'🧊',std:'🎯',risk:'🔥'}};
  const grp=(title,hint,arr,key)=>`<div class="pickgrp">
-   <div class="pickhead"><h2>${title}</h2><span>${hint}</span></div>
-   ${SHOWHINTS&&SETUPHINTS[key]?`<div class="flag" data-hint="${key}"><span>${SETUPHINTS[key]}</span><button class="hintx" data-hintx="${key}" aria-label="Masquer">×</button></div>`:''}
+   <div class="pickhead"><h2>${title}${SETUPHINTS[key]?`<button class="hintq" data-hintq="${key}" aria-label="À quoi ça sert ?">?</button>`:''}</h2><span>${hint}</span></div>
    ${arr.map(o=>`<div class="cardwrap ${setup[key]===o.id?'sel':''}">
      <button class="card" data-key="${key}" data-id="${o.id}">
       <div class="cardtop"><span class="ico">${(ICO[key]||{})[o.id]||'•'}</span><div class="cardttl"><div class="who">${o.who}</div><b>${o.nm}</b>${o.lvl?`<span class="reco" style="background:${o.lvl==='Débutant'?'rgba(90,170,110,.18)':o.lvl==='Expert'?'rgba(200,90,90,.18)':'rgba(140,140,150,.16)'};color:${o.lvl==='Débutant'?'var(--long)':o.lvl==='Expert'?'var(--short)':'var(--dim)'}">${o.lvl}</span>`:''}</div></div><p>${o.p}</p></button>
@@ -2504,7 +2516,16 @@ function renderPicks(){
    grp("La taille du fonds","1 sur 3 · la difficulté et le nombre de marchés par classe",SIZES,'size')+
    grp("L'univers d'investissement","1 sur 3 · les classes d'actifs autorisées",UNIVS,'univ')+
    grp("La durée du mandat","1 sur 3 · le nombre de trimestres",DUREES,'dur');
- app.querySelectorAll('[data-hintx]').forEach(b=>b.onclick=e=>{e.stopPropagation();delete SETUPHINTS[b.dataset.hintx];renderPicks()});
+ app.querySelectorAll('[data-hintq]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();
+   openModal(b.closest('.pickhead').querySelector('h2').childNodes[0].textContent.trim(),`<p>${SETUPHINTS[b.dataset.hintq]}</p>`)});
+ {const hb=document.getElementById('howto'),ip=document.getElementById('introprose');
+  const open=()=>{
+    openModal('Comment on joue',ip.innerHTML+`<p style="margin-top:12px"><button class="buy" id="tutooff">Ne plus afficher le tutoriel</button></p>`);
+    const b=document.getElementById('tutooff');
+    if(b)b.onclick=()=>{TUTO=false;SHOWHINTS=false;markTutoSeen();const m=document.getElementById('modal');if(m)m.remove();toast('Tutoriel désactivé.')};
+  };
+  if(hb&&ip){hb.onclick=open;
+   if(SHOWHINTS&&!window.__introShown){window.__introShown=1;setTimeout(open,400)}}}
  app.querySelectorAll('.card').forEach(b=>b.onclick=()=>{
    setup[b.dataset.key]=b.dataset.id;renderPicks();const fl=document.getElementById('feeline');if(fl)fl.innerHTML=feeLine();
    const ok=setup.prof&&setup.vol&&setup.size&&setup.univ&&setup.dur;
@@ -2543,6 +2564,11 @@ function statusBar(done){
  const dd=1-S.idx/S.peakIdx,cum=S.idx-1;
  const lab=done?`APRÈS ${S.q} TRIMESTRE${S.q>1?'S':''}`:`TRIMESTRE ${Math.min(S.q+1,QT())} / ${QT()}`;
  const gc=v=>v>55?'var(--long)':v>25?'var(--warn)':'var(--short)';
+ /* liseré de la couleur du mouvement : on ne le montre que hors page de book, où la flèche
+    indique un changement déjà appliqué et non une prévisualisation */
+ const mvd=S.phase!=='book'&&S.lastG?S.lastG:null;
+ const mvL=mvd&&Math.abs(mvd.lp)>=0.05?mvd.lp:0, mvR=mvd&&Math.abs(mvd.rc)>=0.05?mvd.rc:0;
+ const mvSty=v=>v?`;--mv:${v>0?'var(--long)':'var(--short)'}`:'';
  const rank=1+S.rivals.filter(r=>r.cum>S.idx).length;
  const w=weights(S.k),ex=factorExpo(w),c=costsNow(),ctot=c.ops+c.tc+c.mgmt;
  const sp=riskShown(w).total;   /* même grandeur que le panneau du book */
@@ -2557,8 +2583,8 @@ function statusBar(done){
   </div>
   <div class="srow">
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
-   <button class="tile" data-gauge="lp" style="flex:1.05"><span><i>Invest.</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,S.lp):Math.round(S.lp)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.lp)>=0.05?`<span class="${cls(S._pv.lp)}">→${Math.round(Math.max(0,Math.min(100,S.lp+S._pv.lp)))}</span>`:''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
-   <button class="tile" data-gauge="rc" style="flex:1.05"><span><i>Comité</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.rc0,S.rc):Math.round(S.rc)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?`<span class="${cls(S._pv.rc)}">→${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
+   <button class="tile gauge${mvL?' moved':''}" data-gauge="lp" style="flex:1.05${mvSty(mvL)}"><span><i>Invest.</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,S.lp):Math.round(S.lp)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.lp)>=0.05?`<span class="${cls(S._pv.lp)}">→${Math.round(Math.max(0,Math.min(100,S.lp+S._pv.lp)))}</span>`:''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
+   <button class="tile gauge${mvR?' moved':''}" data-gauge="rc" style="flex:1.05${mvSty(mvR)}"><span><i>Comité</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.rc0,S.rc):Math.round(S.rc)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?`<span class="${cls(S._pv.rc)}">→${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
    <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Vos gains</span><b id="gaintile" class="${mgrNet()>=0?'':'neg-g'}">${score(mgrNet())}</b></button>
   </div>
   <div class="srow">
@@ -2992,7 +3018,7 @@ function tuto(n,next){
   const nb=document.getElementById('tutonext');
   if(nb)nb.onclick=()=>{const m=document.getElementById('modal');if(m)m.remove();tuto(next)};
   const b=document.getElementById('tutooff');
-  if(b)b.onclick=()=>{S.tuto=99;TUTO=false;const m=document.getElementById('modal');if(m)m.remove();toast('Tutoriel désactivé.')};
+  if(b)b.onclick=()=>{S.tuto=99;TUTO=false;SHOWHINTS=false;markTutoSeen();const m=document.getElementById('modal');if(m)m.remove();toast('Tutoriel désactivé.')};
  },420);
 }
 function screenBudget(){
@@ -3274,7 +3300,7 @@ function hint(id){
  setTimeout(()=>{openModal(`Info · ${H[0]}`,
   H[1]+`<p style="margin-top:12px"><button class="buy" id="tutooff">Ne plus afficher les info-bulles</button></p>`);
   const b=document.getElementById('tutooff');
-  if(b)b.onclick=()=>{S.tuto=99;TUTO=false;const m=document.getElementById('modal');if(m)m.remove();toast('Info-bulles désactivées.')};
+  if(b)b.onclick=()=>{S.tuto=99;TUTO=false;SHOWHINTS=false;markTutoSeen();const m=document.getElementById('modal');if(m)m.remove();toast('Info-bulles désactivées.')};
  },420);
 }
 function screenComm(){
@@ -3387,6 +3413,8 @@ function stepEvents(){
 function screenMacroEvent(ev){
  hint('event');
  const w=weights(S.k);
+ S.evG0={lp:S.lp,rc:S.rc};   /* état des jauges avant la dépêche : la flèche de la barre
+                                d'état doit couvrir la dépêche entière, pas le dernier appel */
  let imm=0;const touched=[];
  for(const sym in ev.hit){const i=IDX[sym];const r=0.5*ev.hit[sym]*INSTR[i].sigQ;imm+=w[i]*r;touched.push(i)}
  const navB=S.nav;S.nav*=(1+imm);S.qEvM+=imm*navB;
@@ -3501,6 +3529,12 @@ function resolveEvent(ev,touched,o,imm,navB){
  }
  const flowLines=[];midFlows(total,flowLines);
  const ev0=S.evImmG||{lp:0,rc:0};S.evImmG=null;
+ /* la barre d'état doit raconter la dépêche entière : `gauge()` écrase S.lastG à chaque
+    appel et il y en a deux à quatre ici, d'où une flèche qui contredisait la ligne « Effets » */
+ const g0=S.evG0||{lp:S.lp-(ev0.lp+g.lp+gr.lp),rc:S.rc-(ev0.rc+g.rc+gr.rc)};
+ const tg={lp:S.lp-g0.lp,rc:S.rc-g0.rc};
+ if(Math.abs(tg.lp)>=0.05||Math.abs(tg.rc)>=0.05)S.lastG={lp:tg.lp,rc:tg.rc,lp0:g0.lp,rc0:g0.rc};
+ S.evG0=null;
  S.evLog.push({t:ev.t,pnl:total,m:total*navB,lp:ev0.lp+g.lp+gr.lp,rc:ev0.rc+g.rc+gr.rc});
  const flav=pk(EVFLAV,S.q*3+S.evIdx);
  const UE=pickU([imm*navB,resid*navR,cost,total*navB]);
@@ -3509,7 +3543,7 @@ function resolveEvent(ev,touched,o,imm,navB){
  const what=!acted?(syst?"Le modèle n'a rien fait, comme prévu.":"Vous tenez votre book sans bouger.")
    :`${syst?'Vous passez outre le modèle et suivez le mouvement':'Vous suivez le mouvement'} : ${tr}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${o.free?` Votre desk vous offre cet ajustement (un par trimestre) : ${mm(o.costRaw)} économisés.`:''}`;
  const keyRows=[['<b>Bilan de la dépêche</b>',`${sgn(total,1)} · ${inU(total*navB,UE)}`],
-  ['Effets',gz(ev0.lp+g.lp+gr.lp,ev0.rc+g.rc+gr.rc,'always')]];
+  ['Effets',gz(tg.lp,tg.rc,'always')]];
  resultCard(`DÉPÊCHE · ${ev.t.toUpperCase()}`,['Le mouvement s\'est poursuivi','Le mouvement s\'est retourné'][si],
   [`<b>${scName}</b> ${flav} ${what}`,...flowLines,`La suite du mouvement, marché par marché :`,tbl(perM.map(r=>[r[0],r[1],r[2],inU(r[3]*navR,UE)]),['Marché','Position','Mouvement','Sur le book']),`Votre book capte au total <em class="${cls(resid)}">${sgn(resid,1)}</em> sur la suite du mouvement.`],
   [['P&amp;L immédiat',`${sgn(imm,1)} · ${inU(imm*navB,UE)}`],
@@ -3619,7 +3653,7 @@ function screenMidMark(){
  const g=pnlGauge(p*0.8,"Point de mi-trimestre : performance latente des positions");
  const navB=S.nav;
  resultCard(`TRIMESTRE ${S.q+1} · MI-PARCOURS`,p>=0?"Le book est en gains latents":"Le book est en pertes latentes",
-  [`À mi-trimestre, vos positions directionnelles valent <em class="${cls(p)}">${sgn(p,1)} · ${mn(p*navB)}</em>, non réalisés. Rien n'est encaissé, mais les investisseurs et le comité reçoivent le rapport hebdomadaire et réagissent.`,
+  [`À mi-trimestre, vos positions directionnelles valent <em class="${cls(p)}">${sgn(p,1)} · ${mn(p*navB)}</em>, non réalisés. Rien n'est encaissé, mais les investisseurs et le comité reçoivent le rapport hebdomadaire et réagissent : ${gz(g.lp,g.rc,'always')}.`,
    rows.length?`Principaux contributeurs : ${rows.slice(0,4).map(o=>`${INSTR[o.i].sym} <span class="${cls(o.v)}">${mn(o.v*navB)}</span>`).join(', ')}.`:"Aucune position ouverte : rien à marquer."],
   [['Jauges',`<span class="${cls(g.lp)}">${sd1(g.lp)}</span> · <span class="${cls(g.rc)}">${sd1(g.rc)}</span>`]],
   "Poursuivre le trimestre",stepEvents,
@@ -4201,6 +4235,7 @@ function screenFinal(){
   size:S.size,univ:S.univ,dur:S.dur,goals:S.goalsWon||0,sweeps:S.sweeps||0,
   commNone:S.commNone||0,qNeg:S.qNeg||0,mguMax:S.mguMax||0,resMin:S.resMinQ||0};
  FEATS.forEach(f=>{if(f.tf){try{if(f.tf(S.finalCtx))award(f.id)}catch(e){}}});
+ markTutoSeen();TUTO=false;SHOWHINTS=false;   /* une partie jouée : le tutoriel a fait son office */
  let verdict,vtxt;
  if(S.over==='dd'){verdict="Le fonds est liquidé";vtxt=`La perte a dépassé ${Math.round(ddMax()*100)} %. Les clauses de rachat se sont déclenchées en cascade au trimestre ${S.q}.`}
  else if(S.over==='lp'){verdict="Les rachats l'ont emporté";vtxt="La base d'investisseurs s'est vidée avant que la thèse n'ait le temps de se réaliser. C'est la façon la plus courante de perdre en gestion."}
