@@ -1052,7 +1052,7 @@ const TRADER_EXEC=[
       {b:"Tout exécuter aujourd'hui",s:"Plein tarif, vous êtes en position ce soir.",e:{}},
       {b:"Exécuter en une heure, à tout prix",s:"Coûts sur les taux ×1,8, mais vous êtes en place avant les chiffres de 14h30 : 40 % de chances de +0,45 %.",e:{tcMultOn:['TN','GBL','JGB'],tcMult:1.8,risk:[0.40,0.0045],riskMsg:"Vous étiez en place avant les chiffres",safeTxt:"Les chiffres n'ont rien donné : vous avez payé la vitesse pour rien."}}]},
  {who:"Bartolomeo « Tuco » Ossobuco · énergie",t:"Un bloc de Brent est disponible « à mi-fourchette, sans questions »",need:['CL'],
-  p:"« Un fonds souverain du Golfe déboucle. Je peux prendre 4 Md$ de contrats à mi-fourchette. La contrepartie préfère qu'on ne fasse pas de bruit. »",
+  p:"« Un fonds souverain du Golfe déboucle. Je peux prendre 400 M$ de contrats à mi-fourchette. La contrepartie préfère qu'on ne fasse pas de bruit. »",
   ch:[{b:"Prendre le bloc",s:"Coûts sur le pétrole −50 %. Comité −4 (contrepartie discrète).",e:{tcMultOn:['CL'],tcMult:0.5,rc:-4}},
       {b:"Prendre le bloc et en demander le double",s:"Coûts −60 %, comité −7. 30 % de risque que la contrepartie sache quelque chose que vous ignorez : −0,6 %.",e:{tcMultOn:['CL'],tcMult:0.4,rc:-7,risk:[0.30,-0.006],riskMsg:"Le fonds souverain savait pourquoi il vendait",safeTxt:"La contrepartie vendait vraiment pour du cash. Belle affaire."}},
       {b:"Décliner",s:"« Comme vous voulez, patron. » Plein tarif.",e:{}}]},
@@ -1121,7 +1121,7 @@ TRADER_EXEC.push(
  {who:"Dwight Tannenbaum · exécution quantitative",t:"« Les émergents se traitent via des ETF américains, c'est plus liquide »",need:['MXEF'],p:"Répliquer les émergents avec un ETF coté à New York : liquide, mais avec un écart de suivi.",
   ch:[{b:"Passer par l'ETF",s:"Coûts −35 % sur MXEF, 30 % de risque d'écart de suivi : −0,2 %.",e:{tcMultOn:['MXEF'],tcMult:0.65,risk:[0.3,-0.002],riskMsg:"L'ETF a décroché de son indice"}},{b:"Futures classiques",s:"Plein tarif.",e:{}},{b:"Moitié ETF, moitié futures",s:"Coûts −18 %, risque réduit.",e:{tcMultOn:['MXEF'],tcMult:0.82,risk:[0.15,-0.001],riskMsg:"Petit écart de suivi"}}]},
  {who:"Dwight Tannenbaum · exécution quantitative",t:"« Le blé, ça ne s'algorithmise pas. Je passe la main à un humain ? »",need:['ZW'],p:"Dwight admet une limite. C'est rare.",
-  ch:[{b:"Confier le blé à un courtier de Chicago",s:"Coûts −25 % sur le blé, comité −1.",e:{tcMultOn:['ZW'],tcMult:0.75,rc:-1}},{b:"Laisser l'algo essayer",s:"Coûts +30 % sur le blé.",e:{tcMultOn:['ZW'],tcMult:1.3}},{b:"Ne traiter que la moitié de l'ordre",s:"Coûts −40 %, mais la position visée n'est atteinte qu'à moitié.",e:{tcMultOn:['ZW'],tcMult:0.6,halfOn:'ZW'}}]},
+  ch:[{b:"Confier le blé à un courtier de Chicago",s:"Coûts −25 % sur le blé, comité −1.",e:{tcMultOn:['ZW'],tcMult:0.75,rc:-1}},{b:"Laisser l'algo essayer",s:"Coûts +30 % sur le blé.",e:{tcMultOn:['ZW'],tcMult:1.3}},{b:"Ne traiter que la moitié de l'ordre",s:"Coûts −40 %, mais la position visée n'est atteinte qu'à moitié.",e:{tcMultOn:['ZW'],tcMult:0.6,halfOn:['ZW']}}]},
  {who:"Jean-Kevin Lévêque-Charbonnier · junior",t:"« Vous vouliez 2 unités ou 2 milliards ? »",p:"Le junior a un doute. Il aurait dû l'avoir avant d'envoyer.",
   ch:[{b:"Vérifier tous les ordres avant confirmation",s:"Coûts +5 % (exécution retardée), aucun risque.",e:{tcMult:1.05}},{b:"« C'est écrit dans le ticket »",s:"30 % de risque que le ticket soit faux : −0,4 % et comité −4.",e:{risk:[0.3,-0.004],riskRc:-4,riskMsg:"Le ticket était faux"}},{b:"Confier ses ordres à Ingrid",s:"Coûts +2 %, junior vexé, débauchage +5 %.",e:{tcMult:1.02,poach:0.05}}]},
  {who:"Jean-Kevin Lévêque-Charbonnier · junior",t:"« J'ai trouvé une contrepartie sur un forum. Sérieux, elle est bien »",p:"Un pool de liquidité inconnu. Les prix sont excellents.",
@@ -1904,7 +1904,7 @@ const INCIDENTS=[
 ];
 const BOARDEV=[
  {who:"Relations investisseurs",t:"Un fonds souverain veut entrer",
-  p:"12 Md$ disponibles immédiatement, assortis d'une fenêtre de rachat trimestrielle sans préavis.",
+  p:"Une souscription de 12 % de votre encours, disponible immédiatement, assortie d'une fenêtre de rachat trimestrielle sans préavis.",
   ch:[{b:"Prendre l'argent",s:"L'encours grimpe, le passif devient plus fragile.",e:{aum:0.12,lp:4,rc:-7,flighty:true}},
       {b:"Refuser, garder le lock-up",s:"Vous préservez la stabilité du passif au prix de la croissance.",e:{lp:-3,rc:6}}]},
  {who:"Prime broker",t:"Relèvement des appels de marge",
@@ -3602,8 +3602,10 @@ function screenTraderEvent(ev,next){
   if(e.trendAdd){const dir=Math.sign(e.trendAdd);const top=S.tcv.t.map((v,i)=>({v:Math.abs(v),i})).sort((a,b)=>b.v-a.v).slice(0,Math.abs(e.trendAdd));top.forEach(o=>setK(o.i,S.k[o.i]+dir*Math.sign(S.tcv.t[o.i]||1)))}
   if(e.cutTopN){const w=weights(S.k),rc=riskContrib(w);rc.map((v,i)=>({v:Math.abs(v),i})).sort((a,b)=>b.v-a.v).slice(0,e.cutTopN).forEach(o=>{if(S.k[o.i]!==0)setK(o.i,S.k[o.i]-Math.sign(S.k[o.i]))})}
   if(e.cap2){for(let i=0;i<N;i++)if(Math.abs(S.k[i])>2)setK(i,2*Math.sign(S.k[i]))}
-  if(e.zeroOn)e.zeroOn.forEach(sy=>setK(IDX[sy],0));
-  if(e.halfOn)e.halfOn.forEach(sy=>{const i=IDX[sy];setK(i,Math.trunc(S.k[i]/2))});
+  /* tableau ou symbole seul, et jamais d'écriture sur un marché fermé (invariant 3) */
+  const syms=v=>(Array.isArray(v)?v:[v]).filter(sy=>IDX[sy]!==undefined);
+  if(e.zeroOn)syms(e.zeroOn).forEach(sy=>setK(IDX[sy],0));
+  if(e.halfOn)syms(e.halfOn).forEach(sy=>{const i=IDX[sy];setK(i,Math.trunc(S.k[i]/2))});
   if(e.scaleAll){for(let i=0;i<N;i++)setK(i,Math.round(S.k[i]*e.scaleAll))}
   if(e.randAdd){for(let n=0;n<e.randAdd;n++){const cand=INSTR.map((x,i)=>i).filter(i=>Math.abs(S.k[i])<S.maxk);if(!cand.length)break;const i=cand[Math.floor(rng()*cand.length)];const d=S.k[i]===0?(rng()<0.5?-1:1):Math.sign(S.k[i]);setK(i,S.k[i]+d)}}
   if(e.addBest){let bi=-1,bv=-1e9;for(let i=0;i<N;i++){const v=S.k[i]*S.lastR[i];if(S.k[i]!==0&&v>bv){bv=v;bi=i}}if(bi>=0)setK(bi,S.k[bi]+Math.sign(S.k[bi]))}
@@ -3618,6 +3620,8 @@ function screenTraderEvent(ev,next){
   if(e.stopQ)S.stopQ=true;
   if(e.noAddQ)S.noAddQ=true;
   if(e.leakQ)S.leakQ=true;
+  if(e.carry)S.carry=true;   /* book de portage : le moteur le lit, personne ne le posait */
+  if(e.leak)S.leak=true;     /* positions publiées : idem */
   if(e.execBoost)S.execPenalty=Math.max(0.7,S.execPenalty*e.execBoost);
   if(e.tcvBoost){const t=S.tcv;S.tcvEst={t:t.t.map(quant),c:t.c.map(quant),v:t.v.map(quant)};msg.push("Le desk dispose maintenant de signaux marché exacts pour le trimestre.")}
   if(e.tcvPerm){S.tcvPerm=true;const t=S.tcv;S.tcvEst={t:t.t.map(quant),c:t.c.map(quant),v:t.v.map(quant)};msg.push("Vos indicateurs sont recalés dès maintenant, et le resteront jusqu'à la fin du mandat.")}
