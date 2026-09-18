@@ -67,11 +67,14 @@ em{font-style:italic;color:var(--txt)}
 .tapehead{display:flex;justify-content:space-between;align-items:baseline;
  font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--dimmer);margin-bottom:2px}
 .tapehead b{font-size:12px}
-.tape .navdraw{animation-duration:3s;animation-timing-function:linear}
+.tapedraw{stroke-dasharray:4000;stroke-dashoffset:4000;animation:navdr 3s linear forwards}
+.tapefill{opacity:0;animation:tapefade 3s linear forwards}
+@keyframes tapefade{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.tapedraw{animation:none;stroke-dashoffset:0}.tapefill{animation:none;opacity:1}}
 /* l'événement se découvre une fois le ruban tracé : on voit le marché bouger, puis on
    apprend pourquoi. Sous « mouvement réduit », tout est visible d'emblée. */
-.evhold{opacity:0;pointer-events:none;animation:evshow .5s ease-out 3s forwards}
-@keyframes evshow{to{opacity:1;pointer-events:auto}}
+.evhold{opacity:0;pointer-events:none;animation:evshow .55s ease-out 3s forwards}
+@keyframes evshow{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none;pointer-events:auto}}
 @media (prefers-reduced-motion:reduce){.evhold{opacity:1;pointer-events:auto;animation:none}}
 .navbox{margin:14px 0 0;padding:10px 10px 7px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg,var(--panel),rgba(21,32,47,0))}
 .navrow{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:10px;color:var(--dimmer);margin-top:3px}
@@ -2613,21 +2616,52 @@ function ytdIdx(){
  let cur=1;for(let i=0;i<S.q;i++)cur*=(1+S.rets[i]);
  return {y0,base:v,now:cur*(1+liveRet())/v*100,closes:S.rets.slice(y0,S.q)};
 }
+/* Un trimestre fait treize semaines ; à un pas horaire, cela fait quelques centaines de
+   points. L'amplitude par pas est calée sur la volatilité cible du mandat et non sur une
+   constante : un fonds agressif a un ruban plus nerveux, ce qui est la vérité. */
+const TAPEM=48;
+function tapeVol(m){return Math.max(0.006,(S.tgt||0.05)*1.4/Math.sqrt(m))}
 /* Le ruban. Le passé est stocké, jamais recalculé ; seul le présent s'allonge. */
 function tapeTick(){
  const y=ytdIdx(),yk=y.y0;
  if(!S.tape||S.tape.y!==yk||S.tape.q!==S.q){
   const pts=[100];let v=1;
   y.closes.forEach((r,i)=>{const nv=v*(1+r);
-    bridgePts(v*100,nv*100,16,hash32('tape'+(yk+i),S.seed),0.010).forEach(x=>pts.push(x));v=nv});
+    bridgePts(v*100,nv*100,TAPEM,hash32('tape'+(yk+i),S.seed),tapeVol(TAPEM)).forEach(x=>pts.push(x));v=nv});
   S.tape={y:yk,q:S.q,pts,seg:0};
  }
  const tgt=y.now,last=S.tape.pts[S.tape.pts.length-1];
  if(Math.abs(tgt/last-1)>1e-9){
-  const vol=Math.max(0.004,(S.tgt||0.05)/6);
-  bridgePts(last,tgt,9,hash32('tapeq'+S.q+'_'+(S.tape.seg++),S.seed),vol).forEach(x=>S.tape.pts.push(x));
-  if(S.tape.pts.length>420)S.tape.pts.splice(0,S.tape.pts.length-420);
+  S.tape.from=S.tape.pts.length-1;   /* le trait ne redessine que ce qui vient d'arriver */
+  bridgePts(last,tgt,TAPEM,hash32('tapeq'+S.q+'_'+(S.tape.seg++),S.seed),tapeVol(TAPEM))
+    .forEach(x=>S.tape.pts.push(x));
+  if(S.tape.pts.length>3000){const cut=S.tape.pts.length-3000;
+    S.tape.pts.splice(0,cut);S.tape.from=Math.max(0,S.tape.from-cut)}
  }
+}
+/* Deux traits : celui qu'on a déjà vu, posé d'emblée, et celui qui vient d'arriver, qui se
+   dessine en trois secondes. Le remplissage du nouveau segment apparaît avec lui, pour ne pas
+   révéler d'avance où la courbe va. */
+function tapeSvg(p,from){
+ const W=320,H=78,pad=5,n=p.length;
+ let lo=Math.min(100,...p),hi=Math.max(100,...p);
+ const sp=(hi-lo)||1;lo-=sp*0.12;hi+=sp*0.12;
+ const px=i=>pad+i*(W-2*pad)/(n-1),py=v=>H-pad-(v-lo)/(hi-lo)*(H-2*pad);
+ const pt=i=>px(i).toFixed(1)+','+py(p[i]).toFixed(1);
+ const col=p[n-1]>=100?'#4FA98C':'#C4576F',id='tp'+(NGID++);
+ const k=Math.max(0,Math.min(n-1,from|0));
+ const seg=(a,b)=>{const o=[];for(let i=a;i<=b;i++)o.push(pt(i));return o};
+ const area=(a,b)=>{const o=seg(a,b);
+   return 'M'+px(a).toFixed(1)+','+(H-pad)+' L'+o.join(' L')+' L'+px(b).toFixed(1)+','+(H-pad)+'Z'};
+ return `<svg class="navc" viewBox="0 0 ${W} ${H}" aria-hidden="true">
+  <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity=".30"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+  ${k>0?`<path d="${area(0,k)}" fill="url(#${id})"/>`:''}
+  ${k<n-1?`<path class="tapefill" d="${area(k,n-1)}" fill="url(#${id})"/>`:''}
+  <line x1="0" y1="${py(100).toFixed(1)}" x2="${W}" y2="${py(100).toFixed(1)}" stroke="#35496A" stroke-width="1" stroke-dasharray="3 4"/>
+  ${k>0?`<polyline points="${seg(0,k).join(' ')}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`:''}
+  ${k<n-1?`<polyline class="tapedraw" points="${seg(k,n-1).join(' ')}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`:''}
+  <circle class="tapehead2" cx="${px(n-1).toFixed(1)}" cy="${py(p[n-1]).toFixed(1)}" r="3" fill="${col}">
+   <animate attributeName="r" values="3;6;3" dur="1.8s" repeatCount="indefinite"/></circle></svg>`;
 }
 function tapeBand(){
  try{tapeTick()}catch(err){return ticker()}
@@ -2636,7 +2670,7 @@ function tapeBand(){
  const v=p[p.length-1],up=v>=100;
  return `<div class="tape"><div class="tapehead"><span>P&amp;L DU FONDS · ANNÉE ${1+Math.floor(S.q/4)}</span>
    <b class="${up?'pos-g':'neg-g'}">${up?'+':'−'}${dec(Math.abs(v-100),1)} %</b></div>
-  ${navChart(p,{h:78,base:100,anim:1,pulse:1})}</div>`;
+  ${tapeSvg(p,S.tape.from||0)}</div>`;
 }
 function statusBar(done){
  S.statusDone=!!done;
@@ -3523,7 +3557,7 @@ function screenMacroEvent(ev){
  const gcell=v=>{const r=Math.round(v);return `<span class="pn" style="color:${r>0?'var(--long)':r<0?'var(--short)':'var(--dim)'}">${r>0?'+':r<0?'−':''}${Math.abs(r)}</span>`};
  const ptab=o=>`<span class="ptab"><span class="ph">Mouvement</span><span class="ph pn">${SC.ver?'Proba ✓':'Proba'}</span><span class="ph pn">P&amp;L ${unitLab}</span><span class="ph pn">Invest.</span><span class="ph pn">Comité</span>
   ${['Poursuite','Retournement'].map((nm,s)=>`<span class="pl">${nm}</span><span class="pn">${Math.round(PR[s]*100)} %</span><span class="pn" style="color:${o.pay[s]>0?'var(--long)':o.pay[s]<0?'var(--short)':'var(--dim)'}">${uNum(o.pay[s]*S.nav,UM)}</span>${gcell(o.gz[s].lp)}${gcell(o.gz[s].rc)}`).join('')}</span>`;
- app.innerHTML=statusBar()+`<div class="evwrap fade${S.phase==='events'?' evhold':''}">
+ app.innerHTML=statusBar()+`<div class="evwrap ${S.phase==='events'?'evhold':'fade'}">
   <div class="evcard">${evHead(ev.who,'news')}<h3>${ev.t}</h3><p>${ev.p}</p>
    <div class="shock">${chips}</div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px">
@@ -3641,7 +3675,7 @@ function screenRivalEvent(e){
  const t1=`${rv.nm} a misé sur ${x.nm.toLowerCase()} et gagné ; ${S.fundName} a raté le coche`;
  const p=`${rv.boss} l'a dit à qui voulait l'entendre : « ${x.sym} ${dir>0?'monte':'baisse'}, c'était écrit ». Le marché a déjà fait ${sgn(half,1)} depuis le début du trimestre ; vous êtes ${S.k[i]===0?'plat':'du mauvais côté'} dessus. Vos investisseurs ont lu l'article.`;
  const g0=gauge(-2.5,-0.5,`${src} : ${rv.nm} a eu raison sur ${x.sym}, pas vous`);
- app.innerHTML=statusBar()+`<div class="evwrap fade${S.phase==='events'?' evhold':''}">
+ app.innerHTML=statusBar()+`<div class="evwrap ${S.phase==='events'?'evhold':'fade'}">
   <div class="evcard">${evHead(rv.boss+' · '+src,'rival')}<h3>${t1}</h3><p>${p}</p>
    <div class="shock"><span style="color:${dir>0?'var(--long)':'var(--short)'}">${x.sym} ${sgn(half,1)} déjà réalisé</span><span>vous : ${S.k[i]===0?'plat':(S.k[i]>0?'+':'')+S.k[i]}</span><span>${rv.nm} : ${dir>0?'long':'court'}</span></div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px"><div class="kv"><span>Effet de l'article</span><b><span class="${cls(g0.lp)}">investisseurs ${sd1(g0.lp)}</span> · <span class="${cls(g0.rc)}">comité ${sd1(g0.rc)}</span></b></div></div>
@@ -3669,7 +3703,7 @@ function screenRivalEvent(e){
 }
 function screenTraderEvent(ev,next){
  next=next||stepEvents;
- app.innerHTML=statusBar()+`<div class="evwrap fade${S.phase==='events'?' evhold':''}">
+ app.innerHTML=statusBar()+`<div class="evwrap ${S.phase==='events'?'evhold':'fade'}">
   <div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p>${evTimerHTML}</div>
   ${ev.ch.map((c,i)=>`<button class="choice" data-i="${i}"><b>${c.b}</b><span>${c.s}</span></button>`).join('')}</div>`;
  const pickCh=idx=>{clearTimer();
@@ -3754,7 +3788,7 @@ function screenIncident(){
  const navB=S.nav;S.nav*=(1-loss);S.qIncM-=loss*navB;
  const g=gauge(inc.lp*sev,inc.rc*sev,inc.t);
  S.incidents.push({t:inc.t,loss});S.evLog.push({t:inc.t,pnl:-loss,m:-loss*navB,lp:g.lp,rc:g.rc});
- app.innerHTML=statusBar()+`<div class="evwrap fade${S.phase==='events'?' evhold':''}">
+ app.innerHTML=statusBar()+`<div class="evwrap ${S.phase==='events'?'evhold':'fade'}">
   <div class="evcard bad">${evHead(inc.who,'risk')}<h3>${inc.t}</h3><p>${inc.p}</p></div>
   <div class="wire" style="margin-top:12px">
    <div class="kv"><span>Coût direct</span><b class="neg-g">−${mm(loss*navB)} · ${sgn(-loss,1).replace(/<\/?b[^>]*>/g,'')}</b></div>
