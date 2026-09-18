@@ -34,10 +34,19 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   - `goalchk.js` : rejoue les 108 prédicats d'objectif sur des contextes réels.
   - `camp.sh` : campagne n graines × 3 styles sur une copie figée, vers un fichier de résultats
     dépouillé par `summ2.py` (score, écart-type, médiane, survie, causes de fin).
+  - `goalchk.js` : rejoue les 108 prédicats d'objectif et les 36 prédicats de haut fait sur
+    des contextes **réels**, capturés à chaque clôture et à chaque fin de partie par une sonde
+    injectée dans la page (`playGame({probe,collect})`). Signale : prédicat qui lève, prédicat
+    qui ne rend pas un booléen, prédicat jamais vrai, prédicat toujours vrai, et prédicat qui
+    lit un champ absent du contexte — ce dernier cas rend `false` en silence et c'est le plus
+    vicieux. Indispensable parce que le jeu évalue ces prédicats dans un `try/catch` muet :
+    `FEATS.forEach(f=>{if(f.tq){try{...}catch(e){}}})`. Un prédicat cassé ne dit rien.
+    Il imprime aussi la distribution du coût d'exécution par trimestre.
   - `powerchk.js` : vérifie les pouvoirs propres des styles. À rejouer **avant et après** tout
     lot touchant aux sources ou aux dépêches, et à comparer au fichier publié.
-  - Anciens outils perdus, non reconstruits : `cover.js`/`cover2.js` (anecdotes/dépêches),
-    `goalchk.js` (108 prédicats d'objectif), `featchk.js`, `flowchk.js`, `mprobe2.js`.
+  - Anciens outils perdus, non reconstruits : `cover.js`/`cover2.js` (couverture forcée des
+    anecdotes et dépêches, chaque choix), `flowchk.js`, `mprobe2.js`. `goalchk.js` est
+    reconstruit et couvre aussi ce que faisait `featchk.js`.
 - Publication par l'API GitHub (`GET` du sha puis `PUT` sur `contents/index.html`). Le bac à
   sable ne contient aucun jeton : il faut en fournir un (fine-grained PAT, *Contents:
   read and write*) à chaque session, ou publier à la main.
@@ -187,6 +196,7 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
     contenait des dépêches de rivalité sans champ `t`) ; pastille « ✓ vérifiée » au lieu d'un
     préfixe qui débordait ; nowcast durable (`tcvPerm`, payé par le gérant via `mgrM`) ;
     « ancien du desk » relibellé.
+  - *Lot 7* : `goalchk.js` reconstruit, et ce qu'il a trouvé (ci-dessous).
   - *Lot 6* : réglage du style flux (ci-dessous).
   - *Lot 5* : accueil refondu, courbes de NAV partout. Bug corrigé : le tracé final partait de
     `S.navs[0]=100` contre des encours en Md$ — une falaise verticale invisible depuis
@@ -248,6 +258,40 @@ l'encours par an — haut de la fourchette réaliste, assumé pour que le poste 
 Le bonus d'objectif pèse désormais ~16 % du revenu brut du gérant, contre ~43 % avant.
 Encours final médian 184 M$ (quartiles 118 et 281) ; 67 parties sur 90 vont au bout des huit
 trimestres.
+
+### Coût d'exécution réellement constaté
+
+Mesuré sur 104 clôtures (`goalchk.js` l'imprime), en pb de l'encours et par trimestre :
+
+| décile | quartile | médiane | quartile | décile | max |
+|---|---|---|---|---|---|
+| 19 | 26 | **33** | 60 | 83 | 142 |
+
+Soit environ 1,3 % de l'encours par an, book entièrement reconstruit chaque trimestre et
+réactions aux dépêches comprises. C'est la référence à laquelle caler tout seuil exprimé en
+`tcBp`.
+
+### Lot 7 — ce que `goalchk.js` a trouvé
+
+- **`tcBp` était mille fois trop petit** : `|tcM| / (navB*1000) * 1e4`, alors que `tcM` et
+  `navB` sont tous deux en Md$. Conséquence : « L'exécution frugale » (< 15 pb) et
+  « L'exécution chirurgicale » (< 8 pb, prime 0,10 — la deuxième plus grosse du jeu) étaient
+  vraies **à tous les coups**. Défaut antérieur aux lots 1 à 6, invisible parce qu'un objectif
+  toujours gagné ne se plaint pas. Corrigé.
+- Les quatre seuils exprimés en `tcBp` (15, 12, 10, 8 pb) dataient d'un monde où ouvrir un
+  book coûtait 4 pb ; corrigés, ils devenaient tous inatteignables. Recalés sur les quantiles
+  ci-dessus : 26, 22, 20, 16 pb.
+- Effet sur l'équilibre : négligeable (score 17,1 / 26,9 / 31,9 → 16,9 / 26,5 / 31,5 ; survie
+  inchangée). Ces deux objectifs ne sortent que dans ~2 % des trimestres.
+- **Aucun prédicat cassé** : aucun ne lève, aucun ne rend autre chose qu'un booléen, aucun ne
+  lit un champ absent du contexte.
+- 16 objectifs ne se déclenchent jamais **pour le bot**, parce qu'il ne fait jamais varier son
+  budget ni la forme de son book (« Le budget serré », « À l'aveugle », « Le desk de luxe »,
+  « Le book minimal », « La ligne qui paie », « Le spécialiste », « Sans actions »…). Ils sont
+  atteignables par un joueur : ne pas les « corriger » sur cette base. Pour les couvrir
+  vraiment il faudrait faire varier la politique du bot, ce qui reste à faire.
+- « Rien d'appelé » (pas d'appel de marge) est toujours vrai sur 104 trimestres : les appels
+  de marge sont, en pratique, inexistants pour un joueur qui tient son book.
 
 ### Difficulté : mesurée, laissée en l'état, et pourquoi
 
