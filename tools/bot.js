@@ -25,6 +25,7 @@ function playGame(o){
   const cfg={prof:o.prof,vol:o.vol||'std',size:o.size||'mid',univ:o.univ||'com',dur:o.dur||'normal'};
   const bud=o.bud||[1,1,1];const smart=o.policy!=='naive';
   w.eval(`refreshStatus=function(){};toast=function(){};window.__plan=null;(function(){const E=evPlans;window.evPlans=function(){const r=E.apply(this,arguments);window.__plan=r;return r}})()`);
+  if(o.probe)w.eval(o.probe);          /* sonde injectée dans la page, avant la partie */
   const st={ev:0,follow:0,verified:0};let steps=0,done=false;
   while(steps++<4000&&!done){
     if($('#tutooff')){click($('#tutooff'));continue}
@@ -74,6 +75,7 @@ function playGame(o){
     errs.push('bloqué');break;
   }
   const r=JSON.parse(w.eval(`JSON.stringify({score:(S.mgrFees-S.mgrCosts)*1000,fees:S.mgrFees*1000,costs:S.mgrCosts*1000,q:S.q,qtot:S.qtot,over:S.over,ret:S.idx-1,nav:S.nav*1000,bud:S.bud,lp:S.lp,rc:S.rc,feats:Object.keys(S.fl||{}).length})`));
+  if(o.collect){try{r.probe=JSON.parse(w.eval(o.collect))}catch(e){r.probe={err:e.message}}}
   w.close();
   return Object.assign(r,{cfg,budIn:bud,done,steps,nerr:errs.length,err:errs[0],st});
 }
