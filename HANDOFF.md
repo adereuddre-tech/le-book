@@ -130,6 +130,17 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   sélectionnée par défaut ; `fort` = deux fois l'objectif.
 - **Textes** : `MACROEV` (269 dépêches), `TRADER_EXEC` (145 anecdotes d'exécution), `TRADER_MID`,
   `STAKE`, `INCIDENTS`, `BOARDEV`, `RUMORS`, `PRESS_SRC` (24), `PRESS_EXTRA`.
+- **Ruban de P&L en direct** : dès `S.phase==='events'`, `tapeBand()` remplace le bandeau
+  d'informations dans `statusBar`. Chaque segment est un **pont brownien géométrique**
+  (`bridgePts`) : bruit cumulé en log moins sa dérive terminale, puis exponentielle — texture
+  de cours, extrémités clouées. La cible est `liveRet()`, qui est la formule de clôture `grQ`
+  avec la fraction de trimestre écoulée `t` à la place de 1, collatéral compris : le ruban
+  tombe donc exactement sur le chiffre du débriefing (46 clôtures sur 52 à moins de 0,5 pb ;
+  les 6 autres sont les trimestres où le stop, l'appel de marge ou le portage s'appliquent
+  **dans** la clôture, après le dernier événement — le ruban ne peut pas les connaître).
+  Les points déjà tracés sont stockés dans `S.tape` et jamais recalculés.
+  **Piège** : `mulberry32` écrit dans le `rngState` global. Tout décor aléatoire doit passer
+  par `prng32`, qui est pur — sinon les flux nommés du lot 11 se décalent en silence.
 - **Courbes de NAV** : `navChart(vals,opts)` dessine, `navBox(cap,vals,opts)` encadre avec
   légende, `idxSeries(extra)` fournit la série (produit cumulé de `S.rets`, base 100 — la
   performance nette que lit l'investisseur, pas l'encours, donc insensible aux flux).
