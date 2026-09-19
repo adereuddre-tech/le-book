@@ -2751,7 +2751,10 @@ function tapeBand(){
 }
 function statusBar(done){
  S.statusDone=!!done;
- const dd=1-S.idx/S.peakIdx,cum=S.idx-1;
+ /* la performance affichée doit dire la même chose que le ruban : latent compris */
+ const lat=(S.phase==='events'&&typeof liveRet==='function')?liveRet():0;
+ const ixL=S.idx*(1+lat);
+ const dd=1-ixL/Math.max(S.peakIdx,ixL),cum=ixL-1;
  const lab=done?`APRÈS ${S.q} TRIMESTRE${S.q>1?'S':''}`:`TRIMESTRE ${Math.min(S.q+1,QT())} / ${QT()}`;
  const gc=v=>v>55?'var(--long)':v>25?'var(--warn)':'var(--short)';
  /* liseré de la couleur du mouvement : on ne le montre que hors page de book, où la flèche
@@ -2804,7 +2807,9 @@ function gz(lp,rc,opt){
 }
 function gauge(dlp,drc,why){
  refreshGain();
- dlp=Math.max(-15,Math.min(15,dlp||0));drc=Math.max(-15,Math.min(15,drc||0));
+ /* le comité peut sanctionner très au-delà de 15 points quand le risque explose le mandat ;
+    aucun bienfait, en revanche, ne justifie d'en gagner autant d'un coup */
+ dlp=Math.max(-15,Math.min(15,dlp||0));drc=Math.max(-80,Math.min(15,drc||0));
  const lp0=S.lp,rc0=S.rc;
  S.lp=Math.max(0,Math.min(100,S.lp+dlp));S.rc=Math.max(0,Math.min(100,S.rc+drc));
  if(Math.abs(dlp)>=0.05||Math.abs(drc)>=0.05){S.gLog.push({why,lp:dlp,rc:drc});S.lastG={lp:dlp,rc:drc,lp0,rc0};
@@ -2825,7 +2830,8 @@ function riskRc(k){
  const band=bandNow(),dev=Math.abs(sp-S.tgt)/S.tgt;
  /* plus aucun plafond : la sanction croît continûment avec l'écart au mandat. La seule
     limite restante est la borne de gauge(). */
- let d=dev<band?3*(1-dev/band):-(dev-band)*32*SIZE().rcNeg;
+ const ex=Math.max(0,dev-band);
+ let d=dev<band?3*(1-dev/band):-ex*32*(1+ex)*SIZE().rcNeg;
  if(fmax>0.75)d-=3*SIZE().rcNeg;if(sp<0.02)d-=4;
  return d;
 }
@@ -2859,7 +2865,8 @@ function riskGauge(why,bonus){
  const band=bandNow(),dev=Math.abs(sp-S.tgt)/S.tgt;
  /* plus aucun plafond : la sanction croît continûment avec l'écart au mandat. La seule
     limite restante est la borne de gauge(). */
- let d=dev<band?3*(1-dev/band):-(dev-band)*32*SIZE().rcNeg;
+ const ex=Math.max(0,dev-band);
+ let d=dev<band?3*(1-dev/band):-ex*32*(1+ex)*SIZE().rcNeg;
  if(fmax>0.75)d-=3*SIZE().rcNeg;if(sp<0.02)d-=4;d+=(bonus||0);
  const txt=dev<band?`vol ex-ante ${pct(sp)} contre ${pct(S.tgt,0)} de mandat, dans la bande`
    :`vol ex-ante ${pct(sp)} contre ${pct(S.tgt,0)} de mandat, ${sp>S.tgt?'au-dessus':'en dessous'} de la bande ±${(band*100).toFixed(0)} %`;
