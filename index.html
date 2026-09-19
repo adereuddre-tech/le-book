@@ -2730,9 +2730,13 @@ function rivalTapes(){
   const pts=[100];let v=1;
   for(let i=y0;i<S.q;i++){const g=(r.hist&&r.hist[i])||0,nv=v*(1+g);
    bridgePts(v*100,nv*100,TAPEM,hash32('riv'+j+'_'+i,S.seed),tapeVol(TAPEM)*0.30).forEach(z=>pts.push(z));v=nv}
-  const segs=Math.max(1,Math.round((S.tape&&S.tape.seg)||1));
-  for(let k=0;k<segs;k++)
-   bridgePts(v*100,v*100,TAPEM,hash32('rivq'+j+'_'+S.q+'_'+k,S.seed),tapeVol(TAPEM)*0.22).forEach(z=>pts.push(z));
+  /* trimestre en cours : leur P&L réel à l'instant t, même formule que la vôtre */
+  const segs=Math.max(1,Math.round((S.tape&&S.tape.seg)||1)),t=qElapsed();
+  let g=0;try{g=rivRet(j,t)}catch(err){g=0}
+  for(let k=0;k<segs;k++){
+   const u=(k+1)/segs,nv=v*(1+g*u);
+   bridgePts(v*(1+g*(k/segs))*100,nv*100,TAPEM,hash32('rivq'+j+'_'+S.q+'_'+k,S.seed),tapeVol(TAPEM)*0.26).forEach(z=>pts.push(z));
+  }
   return {nm:r.nm,pts};
  });
 }
@@ -3972,7 +3976,7 @@ function resolveQuarter(){
  S.crowd=S.crowd.map((c,i)=>Math.max(-1,Math.min(1,0.55*c+0.85*(r[i]/INSTR[i].sigQ)/3)));
  /* concurrents */
  const rr=rivalReturns();
- S.rivals.forEach((rv,j)=>{rv.last=rr[j];rv.cum*=(1+rr[j])});
+ S.rivals.forEach((rv,j)=>{rv.last=rr[j];rv.cum*=(1+rr[j]);(rv.hist=rv.hist||[]).push(rr[j])});
  /* taux directeur */
  S.rate=Math.max(0.002,Math.min(0.085,S.rate+0.004*S.f[1]+0.001*gauss()));
  /* jauges */
