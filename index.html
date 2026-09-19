@@ -2210,7 +2210,7 @@ function planQuarter(){
  /* ce sont des futures : le book repart à plat, on le reconstruit chaque trimestre */
  S.k=new Array(N).fill(0);S.k0=new Array(N).fill(0);
  S.rumors=[];S.evVerified=false;S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
- S.pendingTC=0;S.freeAdjUsed=false;
+ S.pendingTC=0;S.freeAdjUsed=false;S.live=false;
  /* la commission de gestion est prélevée sur le fonds et vous est versée dès l'ouverture ;
     la performance et le bonus d'objectif attendent la clôture */
  S.qMgmtM=VOL().mgmt*S.nav;S.nav-=S.qMgmtM;S.mgrFees+=S.qMgmtM;refreshGain();
@@ -2855,10 +2855,8 @@ function statusBar(done){
   </div>
   <div class="srow">
    ${[0,1,2,3].map(fg).join('')}
-   ${(()=>{const gr=w.reduce((a,v)=>a+Math.abs(v),0);
-     return `<button class="fg" data-gauge="expo"><span class="fl">Exposition</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><i style="left:0;width:${Math.min(100,gr*20)}%;background:hsl(210 26% 50%)"></i></span><b>${gr.toFixed(1)}×</b></button>`})()}
    <button class="fg" data-gauge="risk" style="flex:2.2">${''}<span class="fl">Risque</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><span class="mand" style="left:50%"></span><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b>${Math.round(sp*100)}/${Math.round(S.tgt*100)}</b></button>
-  </div>${S.phase==='events'?tapeBand():ticker()}</div>`;
+  </div>${(S.phase==='events'&&S.live)?tapeBand():ticker()}</div>`;
 }
 /* « 61 → 58 » : valeur avant le dernier mouvement, puis valeur actuelle en couleur */
 function gArrow(v0,v){const a=Math.round(v),b=v0===undefined?a:Math.round(v0);
@@ -2867,11 +2865,20 @@ const sd1=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${Math.round(Math.abs(x))}</
 /* format unique des effets de jauge dans tout le jeu */
 function gzd(v){const d=Math.round((v||0)*10)/10;return Math.abs(d)<0.05?'':`<span class="${cls(d)}" style="font-size:11px;font-weight:500"> (${sd1(d)})</span>`}
 function gzRows(lp,rc){return `<div class="gzr"><span>investisseurs</span><b class="${cls(lp)}">${sd1(lp)}</b></div><div class="gzr"><span>comité</span><b class="${cls(rc)}">${sd1(rc)}</b></div>`}
+/* Un seul chiffre, celui de la barre d'état : de combien la confiance va bouger. Le détail
+   par canal — investisseurs, comité — reste lisible en seconde ligne quand il éclaire, mais
+   le nombre qui compte est celui que le joueur voit en haut de l'écran. */
 function gz(lp,rc,opt){
- const p=[];
- if(Math.abs(lp||0)>=0.05||opt==='always')p.push(`<span class="${cls(lp)}">investisseurs ${sd1(lp)}</span>`);
- if(Math.abs(rc||0)>=0.05||opt==='always')p.push(`<span class="${cls(rc)}">comité ${sd1(rc)}</span>`);
- return p.join(' • ');
+ const l0=S&&S.lp!==undefined?S.lp:60,r0=S&&S.rc!==undefined?S.rc:60;
+ const c0=0.6*Math.min(l0,r0)+0.4*(l0+r0)/2;
+ const l1=Math.max(0,Math.min(100,l0+(lp||0))),r1=Math.max(0,Math.min(100,r0+(rc||0)));
+ const d=0.6*Math.min(l1,r1)+0.4*(l1+r1)/2-c0;
+ if(Math.abs(d)<0.05&&opt!=='always')return '';
+ const who=[];
+ if(Math.abs(lp||0)>=0.05)who.push(`investisseurs ${sd1(lp)}`);
+ if(Math.abs(rc||0)>=0.05)who.push(`comité ${sd1(rc)}`);
+ return `<span class="${cls(d)}">confiance ${sd1(d)}</span>`
+  +(who.length?` <span class="dim-g">(${who.join(', ')})</span>`:'');
 }
 /* La confiance : ce que le joueur suit. Le plus bas des deux canaux pèse le plus, parce
    qu'un seul suffit à vider la base d'investisseurs. */
@@ -3280,6 +3287,7 @@ function phaseDesk(){
   "Voir le desk",()=>{if(S.preDesk&&(!S.preDesk.cond||S.preDesk.cond())){const ev=S.preDesk;S.preDesk=null;screenTraderEvent(ev,screenPlay)}else screenPlay()});
 }
 function phaseLive(){
+ S.live=true;   /* le ruban ne s'affiche qu'à partir d'ici : avant, la performance ne bouge pas */
  save('phaseLive');
  phase(`TRIMESTRE ${S.q+1} · TROIS MOIS`,"Le trimestre se déroule",
   [S.comm&&S.comm.ret!==null?`Vous avez promis <b>au moins ${sgn(S.comm.ret,1)}</b> pour ce trimestre. Tout le monde a noté.`:"Vous n'avez rien promis. Tout le monde a noté aussi.","Vos positions sont en place. Le monde continue sans vous demander votre avis.","Chaque dépêche vous interrompt : vous pourrez suivre le mouvement ou ne pas réagir — à un coût, et sans certitude sur la suite.",S.incidentDue?"Quelque chose ne va pas au back-office, mais vous ne le savez pas encore.":"Le contrôle des risques n'a rien signalé pour l'instant."],
@@ -4136,6 +4144,18 @@ function resolveQuarter(){
   fc.streak=S.streak;
   if(fc.beatAll)S.sweeps=(S.sweeps||0)+1;
   FEATS.forEach(f=>{if(f.tq){try{if(f.tq(fc))award(f.id)}catch(e){}}})}
+ /* Le ruban suivait la performance AVANT commission de performance ; la tuile « Perf. »
+    affiche le net. D'où deux chiffres différents au débriefing — +107,5 % contre +89,5 %.
+    On prolonge le ruban jusqu'à l'indice net réellement réalisé : il finit désormais
+    exactement sur le chiffre du haut de l'écran. */
+ if(S.tape&&S.tape.pts&&S.tape.pts.length>2){
+  const y0=Math.floor((S.q)/4)*4;let base=1;for(let i=0;i<y0;i++)base*=(1+S.rets[i]);
+  const tgt=S.idx/Math.max(1e-9,base)*100,last=S.tape.pts[S.tape.pts.length-1];
+  if(Math.abs(tgt-last)>0.02){
+   S.tape.from=S.tape.pts.length-1;
+   bridgePts(last,tgt,18,hash32('settle'+S.q,S.seed),tapeVol(18)*0.5).forEach(z=>S.tape.pts.push(z));
+  }
+ }
  S.prevRel=qTotal-med;
  S.regimes.push(S.truth);S.regime=S.truth;S.q++;
  S.press=pressFeed({qTotal});S.lastPress=S.press[0]?S.press[0].t:null;
