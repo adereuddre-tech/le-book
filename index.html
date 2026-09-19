@@ -2841,8 +2841,8 @@ function statusBar(done){
   </div>
   <div class="srow">
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
-   <button class="tile gauge${mvL?' moved':''}" data-gauge="lp" style="flex:1.05${mvSty(mvL)}"><span><i>Invest.</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,S.lp):Math.round(S.lp)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.lp)>=0.05?`<span class="${cls(S._pv.lp)}">→${Math.round(Math.max(0,Math.min(100,S.lp+S._pv.lp)))}</span>`:''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
-   <button class="tile gauge${mvR?' moved':''}" data-gauge="rc" style="flex:1.05${mvSty(mvR)}"><span><i>Comité</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.rc0,S.rc):Math.round(S.rc)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?`<span class="${cls(S._pv.rc)}">→${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
+   <button class="tile gauge${(mvL||mvR)?' moved':''}" data-gauge="lp" style="flex:2.1${mvSty(mvL||mvR)}"><span><i>Confiance</i><b>${S.phase!=='book'&&S.lastG?gArrow(0.6*Math.min(S.lastG.lp0,S.lastG.rc0)+0.4*(S.lastG.lp0+S.lastG.rc0)/2,conf()):Math.round(conf())}${S.phase==='book'&&S._pv?(()=>{const nl=Math.max(0,Math.min(100,S.lp+(S._pv.lp||0))),nr=Math.max(0,Math.min(100,S.rc+(S._pv.rc||0))),nc=0.6*Math.min(nl,nr)+0.4*(nl+nr)/2,d=nc-conf();return Math.abs(d)>=0.05?`<span class="${cls(d)}">→${Math.round(nc)}</span>`:''})():''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
+   <button class="tile gauge" data-gauge="rc" style="display:none"><span><i>Comité</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.rc0,S.rc):Math.round(S.rc)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?`<span class="${cls(S._pv.rc)}">→${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
    <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Vos gains</span><b id="gaintile" class="${mgrCash()>=0?'':'neg-g'}">${score(mgrCash())}</b></button>
   </div>
   <div class="srow">
@@ -2862,6 +2862,18 @@ function gz(lp,rc,opt){
  if(Math.abs(lp||0)>=0.05||opt==='always')p.push(`<span class="${cls(lp)}">investisseurs ${sd1(lp)}</span>`);
  if(Math.abs(rc||0)>=0.05||opt==='always')p.push(`<span class="${cls(rc)}">comité ${sd1(rc)}</span>`);
  return p.join(' • ');
+}
+/* La confiance : ce que le joueur suit. Le plus bas des deux canaux pèse le plus, parce
+   qu'un seul suffit à vider la base d'investisseurs. */
+function conf(){return 0.6*Math.min(S.lp,S.rc)+0.4*(S.lp+S.rc)/2}
+/* Rachats : tout ce qui allait tuer provoque désormais un départ d'allocataires. */
+function redeem(cause,amp){
+ const c=conf(),nerf=Math.max(0,(55-c)/55);
+ const out=Math.max(0,Math.min(0.45,amp*(0.45+1.35*nerf)));
+ if(out<0.002)return 0;
+ S.nav*=(1-out);S.flows-=out*S.nav;S.qFlow=(S.qFlow||0)-out*S.nav;
+ (S.qRedeem=S.qRedeem||[]).push({cause,out});
+ return out;
 }
 function gauge(dlp,drc,why){
  refreshGain();
@@ -4112,10 +4124,14 @@ function resolveQuarter(){
  S.prevRel=qTotal-med;
  S.regimes.push(S.truth);S.regime=S.truth;S.q++;
  S.press=pressFeed({qTotal});S.lastPress=S.press[0]?S.press[0].t:null;
- if(S.maxdd>=ddMax())S.over='dd';
- else if(S.lp<=8)S.over='lp';
- else if(S.rc<=4)S.over='rc';
- else if(S.rc<=13&&S.maxk>3){S.maxk=3;S.k=S.k.map(v=>Math.max(-3,Math.min(3,v)));S.qLog.push('mandat')}
+ /* plus de mort par jauge ni par repli : chacun provoque des rachats, et c'est l'encours
+    qui décide de la fin du mandat */
+ S.qRedeem=[];
+ if(S.maxdd>=ddMax())redeem('repli',0.10+0.35*(S.maxdd-ddMax()));
+ if(S.lp<=20)redeem('investisseurs',0.05+0.006*(20-S.lp));
+ if(S.rc<=20)redeem('comité',0.05+0.006*(20-S.rc));
+ if(S.nav<0.40*S.aum0)S.over='nav';
+ if(S.rc<=13&&S.maxk>3){S.maxk=3;S.k=S.k.map(v=>Math.max(-3,Math.min(3,v)));S.qLog.push('mandat')}
  S.kEff=null;
  S.phase='debrief';S.tcMultQ=1;S.leakQ=false;S.poachBoost=0;
  S.qPnl.flowM=S.qFlow||0;
@@ -4540,7 +4556,8 @@ function screenFinal(){
  FEATS.forEach(f=>{if(f.tf){try{if(f.tf(S.finalCtx))award(f.id)}catch(e){}}});
  markTutoSeen();TUTO=false;SHOWHINTS=false;   /* une partie jouée : le tutoriel a fait son office */
  let verdict,vtxt;
- if(S.over==='dd'){verdict="Le fonds est liquidé";vtxt=`La perte a dépassé ${Math.round(ddMax()*100)} %. Les clauses de rachat se sont déclenchées en cascade au trimestre ${S.q}.`}
+ if(S.over==='nav'){verdict="L'encours n'y est plus";vtxt=`Le fonds est tombé sous 40 % de son encours de départ au trimestre ${S.q} : les commissions ne couvrent plus la structure, le mandat s'arrête. Les rachats se sont enchaînés — perte de confiance, replis, appels de marge — jusqu'à ce qu'il ne reste plus assez à gérer.`}
+ else if(S.over==='dd'){verdict="Le fonds est liquidé";vtxt=`La perte a dépassé ${Math.round(ddMax()*100)} %. Les clauses de rachat se sont déclenchées en cascade au trimestre ${S.q}.`}
  else if(S.over==='lp'){verdict="Les rachats l'ont emporté";vtxt="La base d'investisseurs s'est vidée avant que la thèse n'ait le temps de se réaliser. C'est la façon la plus courante de perdre en gestion."}
  else if(S.over==='rc'){verdict="Vous êtes remercié";vtxt="Le comité des risques a retiré le mandat. Le book pouvait être bon ; il n'était pas défendable."}
  else if(cagr>0.18&&S.maxdd<0.15&&rank===1){verdict="Deux années de référence";vtxt="Performance, discipline de risque, et vous avez battu les quatre. Reste à savoir ce qui, là-dedans, se reproduira."}
