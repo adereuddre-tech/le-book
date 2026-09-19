@@ -2821,11 +2821,11 @@ function pnlGz(pnl){
 function pnlGauge(pnl,why){const z=pnlGz(pnl);return gauge(z.lp,z.rc,why)}
 /* note du comité sur un book donné, sans l'appliquer */
 function riskRc(k){
- const w=weights(k),sp=pvol(w),vd=varDecomp(w),fmax=Math.max(...vd.fv)/vd.tot;
+ const w=weights(k),sp=riskShown(w).total,vd=varDecomp(w),fmax=Math.max(...vd.fv)/vd.tot;
  const band=bandNow(),dev=Math.abs(sp-S.tgt)/S.tgt;
  /* plus aucun plafond : la sanction croît continûment avec l'écart au mandat. La seule
     limite restante est la borne de gauge(). */
- let d=dev<band?3:-(dev-band)*32*SIZE().rcNeg;
+ let d=dev<band?3*(1-dev/band):-(dev-band)*32*SIZE().rcNeg;
  if(fmax>0.75)d-=3*SIZE().rcNeg;if(sp<0.02)d-=4;
  return d;
 }
@@ -2855,13 +2855,14 @@ function previewGauge(){
  return {lp:dlp,rc:drc,why:why.join(', ')};
 }
 function riskGauge(why,bonus){
- const w=weights(S.k),sp=pvol(w),vd=varDecomp(w),fmax=Math.max(...vd.fv)/vd.tot;
+ const w=weights(S.k),sp=riskShown(w).total,vd=varDecomp(w),fmax=Math.max(...vd.fv)/vd.tot;
  const band=bandNow(),dev=Math.abs(sp-S.tgt)/S.tgt;
  /* plus aucun plafond : la sanction croît continûment avec l'écart au mandat. La seule
     limite restante est la borne de gauge(). */
- let d=dev<band?3:-(dev-band)*32*SIZE().rcNeg;
+ let d=dev<band?3*(1-dev/band):-(dev-band)*32*SIZE().rcNeg;
  if(fmax>0.75)d-=3*SIZE().rcNeg;if(sp<0.02)d-=4;d+=(bonus||0);
- const txt=dev<band?`vol ex-ante ${pct(sp)} dans la bande`:`vol ex-ante ${pct(sp)} hors de la bande ±${(band*100).toFixed(0)} %`;
+ const txt=dev<band?`vol ex-ante ${pct(sp)} contre ${pct(S.tgt,0)} de mandat, dans la bande`
+   :`vol ex-ante ${pct(sp)} contre ${pct(S.tgt,0)} de mandat, ${sp>S.tgt?'au-dessus':'en dessous'} de la bande ±${(band*100).toFixed(0)} %`;
  return gauge(0,d,`${why} — ${txt}${fmax>0.75?', book mono-facteur':''}${sp<0.02?', book vide':''}`);
 }
 function resultCard(kick,title,paras,rows,btn,next,extra){
