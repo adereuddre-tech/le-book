@@ -2368,7 +2368,7 @@ const sgnp=(x,d=1)=>(x>=0?'+':'−')+dec(Math.abs(x*100),d)+'\u00a0%';
 const bn=(x,d=1)=>`<b class="${cls(x)}">${x>=0?'+':'−'}${moneyB(Math.abs(x))}</b>`;
 const mn=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${mm(Math.abs(x))}</b>`;
 const cls=x=>x>0.00005?'pos-g':(x<-0.00005?'neg-g':'dim-g');
-let setup={prof:'flux',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'com',dur:'normal'};/* arch et desk sont figés : redondants avec les budgets */
+let setup={prof:'fonda',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'com',dur:'normal'};/* arch et desk sont figés : redondants avec les budgets */
 /* Le tutoriel ne doit revenir ni au rechargement de la page ni à la partie suivante. */
 function tutoSeen(){try{return localStorage.getItem('lebook_tuto_v1')==='1'}catch(e){return false}}
 function markTutoSeen(){try{localStorage.setItem('lebook_tuto_v1','1')}catch(e){}}
@@ -2434,9 +2434,18 @@ function navBox(cap,vals,o){
   <div class="navrow"><span>DÉPART ${dec(base,0)}</span><span class="${dd>0.005?'neg-g':'dim-g'}">${dd>0.005?'REPLI MAX −'+dec(dd*100,1)+' %':'AUCUN REPLI'}</span><span class="${last>=base?'pos-g':'neg-g'}">${last>=base?'+':'−'}${dec(Math.abs(last/base-1)*100,1)} %${o.prov?' LATENT':''}</span></div></div>`;
 }
 /* la courbe de l'accueil : une partie imaginaire, toujours la même */
-function heroNav(){
- const st=[1.9,2.6,-0.7,3.4,1.9,4.2,1.1,-2.6,-5.8,-4.4,-6.3,-2.1,1.5,3.2,2.1,4.6,3.0,5.2,2.4,3.9,4.7,6.4];
- const a=[100];st.forEach(x=>a.push(a[a.length-1]*(1+x/100)));return a;
+/* Une année complète, tirée au hasard à chaque affichage de l'accueil : quatre trimestres
+   pour vous, quatre pour chacun des concurrents, dessinés comme dans le jeu. */
+function heroYear(){
+ const sd=(Math.random()*1e9)|0,r=prng32(sd);
+ const gq=k=>{const u=prng32(sd+k*7919);return (u()+u()+u()-1.5)*0.16};
+ const mk=(seed,vol)=>{const pts=[100];let v=1;
+  for(let q=0;q<4;q++){const g=gq(seed*4+q),nv=v*(1+g);
+   bridgePts(v*100,nv*100,44,hash32('hero'+seed+'_'+q,sd),vol).forEach(z=>pts.push(z));v=nv}
+  return {v,pts}};
+ const me=mk(1,0.030);
+ const rivals=RIVALS.map((x,j)=>({nm:x.nm,pts:mk(11+j,0.011).pts}));
+ return {pts:me.pts,fin:me.v,rivals};
 }
 function introTicker(){
  const T=["OUVERTURE DE MANDAT","BRENT \u25B23,2\u00a0%","RUMEUR : LA BANQUE CENTRALE AVANCERAIT SON CALENDRIER","YEN \u25BC1,8\u00a0%",
@@ -2455,15 +2464,15 @@ function introRivals(){
 }
 function screenIntro(){
  if(!fundName)fundName=randName();
- const nv=heroNav();let pk=nv[0],dd=0;nv.forEach(v=>{pk=Math.max(pk,v);dd=Math.max(dd,1-v/pk)});
+ const HY=heroYear(),nv=HY.pts;let pk=nv[0],dd=0;nv.forEach(v=>{pk=Math.max(pk,v);dd=Math.max(dd,1-v/pk)});
  app.innerHTML=`<div class="splash fade">
   ${introTicker()}
   <div class="kicker" style="color:var(--gold)">BIENVENUE À BORD</div>
   <h1 class="splash-h1">Vous prenez les commandes<br>d'un <em>fonds global macro</em></h1>
   <div class="navbox">
-   <div class="navcap">UNE PARTIE, HUIT TRIMESTRES</div>
-   ${navChart(nv,{col:'#D9B06A',anim:1,trough:1,h:118})}
-   <div class="navrow"><span>DÉPART ${dec(nv[0],0)}</span><span class="neg-g">REPLI −${dec(dd*100,0)} %</span><span class="pos-g">ARRIVÉE ${dec(nv[nv.length-1],0)}</span></div>
+   <div class="navcap">UNE ANNÉE, VOUS ET LES QUATRE AUTRES</div>
+   ${tapeSvg(nv,0,{h:122,rivals:HY.rivals})}
+   <div class="navrow"><span>REPLI MAX −${dec(dd*100,1)} %</span><span class="${nv[nv.length-1]>=100?'pos-g':'neg-g'}">VOUS ${nv[nv.length-1]>=100?'+':'−'}${dec(Math.abs(nv[nv.length-1]-100),1)} %</span></div>
   </div>
   <p class="splash-p"><b style="color:var(--gold)">Le but : encaisser un maximum de commissions en deux ans sans vous faire débarquer.</b> Ce matin, le conseil vous a confié le book. Des marchés à tenir, quatre concurrents qui n'attendent que votre faux pas, des investisseurs qui vous adorent tant que ça monte, et un comité des risques qui vous surveille. À vous de choisir la taille du fonds — et donc la difficulté.</p>
   <div class="namebox">
@@ -2628,8 +2637,8 @@ function tapeTick(){
   S.tape={y:yk,q:S.q,pts,seg:0};
  }
  const tgt=y.now,last=S.tape.pts[S.tape.pts.length-1];
- if(Math.abs(tgt/last-1)>1e-9){
-  S.tape.from=S.tape.pts.length-1;   /* le trait ne redessine que ce qui vient d'arriver */
+ S.tape.from=S.tape.pts.length-1;   /* rien de neuf : rendu statique */
+ if(Math.abs(tgt-last)>0.05){       /* 5 pb : en deçà, le P&L fait du surplace */
   bridgePts(last,tgt,TAPEM,hash32('tapeq'+S.q+'_'+(S.tape.seg++),S.seed),tapeVol(TAPEM))
     .forEach(x=>S.tape.pts.push(x));
   if(S.tape.pts.length>3000){const cut=S.tape.pts.length-3000;
@@ -2640,6 +2649,9 @@ function tapeTick(){
    dessine en trois secondes. Le remplissage du nouveau segment apparaît avec lui, pour ne pas
    révéler d'avance où la courbe va. */
 const TAPE_UP='#3FCF8E',TAPE_DN='#F2545B';
+const RIVCOL=['#7C8FF0','#D9B06A','#A98CE0','#5FBFC4'];
+function rivTag(nm){const w=String(nm||'').replace(/^(le|la|les|l')\s+/i,'').split(/[\s'’-]+/).filter(Boolean);
+ return ((w[0]||'?')[0]+(w[1]?w[1][0]:'')).toUpperCase()}
 /* Tronçons de même signe, croisements de la ligne de base interpolés. */
 function tapePieces(p,x,y,base){
  const n=p.length,out=[];let cur=[[x(0),y(p[0])]],up=p[0]>=base;
@@ -2656,9 +2668,12 @@ function tapePieces(p,x,y,base){
 /* opt.anim : tracé animé avec fenêtre glissante. Sinon rendu statique complet. */
 function tapeSvg(p,from,opt){
  opt=opt||{};
- const W=320,H=opt.h||78,pad=5,n=p.length;
- let lo=Math.min(100,...p),hi=Math.max(100,...p);
- const sp=(hi-lo)||1;lo-=sp*0.14;hi+=sp*0.14;
+ const W=320,H=opt.h||78,pad=5,n=p.length,rv=opt.rivals||[];
+ /* échelle symétrique : le zéro est l'axe, toujours au milieu */
+ let m=1e-6;p.forEach(v=>m=Math.max(m,Math.abs(v-100)));
+ rv.forEach(r=>r.pts.forEach(v=>m=Math.max(m,Math.abs(v-100))));
+ m*=1.18;
+ const lo=100-m,hi=100+m;
  const x=i=>pad+i*(W-2*pad)/Math.max(1,n-1),y=v=>H-pad-(v-lo)/(hi-lo)*(H-2*pad);
  const y0=y(100),id='tp'+(NGID++);
  const f=n=>n.toFixed(1);
@@ -2669,40 +2684,54 @@ function tapeSvg(p,from,opt){
       +`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>`;
  });
  const headC=p[n-1]>=100?TAPE_UP:TAPE_DN;
- const base=`<line x1="0" y1="${f(y0)}" x2="${W}" y2="${f(y0)}" stroke="#4A5C78" stroke-width="1" stroke-dasharray="2 3"/>`;
+ const base=`<line x1="0" y1="${f(y0)}" x2="${W}" y2="${f(y0)}" stroke="#5B6E8C" stroke-width="1"/>`;
+ /* concurrents : traits fins estompés, pastille à l'initiale au bout */
+ let riv='';const used=[];
+ rv.forEach((r,j)=>{
+  const c=RIVCOL[j%4],q=r.pts,pts=q.map((v,i)=>f(x(i*(n-1)/Math.max(1,q.length-1)))+','+f(y(v))).join(' ');
+  riv+=`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width=".9" opacity=".28" stroke-linejoin="round"/>`;
+  const ex=x(n-1);let ey=y(q[q.length-1]);
+  /* on écarte les pastilles qui se chevauchent, sinon elles s'empilent au bord droit */
+  while(used.some(v=>Math.abs(v-ey)<9.5))ey+=9.5;
+  ey=Math.max(7,Math.min(H-7,ey));used.push(ey);
+  riv+=`<circle cx="${f(ex)}" cy="${f(ey)}" r="5.4" fill="${c}" opacity=".92"/>`
+     +`<text x="${f(ex)}" y="${f(ey+2)}" text-anchor="middle" font-size="5.6" font-weight="700" fill="#0E1621" font-family="ui-monospace,monospace">${rivTag(r.nm)}</text>`;
+ });
+ const head=`<circle cx="${f(x(n-1))}" cy="${f(y(p[n-1]))}" r="3" fill="${headC}">
+    <animate attributeName="r" values="3;6;3" dur="1.8s" repeatCount="indefinite"/></circle>`;
  if(!opt.anim||from<=0||from>=n-1){
-  return `<svg class="navc" viewBox="0 0 ${W} ${H}" aria-hidden="true">${base}${body}
-   <circle cx="${f(x(n-1))}" cy="${f(y(p[n-1]))}" r="3" fill="${headC}">
-    <animate attributeName="r" values="3;6;3" dur="1.8s" repeatCount="indefinite"/></circle></svg>`;
+  return `<svg class="navc" viewBox="0 0 ${W} ${H}" aria-hidden="true">${base}${riv}${body}${head}</svg>`;
  }
- /* fenêtre glissante : la tête reste au centre, le zoom horizontal est réglé pour que le
-    segment nouveau occupe toujours la même fraction de la fenêtre */
- const DRAW=5,ZOUT=0.9,TOT=DRAW+ZOUT;
- const x0=x(from),x1=x(n-1);
- const Zx=Math.max(2.5,Math.min(13,(W*0.62)/Math.max(6,x1-x0)));
- const Zy=Math.min(3.0,Math.max(1.6,Zx*0.34));
- const cx=W/2,cy=H/2,K=40,tr=[],sc=[],kt=[];
- for(let j=0;j<=K;j++){
-  const u=j/K,idx=from+(n-1-from)*u,px=x(idx),py=y(p[Math.round(idx)]);
-  tr.push(`${f(cx-Zx*px)} ${f(cy-Zy*py)}`);sc.push(`${f(Zx)} ${f(Zy)}`);
-  kt.push((u*DRAW/TOT).toFixed(4));
- }
- tr.push('0 0');sc.push('1 1');kt.push('1');
+ /* la fenêtre s'élargit à droite : la géométrie ne bouge pas, seul le dévoilement avance */
+ const DRAW=5,x0=x(from);
+ const id2='c'+id;
  return `<svg class="navc" viewBox="0 0 ${W} ${H}" aria-hidden="true">
-  <defs><clipPath id="c${id}" clipPathUnits="userSpaceOnUse">
+  <defs><clipPath id="${id2}" clipPathUnits="userSpaceOnUse">
    <rect x="0" y="-${H*4}" height="${H*9}" width="${f(x0)}">
     <animate attributeName="width" from="${f(x0)}" to="${W}" dur="${DRAW}s" fill="freeze"/></rect>
   </clipPath></defs>
-  ${base}
-  <g><animateTransform attributeName="transform" type="translate" dur="${TOT}s" fill="freeze"
-      calcMode="linear" keyTimes="${kt.join(';')}" values="${tr.join(';')}"/>
-   <g><animateTransform attributeName="transform" type="scale" dur="${TOT}s" fill="freeze"
-       calcMode="linear" keyTimes="${kt.join(';')}" values="${sc.join(';')}"/>
-    <g clip-path="url(#c${id})">${body}</g></g></g>
-  <circle cx="${f(cx)}" cy="${f(cy)}" r="3.4" fill="${headC}">
-   <animate attributeName="cx" from="${f(cx)}" to="${f(x(n-1))}" begin="${DRAW}s" dur="${ZOUT}s" fill="freeze"/>
-   <animate attributeName="cy" from="${f(cy)}" to="${f(y(p[n-1]))}" begin="${DRAW}s" dur="${ZOUT}s" fill="freeze"/>
-   <animate attributeName="r" values="3;6;3" dur="1.8s" begin="${TOT}s" repeatCount="indefinite"/></circle></svg>`;
+  ${base}<g clip-path="url(#${id2})">${riv}${body}</g>
+  <circle cx="${f(x0)}" cy="${f(y(p[from]))}" r="3.4" fill="${headC}">
+   <animate attributeName="cx" values="${(()=>{const a=[];for(let j=0;j<=40;j++){const i=Math.round(from+(n-1-from)*j/40);a.push(f(x(i)))}return a.join(';')})()}" dur="${DRAW}s" fill="freeze"/>
+   <animate attributeName="cy" values="${(()=>{const a=[];for(let j=0;j<=40;j++){const i=Math.round(from+(n-1-from)*j/40);a.push(f(y(p[i])))}return a.join(';')})()}" dur="${DRAW}s" fill="freeze"/>
+   <animate attributeName="r" values="3;6;3" dur="1.8s" begin="${DRAW}s" repeatCount="indefinite"/></circle></svg>`;
+}
+/* Courbes des concurrents sur la même fenêtre. Leurs clôtures connues sont des points
+   d'ancrage ; le trimestre en cours prolonge leur dernière valeur sans dérive, puisque leur
+   résultat n'est pas encore connu. */
+function rivalTapes(){
+ if(!S.rivals)return [];
+ const y0=Math.floor(S.q/4)*4;
+ let base=1;for(let i=0;i<y0;i++)base*=(1+S.rets[i]);
+ return S.rivals.map((r,j)=>{
+  const pts=[100];let v=1;
+  for(let i=y0;i<S.q;i++){const g=(r.hist&&r.hist[i])||0,nv=v*(1+g);
+   bridgePts(v*100,nv*100,TAPEM,hash32('riv'+j+'_'+i,S.seed),tapeVol(TAPEM)*0.30).forEach(z=>pts.push(z));v=nv}
+  const segs=Math.max(1,Math.round((S.tape&&S.tape.seg)||1));
+  for(let k=0;k<segs;k++)
+   bridgePts(v*100,v*100,TAPEM,hash32('rivq'+j+'_'+S.q+'_'+k,S.seed),tapeVol(TAPEM)*0.22).forEach(z=>pts.push(z));
+  return {nm:r.nm,pts};
+ });
 }
 function tapeBand(){
  try{tapeTick()}catch(err){return ticker()}
@@ -2711,7 +2740,7 @@ function tapeBand(){
  const v=p[p.length-1],up=v>=100;
  return `<div class="tape"><div class="tapehead"><span>P&amp;L DU FONDS · ANNÉE ${1+Math.floor(S.q/4)}</span>
    <b class="${up?'pos-g':'neg-g'}">${up?'+':'−'}${dec(Math.abs(v-100),1)} %</b></div>
-  ${tapeSvg(p,S.tape.from||0,{anim:1})}</div>`;
+  ${tapeSvg(p,S.tape.from||0,{anim:1,rivals:rivalTapes()})}</div>`;
 }
 function statusBar(done){
  S.statusDone=!!done;
@@ -2727,12 +2756,19 @@ function statusBar(done){
  const w=weights(S.k),ex=factorExpo(w),c=costsNow(),ctot=c.ops+c.tc+c.mgmt;
  const sp=riskShown(w).total;   /* même grandeur que le panneau du book */
  const band=bandNow(),rk=S.tgt>0?sp/S.tgt:0;
- const rcol=Math.abs(rk-1)<=band?'var(--long)':(rk>1+band?'var(--short)':'var(--warn)');
+ /* couleur continue : vert dans la bande, puis jaune, orange, rouge à mesure que l'écart
+    au mandat grandit. Un dégradé se lit mieux que trois paliers. */
+ const rdev=Math.max(0,(Math.abs(rk-1)-band)/0.95);
+ const rhue=145-140*Math.pow(Math.min(1,rdev),0.62);
+ const rcol=`hsl(${rhue.toFixed(0)} 62% ${(52+8*Math.min(1,rdev)).toFixed(0)}%)`;
  const fg=k=>{const v=ex[k],pc=Math.min(50,Math.abs(v)/0.15*50);
   return `<button class="fg ${S.hotFactor===k?'hot':''}" data-gauge="f${k}"><span class="fl">${FACT[k].nm.split(' ')[0].slice(0,9)}</span>${readTri(k)}<span class="ft2"><em style="left:50%"></em><i style="${v>=0?'left:50%':'right:50%'};width:${pc}%;background:${v>=0?'var(--long)':'var(--short)'}"></i></span>${(()=>{const r=Math.round(v*100);return `<b class="${r===0?'dim-g':(r>0?'pos-g':'neg-g')}">${r>0?'+':r<0?'−':''}${Math.abs(r)}</b>`})()}</button>`};
  return `<div class="status">
   <div class="srow">
-   <button class="tile" data-gauge="cap"><span><i>${S.fundName.split(' ')[0]}${done?` · T${S.q}`:` · T${Math.min(S.q+1,QT())}`}</i><b>${rank}<sup>${rank===1?'er':'e'}</sup>/5</b></span><b>${moneyB(S.nav)}</b></button>
+   <button class="tile" data-gauge="cap"><span><i>${S.fundName.split(' ')[0]}${done?` · T${S.q}`:` · T${Math.min(S.q+1,QT())}`}</i><b>${rank}<sup>${rank===1?'er':'e'}</sup>/5</b></span><b>${(()=>{const q0=S.navQ0||0,d=q0?S.nav/q0-1:0;
+     return (S.phase!=='budget'&&Math.abs(d)>0.002)
+      ?`<span class="dim-g" style="font-weight:400">${moneyB(q0)}</span> <span class="${cls(d)}">→${moneyB(S.nav)}</span>`
+      :moneyB(S.nav)})()}</b></button>
    <button class="tile" data-gauge="perf"><span><i>Perf.</i>${dd>0.005?`<b class="neg-g">repli ${(dd*100).toFixed(0)} %</b>`:'<b class="dim-g">au plus haut</b>'}</span><b class="${cls(cum)}">${sgnp(cum,1)}</b></button>
   </div>
   <div class="srow">
@@ -2743,8 +2779,7 @@ function statusBar(done){
   </div>
   <div class="srow">
    ${[0,1,2,3].map(fg).join('')}
-   <button class="fg" data-gauge="risk"><span class="fl">Risque</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><span class="band" style="left:${(1-band)*50}%;width:${band*100}%"></span><em style="left:50%"></em><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b>${Math.round(sp*100)}/${Math.round(S.tgt*100)}</b></button>
-   <button class="fg" data-gauge="cost"><span class="fl">Coûts T</span><span class="tri none">&nbsp;</span><span class="ft2"><i style="left:0;width:${Math.min(100,ctot/1.6)}%;background:${ctot>90?'var(--short)':ctot>65?'var(--warn)':'var(--dim)'}"></i></span><b>${ctot.toFixed(0)} pb</b></button>
+   <button class="fg" data-gauge="risk" style="flex:2.2">${''}<span class="fl">Risque</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><span class="band" style="left:${(1-band)*50}%;width:${band*100}%"></span><em style="left:50%"></em><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b>${Math.round(sp*100)}/${Math.round(S.tgt*100)}</b></button>
   </div>${S.phase==='events'?tapeBand():ticker()}</div>`;
 }
 /* « 61 → 58 » : valeur avant le dernier mouvement, puis valeur actuelle en couleur */
@@ -2781,7 +2816,9 @@ function pnlGauge(pnl,why){const z=pnlGz(pnl);return gauge(z.lp,z.rc,why)}
 function riskRc(k){
  const w=weights(k),sp=pvol(w),vd=varDecomp(w),fmax=Math.max(...vd.fv)/vd.tot;
  const band=bandNow(),dev=Math.abs(sp-S.tgt)/S.tgt;
- let d=dev<band?3:-Math.min(12,(dev-band)*18)*SIZE().rcNeg;
+ /* plus aucun plafond : la sanction croît continûment avec l'écart au mandat. La seule
+    limite restante est la borne de gauge(). */
+ let d=dev<band?3:-(dev-band)*32*SIZE().rcNeg;
  if(fmax>0.75)d-=3*SIZE().rcNeg;if(sp<0.02)d-=4;
  return d;
 }
@@ -2813,7 +2850,9 @@ function previewGauge(){
 function riskGauge(why,bonus){
  const w=weights(S.k),sp=pvol(w),vd=varDecomp(w),fmax=Math.max(...vd.fv)/vd.tot;
  const band=bandNow(),dev=Math.abs(sp-S.tgt)/S.tgt;
- let d=dev<band?3:-Math.min(12,(dev-band)*18)*SIZE().rcNeg;
+ /* plus aucun plafond : la sanction croît continûment avec l'écart au mandat. La seule
+    limite restante est la borne de gauge(). */
+ let d=dev<band?3:-(dev-band)*32*SIZE().rcNeg;
  if(fmax>0.75)d-=3*SIZE().rcNeg;if(sp<0.02)d-=4;d+=(bonus||0);
  const txt=dev<band?`vol ex-ante ${pct(sp)} dans la bande`:`vol ex-ante ${pct(sp)} hors de la bande ±${(band*100).toFixed(0)} %`;
  return gauge(0,d,`${why} — ${txt}${fmax>0.75?', book mono-facteur':''}${sp<0.02?', book vide':''}`);
@@ -2896,10 +2935,12 @@ const mm=x=>{const a=Math.abs(x),sg=x<0?'−':'';
 const moneyB=x=>{const a=Math.abs(x);return a>=1?x.toFixed(a>=10?1:2).replace('.',',')+' Md$':(x*1000).toFixed(a>=0.1?0:1).replace('.',',')+' M$'};
 function sig3(v,unit){const a=Math.abs(v);const d=a>=100?0:a>=10?1:2;
  return (v<0?'−':'')+Math.abs(v).toFixed(d).replace('.',',')+' '+unit}
-const score=x=>{const a=Math.abs(x);
+/* Trésorerie et gains : en milliers de dollars tant qu'on est sous dix millions, ce qui est
+   la plage où se joue la partie, puis en millions. 9 999 k$, puis 13,23 M$. */
+const score=x=>{const a=Math.abs(x),sg=x<0?'−':'';
  if(a>=1)return sig3(x,'Md$');
- if(a>=0.00005)return sig3(x*1000,'M$');
- return (x<0?'−':'')+Math.abs(x*1e6).toFixed(0)+' k$'};
+ if(a>=0.01)return sg+(a*1000).toFixed(2).replace('.',',')+' M$';
+ return sg+Math.round(a*1e6).toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' k$'};
 const M$=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${mm(Math.abs(x))}</b>`;
 function tbl(rows,head){return `<table class="qt">${head?`<thead><tr>${head.map((h,i)=>`<th${i===0?' style="text-align:left"':''}>${h}</th>`).join('')}</tr></thead>`:''}<tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td${i===0?' style="text-align:left;color:var(--txt)"':''}>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
 function showGauge(id){
@@ -3182,7 +3223,7 @@ function screenBudget(){
  S.mgrCosts-=S.qOps||0;S.qOps=budgetBp()*1e-4*S.nav;S.mgrCosts+=S.qOps;
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Budget d'exploitation du trimestre</h2><span class="hint">à votre charge</span></div>
-   <p class="note" style="margin-top:0">Ces dépenses sortent de <em>votre poche de gérant</em> : elles viennent en déduction de vos gains, pas de la performance du fonds. Vous ne pouvez engager que ce que votre société a en caisse — les commissions encaissées, moins ce que vous avez déjà payé. Un point de base vaut <em>${(S.nav*0.1).toFixed(0)} M$</em>.</p>
+   <p class="note" style="margin-top:0">Ces dépenses sortent de <em>votre poche de gérant</em> : elles viennent en déduction de vos gains, pas de la performance du fonds. Vous ne pouvez engager que ce que votre société a en caisse — les commissions encaissées, moins ce que vous avez déjà payé. Un point de base vaut <em>${(S.nav*100).toFixed(0)} k$</em>.</p>
    <div class="kv"><span>Trésorerie disponible ce trimestre</span><b id="btre">${mm(mgrCash()+(S.qOps||0))}</b></div>
    <div id="buds"></div>
    <div class="budtot"><span>Total du trimestre</span><b id="btot"></b></div>
@@ -3830,7 +3871,7 @@ function screenMidMark(){
  const y=ytdIdx(),tot=y.now-100;
  const dir=(p*S.nav/Math.max(1e-9,S.navQ0))*(S.idx/Math.max(1e-9,y.base))*100;
  resultCard(`TRIMESTRE ${S.q+1} · MI-PARCOURS`,p>=0?"Le book est en gains latents":"Le book est en pertes latentes",
-  [`Le fonds est à <em class="${cls(tot)}">${sgn(tot/100,1)}</em> depuis le début de l'année. Sur ce total, <em class="${cls(dir)}">${dir>=0?'+':'−'}${dec(Math.abs(dir),1)} point${Math.abs(dir)>=2?'s':''}</em> viennent des positions directionnelles que vous portez en ce moment — <em class="${cls(p)}">${sgn(p,1)} · ${mn(p*navB)}</em> de gains latents, rien n'est encaissé. Le reste est déjà acquis : dépêches soldées, collatéral, incidents. Les investisseurs et le comité reçoivent le rapport hebdomadaire et réagissent : ${gz(g.lp,g.rc,'always')}.`,
+  [`Le fonds est à <em class="${cls(tot)}">${sgn(tot/100,1)}</em> depuis le début de l'année. Sur ce total, <em class="${cls(dir)}">${dir>=0?'+':'−'}${dec(Math.abs(dir),1)} point${Math.abs(dir)>=2?'s':''}</em> viennent des positions directionnelles que vous portez depuis le début du trimestre — <em class="${cls(p)}">${sgn(p,1)} · ${mn(p*navB)}</em>. Les investisseurs et le comité reçoivent le rapport hebdomadaire et réagissent : ${gz(g.lp,g.rc,'always')}.`,
    rows.length?`Principaux contributeurs : ${rows.slice(0,4).map(o=>`${INSTR[o.i].sym} <span class="${cls(o.v)}">${mn(o.v*navB)}</span>`).join(', ')}.`:"Aucune position ouverte : rien à marquer."],
   [['Jauges',`<span class="${cls(g.lp)}">${sd1(g.lp)}</span> · <span class="${cls(g.rc)}">${sd1(g.rc)}</span>`]],
   "Poursuivre le trimestre",stepEvents);   /* le ruban est déjà à l'écran : pas de doublon */
@@ -4323,7 +4364,7 @@ function screenDebrief(o){
    <div class="regime">${R.nm}</div><div class="sub">${R.d}</div></div>
   ${(S.tape&&S.tape.pts&&S.tape.pts.length>3)?`<div class="tape" style="margin-top:12px"><div class="tapehead">
     <span>LE TRIMESTRE, HEURE PAR HEURE</span><b class="${S.tape.pts[S.tape.pts.length-1]>=100?'pos-g':'neg-g'}">${sgnp((S.tape.pts[S.tape.pts.length-1]-100)/100,1)} DEPUIS JANVIER</b></div>
-    ${tapeSvg(S.tape.pts,0,{h:132})}</div>`
+    ${tapeSvg(S.tape.pts,0,{h:132,rivals:rivalTapes()})}</div>`
    :navBox(`PERFORMANCE NETTE CUMULÉE · ${S.q} TRIMESTRE${S.q>1?'S':''}`,idxSeries(),{anim:1,trough:1})}
   ${warn.map(t=>`<div class="flag" style="margin-top:12px">${t}</div>`).join('')}
   <div class="block"><div class="blockhead"><h2>La concurrence</h2><span class="hint">${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur cinq</span></div>
@@ -4473,7 +4514,7 @@ function screenFinal(){
   try{if(navigator.share){await navigator.share({title:'Le Book',text:txt});return}}catch(e){}
   try{await navigator.clipboard.writeText(txt);b.textContent='Résultat copié — collez-le où vous voulez'}catch(e){prompt('Copiez ce texte :',txt)}
  };
- document.getElementById('again').onclick=()=>{setup={prof:'syst',arch:'std',desk:'inhouse',vol:'std',size:'mid'};screenSetup();window.scrollTo(0,0)};
+ document.getElementById('again').onclick=()=>{setup={prof:'fonda',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'com',dur:'normal'};screenSetup();window.scrollTo(0,0)};
  document.getElementById('same').onclick=()=>{newGame(S.seed,S.prof,S.arch,S.desk,S.vol,S.size);phaseOpen()};
 }
 if(!(hasSave()&&location.hash==='#resume'))screenIntro();else loadGame();
