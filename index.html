@@ -146,6 +146,8 @@ em{font-style:italic;color:var(--txt)}
 .chips i.rel{margin-left:auto;color:var(--dim)}
 .chips i.rel.forte{color:var(--gold);background:rgba(217,176,106,.12)}
 .chips i.rel.faible{color:var(--dimmer)}
+.crestbadge{display:flex;align-items:center;padding:0 2px;line-height:0;flex-shrink:0}
+.ft2 .mand{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--dimmer);opacity:.7}
 .chips i.sure{color:var(--gold);background:rgba(217,176,106,.16)}
 .news .src{overflow-wrap:anywhere}
 .news.rum .src{color:var(--gold)}
@@ -2758,8 +2760,12 @@ function tapeSvg(p,from,opt){
   ey=Math.max(7,Math.min(H-7,ey));used.push(ey);
   riv+=crestMark(r.crest!==undefined?r.crest:RIVCREST[j%4],ex,ey,5.6);
  });
- const head=`<circle cx="${f(x(n-1))}" cy="${f(y(p[n-1]))}" r="3" fill="${headC}">
-    <animate attributeName="r" values="3;6;3" dur="1.8s" repeatCount="indefinite"/></circle>`;
+ /* l'écusson du fonds marque la tête du tracé, et c'est lui qui bat */
+ const hx=x(n-1),hy=y(p[n-1]);
+ const head=`<g><animateTransform attributeName="transform" type="translate" dur="1.9s" repeatCount="indefinite"
+    values="0 0;${f(-hx*0.18)} ${f(-hy*0.18)};0 0"/>
+   <g><animateTransform attributeName="transform" type="scale" dur="1.9s" repeatCount="indefinite"
+     values="1 1;1.18 1.18;1 1"/>${crestMark(S&&S.crest!==undefined?S.crest:0,hx,hy,6.2)}</g></g>`;
  if(!opt.anim||from<=0||from>=n-1){
   return `<svg class="navc" viewBox="0 0 ${W} ${H}" aria-hidden="true">${base}${riv}${body}${head}</svg>`;
  }
@@ -2772,10 +2778,10 @@ function tapeSvg(p,from,opt){
     <animate attributeName="width" from="${f(x0)}" to="${W}" dur="${DRAW}s" fill="freeze"/></rect>
   </clipPath></defs>
   ${base}<g clip-path="url(#${id2})">${riv}${body}</g>
-  <circle cx="${f(x0)}" cy="${f(y(p[from]))}" r="3.4" fill="${headC}">
-   <animate attributeName="cx" values="${(()=>{const a=[];for(let j=0;j<=40;j++){const i=Math.round(from+(n-1-from)*j/40);a.push(f(x(i)))}return a.join(';')})()}" dur="${DRAW}s" fill="freeze"/>
-   <animate attributeName="cy" values="${(()=>{const a=[];for(let j=0;j<=40;j++){const i=Math.round(from+(n-1-from)*j/40);a.push(f(y(p[i])))}return a.join(';')})()}" dur="${DRAW}s" fill="freeze"/>
-   <animate attributeName="r" values="3;6;3" dur="1.8s" begin="${DRAW}s" repeatCount="indefinite"/></circle></svg>`;
+  <g><animateTransform attributeName="transform" type="translate" dur="${DRAW}s" fill="freeze"
+    values="${(()=>{const a=[];for(let j=0;j<=40;j++){const i=Math.round(from+(n-1-from)*j/40);
+      a.push(f(x(i)-x(n-1))+' '+f(y(p[i])-y(p[n-1])))}return a.join(';')})()}"/>
+   ${crestMark(S&&S.crest!==undefined?S.crest:0,x(n-1),y(p[n-1]),6.2)}</g></svg>`;
 }
 /* Courbes des concurrents sur la même fenêtre. Leurs clôtures connues sont des points
    d'ancrage ; le trimestre en cours prolonge leur dernière valeur sans dérive, puisque leur
@@ -2827,8 +2833,9 @@ function statusBar(done){
  /* couleur continue : vert dans la bande, puis jaune, orange, rouge à mesure que l'écart
     au mandat grandit. Un dégradé se lit mieux que trois paliers. */
  const rdev=Math.max(0,(Math.abs(rk-1)-band)/0.95);
- const rhue=145-140*Math.pow(Math.min(1,rdev),0.62);
- const rcol=`hsl(${rhue.toFixed(0)} 62% ${(52+8*Math.min(1,rdev)).toFixed(0)}%)`;
+ /* teintes sobres, dans la gamme du reste du jeu : vert de mousse, ocre, brique */
+ const rhue=150-140*Math.pow(Math.min(1,rdev),0.62);
+ const rcol=`hsl(${rhue.toFixed(0)} ${(30+18*Math.min(1,rdev)).toFixed(0)}% ${(46+6*Math.min(1,rdev)).toFixed(0)}%)`;
  const fg=k=>{const v=ex[k],pc=Math.min(50,Math.abs(v)/0.15*50);
   return `<button class="fg ${S.hotFactor===k?'hot':''}" data-gauge="f${k}"><span class="fl">${FACT[k].nm.split(' ')[0].slice(0,9)}</span>${readTri(k)}<span class="ft2"><em style="left:50%"></em><i style="${v>=0?'left:50%':'right:50%'};width:${pc}%;background:${v>=0?'var(--long)':'var(--short)'}"></i></span>${(()=>{const r=Math.round(v*100);return `<b class="${r===0?'dim-g':(r>0?'pos-g':'neg-g')}">${r>0?'+':r<0?'−':''}${Math.abs(r)}</b>`})()}</button>`};
  return `<div class="status">
@@ -2840,14 +2847,17 @@ function statusBar(done){
    <button class="tile" data-gauge="perf"><span><i>Perf.</i>${dd>0.005?`<b class="neg-g">repli ${(dd*100).toFixed(0)} %</b>`:'<b class="dim-g">au plus haut</b>'}</span><b class="${cls(cum)}">${sgnp(cum,1)}</b></button>
   </div>
   <div class="srow">
+   <span class="crestbadge">${crestSvg(S.crest||0,26)}</span>
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
-   <button class="tile gauge${(mvL||mvR)?' moved':''}" data-gauge="lp" style="flex:2.1${mvSty(mvL||mvR)}"><span><i>Confiance</i><b>${S.phase!=='book'&&S.lastG?gArrow(0.6*Math.min(S.lastG.lp0,S.lastG.rc0)+0.4*(S.lastG.lp0+S.lastG.rc0)/2,conf()):Math.round(conf())}${S.phase==='book'&&S._pv?(()=>{const nl=Math.max(0,Math.min(100,S.lp+(S._pv.lp||0))),nr=Math.max(0,Math.min(100,S.rc+(S._pv.rc||0))),nc=0.6*Math.min(nl,nr)+0.4*(nl+nr)/2,d=nc-conf();return Math.abs(d)>=0.05?`<span class="${cls(d)}">→${Math.round(nc)}</span>`:''})():''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
+   <button class="tile gauge${(mvL||mvR)?' moved':''}" data-gauge="lp" style="flex:2.1${mvSty(mvL||mvR)}"><span><i>Confiance des investisseurs</i><b>${S.phase!=='book'&&S.lastG?gArrow(0.6*Math.min(S.lastG.lp0,S.lastG.rc0)+0.4*(S.lastG.lp0+S.lastG.rc0)/2,conf()):Math.round(conf())}${S.phase==='book'&&S._pv?(()=>{const nl=Math.max(0,Math.min(100,S.lp+(S._pv.lp||0))),nr=Math.max(0,Math.min(100,S.rc+(S._pv.rc||0))),nc=0.6*Math.min(nl,nr)+0.4*(nl+nr)/2,d=nc-conf();return Math.abs(d)>=0.05?`<span class="${cls(d)}">→${Math.round(nc)}</span>`:''})():''}</b></span><span class="track"><i style="width:${S.lp}%;background:${gc(S.lp)}"></i></span></button>
    <button class="tile gauge" data-gauge="rc" style="display:none"><span><i>Comité</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.rc0,S.rc):Math.round(S.rc)}${S.phase==='book'&&S._pv&&Math.abs(S._pv.rc)>=0.05?`<span class="${cls(S._pv.rc)}">→${Math.round(Math.max(0,Math.min(100,S.rc+S._pv.rc)))}</span>`:''}</b></span><span class="track"><i style="width:${S.rc}%;background:${gc(S.rc)}"></i></span></button>
    <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Vos gains</span><b id="gaintile" class="${mgrCash()>=0?'':'neg-g'}">${score(mgrCash())}</b></button>
   </div>
   <div class="srow">
    ${[0,1,2,3].map(fg).join('')}
-   <button class="fg" data-gauge="risk" style="flex:2.2">${''}<span class="fl">Risque</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><span class="band" style="left:${(1-band)*50}%;width:${band*100}%"></span><em style="left:50%"></em><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b>${Math.round(sp*100)}/${Math.round(S.tgt*100)}</b></button>
+   ${(()=>{const gr=w.reduce((a,v)=>a+Math.abs(v),0);
+     return `<button class="fg" data-gauge="expo"><span class="fl">Exposition</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><i style="left:0;width:${Math.min(100,gr*20)}%;background:hsl(210 26% 50%)"></i></span><b>${gr.toFixed(1)}×</b></button>`})()}
+   <button class="fg" data-gauge="risk" style="flex:2.2">${''}<span class="fl">Risque</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><span class="mand" style="left:50%"></span><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b>${Math.round(sp*100)}/${Math.round(S.tgt*100)}</b></button>
   </div>${S.phase==='events'?tapeBand():ticker()}</div>`;
 }
 /* « 61 → 58 » : valeur avant le dernier mouvement, puis valeur actuelle en couleur */
@@ -3059,7 +3069,12 @@ function showGauge(id){
   openModal(`Facteur « ${f.nm.toLowerCase()} »`,`<p>Exposition nette de votre book à ce facteur, en points de volatilité annualisée : Σ<sub>i</sub> w<sub>i</sub>σ<sub>i</sub>b<sub>ik</sub>. Positif, vous gagnez si le facteur monte. La dernière colonne donne ce que vous rapporterait un mouvement de <em>+1 σ trimestriel</em> du facteur, marché par marché.</p>
    ${tbl([['Exposition nette',`<span class="${cls(ex[k])}">${ex[k]>=0?'+':'−'}${Math.abs(ex[k]*100).toFixed(1)}</span>`,`<span class="${cls(ex[k])}">${M$(ex[k]/2*S.nav)}</span>`],...rows],['Marché','pts de vol','+1 σ ⇒'])}
    ${S.q>0?`<p style="margin-top:10px">Dernier trimestre, ce facteur a fait <em>${S.fLast?(S.fLast[k]>=0?'+':'−')+Math.abs(S.fLast[k]).toFixed(2):'—'} σ</em>.</p>`:''}`);
- } else if(id==='risk'){
+ } else if(id==='expo'){
+  const w=weights(S.k),gr=w.reduce((a,v)=>a+Math.abs(v),0),net=w.reduce((a,v)=>a+v,0);
+  openModal('Exposition aux marchés',`<p>Le notionnel que vous portez, rapporté à l'encours du fonds. <em>${gr.toFixed(2)}×</em> en brut : c'est la somme des positions en valeur absolue, longues et courtes confondues. <em>${net>=0?'+':'−'}${Math.abs(net).toFixed(2)}×</em> en net, c'est-à-dire ce qui reste une fois les longues et les courtes compensées.</p>
+   <p class="note">L'exposition n'est pas le risque : un book brut de 4× réparti sur des marchés qui s'annulent peut être moins volatil qu'un book de 1× concentré sur un seul facteur. La jauge Risque, elle, tient compte des corrélations. Les deux se lisent ensemble — un écart important entre elles signale un book qui repose sur des compensations, et les compensations se défont dans les crises.</p>`);
+ }
+ else if(id==='risk'){
   const vd=varDecomp(w),rc=riskContrib(w);
   const top=rc.map((v,i)=>({v,i})).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,5).filter(o=>Math.abs(o.v)>1e-6);
   const RS=riskShown(w),MGU=marginPct(S.k);
