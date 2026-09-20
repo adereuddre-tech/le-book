@@ -2146,7 +2146,7 @@ function planQuarter(){
  /* pouvoir du gérant de flux : le sens d'un facteur, connu d'avance */
  S.hunch=null;
  if(PROF().hunch){const k=S.f.map((v,i)=>[Math.abs(v),i]).sort((a,b)=>b[0]-a[0])[Math.floor(rng()*2)][1];
-   S.hunch={k,up:(rng()<0.93)===(S.f[k]>0)};  /* une intuition, pas une certitude */}
+   S.hunch={k,up:(rng()<0.78)===(S.f[k]>0)};  /* une intuition, pas une certitude */}
  /* événements macro du trimestre : 2 à 5, plus une interaction avec le desk */
  reseed('ev');
  const nb=2+Math.floor(rng()*4);
