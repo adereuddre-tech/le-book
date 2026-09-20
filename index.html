@@ -2875,10 +2875,10 @@ function gz(lp,rc,opt){
  const d=0.6*Math.min(l1,r1)+0.4*(l1+r1)/2-c0;
  if(Math.abs(d)<0.05&&opt!=='always')return '';
  const who=[];
- if(Math.abs(lp||0)>=0.05)who.push(`investisseurs ${sd1(lp)}`);
- if(Math.abs(rc||0)>=0.05)who.push(`comité ${sd1(rc)}`);
- return `<span class="${cls(d)}">confiance ${sd1(d)}</span>`
-  +(who.length?` <span class="dim-g">(${who.join(', ')})</span>`:'');
+ if(Math.abs(lp||0)>=0.05)who.push(`investisseurs ${(lp>=0?'+':'−')+Math.abs(lp).toFixed(0)}`);
+ if(Math.abs(rc||0)>=0.05)who.push(`comité ${(rc>=0?'+':'−')+Math.abs(rc).toFixed(0)}`);
+ /* un seul élément, court : deux enfants dans une ligne en flex écrasaient le libellé */
+ return `<span class="${cls(d)}"${who.length?` title="${who.join(', ')}"`:''}>confiance ${sd1(d)}</span>`;
 }
 /* La confiance : ce que le joueur suit. Le plus bas des deux canaux pèse le plus, parce
    qu'un seul suffit à vider la base d'investisseurs. */
