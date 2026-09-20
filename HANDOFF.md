@@ -252,6 +252,43 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
     `S.navs[0]=100` contre des encours en Md$ — une falaise verticale invisible depuis
     longtemps.
 
+- **Lots 32 à 36** (ménage, virgules, noms, ruban) :
+  - **Lot 32 — ménage des anciennes morts.** Depuis le lot 25 la seule fin est `S.over='nav'`
+    (encours sous 40 % du départ). Les trois verdicts inatteignables ('dd', 'lp', 'rc') sont
+    supprimés ; `if(S.over)` couvre les vieilles sauvegardes. La case « Comité » de la barre
+    d'état était rendue avec `display:none` : supprimée, sa pop-up fondue dans celle de la
+    Confiance (les deux composantes, la formule, les seuils 24 / 20 / 13 / 40 %). La barre de
+    la jauge Confiance affichait `S.lp` au lieu de `conf()`. Six textes périmés réécrits
+    (règles, présentation, pop-up Capital, les deux profils : le flux annonçait 16 % alors que
+    son seuil est 13 % depuis le lot 6).
+  - **Lot 33 — virgules.** L'invariant 8 n'était pas tenu : 74 gabarits `${x.toFixed(n)}`,
+    dont 57 dans du texte (passés par `dec`), 17 dans des attributs SVG (laissés : une virgule
+    casse le dessin), plus 8 concaténations. Le patch refuse une expression sans parenthèses
+    qui changerait de sens dans `dec(...)`.
+  - **Lot 34 — noms ×3.** `NAME1` passe de 40 à 120 (3 600 combinaisons). Les 80 nouveaux sont
+    écrits par thème d'écusson et `NAMECREST` relie 108 noms à leur écusson : « Proposez-m'en
+    un » propose l'écusson assorti tant que le joueur n'a pas cliqué un écusson (`crestPicked`).
+    Un nom long réduit son corps (`fitN`) au lieu de déborder de la saisie.
+  - **Lot 35 — ruban vivant et théâtral.** `rivalTapes` appelait `rivRet(j,t)`, **fonction
+    inexistante** : ReferenceError avalée par un `try/catch` muet, donc les concurrents restaient
+    plats pendant tout le trimestre. `rivRet(j,t,q)` est écrit, **pur** (hash32/prng32) : même
+    forme que `rivalReturns` sans le terme idiosyncratique, que la clôture révèle par un dernier
+    pas de 18 points commun au joueur et aux concurrents. `S.tape.ts` retient l'instant de chaque
+    segment et `S.tape.q0` le début du trimestre, ce qui aligne les courbes. Pastilles des
+    concurrents hors découpage, qui suivent leur courbe ; pastille du joueur cerclée de blanc
+    (depuis le lot 34 il peut porter le même écusson qu'un concurrent). `opt.draw` : 3 s pour
+    les dépêches (aligné sur `.evhold`), 5 s au mi-parcours et à la clôture, où le grand ruban
+    rejoue le trimestre avec un compteur calé sur la tête du tracé (`data-vals`, `theatre()`),
+    le résultat révélé ensuite (`.thold`), et un toucher qui saute l'animation.
+  - **Lot 36 — bruit du ruban.** `tapeVol` calait l'amplitude sur la volatilité *annuelle* quelle
+    que soit la durée du segment : un pont s'écartait de ±14 % au milieu d'un trimestre à +1 %.
+    Désormais `tapeVol(m,dt,v)` = (v/2)·√(dt/m), `dt` mesuré sur l'avancement réel de la file de
+    dépêches, les concurrents avec leur propre volatilité.
+
+  Vérifications : régression 18 parties identiques au bit près (mêmes NAV finales qu'avant le
+  lot 32 : aucun de ces lots ne touche un tirage de `rng`), `cover2` 662 choix sans anomalie,
+  `cover3` 2 700 plans, `goalchk` 108 prédicats, reprise à froid, `uichk2` adapté.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
@@ -269,6 +306,12 @@ fausse les résultats.
 - Budgets : salle de marché 2/18/50 pb, contrôle 4/12/24 pb, recherche 4/18/64 pb.
 - `POSRX` / `evTouchesBook()` écartent du début de trimestre et du conseil les exigences et
   événements qui coupent des positions : le book y est à plat.
+
+Piège de méthode (captures) : **Chromium sans écran n'échantillonne pas SMIL pendant le
+déroulé** — les animations sautent de l'état initial à l'état final, et toute image
+intermédiaire est donc fausse. Pour filmer : `svg.pauseAnimations()` puis
+`svg.setCurrentTime(t)` avant chaque capture (`tools/shot5.py --film`). Attention, le compteur
+JS, lui, suit l'horloge réelle : sur un film ainsi piloté il n'est pas synchrone avec le tracé.
 
 Piège de méthode : `sed 's/a.html/b.html/'` sur un plan JSON d'une seule ligne ne remplace
 que la première occurrence. Générer les plans en Python.
@@ -389,6 +432,13 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   et dépêches, chaque choix), `goalchk.js` (108 prédicats d'objectif), `featchk.js`,
   `flowchk.js`. Sans eux, toute production de texte est non vérifiée. `resumechk.js` est
   partiellement couvert par `play.js --resume N`.
+
+### À trancher
+- **Rachats pour repli répétés.** `S.maxdd` est un maximum sur toute la partie : une fois
+  `ddMax()` franchi, `redeem('repli', …)` repart à **chaque** clôture, même après remontée.
+  Lu dans le code, non mesuré. Le repli est la première cause de rachat dans la campagne de
+  90 parties : si ce n'est pas voulu, la correction (repli mesuré depuis le début du trimestre,
+  ou seuil à franchir de nouveau) change l'équilibre et demande une campagne appariée.
 
 ### Plus loin
 - Production de texte : 200 anecdotes d'exécution (145 aujourd'hui) et 300 dépêches (269),

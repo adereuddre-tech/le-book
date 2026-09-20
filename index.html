@@ -73,6 +73,11 @@ em{font-style:italic;color:var(--txt)}
 .evhold{opacity:0;pointer-events:none;animation:evshow .55s ease-out 3s forwards}
 @keyframes evshow{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none;pointer-events:auto}}
 @media (prefers-reduced-motion:reduce){.evhold{opacity:1;pointer-events:auto;animation:none}}
+/* grand ruban : ce qui attend la fin du tracé. Jamais sur un élément .fade (voir .evhold) */
+.thold{opacity:0;pointer-events:none;animation:evshow .6s ease-out 5s forwards}
+.skip .thold{animation:none;opacity:1;pointer-events:auto}
+.tape.big .tapehead b{font-size:17px}
+@media (prefers-reduced-motion:reduce){.thold{opacity:1;pointer-events:auto;animation:none}}
 .navbox{margin:14px 0 0;padding:10px 10px 7px;border:1px solid var(--line);border-radius:10px;background:linear-gradient(180deg,var(--panel),rgba(21,32,47,0))}
 .navrow{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:10px;color:var(--dimmer);margin-top:3px}
 .navcap{font-family:var(--mono);font-size:10px;color:var(--dimmer);letter-spacing:.05em;margin-bottom:5px}
@@ -2645,23 +2650,28 @@ function ytdIdx(){
    points. L'amplitude par pas est calée sur la volatilité cible du mandat et non sur une
    constante : un fonds agressif a un ruban plus nerveux, ce qui est la vérité. */
 const TAPEM=48;
-function tapeVol(m){return Math.max(0.006,(S.tgt||0.05)*1.4/Math.sqrt(m))}
+/* Amplitude par pas d'un pont de m points couvrant la fraction dt d'un trimestre, pour une
+   volatilité annuelle v (vol cible du mandat par défaut, celle du concurrent pour eux).
+   σ_trimestre = v/2 ; l'écart au milieu du pont vaut (v/2)·√dt/2. */
+function tapeVol(m,dt,v){return Math.max(0.0008,((v===undefined?(S.tgt||0.05):v)/2)*Math.sqrt(Math.max(0.01,dt===undefined?1:dt)/m))}
 /* Le ruban. Le passé est stocké, jamais recalculé ; seul le présent s'allonge. */
 function tapeTick(){
  const y=ytdIdx(),yk=y.y0;
  if(!S.tape||S.tape.y!==yk||S.tape.q!==S.q){
   const pts=[100];let v=1;
   y.closes.forEach((r,i)=>{const nv=v*(1+r);
-    bridgePts(v*100,nv*100,TAPEM,hash32('tape'+(yk+i),S.seed),tapeVol(TAPEM)).forEach(x=>pts.push(x));v=nv});
-  S.tape={y:yk,q:S.q,pts,seg:0};
+    bridgePts(v*100,nv*100,TAPEM,hash32('tape'+(yk+i),S.seed),tapeVol(TAPEM,1)).forEach(x=>pts.push(x));v=nv});
+  S.tape={y:yk,q:S.q,pts,seg:0,q0:pts.length-1,ts:[]};
  }
  const tgt=y.now,last=S.tape.pts[S.tape.pts.length-1];
  S.tape.from=S.tape.pts.length-1;   /* rien de neuf : rendu statique */
  if(Math.abs(tgt-last)>0.05){       /* 5 pb : en deçà, le P&L fait du surplace */
-  bridgePts(last,tgt,TAPEM,hash32('tapeq'+S.q+'_'+(S.tape.seg++),S.seed),tapeVol(TAPEM))
+  const t1=qElapsed(),t0=(S.tape.ts&&S.tape.ts.length)?S.tape.ts[S.tape.ts.length-1]:0;
+  bridgePts(last,tgt,TAPEM,hash32('tapeq'+S.q+'_'+(S.tape.seg++),S.seed),tapeVol(TAPEM,t1-t0))
     .forEach(x=>S.tape.pts.push(x));
+  (S.tape.ts=S.tape.ts||[]).push(t1);   /* les concurrents avancent au même instant */
   if(S.tape.pts.length>3000){const cut=S.tape.pts.length-3000;
-    S.tape.pts.splice(0,cut);S.tape.from=Math.max(0,S.tape.from-cut)}
+    S.tape.pts.splice(0,cut);S.tape.from=Math.max(0,S.tape.from-cut);S.tape.q0=Math.max(0,(S.tape.q0||0)-cut)}
  }
 }
 /* Deux traits : celui qu'on a déjà vu, posé d'emblée, et celui qui vient d'arriver, qui se
@@ -2739,7 +2749,7 @@ function tapePieces(p,x,y,base){
 /* opt.anim : tracé animé avec fenêtre glissante. Sinon rendu statique complet. */
 function tapeSvg(p,from,opt){
  opt=opt||{};
- const W=320,H=opt.h||78,pad=5,n=p.length,rv=opt.rivals||[];
+ const W=320,H=opt.h||78,pad=6,n=p.length,rv=opt.rivals||[];
  /* échelle symétrique : le zéro est l'axe, toujours au milieu */
  let m=1e-6;p.forEach(v=>m=Math.max(m,Math.abs(v-100)));
  rv.forEach(r=>r.pts.forEach(v=>m=Math.max(m,Math.abs(v-100))));
@@ -2752,62 +2762,100 @@ function tapeSvg(p,from,opt){
  tapePieces(p,x,y,100).forEach(s=>{
   const c=s.up?TAPE_UP:TAPE_DN,pts=s.pts.map(q=>f(q[0])+','+f(q[1])).join(' ');
   body+=`<path d="M${f(s.pts[0][0])},${f(y0)} L${pts} L${f(s.pts[s.pts.length-1][0])},${f(y0)}Z" fill="${c}" opacity=".20"/>`
-      +`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>`;
+      +`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>`;
  });
- const headC=p[n-1]>=100?TAPE_UP:TAPE_DN;
  const base=`<line x1="0" y1="${f(y0)}" x2="${W}" y2="${f(y0)}" stroke="#5B6E8C" stroke-width="1"/>`;
- /* concurrents : traits fins estompés, pastille à l'initiale au bout */
- let riv='';const used=[];
+ /* un grand ruban rejoue aussi le premier trimestre de l'année, qui part de l'indice 0 */
+ const anim=opt.anim&&from<n-1&&(from>0||(opt.zero&&from===0)),DRAW=opt.draw||3,NS=40;
+ const at=j=>Math.round(from+(n-1-from)*j/NS);        /* indice du joueur à l'image j */
+ /* concurrents : trait de la couleur de leur écusson, pastille qui suit la courbe */
+ let riv='',rmk='';const used=[];
  rv.forEach((r,j)=>{
-  const c=RIVCOL[j%4],q=r.pts,pts=q.map((v,i)=>f(x(i*(n-1)/Math.max(1,q.length-1)))+','+f(y(v))).join(' ');
-  riv+=`<polyline points="${pts}" fill="none" stroke="${CRESTS[(r.crest!==undefined?r.crest:RIVCREST[j%4])%CRESTS.length].a}" stroke-width="1.1" opacity=".42" stroke-linejoin="round"/>`;
-  const ex=x(n-1);let ey=y(q[q.length-1]);
-  /* on écarte les pastilles qui se chevauchent, sinon elles s'empilent au bord droit */
-  while(used.some(v=>Math.abs(v-ey)<9.5))ey+=9.5;
-  ey=Math.max(7,Math.min(H-7,ey));used.push(ey);
-  riv+=crestMark(r.crest!==undefined?r.crest:RIVCREST[j%4],ex,ey,5.6);
+  const q=r.pts,cr=r.crest!==undefined?r.crest:RIVCREST[j%4],col=CRESTS[cr%CRESTS.length].a;
+  const qi=i=>q[Math.min(q.length-1,Math.max(0,Math.round(i*(q.length-1)/Math.max(1,n-1))))];
+  const pts=q.map((v,i)=>f(x(i*(n-1)/Math.max(1,q.length-1)))+','+f(y(v))).join(' ');
+  riv+=`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.5" opacity=".72" stroke-linejoin="round"/>`;
+  const ex=x(n-1),ey0=y(q[q.length-1]);let ey=ey0;
+  /* on écarte les pastilles qui se chevauchent à l'arrivée ; l'écart est gardé pendant la course */
+  /* décalage alterné, au-dessus puis au-dessous, plutôt qu'une colonne qui dévale */
+  for(let t=1;used.some(v=>Math.abs(v-ey)<11)&&t<12;t++)ey=ey0+(t%2?1:-1)*11*Math.ceil(t/2);
+  ey=Math.max(8,Math.min(H-8,ey));used.push(ey);
+  const mk=crestMark(cr,ex,ey,5.8);
+  rmk+=anim?`<g><animateTransform attributeName="transform" type="translate" dur="${DRAW}s" fill="freeze"
+    values="${Array.from({length:NS+1},(_,k)=>f(x(at(k))-ex)+' '+f(y(qi(at(k)))-ey0)).join(';')}"/>${mk}</g>`:mk;
  });
- /* l'écusson du fonds marque la tête du tracé, et c'est lui qui bat */
- const hx=x(n-1),hy=y(p[n-1]);
- const head=`<g><animateTransform attributeName="transform" type="translate" dur="1.9s" repeatCount="indefinite"
-    values="0 0;${f(-hx*0.18)} ${f(-hy*0.18)};0 0"/>
+ /* l'écusson du fonds marque la tête : plus grand, cerclé de blanc, pour ne jamais se
+    confondre avec un concurrent qui porterait le même */
+ const hx=x(n-1),hy=y(p[n-1]),myC=S&&S.crest!==undefined?S.crest:0;
+ const me=`<circle cx="${f(hx)}" cy="${f(hy)}" r="8.6" fill="none" stroke="#F3EEE4" stroke-width="1.5"/>${crestMark(myC,hx,hy,7)}`;
+ const vals=anim?Array.from({length:NS+1},(_,k)=>p[at(k)]):[p[n-1]];
+ const dv=` data-vals="${vals.map(v=>v.toFixed(2)).join(';')}" data-dur="${anim?DRAW:0}"`;
+ if(!anim){
+  const head=`<g><animateTransform attributeName="transform" type="translate" dur="1.9s" repeatCount="indefinite"
+    values="0 0;${f(-hx*0.14)} ${f(-hy*0.14)};0 0"/>
    <g><animateTransform attributeName="transform" type="scale" dur="1.9s" repeatCount="indefinite"
-     values="1 1;1.18 1.18;1 1"/>${crestMark(S&&S.crest!==undefined?S.crest:0,hx,hy,6.2)}</g></g>`;
- if(!opt.anim||from<=0||from>=n-1){
-  return `<svg class="navc" viewBox="0 0 ${W} ${H}" aria-hidden="true">${base}${riv}${body}${head}</svg>`;
+     values="1 1;1.14 1.14;1 1"/>${me}</g></g>`;
+  return `<svg class="navc" viewBox="0 0 ${W} ${H}" aria-hidden="true"${dv}>${base}${riv}${body}${rmk}${head}</svg>`;
  }
  /* la fenêtre s'élargit à droite : la géométrie ne bouge pas, seul le dévoilement avance */
- const DRAW=5,x0=x(from);
- const id2='c'+id;
- return `<svg class="navc" viewBox="0 0 ${W} ${H}" aria-hidden="true">
+ const x0=x(from),id2='c'+id;
+ return `<svg class="navc" viewBox="0 0 ${W} ${H}" aria-hidden="true"${dv}>
   <defs><clipPath id="${id2}" clipPathUnits="userSpaceOnUse">
    <rect x="0" y="-${H*4}" height="${H*9}" width="${f(x0)}">
     <animate attributeName="width" from="${f(x0)}" to="${W}" dur="${DRAW}s" fill="freeze"/></rect>
   </clipPath></defs>
-  ${base}<g clip-path="url(#${id2})">${riv}${body}</g>
+  ${base}<g clip-path="url(#${id2})">${riv}${body}</g>${rmk}
   <g><animateTransform attributeName="transform" type="translate" dur="${DRAW}s" fill="freeze"
-    values="${(()=>{const a=[];for(let j=0;j<=40;j++){const i=Math.round(from+(n-1-from)*j/40);
-      a.push(f(x(i)-x(n-1))+' '+f(y(p[i])-y(p[n-1])))}return a.join(';')})()}"/>
-   ${crestMark(S&&S.crest!==undefined?S.crest:0,x(n-1),y(p[n-1]),6.2)}</g></svg>`;
+    values="${Array.from({length:NS+1},(_,k)=>f(x(at(k))-hx)+' '+f(y(p[at(k)])-hy)).join(';')}"/>${me}</g></svg>`;
+}
+/* Le compteur d'un grand ruban suit la tête du tracé, image par image ; un toucher sur
+   l'écran saute l'animation et révèle ce qui attendait (.thold). */
+function theatre(root){
+ if(!root)return;
+ const fmt=v=>(v>=100?'+':'−')+dec(Math.abs(v-100),1)+'\u00a0%';
+ root.querySelectorAll('.tape').forEach(tp=>{
+  const sv=tp.querySelector('svg[data-vals]'),c=tp.querySelector('.cnt');if(!sv||!c)return;
+  const vals=sv.dataset.vals.split(';').map(Number),dur=(+sv.dataset.dur||0)*1000,t0=Date.now(),suf=c.dataset.suf||'';
+  const put=v=>{c.textContent=fmt(v)+suf;c.className='cnt '+(v>=100?'pos-g':'neg-g')};
+  /* borné en nombre d'images : une horloge figée (harnais, onglet suspendu) ne boucle pas */
+  const kmax=Math.ceil(dur/60)+10;
+  const tick=k=>{if(!c.isConnected)return;
+   const u=dur?Math.min(1,(Date.now()-t0)/dur):1;
+   if(root.classList.contains('skip')||u>=1||k>kmax){put(vals[vals.length-1]);return}
+   put(vals[Math.round(u*(vals.length-1))]);setTimeout(()=>tick(k+1),60)};
+  tick(0);
+ });
+ root.addEventListener('click',()=>{root.classList.add('skip');
+  root.querySelectorAll('svg').forEach(s=>{try{s.setCurrentTime(60)}catch(err){}})},{once:true});
 }
 /* Courbes des concurrents sur la même fenêtre. Leurs clôtures connues sont des points
    d'ancrage ; le trimestre en cours prolonge leur dernière valeur sans dérive, puisque leur
    résultat n'est pas encore connu. */
+/* P&L d'un concurrent à l'instant t du trimestre q. Pur : aucun tirage de rng. Même forme
+   que rivalReturns (adresse sur les facteurs réalisés), sans le bruit propre, que la clôture
+   révèle. */
+function rivRet(j,t,q){
+ const r=S.rivals&&S.rivals[j];if(!r||!S.f||!S.f.length)return 0;
+ let e=0;for(let k=0;k<K;k++){const u=prng32(hash32('rivk'+j+'_'+q+'_'+k,S.seed))();
+  e+=(u<r.skill?1:-1)*Math.sign(S.f[k]||1)*S.f[k]}
+ return t*((r.vol/2)*(0.70*e/2)-0.008);
+}
 function rivalTapes(){
- if(!S.rivals)return [];
- const y0=Math.floor(S.q/4)*4;
- let base=1;for(let i=0;i<y0;i++)base*=(1+S.rets[i]);
+ if(!S.rivals||!S.tape)return [];
+ const tq=S.tape.q,y0=S.tape.y,closed=S.q>tq&&S.tape.settled===tq;
+ const ts=S.tape.ts&&S.tape.ts.length?S.tape.ts
+   :Array.from({length:S.tape.seg||0},(_,k)=>(k+1)/Math.max(1,S.tape.seg)*qElapsed());   /* sauvegarde d'avant le lot 35 */
  return S.rivals.map((r,j)=>{
   const pts=[100];let v=1;
-  for(let i=y0;i<S.q;i++){const g=(r.hist&&r.hist[i])||0,nv=v*(1+g);
-   bridgePts(v*100,nv*100,TAPEM,hash32('riv'+j+'_'+i,S.seed),tapeVol(TAPEM)*0.30).forEach(z=>pts.push(z));v=nv}
-  /* trimestre en cours : leur P&L réel à l'instant t, même formule que la vôtre */
-  const segs=Math.max(1,Math.round((S.tape&&S.tape.seg)||1)),t=qElapsed();
-  let g=0;try{g=rivRet(j,t)}catch(err){g=0}
-  for(let k=0;k<segs;k++){
-   const u=(k+1)/segs,nv=v*(1+g*u);
-   bridgePts(v*(1+g*(k/segs))*100,nv*100,TAPEM,hash32('rivq'+j+'_'+S.q+'_'+k,S.seed),tapeVol(TAPEM)*0.26).forEach(z=>pts.push(z));
-  }
+  for(let i=y0;i<tq;i++){const g=(r.hist&&r.hist[i])||0,nv=v*(1+g);
+   bridgePts(v*100,nv*100,TAPEM,hash32('riv'+j+'_'+i,S.seed),tapeVol(TAPEM,1,r.vol)).forEach(z=>pts.push(z));v=nv}
+  /* trimestre en cours : un segment par segment du joueur, au même instant t */
+  let last=v*100;
+  ts.forEach((t,k)=>{const nv=v*(1+rivRet(j,t,tq))*100;
+   bridgePts(last,nv,TAPEM,hash32('rivq'+j+'_'+tq+'_'+k,S.seed),tapeVol(TAPEM,t-(k?ts[k-1]:0),r.vol)).forEach(z=>pts.push(z));last=nv});
+  /* clôture : leur vrai résultat, bruit propre compris, sur le même dernier pas que vous */
+  if(closed){const nv=v*(1+((r.hist&&r.hist[tq])||0))*100;
+   bridgePts(last,nv,18,hash32('rivs'+j+'_'+tq,S.seed),tapeVol(18,0.04,r.vol)).forEach(z=>pts.push(z))}
   return {nm:r.nm,crest:RIVCREST[j%4],pts};
  });
 }
@@ -2818,7 +2866,7 @@ function tapeBand(){
  const v=p[p.length-1],up=v>=100;
  return `<div class="tape"><div class="tapehead"><span>P&amp;L DU FONDS · ANNÉE ${1+Math.floor(S.q/4)}</span>
    <b class="${up?'pos-g':'neg-g'}">${up?'+':'−'}${dec(Math.abs(v-100),1)} %</b></div>
-  ${tapeSvg(p,S.tape.from||0,{anim:1,rivals:rivalTapes()})}</div>`;
+  ${tapeSvg(p,S.tape.from||0,{anim:1,draw:3,rivals:rivalTapes()})}</div>`;
 }
 function statusBar(done){
  S.statusDone=!!done;
@@ -2862,7 +2910,7 @@ function statusBar(done){
   <div class="srow">
    ${[0,1,2,3].map(fg).join('')}
    <button class="fg" data-gauge="risk" style="flex:2.2">${''}<span class="fl">Risque</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><span class="mand" style="left:50%"></span><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b>${Math.round(sp*100)}/${Math.round(S.tgt*100)}</b></button>
-  </div>${(S.phase==='events'&&S.live)?tapeBand():ticker()}</div>`;
+  </div>${(S.phase==='events'&&S.live&&!S.bigTape)?tapeBand():ticker()}</div>`;
 }
 /* « 61 → 58 » : valeur avant le dernier mouvement, puis valeur actuelle en couleur */
 function gArrow(v0,v){const a=Math.round(v),b=v0===undefined?a:Math.round(v0);
@@ -2970,14 +3018,16 @@ function resultCard(kick,title,paras,rows,btn,next,extra){
  clearTimer();
  const head=paras.length?paras[0]:'',rest=paras.slice(1).filter(Boolean);
  const key=(extra&&extra.key)||[];
- app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="kicker">${kick}</div>
-  <div class="rescard"><h3>${title}</h3>${(extra&&extra.top)||''}<p>${head}</p>
+ const hold=extra&&extra.hold?' thold':'';
+ app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="kicker">${kick}</div>${(extra&&extra.pre)||''}
+  <div class="rescard${hold}"><h3>${title}</h3>${(extra&&extra.top)||''}<p>${head}</p>
   ${key.length?tbl(key):''}
   ${(rest.length||rows.length)?`<details style="margin-top:10px"><summary>Le détail</summary>
     ${rest.map(t=>`<p style="margin-top:8px">${t}</p>`).join('')}
     ${rows.length?tbl(rows):''}</details>`:''}</div>
-  <button class="cta" id="rgo">${btn}</button></div>`;
+  <button class="cta${hold}" id="rgo">${btn}</button></div>`;
  document.getElementById('rgo').onclick=()=>{next();window.scrollTo(0,0)};window.scrollTo(0,0);
+ if(hold)theatre(app.querySelector('.evwrap'));   /* racine propre à l'écran : ses écouteurs meurent avec lui */
 }
 function refreshGain(){const e=document.getElementById('gaintile');if(!e||!S)return;
  const v=mgrCash();e.textContent=score(v);e.className=v>=0?'':'neg-g'}
@@ -3750,6 +3800,7 @@ function screenExec(){
  });
 }
 function stepEvents(){
+ S.bigTape=false;
  save('stepEvents');
  if(!S.midShown&&S.evIdx>=Math.ceil(S.evQueue.length/2)&&S.evQueue.length>1){S.midShown=true;screenMidMark();window.scrollTo(0,0);return}
  if(S.evIdx<S.evQueue.length){const e=S.evQueue[S.evIdx++];
@@ -4001,6 +4052,14 @@ function screenTraderEvent(ev,next){
  armTimer(()=>pickCh(ev.ch.length-1));
 
 }
+function midTape(){
+ try{tapeTick()}catch(err){return {}}
+ const p=S.tape&&S.tape.pts||[];if(p.length<3)return {};
+ S.bigTape=true;refreshStatus();   /* le petit ruban du bandeau s'efface : pas de doublon */
+ return {hold:1,pre:`<div class="tape big" style="margin:4px 0 14px"><div class="tapehead"><span>T${S.q+1} JUSQU'ICI · DEPUIS JANVIER</span>
+   <b class="cnt">—</b></div>
+   ${tapeSvg(p,S.tape.q0||0,{h:150,anim:1,draw:5,zero:1,rivals:rivalTapes()})}</div>`};
+}
 function screenMidMark(){
  const w=weights(S.k);let p=0;const rows=[];
  for(let i=0;i<N;i++){const v=w[i]*0.5*S.rBase[i];p+=v;if(S.k[i]!==0)rows.push({i,v})}
@@ -4014,7 +4073,7 @@ function screenMidMark(){
   [`Le fonds est à <em class="${cls(tot)}">${sgn(tot/100,1)}</em> depuis le début de l'année. Sur ce total, <em class="${cls(dir)}">${dir>=0?'+':'−'}${dec(Math.abs(dir),1)} point${Math.abs(dir)>=2?'s':''}</em> viennent des positions directionnelles que vous portez depuis le début du trimestre, soit <em class="${cls(p)}">${sgn(p,1)} sur le trimestre · ${mn(p*navB)}</em>. Les investisseurs et le comité reçoivent le rapport hebdomadaire et réagissent : ${gz(g.lp,g.rc,'always')}.`,
    rows.length?`Principaux contributeurs : ${rows.slice(0,4).map(o=>`${INSTR[o.i].sym} <span class="${cls(o.v)}">${mn(o.v*navB)}</span>`).join(', ')}.`:"Aucune position ouverte : rien à marquer."],
   [['Jauges',`<span class="${cls(g.lp)}">${sd1(g.lp)}</span> · <span class="${cls(g.rc)}">${sd1(g.rc)}</span>`]],
-  "Poursuivre le trimestre",stepEvents);   /* le ruban est déjà à l'écran : pas de doublon */
+  "Poursuivre le trimestre",stepEvents,midTape());
 }
 function screenIncident(){
  const desk=DESK();
@@ -4181,10 +4240,9 @@ function resolveQuarter(){
  if(S.tape&&S.tape.pts&&S.tape.pts.length>2){
   const y0=Math.floor((S.q)/4)*4;let base=1;for(let i=0;i<y0;i++)base*=(1+S.rets[i]);
   const tgt=S.idx/Math.max(1e-9,base)*100,last=S.tape.pts[S.tape.pts.length-1];
-  if(Math.abs(tgt-last)>0.02){
-   S.tape.from=S.tape.pts.length-1;
-   bridgePts(last,tgt,18,hash32('settle'+S.q,S.seed),tapeVol(18)*0.5).forEach(z=>S.tape.pts.push(z));
-  }
+  /* toujours posé, même minuscule : les concurrents font le même dernier pas, sur 18 points */
+  S.tape.from=S.tape.pts.length-1;S.tape.settled=S.q;   /* avant S.q++ : c'est le trimestre du ruban */
+  bridgePts(last,tgt,18,hash32('settle'+S.q,S.seed),tapeVol(18,0.04)).forEach(z=>S.tape.pts.push(z));
  }
  S.prevRel=qTotal-med;
  S.regimes.push(S.truth);S.regime=S.truth;S.q++;
@@ -4515,14 +4573,14 @@ function screenDebrief(o){
  const story=S.qLog.filter(x=>x!=='mandat');
  app.innerHTML=statusBar(true)+`<div class="fade">
   <div class="pnlhead"><div class="q">RÉSULTAT DU TRIMESTRE ${S.q} · TOUT COMPRIS</div>
-   <div class="big ${cls(o.qTotal)}">${sgn(o.qTotal,1)}</div>
-   <div class="num ${cls(o.qTotal)}" style="font-size:18px;margin-top:4px">${bn(o.qTotal*o.q0,2)} sur ${moneyB(o.q0)} d'encours en début de trimestre</div>
+   <div class="big thold ${cls(o.qTotal)}">${sgn(o.qTotal,1)}</div>
+   <div class="num thold ${cls(o.qTotal)}" style="font-size:18px;margin-top:4px">${bn(o.qTotal*o.q0,2)} sur ${moneyB(o.q0)} d'encours en début de trimestre</div>
    <div class="regime">${R.nm}</div><div class="sub">${R.d}</div></div>
-  ${(S.tape&&S.tape.pts&&S.tape.pts.length>3)?`<div class="tape" style="margin-top:12px"><div class="tapehead">
-    <span>LE TRIMESTRE, HEURE PAR HEURE</span><b class="${S.tape.pts[S.tape.pts.length-1]>=100?'pos-g':'neg-g'}">${sgnp((S.tape.pts[S.tape.pts.length-1]-100)/100,1)} DEPUIS JANVIER</b></div>
-    ${tapeSvg(S.tape.pts,0,{h:132,rivals:rivalTapes()})}</div>`
+  ${(S.tape&&S.tape.pts&&S.tape.pts.length>3)?`<div class="tape big" style="margin-top:12px"><div class="tapehead">
+    <span>LE TRIMESTRE · DEPUIS JANVIER</span><b class="cnt">—</b></div>
+    ${tapeSvg(S.tape.pts,S.tape.q0||0,{h:150,anim:1,draw:5,zero:1,rivals:rivalTapes()})}</div>`
    :navBox(`PERFORMANCE NETTE CUMULÉE · ${S.q} TRIMESTRE${S.q>1?'S':''}`,idxSeries(),{anim:1,trough:1})}
-  ${warn.map(t=>`<div class="flag" style="margin-top:12px">${t}</div>`).join('')}
+  <div class="thold">${warn.map(t=>`<div class="flag" style="margin-top:12px">${t}</div>`).join('')}
   <div class="block"><div class="blockhead"><h2>La concurrence</h2><span class="hint">${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur cinq</span></div>
    <table class="qt"><thead><tr><th>Fonds</th><th>Trim.</th><th>Cumul</th></tr></thead><tbody>
    ${all.map(a=>{const c=cums.find(z=>z.nm===(a.me?S.fundName:a.nm.split(' · ')[0]));return {a,cv:c?c.v:0}}).sort((x,y)=>y.cv-x.cv).map(({a,cv})=>
@@ -4564,7 +4622,9 @@ function screenDebrief(o){
    <div class="attr"><span class="an">Rendement livré</span><span class="av ${S.commRes&&S.commRes.ok?'pos-g':'neg-g'}">${sgn(S.rets[S.rets.length-1]||0,1)} · ${S.commRes&&S.commRes.ok?'tenu':'manqué'}</span></div>
   </details></div>`:''}
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">D'où vient la performance · décomposition factorielle</summary>${att}</details></div>
-  ${lines.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Par marché · rendement et contribution</summary>${byl}</details></div>`:''}  <button class="cta" id="nx">${S.over?'Voir le rapport final':(S.q>=QT()?`Clôturer les ${DUR().ans} an${DUR().ans>1?'s':''}`:'Trimestre suivant')}</button></div>`;
+  ${lines.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Par marché · rendement et contribution</summary>${byl}</details></div>`:''}</div>
+  <button class="cta" id="nx">${S.over?'Voir le rapport final':(S.q>=QT()?`Clôturer les ${DUR().ans} an${DUR().ans>1?'s':''}`:'Trimestre suivant')}</button></div>`;
+ theatre(app.querySelector('.pnlhead').parentElement);
  document.getElementById('nx').onclick=()=>{
   if(S.over||S.q>=QT()){screenFinal();window.scrollTo(0,0);return}
   if(rng()<0.42&&BOARDEV.filter(e=>!S.usedEv.includes(e.t)&&!evTouchesBook(e)).length){screenBoard();window.scrollTo(0,0)}
