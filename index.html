@@ -2393,10 +2393,13 @@ const SETUPHINTS={
 };
 
 
-const NAME1=["Blackpoint","Ironwood","Brightwater","Northgate","Silverline","Stonebridge","Kestrel","Redcliff","Harborview","Greystone","Larkspur","Wolfstone","Copperfield","Windward","Fairhaven","Tidewater","Cobalt","Highfield","Sablewood","Cromwell","Ashford","Meridian","Sterling","Whitmore","Longbow","Falconer","Marbury","Quarrystone","Eastbourne","Thornhill","Deepwater","Pinehurst","Ravenswood","Castlegate","Summit Rock","Old Harbour","Beacon Hill","Two Rivers","Saltmarsh","Kingsford"];
+const NAME1=["Blackpoint", "Ironwood", "Brightwater", "Northgate", "Silverline", "Stonebridge", "Kestrel", "Redcliff", "Harborview", "Greystone", "Larkspur", "Wolfstone", "Copperfield", "Windward", "Fairhaven", "Tidewater", "Cobalt", "Highfield", "Sablewood", "Cromwell", "Ashford", "Meridian", "Sterling", "Whitmore", "Longbow", "Falconer", "Marbury", "Quarrystone", "Eastbourne", "Thornhill", "Deepwater", "Pinehurst", "Ravenswood", "Castlegate", "Summit Rock", "Old Harbour", "Beacon Hill", "Two Rivers", "Saltmarsh", "Kingsford", "Lanternhill", "Lightkeeper", "Beaconsfield", "Watchlight", "Shorelight", "Glimmerhead", "Lamplough", "Highcrest", "Cairngorm", "Crestmoor", "Skyridge", "Upland", "Scarfell", "Ridgeline", "Compass Rose", "Westwind", "Southerly", "Trade Winds", "Crosswind", "Tramontane", "Galeforce", "Capstone", "Archway", "Ashlar", "Keyarch", "Lintel Row", "Buttress", "Voussoir", "Oakhurst", "Elmstead", "Yewcroft", "Birchwood", "Ashgrove", "Rowan Hill", "Heartwood", "Anchorage", "Moorings", "Safe Harbour", "Keelhaven", "Quayside", "Slipway", "Holdfast", "Ferrybridge", "Kingsbridge", "Riverspan", "Spanwell", "Toll Bridge", "Pontefract", "Towerhill", "Belfry", "Bastion", "Rampart", "Highkeep", "Barbican", "Portcullis", "Peregrine", "Goshawk", "Harrier", "Gyrfalcon", "Osprey", "Sparrowhawk", "Merlin Heath", "Hourglass", "Timekeeper", "Sundial", "Longcase", "Eventide", "Clepsydra", "Polaris", "Lodestar", "Pole Star", "Northlight", "Vega", "Sirius Point", "Flywheel", "Ratchet Lane", "Sprocket", "Mainspring", "Escapement", "Gearhouse"];
+/* écusson assorti à chaque nom, quand il y en a un (index dans CRESTS) */
+const NAMECREST={"Beacon Hill": 0, "Brightwater": 0, "Summit Rock": 1, "Highfield": 1, "Thornhill": 1, "Windward": 2, "Meridian": 2, "Eastbourne": 2, "Quarrystone": 3, "Greystone": 3, "Ironwood": 4, "Sablewood": 4, "Ravenswood": 4, "Pinehurst": 4, "Ashford": 4, "Harborview": 5, "Old Harbour": 5, "Tidewater": 5, "Deepwater": 5, "Fairhaven": 5, "Saltmarsh": 5, "Stonebridge": 6, "Two Rivers": 6, "Kingsford": 6, "Castlegate": 7, "Northgate": 7, "Kestrel": 8, "Falconer": 8, "Sterling": 10, "Copperfield": 11, "Cobalt": 11, "Lanternhill": 0, "Lightkeeper": 0, "Beaconsfield": 0, "Watchlight": 0, "Shorelight": 0, "Glimmerhead": 0, "Lamplough": 0, "Highcrest": 1, "Cairngorm": 1, "Crestmoor": 1, "Skyridge": 1, "Upland": 1, "Scarfell": 1, "Ridgeline": 1, "Compass Rose": 2, "Westwind": 2, "Southerly": 2, "Trade Winds": 2, "Crosswind": 2, "Tramontane": 2, "Galeforce": 2, "Capstone": 3, "Archway": 3, "Ashlar": 3, "Keyarch": 3, "Lintel Row": 3, "Buttress": 3, "Voussoir": 3, "Oakhurst": 4, "Elmstead": 4, "Yewcroft": 4, "Birchwood": 4, "Ashgrove": 4, "Rowan Hill": 4, "Heartwood": 4, "Anchorage": 5, "Moorings": 5, "Safe Harbour": 5, "Keelhaven": 5, "Quayside": 5, "Slipway": 5, "Holdfast": 5, "Ferrybridge": 6, "Kingsbridge": 6, "Riverspan": 6, "Spanwell": 6, "Toll Bridge": 6, "Pontefract": 6, "Towerhill": 7, "Belfry": 7, "Bastion": 7, "Rampart": 7, "Highkeep": 7, "Barbican": 7, "Portcullis": 7, "Peregrine": 8, "Goshawk": 8, "Harrier": 8, "Gyrfalcon": 8, "Osprey": 8, "Sparrowhawk": 8, "Merlin Heath": 8, "Hourglass": 9, "Timekeeper": 9, "Sundial": 9, "Longcase": 9, "Eventide": 9, "Clepsydra": 9, "Polaris": 10, "Lodestar": 10, "Pole Star": 10, "Northlight": 10, "Vega": 10, "Sirius Point": 10, "Flywheel": 11, "Ratchet Lane": 11, "Sprocket": 11, "Mainspring": 11, "Escapement": 11, "Gearhouse": 11};
 const NAME2=["Capital","Capital Partners","Asset Management","Global Advisors","Investment Partners","Macro Partners","Global Macro","Absolute Return","Alpha Partners","Strategies","Investments","Management","Partners LP","Global Investors","Multi-Strategy","Systematic Capital","Discretionary Macro","Total Return","Opportunity Fund","Global Opportunities","Research Partners","Advisors LLP","Holdings","Trading","Quantitative Partners","Diversified Macro","Fund Management","International","Global Fund","Special Situations"];
-let fundName='';let fundCrest=Math.floor(Math.random()*12);
-function randName(){return pick2(NAME1)+' '+pick2(NAME2)}
+let fundName='';let fundCrest=Math.floor(Math.random()*12),crestPicked=false;
+/* le nom proposé emmène son écusson, sauf si le joueur en a déjà choisi un */
+function randName(){const a=pick2(NAME1);if(!crestPicked&&NAMECREST[a]!==undefined)fundCrest=NAMECREST[a];return a+' '+pick2(NAME2)}
 function pick2(a){return a[Math.floor(Math.random()*a.length)]}
 let NGID=0;
 /* Courbe de NAV. Un seul dessin pour tout le jeu : aire dégradée, ligne qui se trace,
@@ -2502,9 +2505,13 @@ function screenIntro(){
   <p class="splash-p" style="margin:18px 0 0">Le monde ne vous attendra pas : guerres, élections, sécheresses, faillites, rumeurs de couloir et traders à fort caractère. Vous allez adorer. Ou pas.</p>
  </div>`;
  const inp=document.getElementById('fname');
- inp.oninput=()=>{fundName=inp.value};
- document.getElementById('shuffle').onclick=()=>{fundName=randName();inp.value=fundName};
- app.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{fundCrest=+b.dataset.c;
+ const fitN=()=>{inp.style.fontSize='';const w=inp.clientWidth,sw=inp.scrollWidth;
+  if(w>0&&sw>w)inp.style.fontSize=(parseFloat(getComputedStyle(inp).fontSize)*w/sw*0.97).toFixed(1)+'px'};
+ fitN();
+ inp.oninput=()=>{fundName=inp.value;fitN()};
+ document.getElementById('shuffle').onclick=()=>{fundName=randName();inp.value=fundName;fitN();
+   app.querySelectorAll('[data-c]').forEach(z=>z.classList.toggle('on',+z.dataset.c===fundCrest))};
+ app.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{fundCrest=+b.dataset.c;crestPicked=true;
    app.querySelectorAll('[data-c]').forEach(z=>z.classList.toggle('on',+z.dataset.c===fundCrest))});
  document.getElementById('found').onclick=()=>{fundName=(inp.value||'').trim()||randName();screenSetup();window.scrollTo(0,0)};
  const rb=document.getElementById('resume');
