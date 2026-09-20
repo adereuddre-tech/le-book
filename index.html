@@ -2886,7 +2886,8 @@ function conf(){return 0.6*Math.min(S.lp,S.rc)+0.4*(S.lp+S.rc)/2}
 /* Rachats : tout ce qui allait tuer provoque désormais un départ d'allocataires. */
 function redeem(cause,amp){
  const c=conf(),nerf=Math.max(0,(55-c)/55);
- const out=Math.max(0,Math.min(0.45,amp*(0.45+1.35*nerf)));
+ const style=(typeof PROF==='function'&&PROF().lpMult)||1;   /* nervosité propre au style */
+ const out=Math.max(0,Math.min(0.5,amp*style*(0.45+1.35*nerf)));
  if(out<0.002)return 0;
  S.nav*=(1-out);S.flows-=out*S.nav;S.qFlow=(S.qFlow||0)-out*S.nav;
  (S.qRedeem=S.qRedeem||[]).push({cause,out});
