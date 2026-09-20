@@ -289,6 +289,33 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   lot 32 : aucun de ces lots ne touche un tirage de `rng`), `cover2` 662 choix sans anomalie,
   `cover3` 2 700 plans, `goalchk` 108 prédicats, reprise à froid, `uichk2` adapté.
 
+- **Lot 37 — l'exécution pèse.** Mesuré d'abord (`tools/execprobe.js`, 18 parties, 112
+  trimestres) : facture d'ordres médiane **15,6 pb de l'encours** (p90 30), soit 27 % du revenu
+  trimestriel du gérant (p90 99 %) — mais **entièrement à sa charge**, donc sans effet sur la
+  performance du fonds ni sur les jauges ; et sur 435 choix d'exécution, 7 seulement touchaient
+  les investisseurs. Multiplier le multiplicateur de coûts aurait menti (les textes des boutons
+  sont écrits à la main : invariant 9), donc on ajoute un canal : **la facture reste au gérant,
+  la dégradation du prix moyen reste dans le fonds.**
+  - `execSlipAmt(excess)` : au-delà du tarif standard, le fonds perd `EXECSLIP`=12 fois le
+    surcoût, plafonné à 1,2 % de l'encours par choix ; en dessous il gagne 0,35 fois autant.
+    L'asymétrie est le garde-fou : symétrique, « exécuter au rabais » devenait de l'argent
+    gratuit (~0,4 % par trimestre sans risque).
+  - `execGz(m,leak)` : le comité sanctionne l'écart au tarif standard **dans les deux sens**
+    (3,5 points par unité, borné à −4) ; une fuite coûte 2 aux investisseurs, 1 au comité, et
+    deux lignes de clôture le rappellent si les positions ont circulé (`S.leakQ`).
+  - Les ajustements passés au tarif hérité du trimestre (`S.tcMultQ`, fuite ×1,45) glissent de
+    la même façon : c'est là que les options « coûts −35 % avec fuite » se paient vraiment.
+  - `stake()` annonce avant le clic l'effet sur les ordres, sur le fonds et sur les jauges, par
+    les mêmes fonctions que l'application. Le bilan d'exécution passe en tableau visible au lieu
+    d'être replié dans « Le détail ». `sd1` n'affiche plus « −0 ».
+  - Hors périmètre volontaire : les ajustements pris **dans une dépêche** (`resolveEvent`), dont
+    les montants sont chiffrés par `evPlans` — y toucher demanderait de refaire le chiffrage des
+    deux options, et l'invariant 9 ne pardonne pas l'à-peu-près.
+  - Effet mesuré (30 parties appariées, 3 styles) : **49 % des trimestres** portent un effet de
+    prix moyen (0 % avant), |effet| médian 0,4 pb, p90 26 pb, décile bas −20 pb, extrême
+    −110 pb. Score moyen 18,9 → 18,4 M$ et survie 19/30 → 18/30 : dans le bruit (erreur type
+    ≈ 5 M$), donc l'équilibre général n'est pas déplacé — seule la variance des choix augmente.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
