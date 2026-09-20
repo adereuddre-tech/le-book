@@ -19,8 +19,8 @@ setTimeout(()=>{try{console.log(w.eval(`(()=>{
  newGame(4,'fonda','std','inhouse','std','mid','com','normal');S.fundName='T';
  S.phase='events';S.lastG={lp:-6,rc:2,lp0:68,rc0:70};
  document.getElementById('app').innerHTML=statusBar();
- const lp=document.querySelector('[data-gauge=lp]'),rc=document.querySelector('[data-gauge=rc]');
+ const lp=document.querySelector('[data-gauge=lp]');   /* la case comité n'existe plus depuis le lot 32 */
  o.push('tuile investisseurs : classes « '+lp.className+' » style « '+lp.getAttribute('style')+' »');
- o.push('tuile comite        : classes « '+rc.className+' » style « '+rc.getAttribute('style')+' »');
+ o.push('case comite absente  : '+(document.querySelector('[data-gauge=rc]')===null));
  o.push('fleche investisseurs : '+lp.querySelector('span b').textContent);
  return o.join('\\n')})()`))}catch(e){console.log('ERR',e.message)}dom.window.close()},1400);
