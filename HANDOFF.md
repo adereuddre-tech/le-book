@@ -316,6 +316,40 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
     −110 pb. Score moyen 18,9 → 18,4 M$ et survie 19/30 → 18/30 : dans le bruit (erreur type
     ≈ 5 M$), donc l'équilibre général n'est pas déplacé — seule la variance des choix augmente.
 
+- **Lot 38 — l'impact de marché payé par le fonds** (`patches/99za-impact.py`, mesure
+  `tools/execmeas.js`). Après le lot 37, une anecdote d'exécution pesait encore vingt-cinq fois
+  moins qu'une anecdote de desk (fonds : moyenne −0,7 pb contre −19,6). Ajout du canal qui
+  manque, l'impact de marché : `execImpactAmt(bill,m,leak)` = `IMPK` (2,4) × facture standard,
+  corrigé par `m^-1,2` (payer le bloc protège le prix, négocier un rabais le dégrade — ce qui
+  **inverse le sens du lot 37**, qui punissait le fonds dans les deux sens), +60 % en cas de
+  fuite, plafond 1,5 % de l'encours. Payé **à chaque trimestre**, anecdote ou pas (~30 pb). En
+  contrepartie la facture de courtage passe aux trois quarts (`EXECM` 1,35 / 0,75 / 0,50) :
+  ce que le gérant payait en commissions, le fonds le paie en prix moyen. À la clôture :
+  investisseurs −2 si l'impact du trimestre dépasse 35 pb, comité −2 si l'exécution s'est
+  écartée du standard de plus de 35 %.
+- **Lot 39 — budget à onze crans** (`patches/99zb-budget11.py`). Minimum inchangé, maximum
+  doublé : salle de marché 2 → 100 pb, contrôle 4 → 48, recherche 4 → 128. Les anciens niveaux
+  sont les crans **0 / 4 / 8**, aux mêmes prix et avec les mêmes effets : la calibration
+  antérieure reste valable. Chaque bénéfice devient un tableau de onze valeurs monotone qui
+  passe par les anciennes (`EXECM`, `RETM`, `TCVQ`, `RISKM`, `RISKS`, `BANDB`, `RISKRC`, `RESN`,
+  `RESREL`, `RESR`, `RESPH`, `STARP`) ; les deux crans au-delà prolongent nettement la pente
+  (coûts ×0,30, incidents ×0,04, bande ±60 %, comité +4 par clôture, 16 sources, lecture ±2 pts,
+  recrue du trimestre 60 %). `BUDMAX`=8 : seuil « renforcé » pour objectifs et hauts faits.
+  Les libellés d'effets sont **calculés** (`budEf`), plus recopiés. Écran : chaque bouton ne
+  porte que son coût (pb en gros, monnaie dessous), le nom et le rang du cran choisi s'affichent
+  au-dessus de la rangée, ses effets dessous ; deux rangées de six et cinq (55 px à 380 px).
+  Sauvegardes : `loadGame` remonte les anciens crans 0/1/2 sur 0/4/8 (`tools/budmig.js`).
+  - Vérifié : les bénéfices s'appliquent bien (graine 5, fondamental : sources 10 → 13 → 20,
+    bande 18 → 25 → 60 %, coûts d'exécution 425 → 204 → 76 pb cumulés, incidents 2 → 1 → 0
+    aux crans 0 / 4 / 10).
+  - **Mesure (bot, 30 parties par réglage, trois styles)** : tout au cran 0 = 16,3 ± 3,2 M$
+    (survie 15/30) ; cran 4 = **21,7 ± 3,5** (19) ; cran 8 = 15,0 ± 2,7 (20) ; cran 10 =
+    **6,1 ± 1,6** (19). L'optimum reste au milieu, ce qui est sain, mais les deux crans du haut
+    ne peuvent pas se rentabiliser : tout au maximum coûte 281 pb par trimestre, 2,8 M$ sur
+    100 M$, quand la commission de gestion trimestrielle en rapporte 0,5 et le revenu total du
+    gérant ~2. Aucune amélioration de bénéfice ne comble cet écart tant que le budget est payé
+    par le gérant seul — voir « À trancher ».
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
@@ -466,6 +500,12 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   Lu dans le code, non mesuré. Le repli est la première cause de rachat dans la campagne de
   90 parties : si ce n'est pas voulu, la correction (repli mesuré depuis le début du trimestre,
   ou seuil à franchir de nouveau) change l'équilibre et demande une campagne appariée.
+
+- **Crans 9 et 10 du budget : piège ou option ?** Mesurés perdants à coup sûr (ci-dessus).
+  Trois voies : (a) les laisser en piège assumé, inaccessibles en début de partie faute de
+  trésorerie ; (b) faire payer au fonds la part au-delà du cran 8, comme une vraie société de
+  gestion refacture certains frais — le bénéfice redevient comparable au coût ; (c) resserrer
+  l'échelle (max 1,5× au lieu de 2×). Décision d'Antoine attendue.
 
 ### Plus loin
 - Production de texte : 200 anecdotes d'exécution (145 aujourd'hui) et 300 dépêches (269),
