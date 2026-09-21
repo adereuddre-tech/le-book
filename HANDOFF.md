@@ -350,6 +350,16 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
     gérant ~2. Aucune amélioration de bénéfice ne comble cet écart tant que le budget est payé
     par le gérant seul — voir « À trancher ».
 
+- **Lot 40 — relecture des textes** (`patches/99zc-textes.py`). Chaque chiffre des fiches vérifié
+  contre la valeur du code : capture du quant 50 % (pas 60), pré-annonces du fondamental +13 pts
+  (pas 10), intuition du flux juste ~4 fois sur 5 (pas 13 sur 14), cible du desk de flux 135 %
+  (pas 120), incidents du flux +25 % (jamais annoncés), mandat agressif « moitié plus » (pas
+  « trois fois »), ±5 unités pour tous les mandats, fret ouvert dès le full-floor, bac à sable
+  moins nerveux. Tutoriel, info-bulle d'exécution, pop-ups des gains et des coûts, note du
+  débriefing : remis d'accord avec les lots 25 (une seule fin) et 38 (impact payé par le fonds).
+  Objectifs de budget : « au cran Renforcé ou au-delà ». Durée : un, deux ou trois ans. Pouvoirs
+  de lecture des dépêches ajoutés aux trois fiches. Aucun effet sur le jeu (NAV identiques).
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
