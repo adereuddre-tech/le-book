@@ -360,6 +360,31 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   Objectifs de budget : « au cran Renforcé ou au-delà ». Durée : un, deux ou trois ans. Pouvoirs
   de lecture des dépêches ajoutés aux trois fiches. Aucun effet sur le jeu (NAV identiques).
 
+- **Lot 41 — tailles réelles** (`99zd-tailles.py`) : 100 M$ / 1 Md$ / 10 Md$, `capX` 1 (la loi en
+  racine carrée du notionnel fait le coût). `DEPTH` (profondeur des carnets, Md$) : impact
+  × √(1 + notionnel/profondeur). Tous les marchés de l'univers sont dans `INSTR` ; ceux de rang
+  > `OPENRK` sont fermés (`kCap`=0, `clampK`, pools filtrés par `applyPools`). Ouverture d'un
+  rang à 1,4× puis 2× l'encours initial (`unlockNav`), à la clôture, avec carte dorée ; `S.openRk`
+  sauvegardé. Le desk du modèle évite les carnets trop étroits pour sa taille.
+- **Lot 42 — indice du gérant** (`99ze-score.py`) : chaque concurrent tient un compte de gérant
+  (`rivalMgrQuarter` : gestion, performance, budget standard, facture type ; champs `mAum`,
+  `mHwm`, `mgr`). `mgrIndex()` = 100 + 100 × (P − médian) / max(|médian|, 1 % d'encours par an).
+  Rapport final, palmarès (classé sur l'indice), partage ; hauts faits de gains en multiples de
+  l'encours initial.
+- **Lots 43-44 — cartes dorées et bonus** (`99zf-bonus.py`) : `goldPop` / `goldLater` / `goldFlush`,
+  visuels SVG `GV`. Existants mis en scène (hauts faits, objectif tenu, recrue, premier plus
+  haut historique) ; nouveaux : ouverture de marchés, blocs, prime brokerage, dark pools, main
+  chaude, FT, fonds de l'année, économiste de la Fed, trader star, Jackson Hole, fonds
+  souverain, carte blanche, trade du siècle, cygne noir. Tirages purs (`bonusDraw`), jamais au
+  milieu d'une dépêche.
+- **Lot 45 — sept crans** (`99zg-budget7.py`) : crans 0/3/5 = anciens niveaux, max 1,5× l'ancien ;
+  une ligne de sept boutons ; migration 11 → 7 et 3 → 7. `BUDMAX`=5. Bot : budget par défaut [3,3,3].
+- **Lot 46 — trois concurrents stylés** (`99zh-rivaux.py`) : Médaillon (quant), Pont-Levis
+  (fondamental), Citadelle (flux) ; `rivalE` partagé par `rivalReturns` et `rivRet`. Rendements
+  médians mesurés 21 / 20 / 17 % par an ; indice médian du bot ≈ 100 (full-floor) à 150.
+  Millénaire retiré. Mastodonte : adresse des concurrents +0,03 ; investisseurs : écart à la
+  médiane ×85 (au lieu de 115).
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;

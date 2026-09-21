@@ -23,7 +23,7 @@ function playGame(o){
       w.setInterval=()=>0;w.clearInterval=()=>{};w.setTimeout=f=>{try{f()}catch(e){errs.push('t:'+e.message)}return 0}}});
   const w=dom.window,d=w.document,$=s=>d.querySelector(s),click=el=>{try{el.click()}catch(e){errs.push('click:'+e.message)}};
   const cfg={prof:o.prof,vol:o.vol||'std',size:o.size||'mid',univ:o.univ||'com',dur:o.dur||'normal'};
-  const bud=o.bud||[1,1,1];const smart=o.policy!=='naive';
+  const bud=o.bud||[3,3,3];   /* lot 45 : sept crans, le standard est le cran 3 */const smart=o.policy!=='naive';
   w.eval(`refreshStatus=function(){};toast=function(){};window.__plan=null;(function(){const E=evPlans;window.evPlans=function(){const r=E.apply(this,arguments);window.__plan=r;return r}})()`);
   if(o.probe)w.eval(o.probe);          /* sonde injectée dans la page, avant la partie */
   /* sonde d'exécution : facture des ordres, coûts réellement payés, P&L des anecdotes */
@@ -44,7 +44,11 @@ function playGame(o){
       $('#sd').value=String(o.seed);click($('#go'));continue}
     const lv=$('#buds .lvl');
     if(lv){const ids=['exec','risk','res'];let ch=false;
-      ids.forEach((b,i)=>{const e=$(`#buds .lvl[data-b="${b}"][data-i="${bud[i]}"]`);if(e&&!e.classList.contains('on')){click(e);ch=true}});
+      /* lot 39 : onze crans, et les plus chers se verrouillent quand la caisse ne suit pas —
+         on prend alors le cran le plus haut encore ouvert sous celui demandé */
+      ids.forEach((b,i)=>{let e=null;
+        for(let j=bud[i];j>=0;j--){const c=$(`#buds .lvl[data-b="${b}"][data-i="${j}"]`);if(c&&!c.disabled){e=c;break}}
+        if(e&&!e.classList.contains('on')){click(e);ch=true}});
       if(ch)continue}
     if($('#send')){
       w.eval(`(()=>{const smart=${smart};
