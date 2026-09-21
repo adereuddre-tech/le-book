@@ -385,6 +385,18 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   Millénaire retiré. Mastodonte : adresse des concurrents +0,03 ; investisseurs : écart à la
   médiane ×85 (au lieu de 115).
 
+- **Lot 47 — fin plus douce, abandon, minuteurs en pause** (`99zi-fin.py`) : fin de partie sous
+  5 % de l'encours initial (`NAVEND`, −95 %) ; bouton « Abandonner » sous « Trimestre suivant »
+  (confirmation, verdict « Vous avez rendu les clés », `S.over='quit'`) ; le minuteur des dépêches
+  ne décompte pas tant qu'une fenêtre (`#modal` affichée) ou une carte dorée est ouverte.
+  **Spirale des rachats corrigée** : le repli qui déclenchait les rachats était `S.maxdd`, maximum
+  sur la partie (rachats à chaque clôture une fois franchi) et calculé sur l'encours (les rachats
+  creusaient le repli qui les déclenchait). Désormais repli de performance (`S.idx` contre
+  `S.hwmIdx`), déclenché seulement par un nouveau plus bas (+2 pts, `S.ddHit`), réarmé à la moitié
+  du seuil. Survie du bot (15 parties par taille) : boutique 14, full-floor 11, mastodonte 10,
+  contre 12 / 7 / 5 avant cette correction. Concurrents : 25 / 28 / 22 % par an ; indice médian
+  du bot 242 / 87 / 142 (boutique : adresse des concurrents −0,01 au lieu de −0,05).
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
@@ -530,11 +542,8 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   partiellement couvert par `play.js --resume N`.
 
 ### À trancher
-- **Rachats pour repli répétés.** `S.maxdd` est un maximum sur toute la partie : une fois
-  `ddMax()` franchi, `redeem('repli', …)` repart à **chaque** clôture, même après remontée.
-  Lu dans le code, non mesuré. Le repli est la première cause de rachat dans la campagne de
-  90 parties : si ce n'est pas voulu, la correction (repli mesuré depuis le début du trimestre,
-  ou seuil à franchir de nouveau) change l'équilibre et demande une campagne appariée.
+- **Cartes dorées encore trop nombreuses** : 15 à 21 par partie selon la taille (bot). Cible 8 à 10 :
+  objectifs et hauts faits pèsent lourd dans le compte ; durcir ou regrouper.
 
 - **Crans 9 et 10 du budget : piège ou option ?** Mesurés perdants à coup sûr (ci-dessus).
   Trois voies : (a) les laisser en piège assumé, inaccessibles en début de partie faute de

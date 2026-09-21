@@ -85,5 +85,7 @@ for a,b,k in [("quatre concurrents","trois concurrents",None),("cinq fonds","qua
 #    (115 → 85 par point) — sinon la place devenait une machine à rachats (survie mesurée du
 #    bot au mastodonte : 2 parties sur 15) ──
 e.rep("rivSkill:0.085,rivVol:1.15,","rivSkill:0.030,rivVol:1.10,")
+# la boutique affrontait des concurrents trop faibles pour servir d'étalon (indice médian du bot ≈ 500)
+e.rep("rivSkill:-0.050,rivVol:0.85,","rivSkill:-0.010,rivVol:0.95,")
 e.rep("lpD.push(['Écart à la médiane des concurrents',(net-med)*115","lpD.push(['Écart à la médiane des concurrents',(net-med)*85")
 e.done("lot 46 — trois concurrents, un par style")

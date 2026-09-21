@@ -121,7 +121,7 @@ function bonusClose(o){
  /* séries et trophées */
  B('hot',(S.streak||0)>=4,()=>{const m=flowInB(0.03);gauge(4,0,'Main chaude');
   return {v:'bolt',k:'SÉRIE · QUATRE TRIMESTRES POSITIFS',t:'Main chaude',d:"Les allocataires qui hésitaient se décident.",g:`souscription ${mm(m)} (+3 % d'encours) · investisseurs +4`}});
- B('ft',o.qTotal>Math.max(...S.rivals.map(r=>r.last))+0.03&&S.rivals.every(r=>r.cum<S.idx),()=>{gauge(6,2,'À la une du Financial Times');
+ B('ft',o.qTotal>Math.max(...S.rivals.map(r=>r.last))+0.05&&S.rivals.every(r=>r.cum<S.idx),()=>{gauge(6,2,'À la une du Financial Times');
   return {v:'paper',k:'TROPHÉE · EN TÊTE DE LA PLACE',t:'À la une du Financial Times',d:"« Le fonds qui a battu tout le monde ce trimestre » : votre nom en première page.",g:'investisseurs +6 · comité +2'}});
  if(S.q%4===0){const y=S.q/4,yid='year'+y;
   const base=S.rets.slice(-4).reduce((a,r)=>a*(1+r),1)-1;
