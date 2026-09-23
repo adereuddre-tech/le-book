@@ -427,6 +427,17 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   flux nets cumulés +18 % / −28 % / −60 % de l'encours initial, exotiques ouverts dans 21 / 18 / 16
   parties, 18 à 20 cartes par partie ; concurrents 27 / 32 / 21 % par an.
 
+- **Lot 50** (`99zl-book.py`) : difficile à 30 % ; drapeaux / pictogrammes (`MFLAG`) et symboles de
+  classe (`CSYM`) dans le book ; badge « 🔒 140 M$ » ou « 🔒 1er d'un trimestre » sur les marchés
+  fermés. **Ruban = tuile Perf.** : `qElapsed()` vaut 0 avant le lancement du trimestre (la tuile
+  affichait le latent d'un trimestre entier sur les écrans d'exécution et d'annonce), et le ruban
+  couvre désormais tout le mandat (base 100 au lancement, comme la tuile). Sonde
+  `tools/tapeprobe.js` : 0 écart sur 1 265 rendus (174 avant). Grand ruban en 3 s. Comité : risque
+  affiché > 2 × cible → −10 − 40 × (ratio − 2), borné à −40, investisseurs −4, avertissement dans le
+  book. Correctif : la « médiane » des concurrents prenait le meilleur des trois.
+  Mesure (21 parties par niveau) : gains médians 15,0 / 14,3 / 18,6 M$, survie 20 / 17 / 15, flux
+  nets cumulés +12 % / −44 % / −75 %.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;

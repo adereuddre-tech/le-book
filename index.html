@@ -74,7 +74,7 @@ em{font-style:italic;color:var(--txt)}
 @keyframes evshow{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none;pointer-events:auto}}
 @media (prefers-reduced-motion:reduce){.evhold{opacity:1;pointer-events:auto;animation:none}}
 /* grand ruban : ce qui attend la fin du tracé. Jamais sur un élément .fade (voir .evhold) */
-.thold{opacity:0;pointer-events:none;animation:evshow .6s ease-out 5s forwards}
+.thold{opacity:0;pointer-events:none;animation:evshow .5s ease-out 3s forwards}
 .skip .thold{animation:none;opacity:1;pointer-events:auto}
 .tape.big .tapehead b{font-size:17px}
 @media (prefers-reduced-motion:reduce){.thold{opacity:1;pointer-events:auto;animation:none}}
@@ -335,6 +335,8 @@ summary::marker{color:var(--dimmer)}
 .capb{font-family:var(--mono);font-size:9.5px;color:var(--gold);border:1px solid rgba(214,178,94,.45);border-radius:3px;padding:0 4px;margin-left:6px;white-space:nowrap}
 .quitb{display:block;margin:12px auto 0;background:none;border:1px solid var(--line);color:var(--dim);font-family:var(--mono);font-size:12px;letter-spacing:.04em;padding:8px 16px;border-radius:8px;cursor:pointer}
 .evtimer.paused{opacity:.45}
+.mflag{margin-right:5px;font-size:13px}
+.csym{font-family:var(--mono);font-size:12px;color:var(--txt);margin:0 6px 0 2px;font-weight:700}
 .lvls{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .lvls .lvl b{font-size:15px}.lvls .lvl span{font-size:8.5px;letter-spacing:-.02em}
 .lvsel{display:flex;justify-content:space-between;align-items:baseline;margin:2px 0 5px}
@@ -733,9 +735,9 @@ const SIZES=[
   p:"Trois très bons concurrents, un comité vigilant, des investisseurs qui comparent. La commission de performance habituelle du métier : 20 %.",
   ef:[["g","commission de performance : 20 %"],["b","concurrents très bons, chacun dans son style"],["b","investisseurs exigeants, comité vigilant"]],
   rivSkill:0.050,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1},
- {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.25,nm:"Difficile — 25 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
-  p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 25 % de la performance.",
-  ef:[["g","commission de performance : 25 %"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
+ {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.30,nm:"Difficile — 30 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
+  p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 30 % de la performance.",
+  ef:[["g","commission de performance : 30 %"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
   rivSkill:0.090,rivVol:1.10,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:1.35,goalMult:1}
 ];
 const UNIVS=[
@@ -2478,7 +2480,7 @@ const SETUPHINTS={
  prof:"Votre style décide du poids accordé aux rumeurs que vous achetez face aux signaux de marché — tendance, portage, valeur. Le systématique suit les signaux et se passe de conviction ; le fondamental mise sur l'information et paie pour l'avoir.",
  arch:"L'architecture fixe la largeur de la bande de tolérance autour de votre volatilité cible, et la sévérité du comité quand vous en sortez. Allégée, vous avez de la liberté et peu de filet.",
  desk:"L'organisation de l'exécution multiplie ou divise le coût de chaque changement de position. Le courtier est simple et cher ; l'interne est équilibré ; l'algorithmique est le moins cher mais laisse voir vos intentions.",
- size:"Tout le monde part avec 100 M$ et une volatilité cible de 20 %. La difficulté règle l'adresse des trois concurrents, la vigilance du comité, la voracité des investisseurs et la nervosité de leurs flux — et la commission de performance que vous touchez : 15, 20 ou 25 %.",
+ size:"Tout le monde part avec 100 M$ et une volatilité cible de 20 %. La difficulté règle l'adresse des trois concurrents, la vigilance du comité, la voracité des investisseurs et la nervosité de leurs flux — et la commission de performance que vous touchez : 15, 20 ou 30 %.",
  univ:"L'univers décide des classes d'actifs autorisées. Plus il est large, plus vous pouvez diversifier — et plus les marchés du bout de la liste sont étroits et hostiles.",
  dur:"La durée fixe le nombre de trimestres joués. Court, la chance compte davantage ; long, le style finit par se voir, et les commissions s'accumulent.",
  vol:"Le niveau de risque du mandat fixe votre volatilité cible, la taille d'une unité de position, les frais que vous facturez et l'objectif de rendement qu'on vous demandera de tenir."
@@ -2834,7 +2836,8 @@ function costsNow(){
  return {ops:budgetBp(),tc:tc*1e4,mgmt:VOL().mgmt*1e4,info:0};
 }
 /* Fraction du trimestre écoulée, lue sur l'avancement de la file de dépêches. */
-function qElapsed(){const n=(S.evQueue||[]).length||1;return Math.max(0,Math.min(1,(S.evIdx||0)/n))}
+function qElapsed(){if(!S.live)return 0;   /* lot 50 : avant le lancement, le trimestre n'a pas commencé */
+ const n=(S.evQueue||[]).length||1;return Math.max(0,Math.min(1,(S.evIdx||0)/n))}
 /* Rendement du trimestre à cet instant. C'est `grQ` de resolveQuarter avec t au lieu de 1 :
    au bout du trimestre, le ruban tombe exactement sur le chiffre du débriefing. */
 function liveRet(){
@@ -2846,7 +2849,7 @@ function liveRet(){
 }
 /* Indice de performance nette, base 100 au premier jour de l'année en cours. */
 function ytdIdx(){
- const y0=Math.floor(S.q/4)*4;let v=1;
+ const y0=0;let v=1;   /* lot 50 : base 100 au lancement du fonds */
  for(let i=0;i<y0;i++)v*=(1+S.rets[i]);
  let cur=1;for(let i=0;i<S.q;i++)cur*=(1+S.rets[i]);
  return {y0,base:v,now:cur*(1+liveRet())/v*100,closes:S.rets.slice(y0,S.q)};
@@ -3080,14 +3083,14 @@ function tapeBand(){
  const p=S.tape&&S.tape.pts||[];
  if(p.length<3)return ticker();
  const v=p[p.length-1],up=v>=100;
- return `<div class="tape"><div class="tapehead"><span>P&amp;L DU FONDS · ANNÉE ${1+Math.floor(S.q/4)}</span>
+ return `<div class="tape"><div class="tapehead"><span>P&amp;L DU FONDS · DEPUIS LE LANCEMENT</span>
    <b class="${up?'pos-g':'neg-g'}">${up?'+':'−'}${dec(Math.abs(v-100),1)} %</b></div>
   ${tapeSvg(p,S.tape.from||0,{anim:1,draw:3,rivals:rivalTapes()})}</div>`;
 }
 function statusBar(done){
  S.statusDone=!!done;
  /* la performance affichée doit dire la même chose que le ruban : latent compris */
- const lat=(S.phase==='events'&&typeof liveRet==='function')?liveRet():0;
+ const lat=(S.phase==='events'&&S.live&&typeof liveRet==='function')?liveRet():0;
  const ixL=S.idx*(1+lat);
  const dd=1-ixL/Math.max(S.peakIdx,ixL),cum=ixL-1;
  const lab=done?`APRÈS ${S.q} TRIMESTRE${S.q>1?'S':''}`:`TRIMESTRE ${Math.min(S.q+1,QT())} / ${QT()}`;
@@ -3764,10 +3767,14 @@ function fitBook(){
  drawRows();renderRisk();refreshStatus();refreshGain();refreshSend();
  toast('Book ramené à ce que votre trésorerie permet.');
 }
+/* Drapeau du pays ou pictogramme de la matière, symbole de la classe d'actifs. */
+const MFLAG={ES:'🇺🇸',NQ:'🇺🇸',ESTX:'🇪🇺',TOPX:'🇯🇵',MXEF:'🌏',TN:'🇺🇸',GBL:'🇩🇪',JGB:'🇯🇵',R:'🇬🇧',OAT:'🇫🇷',
+ EUR:'🇪🇺',JPY:'🇯🇵',GBP:'🇬🇧',AUD:'🇦🇺',MXP:'🇲🇽',GC:'🥇',CL:'🛢️',ZW:'🌾',HG:'🔶',KC:'☕',BTC:'🪙',VX:'🌪️',EUA:'🏭',BDI:'🚢',NRAM:'🌧️'};
+const CSYM={'Actions':'📜','Taux':'%','Devises':'💱','Matières premières':'⛏️','Exotiques':'🧪'};
 function drawRows(){
  let h='';
  GRP.forEach(g=>{
-  h+=`<div class="sect"><i style="background:${GRPC[g]}"></i><span>${g.toUpperCase()}</span></div>`;
+  h+=`<div class="sect"><i style="background:${GRPC[g]}"></i><b class="csym">${CSYM[g]||''}</b><span>${g.toUpperCase()}</span></div>`;
   INSTR.forEach((x,i)=>{
    if(x.grp!==g)return;
    const lr=S.q>0?S.lastR[i]:null,cw=S.crowd[i];
@@ -3781,7 +3788,7 @@ function drawRows(){
    const nb=notionalBn(S.k[i],i);
    h+=`<div class="pos">
      <div class="top"><span class="sym" style="color:${GRPC[g]}">${x.sym}</span>
-      <span class="nm">${x.nm}<span class="crowd" style="background:${cc}"></span>${mktOpen(i)?'':`<span class="capb">${x.grp==='Exotiques'&&x.rk<=OPENRK?'fermé · finissez un trimestre premier':`fermé · s'ouvre à ${mm(unlockNav(x.rk))}`}</span>`}</span>
+      <span class="nm"><span class="mflag">${MFLAG[x.sym]||''}</span>${x.nm}<span class="crowd" style="background:${cc}"></span>${mktOpen(i)?'':(x.grp==='Exotiques'&&x.rk<=OPENRK?`<span class="capb" title="S'ouvre la première fois que vous finissez premier d'un trimestre">🔒 1er d'un trimestre</span>`:`<span class="capb" title="S'ouvre quand l'encours atteint ${mm(unlockNav(x.rk))}">🔒 ${mm(unlockNav(x.rk))}</span>`)}</span>
       <span class="rr ${lr===null?'dim-g':cls(lr)}">${lr===null?'—':sgn(lr,1)}</span></div>
      <div class="seg" data-row="${i}">${seg}</div>
      <div class="rowinfo" id="ri${i}"></div>
@@ -3908,7 +3915,8 @@ function renderRisk(){
  if(capStress()>0)flags+=`<div class="flag"><span>L'encours a dépassé ${moneyB(capSoftNav())}, la taille au-delà de laquelle ce book ne se déploie plus sans se voir : impact de marché ×${dec(capFactor(),2)} sur chaque ordre. La capacité de la stratégie est atteinte.</span></div>`;
  if(MGU>MGC.thr)flags+=`<div class="flag"><span>Marge utilisée ${(MGU*100).toFixed(0)} % de l'encours, au-dessus du seuil de ${(MGC.thr*100).toFixed(0)} % du prime broker. Un trimestre négatif déclenchera une liquidation d'office.</span></div>`;
  else if(MGU>MGC.warn)flags+=`<div class="flag"><span>Marge utilisée ${(MGU*100).toFixed(0)} % de l'encours. Le seuil d'appel est à ${(MGC.thr*100).toFixed(0)} %.</span></div>`;
- if(sp>S.tgt*(1+band))flags+=`<div class="flag"><span>Vol ex-ante ${pct(sp)} contre une cible de ${pct(S.tgt,0)} — hors de la bande de tolérance de votre comité (±${(band*100).toFixed(0)} %).</span></div>`;
+ if(sp>2*S.tgt)flags+=`<div class="flag" style="border-color:var(--short)"><span><b>Risque au double de la cible.</b> À la clôture, le comité sanctionnera lourdement (jusqu'à −40) et les investisseurs l'apprendront.</span></div>`;
+ else if(sp>S.tgt*(1+band))flags+=`<div class="flag"><span>Vol ex-ante ${pct(sp)} contre une cible de ${pct(S.tgt,0)} — hors de la bande de tolérance de votre comité (±${(band*100).toFixed(0)} %).</span></div>`;
  if(sp<S.tgt*0.5&&sp>0.001)flags+=`<div class="flag"><span>Vous facturez ${dec((S.budBp*4/100+2),1)} % de frais annuels pour un book à ${pct(sp)} de volatilité.</span></div>`;
  if(sp<=0.001)flags+=`<div class="flag"><span>Aucune position. Le collatéral rapporte le taux au jour le jour, les frais courent, le comité regarde.</span></div>`;
  if(fmax>0.62)flags+=`<div class="flag"><span>${(fmax*100).toFixed(0)} % de votre variance vient du seul facteur « ${FACT[vd.fv.indexOf(Math.max(...vd.fv))].nm.toLowerCase()} ». Douze lignes, un pari.</span></div>`;
@@ -4344,9 +4352,9 @@ function midTape(){
  try{tapeTick()}catch(err){return {}}
  const p=S.tape&&S.tape.pts||[];if(p.length<3)return {};
  S.bigTape=true;refreshStatus();   /* le petit ruban du bandeau s'efface : pas de doublon */
- return {hold:1,pre:`<div class="tape big" style="margin:4px 0 14px"><div class="tapehead"><span>T${S.q+1} JUSQU'ICI · DEPUIS JANVIER</span>
+ return {hold:1,pre:`<div class="tape big" style="margin:4px 0 14px"><div class="tapehead"><span>T${S.q+1} JUSQU'ICI · DEPUIS LE LANCEMENT</span>
    <b class="cnt">—</b></div>
-   ${tapeSvg(p,S.tape.q0||0,{h:150,anim:1,draw:5,zero:1,rivals:rivalTapes()})}</div>`};
+   ${tapeSvg(p,S.tape.q0||0,{h:150,anim:1,draw:3,zero:1,rivals:rivalTapes()})}</div>`};
 }
 function screenMidMark(){
  const w=weights(S.k);let p=0;const rows=[];
@@ -4459,7 +4467,7 @@ function resolveQuarter(){
  S.rate=Math.max(0.002,Math.min(0.085,S.rate+0.004*S.f[1]+0.001*gauss()));
  /* jauges */
  const sp=pvol(wFin),vd=varDecomp(wFin),fmax=Math.max(...vd.fv)/vd.tot;
- const med=[...S.rivals.map(x=>x.last)].sort((a,b)=>a-b)[2];
+ const med=(()=>{const v=S.rivals.map(x=>x.last).sort((a,b)=>a-b),n=v.length;return n%2?v[n>>1]:(v[n/2-1]+v[n/2])/2})();   /* vraie médiane, quel que soit le nombre de concurrents */
  const lpD=[['Performance des positions sur le trimestre (hors dépêches déjà comptées)',net>0?260*net:200*net]];
  if(qTotal>VOL().goal/4)lpD.push(['Objectif du mandat atteint ce trimestre',5]);else if(qTotal<0)lpD.push(['Trimestre négatif tout compris',-3]);
  if(S.nav>=S.hwm-1e-9)lpD.push(['Nouveau plus haut historique',3]);
@@ -4467,6 +4475,7 @@ function resolveQuarter(){
  else if(S.comm&&S.comm.id==='none'&&S.comm.lose.lp)lpD.push(['Aucune communication ce trimestre',S.comm.lose.lp]);
  if(dd>0.10)lpD.push(['Repli au-delà de 10 %',-(dd-0.10)*70]);
  lpD.push(['Écart à la médiane des concurrents',(net-med)*85]);
+  if(riskShown(wFin).total>2*S.tgt)lpD.push(['Le rapport de risque circule : book au double de la cible',-4]);
  if(S.budBp>70)lpD.push(['Facture d\'exploitation jugée lourde',-1.5]);
  if(S.leakQ)lpD.push(['Vos positions ont circulé sur le marché',-2.5]);
  if(S.execSlipQ<-0.0035*S.navQ0)lpD.push(['Impact de marché lourd sur les ordres',-2]);
@@ -4485,6 +4494,8 @@ function resolveQuarter(){
  else if(S.comm&&S.comm.id==='none'&&S.comm.lose.rc)rcD.push(['Aucune communication ce trimestre',S.comm.lose.rc]);
  if(S.leakQ)rcD.push(['Positions connues de contreparties',-2]);
  if(S.tcMultQ&&Math.abs(S.tcMultQ-1)>0.35)rcD.push(['Exécution éloignée du tarif standard',-2]);
+ const rsx=riskShown(wFin).total/Math.max(1e-9,S.tgt);
+ if(rsx>2)rcD.push([`Risque ex-ante à ${dec(rsx,1)} fois la cible`,-Math.min(40,10+40*(rsx-2))]);
  if(sp>1e-6&&gross<-2.2*sp/2)rcD.push(['Perte au-delà de 2,2 σ ex-ante',-10]);
  if(S.marginCall)rcD.push([`Appel de marge : ${(S.marginCall.f*100).toFixed(0)} % du book liquidé d'office`,-12]);
  rcD.push([net>0?'La performance achète de la patience':'La perte use la patience',(net>0?Math.min(12,220*net):Math.max(-9,140*net))*VOL().rcPerf]);
@@ -4533,7 +4544,7 @@ function resolveQuarter(){
     On prolonge le ruban jusqu'à l'indice net réellement réalisé : il finit désormais
     exactement sur le chiffre du haut de l'écran. */
  if(S.tape&&S.tape.pts&&S.tape.pts.length>2){
-  const y0=Math.floor((S.q)/4)*4;let base=1;for(let i=0;i<y0;i++)base*=(1+S.rets[i]);
+  const base=1;
   const tgt=S.idx/Math.max(1e-9,base)*100,last=S.tape.pts[S.tape.pts.length-1];
   /* toujours posé, même minuscule : les concurrents font le même dernier pas, sur 18 points */
   S.tape.from=S.tape.pts.length-1;S.tape.settled=S.q;   /* avant S.q++ : c'est le trimestre du ruban */
@@ -4878,8 +4889,8 @@ function screenDebrief(o){
    <div class="num thold ${cls(o.qTotal)}" style="font-size:18px;margin-top:4px">${bn(o.qTotal*o.q0,2)} sur ${moneyB(o.q0)} d'encours en début de trimestre</div>
    <div class="regime">${R.nm}</div><div class="sub">${R.d}</div></div>
   ${(S.tape&&S.tape.pts&&S.tape.pts.length>3)?`<div class="tape big" style="margin-top:12px"><div class="tapehead">
-    <span>LE TRIMESTRE · DEPUIS JANVIER</span><b class="cnt">—</b></div>
-    ${tapeSvg(S.tape.pts,S.tape.q0||0,{h:150,anim:1,draw:5,zero:1,rivals:rivalTapes()})}</div>`
+    <span>LE TRIMESTRE · DEPUIS LE LANCEMENT</span><b class="cnt">—</b></div>
+    ${tapeSvg(S.tape.pts,S.tape.q0||0,{h:150,anim:1,draw:3,zero:1,rivals:rivalTapes()})}</div>`
    :navBox(`PERFORMANCE NETTE CUMULÉE · ${S.q} TRIMESTRE${S.q>1?'S':''}`,idxSeries(),{anim:1,trough:1})}
   <div class="thold">${warn.map(t=>`<div class="flag" style="margin-top:12px">${t}</div>`).join('')}
   <div class="block"><div class="blockhead"><h2>La concurrence</h2><span class="hint">${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur quatre</span></div>
@@ -4926,7 +4937,7 @@ function screenDebrief(o){
   ${lines.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Par marché · rendement et contribution</summary>${byl}</details></div>`:''}</div>
   <button class="cta" id="nx">${S.over?'Voir le rapport final':(S.q>=QT()?`Clôturer les ${DUR().ans} an${DUR().ans>1?'s':''}`:'Trimestre suivant')}</button></div>`;
  theatre(app.querySelector('.pnlhead').parentElement);
- goldFlush(5600);
+ goldFlush(3500);
  if(!S.over&&S.q<QT()){const nx=document.getElementById('nx'),qb=document.createElement('button');
   qb.className='quitb';qb.id='quit';qb.textContent='Abandonner';nx.after(qb);
   qb.onclick=()=>{openModal('Abandonner la partie ?',`<p>Le mandat s'arrête ici. Vos commissions nettes, ${score(S.mgrFees-S.mgrCosts)}, restent les vôtres et la partie entre au palmarès.</p>
