@@ -719,15 +719,15 @@ const SIZES=[
  {id:'small',lvl:'Débutant',nav:0.1,capX:1,nm:"La boutique de Mayfair — 100 M$",who:"« Trois personnes, deux écrans, un mandat »",
   p:"Un fonds de niche. Vous ne bougez aucun marché, personne ne vous surveille vraiment, et vos concurrents non plus ne sont pas les meilleurs de la place. Trois marchés par classe au départ : les autres s'ouvriront quand votre encours aura grossi.",
   ef:[["g","impact de marché négligeable : environ trois fois moins cher qu'au full-floor"],["g","investisseurs et comité indulgents"],["g","concurrents moins aguerris que la moyenne de la place"],["b","trois marchés par classe au départ ; un quatrième à 1,4 fois l'encours initial, un cinquième au double"],["b","des commissions modestes en valeur absolue"]],
-  rivSkill:-0.010,rivVol:0.95,lpNeg:0.75,rcNeg:0.75,lp0:8,flowMult:0.7,goalMult:1},
+  rivSkill:0.050,rivVol:0.95,lpNeg:0.75,rcNeg:0.75,lp0:8,flowMult:0.7,goalMult:1},
  {id:'mid',lvl:'Normal',nav:1.0,capX:1,nm:"Le full-floor de Hudson Yards — 1 Md$",who:"« Un étage entier, et un loyer qui va avec »",
   p:"Assez gros pour intéresser les allocataires institutionnels et les chasseurs de têtes, assez petit pour encore bouger vite. Quatre marchés par classe ; le cinquième, le plus étroit, s'ouvre quand l'encours a grossi de 40 %.",
   ef:[["g","quatre marchés par classe : la diversification devient exploitable"],["g","commissions substantielles"],["b","impact de marché sensible sur les carnets étroits"],["b","investisseurs exigeants, comité vigilant"],["b","des concurrents sérieux, qui battent le marché plus souvent qu'à leur tour"]],
-  rivSkill:0.020,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1},
+  rivSkill:0.050,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1},
  {id:'mega',lvl:'Expert',nav:10.0,capX:1,nm:"Le mastodonte de Greenwich — 10 Md$",who:"« À cette taille, vous êtes le marché »",
   p:"Tous les marchés vous sont ouverts, y compris les plus étroits — mais chaque ordre y déplace les prix, et un gros ordre sur un petit carnet coûte une fortune. Chaque trimestre est commenté, et les meilleurs gérants du monde vous attendent au tournant.",
   ef:[["g","cinq marchés par classe : l'univers complet, d'emblée"],["g","des commissions considérables"],["b","impact de marché lourd : environ trois fois plus cher qu'au full-floor, bien davantage sur les carnets étroits"],["b","investisseurs impitoyables, comité sur votre dos"],["b","concurrents au sommet de leur art : à cette taille, vous jouez contre les meilleurs du monde"]],
-  rivSkill:0.030,rivVol:1.10,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:1.35,goalMult:1}
+  rivSkill:0.090,rivVol:1.10,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:1.35,goalMult:1}
 ];
 const UNIVS=[
  {id:'fin',edge:0.75,lpMult:0.90,lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
@@ -761,29 +761,29 @@ function VOL(){return VOLP.find(v=>v.id===S.vol)}
 const BUDGET=[
  {id:'exec',ico:'📈',nm:"La salle de marché",
   d:"Traders, moteurs d'exécution, accès aux blocs, et ce que vous payez pour garder vos gérants. La salle décide de ce que coûte chaque changement de position, de votre résistance au débauchage, et de la finesse avec laquelle vos écrans mesurent la tendance, le portage et la valeur — ces chiffres-là sortent du desk, pas de la recherche.",
-  lv:[{nm:"Minimal",bp:2},{nm:"Serré",bp:10},{nm:"Sobre",bp:14},{nm:"Standard",bp:18},{nm:"Confortable",bp:32},{nm:"Renforcé",bp:50},{nm:"Sans limite",bp:75}]},
+  lv:[{nm:"Minimal",bp:2},{nm:"Serré",bp:3},{nm:"Sobre",bp:9},{nm:"Standard",bp:18},{nm:"Confortable",bp:32},{nm:"Renforcé",bp:51},{nm:"Sans limite",bp:75}]},
  {id:'risk',ico:'⚖️',nm:"Le contrôle des risques",
   d:"Surveillance pré-trade, réconciliation quotidienne, contrôle des communications, audit interne. Un contrôle sérieux évite les incidents et, surtout, achète la confiance du comité : mieux vous êtes tenu, plus large est la bande de volatilité qu'on vous laisse.",
-  lv:[{nm:"Minimal",bp:4},{nm:"Serré",bp:8},{nm:"Sobre",bp:10},{nm:"Standard",bp:12},{nm:"Confortable",bp:18},{nm:"Renforcé",bp:24},{nm:"Sans limite",bp:36}]},
+  lv:[{nm:"Minimal",bp:4},{nm:"Serré",bp:5},{nm:"Sobre",bp:8},{nm:"Standard",bp:12},{nm:"Confortable",bp:18},{nm:"Renforcé",bp:26},{nm:"Sans limite",bp:36}]},
  {id:'res',ico:'🔭',nm:"La recherche macro",
   d:"Économistes, réseau de terrain, données alternatives, abonnements que personne ne relit. La recherche décide du nombre de sources qui arrivent sur votre bureau chaque trimestre et de la part d'entre elles qui sont dignes de foi.",
-  lv:[{nm:"Minimal",bp:4},{nm:"Serré",bp:12},{nm:"Sobre",bp:15},{nm:"Standard",bp:18},{nm:"Confortable",bp:36},{nm:"Renforcé",bp:64},{nm:"Sans limite",bp:96}]}
+  lv:[{nm:"Minimal",bp:4},{nm:"Serré",bp:5},{nm:"Sobre",bp:9},{nm:"Standard",bp:18},{nm:"Confortable",bp:35},{nm:"Renforcé",bp:60},{nm:"Sans limite",bp:96}]}
 ];
-const EXECM=[1.35,1.00,0.87,0.75,0.63,0.50,0.40],   /* lot 38 : trois quarts de l'ancienne facture, le reste se paie en impact de marché */
-RISKM=[2.20,1.50,1.22,1.00,0.48,0.20,0.10],
-RISKS=[2.00,1.72,1.60,1.50,1.10,0.75,0.60],
-RETM =[2.00,1.45,1.20,1.00,0.63,0.30,0.15];
-const RESN=[6,8,8,9,10,12,14],
-RESREL=[-0.08,-0.04,-0.02,0,0.04,0.08,0.12],
-RESR  =[0.30,0.45,0.52,0.60,0.79,0.95,0.98],
+const EXECM=[1.35,1.30,1.04,0.75,0.63,0.50,0.39],   /* lot 38 : trois quarts de l'ancienne facture, le reste se paie en impact de marché */
+RISKM=[2.20,2.00,1.50,1.00,0.48,0.18,0.09],
+RISKS=[2.00,1.93,1.72,1.50,1.10,0.72,0.58],
+RETM =[2.00,1.93,1.51,1.00,0.63,0.29,0.14];
+const RESN=[6,6,7,9,10,12,14],
+RESREL=[-0.08,-0.07,-0.06,0.00,0.04,0.07,0.12],
+RESR  =[0.30,0.32,0.39,0.60,0.78,0.93,0.98],
 /* précision de la lecture d'une dépêche : écart-type du bruit sur la probabilité affichée */
-RESPH =[0.16,0.13,0.115,0.10,0.076,0.05,0.030];
+RESPH =[0.160,0.156,0.141,0.100,0.077,0.054,0.029];
 /* la finesse des indicateurs vient du desk, la tolérance du comité du contrôle des risques */
-const TCVQ=[0.90,0.74,0.67,0.60,0.47,0.35,0.26],
-BANDB=[0.18,0.21,0.23,0.25,0.31,0.40,0.50];
+const TCVQ=[0.90,0.88,0.76,0.60,0.47,0.35,0.25],
+BANDB=[0.18,0.18,0.21,0.25,0.31,0.42,0.51];
 /* avis du comité à chaque clôture, et chance de recruter une recrue du trimestre */
-const RISKRC=[-1,-0.6,-0.3,0,1,2,3],
-STARP=[0,0,0,0,0.15,0.30,0.45];
+const RISKRC=[-1.0,-0.9,-0.6,0.0,1.0,2.2,3.1],
+STARP=[0.00,0.00,0.00,0.00,0.15,0.31,0.47];
 const BUDMAX=5;   /* à partir de ce cran, un budget est « renforcé » pour les objectifs */
 /* Les effets affichés sont calculés à partir des tableaux ci-dessus : aucun libellé ne peut
    diverger de ce qui est appliqué. */
@@ -2766,30 +2766,30 @@ function bonusClose(o){
    d:"Votre courtier vous donne accès aux marchés que votre taille ne justifiait pas encore.",g:nw.map(x=>`${x.sym} · ${x.nm.toLowerCase()}`).join('<br>')});
  }
  /* croissance */
- B('blocs',g>=1.25,()=>{S.capBoost=Math.max(S.capBoost||1,1.5);S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
-  return {v:'key',k:'CROISSANCE · ENCOURS ×1,25',t:'Accès aux blocs',d:"Les grandes maisons vous proposent désormais leurs blocs de gré à gré.",g:'plafonds de capacité ×1,5 · coûts d\'exécution −10 %'}});
- B('prime',g>=1.5,()=>{if(PROF().freeAdj){S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
-   return {v:'bank',k:'CROISSANCE · ENCOURS ×1,5',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'coûts d\'exécution −10 %'}}
-  S.freeAdjB=99;return {v:'bank',k:'CROISSANCE · ENCOURS ×1,5',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'un ajustement gratuit par trimestre'}});
- B('dark',g>=2,()=>{S.capBoost=Math.max(S.capBoost||1,2);S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
-  return {v:'doors',k:'CROISSANCE · ENCOURS ×2',t:'Les dark pools vous ouvrent leurs portes',d:"Vous traitez désormais là où personne ne voit passer vos ordres.",g:'plafonds de capacité ×2 · coûts d\'exécution −10 %'}});
+ B('blocs',g>=1.3,()=>{S.capBoost=Math.max(S.capBoost||1,1.5);S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
+  return {v:'key',k:'CROISSANCE · ENCOURS ×1,3',t:'Accès aux blocs',d:"Les grandes maisons vous proposent désormais leurs blocs de gré à gré.",g:'plafonds de capacité ×1,5 · coûts d\'exécution −10 %'}});
+ B('prime',g>=1.6,()=>{if(PROF().freeAdj){S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
+   return {v:'bank',k:'CROISSANCE · ENCOURS ×1,6',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'coûts d\'exécution −10 %'}}
+  S.freeAdjB=99;return {v:'bank',k:'CROISSANCE · ENCOURS ×1,6',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'un ajustement gratuit par trimestre'}});
+ B('dark',g>=2.2,()=>{S.capBoost=Math.max(S.capBoost||1,2);S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
+  return {v:'doors',k:'CROISSANCE · ENCOURS ×2,2',t:'Les dark pools vous ouvrent leurs portes',d:"Vous traitez désormais là où personne ne voit passer vos ordres.",g:'plafonds de capacité ×2 · coûts d\'exécution −10 %'}});
  /* séries et trophées */
- B('hot',(S.streak||0)>=4,()=>{const m=flowInB(0.03);gauge(4,0,'Main chaude');
-  return {v:'bolt',k:'SÉRIE · QUATRE TRIMESTRES POSITIFS',t:'Main chaude',d:"Les allocataires qui hésitaient se décident.",g:`souscription ${mm(m)} (+3 % d'encours) · investisseurs +4`}});
- B('ft',o.qTotal>Math.max(...S.rivals.map(r=>r.last))+0.05&&S.rivals.every(r=>r.cum<S.idx),()=>{gauge(6,2,'À la une du Financial Times');
+ B('hot',(S.streak||0)>=5,()=>{const m=flowInB(0.03);gauge(4,0,'Main chaude');
+  return {v:'bolt',k:'SÉRIE · CINQ TRIMESTRES POSITIFS',t:'Main chaude',d:"Les allocataires qui hésitaient se décident.",g:`souscription ${mm(m)} (+3 % d'encours) · investisseurs +4`}});
+ B('ft',o.qTotal>Math.max(...S.rivals.map(r=>r.last))+0.10&&S.rivals.every(r=>r.cum<S.idx),()=>{gauge(6,2,'À la une du Financial Times');
   return {v:'paper',k:'TROPHÉE · EN TÊTE DE LA PLACE',t:'À la une du Financial Times',d:"« Le fonds qui a battu tout le monde ce trimestre » : votre nom en première page.",g:'investisseurs +6 · comité +2'}});
  if(S.q%4===0){const y=S.q/4,yid='year'+y;
   const base=S.rets.slice(-4).reduce((a,r)=>a*(1+r),1)-1;
   const best=S.rivals.every(r=>(r.hist||[]).slice(-4).reduce((a,x)=>a*(1+x),1)-1<base);
-  B(yid,best&&base>0,()=>{const m=flowInB(0.05);gauge(8,4,"Fonds macro de l'année");
+  B(yid,best&&base>0.10,()=>{const m=flowInB(0.05);gauge(8,4,"Fonds macro de l'année");
    return {v:'crown',k:`TROPHÉE · ANNÉE ${y}`,t:"Fonds macro de l'année",d:"Le jury vous décerne le prix, devant les trois maisons que vous affrontez.",g:`souscription ${mm(m)} (+5 %) · investisseurs +8 · comité +4`}})}
  /* institutionnel et rares */
- B('souv',g>=1.5&&conf0>=75,()=>{const m=flowInB(0.20);S.bandTight=0.8;
+ B('souv',g>=1.6&&conf0>=78,()=>{const m=flowInB(0.20);S.bandTight=0.8;
   return {v:'hand',k:'INSTITUTIONNEL',t:'Le fonds souverain frappe à la porte',d:"Un mandat de taille, avec ses conditions : le comité resserre votre bande de volatilité.",g:`souscription ${mm(m)} (+20 % d'encours) · bande du comité −20 %`}});
- B('carte',(S.inBand||0)>=3,()=>{gauge(0,3,'Carte blanche du comité');S.freeAdjB=Math.max(S.freeAdjB||0,1);
-  return {v:'key',k:'INSTITUTIONNEL · TROIS TRIMESTRES DANS LA BANDE',t:'Carte blanche du comité',d:"Le comité vous fait confiance : il ne vous demandera pas de comptes sur le prochain ajustement.",g:'comité +3 · un ajustement gratuit au prochain trimestre'}});
+ B('carte',(S.inBand||0)>=4,()=>{gauge(0,3,'Carte blanche du comité');S.freeAdjB=Math.max(S.freeAdjB||0,1);
+  return {v:'key',k:'INSTITUTIONNEL · QUATRE TRIMESTRES DANS LA BANDE',t:'Carte blanche du comité',d:"Le comité vous fait confiance : il ne vous demandera pas de comptes sur le prochain ajustement.",g:'comité +3 · un ajustement gratuit au prochain trimestre'}});
  const bestEv=Math.max(0,...(S.evLog||[]).map(x=>x.pnl||0));
- B('century',bestEv>=0.12,()=>{gauge(3,0,'Le trade du siècle');
+ B('century',bestEv>=0.15,()=>{gauge(3,0,'Le trade du siècle');
   return {v:'rocket',k:'RARE',t:'Le trade du siècle',d:`Une seule dépêche vous a rapporté ${sgnp(bestEv,1)} d'encours.`,g:'investisseurs +3 · on en parlera au dîner'}});
  B('swan',(S.regime==='crise'||S.regime==='recession')&&o.qTotal>0,()=>{const m=flowInB(0.03);gauge(5,0,'Le cygne noir apprivoisé');
   return {v:'swan',k:'RARE',t:'Le cygne noir apprivoisé',d:"Un trimestre où presque tout le monde a perdu, et vous finissez devant.",g:`souscription ${mm(m)} (+3 %) · investisseurs +5`}});
@@ -2798,13 +2798,13 @@ function bonusClose(o){
 function bonusOpen(){
  if(S.srcBonusN>0)S.srcBonusN--;
  S.jh=false;
- if(!hasBonus('fed')&&S.q>=1&&S.bud.res>=4&&bonusDraw('fed')<0.35){markBonus('fed');S.srcBonusN=2;
+ if(!hasBonus('fed')&&S.q>=1&&S.bud.res>=4&&bonusDraw('fed')<0.30){markBonus('fed');S.srcBonusN=2;
   goldLater({v:'glass',k:'TALENT · RECHERCHE',t:"L'ancien économiste de la Fed signe chez vous",d:"Trente ans de réunions du FOMC, et un carnet d'adresses qu'on ne trouve pas dans les manuels.",g:'+2 sources par trimestre, pendant deux trimestres'})}
  if(!hasBonus('star')&&S.q>=1&&S.bud.exec>=BUDMAX&&bonusDraw('star')<0.30){markBonus('star');
   const rv=S.rivals.slice().sort((a,b)=>b.cum-a.cum)[0],i=Math.floor(bonusDraw('starmkt')*N);
   S.star=i;rv.skill=Math.max(0.5,rv.skill-0.02);
   goldLater({v:'star',k:'TALENT · DÉBAUCHAGE',t:`Le trader star de ${rv.nm}`,d:`Il traite ${INSTR[i].nm.toLowerCase()} mieux que personne, et il a choisi votre desk.`,g:`coûts ÷3 sur ${INSTR[i].sym} ce trimestre · ${rv.nm} affaibli`})}
- if(!hasBonus('jh')&&S.q>=1&&conf()>=75&&bonusDraw('jh')<0.30){markBonus('jh');S.jh=true;
+ if(!hasBonus('jh')&&S.q>=1&&conf()>=75&&bonusDraw('jh')<0.25){markBonus('jh');S.jh=true;
   goldLater({v:'glass',k:'INFORMATION',t:'Dîner à Jackson Hole',d:"Entre la poire et le fromage, un gouverneur laisse entendre ce qui va tomber.",g:'la première dépêche du trimestre vous est pré-annoncée à coup sûr'})}
 }
 function budgetBp(){return BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK().fixed*1e4}
@@ -3578,10 +3578,8 @@ function phaseDesk(){
 }
 function phaseLive(){
  S.live=true;   /* le ruban ne s'affiche qu'à partir d'ici : avant, la performance ne bouge pas */
- save('phaseLive');
- phase(`TRIMESTRE ${S.q+1} · TROIS MOIS`,"Le trimestre se déroule",
-  [S.comm&&S.comm.ret!==null?`Vous avez promis <b>au moins ${sgn(S.comm.ret,1)}</b> pour ce trimestre. Tout le monde a noté.`:"Vous n'avez rien promis. Tout le monde a noté aussi.","Vos positions sont en place. Le monde continue sans vous demander votre avis.","Chaque dépêche vous interrompt : vous pourrez suivre le mouvement ou ne pas réagir — à un coût, et sans certitude sur la suite.",S.incidentDue?"Quelque chose ne va pas au back-office, mais vous ne le savez pas encore.":"Le contrôle des risques n'a rien signalé pour l'instant."],
-  "Lancer le trimestre",()=>{S.evIdx=0;S.incidentShown=false;S.midShown=false;stepEvents()});
+ /* lot 48 : plus de page « Le trimestre se déroule » — on entre directement dans les dépêches */
+ S.evIdx=0;S.incidentShown=false;S.midShown=false;stepEvents();
 }
 function phaseClose(o){
  save('phaseClose',o);

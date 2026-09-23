@@ -14,8 +14,8 @@ with sync_playwright() as p:
     pg.evaluate(CLEAN);pg.wait_for_timeout(300)
     pg.screenshot(path=P+'_budget.png',full_page=True)
     # cran maximal sur la salle de marché, pour voir les effets et le coût en monnaie
-    pg.evaluate("()=>document.querySelector('#buds .lvl[data-b=\"exec\"][data-i=\"10\"]').click()")
+    pg.evaluate("()=>document.querySelector('#buds .lvl[data-b=\"exec\"][data-i=\"6\"]').click()")
     pg.wait_for_timeout(500);pg.evaluate(CLEAN)
     pg.screenshot(path=P+'_max.png',full_page=True)
-    print(pg.evaluate("()=>[...document.querySelectorAll('#buds .lvl')].slice(0,11).map(b=>b.innerText.replace(/\\n/g,' '))"))
+    print(pg.evaluate("()=>[...document.querySelectorAll('#buds .lvl')].slice(0,7).map(b=>b.innerText.replace(/\\n/g,' '))"))
     b.close()

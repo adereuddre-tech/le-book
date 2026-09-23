@@ -397,6 +397,18 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   contre 12 / 7 / 5 avant cette correction. Concurrents : 25 / 28 / 22 % par an ; indice médian
   du bot 242 / 87 / 142 (boutique : adresse des concurrents −0,01 au lieu de −0,05).
 
+- **Lot 48 — lissage et difficulté par taille** (`99zj-lissage.py`) : budgets en courbe régulière
+  bp(i) = min + (max − min)·(i/6)^p, p choisi pour garder le standard au cran 3 (salle 2·3·9·18·32·51·75,
+  contrôle 4·5·8·12·18·26·36, recherche 4·5·9·18·35·60·96) ; effets interpolés au nouveau prix sur la
+  courbe prix → effet des onze crans (lot 39). Page « Le trimestre se déroule » supprimée
+  (`phaseLive` entre directement dans les dépêches). Cartes dorées plus rares (trade du siècle 15 %,
+  FT +10 pts, main chaude 5 trimestres, fonds de l'année >10 %, souverain ×1,6 et confiance 78,
+  carte blanche 4 trimestres, croissance ×1,3 / 1,6 / 2,2). Adresse des concurrents par taille :
+  +0,05 / +0,05 / +0,09 (difficulté croissante avec la taille).
+  Mesure (bot, 21 parties par taille) : indice médian du gérant 215 / 140 / 94, survie 20 / 16 / 14
+  sur 21 ; concurrents 29 / 25 / 23 % par an (quant / fondamental / flux) ; 14 à 19 cartes dorées
+  par partie, dont une majorité d'objectifs tenus et de hauts faits.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
@@ -542,8 +554,6 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   partiellement couvert par `play.js --resume N`.
 
 ### À trancher
-- **Cartes dorées encore trop nombreuses** : 15 à 21 par partie selon la taille (bot). Cible 8 à 10 :
-  objectifs et hauts faits pèsent lourd dans le compte ; durcir ou regrouper.
 
 - **Crans 9 et 10 du budget : piège ou option ?** Mesurés perdants à coup sûr (ci-dessus).
   Trois voies : (a) les laisser en piège assumé, inaccessibles en début de partie faute de
