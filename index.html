@@ -91,6 +91,15 @@ em{font-style:italic;color:var(--txt)}
 .gcard p{font-size:13.5px;line-height:1.45;color:var(--dim);margin:0}
 .ggain{font-family:var(--mono);font-size:14px;color:var(--gold);margin-top:10px;line-height:1.5}
 .gtap{font-family:var(--mono);font-size:10px;color:var(--dimmer);margin-top:12px;letter-spacing:.06em}
+/* trois paliers : bronze, argent, or */
+.gcard{--tc:#D9B06A;--tl:#F3D48C;--trgb:217,176,106}
+.gcard.t-bronze{--tc:#C98B55;--tl:#E8B585;--trgb:201,139,85;border-color:#C98B55;box-shadow:0 0 0 1px rgba(201,139,85,.25),0 18px 60px rgba(0,0,0,.6),0 0 32px rgba(201,139,85,.22);
+ background:radial-gradient(circle at 50% -10%,rgba(201,139,85,.30),rgba(19,25,37,0) 62%),#131925}
+.gcard.t-argent{--tc:#C9D3DE;--tl:#F2F6FA;--trgb:201,211,222;border-color:#C9D3DE;box-shadow:0 0 0 1px rgba(201,211,222,.25),0 18px 60px rgba(0,0,0,.6),0 0 38px rgba(201,211,222,.24);
+ background:radial-gradient(circle at 50% -10%,rgba(201,211,222,.28),rgba(19,25,37,0) 62%),#131925}
+.gcard.t-or{border-width:2px;box-shadow:0 0 0 1px rgba(217,176,106,.35),0 18px 60px rgba(0,0,0,.6),0 0 60px rgba(217,176,106,.40)}
+.gcard .gkick,.gcard .ggain{color:var(--tc)}
+.gtier{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:#0E1621;background:var(--tc);border-radius:3px;padding:2px 8px;margin-bottom:6px}
 @keyframes gpop{from{transform:scale(.55);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes gshine{to{left:140%}}
 @keyframes gfade{from{opacity:0}}
@@ -495,7 +504,7 @@ const INSTR_ALL=[
 ];
 const CLASSES=['Actions','Taux','Devises','Matières premières','Exotiques'];
 /* taille du fonds → nombre de marchés ouverts par classe ; univers → nombre de classes */
-const MKPERCL={small:3,mid:4,mega:5};
+const MKPERCL={small:3,mid:3,mega:3};   /* lot 49 : un seul départ, les marchés se gagnent */
 const NCLASS={fin:3,com:4,ext:5};
 const INSTR=INSTR_ALL.slice();
 let N=INSTR.length;const K=4;let U=0.015;
@@ -544,7 +553,7 @@ function setUniverse(sizeId,univId){
 }
 /* Les pools ne citent que des marchés ouverts. Rappelé à chaque ouverture. */
 function applyPools(){
- const ok=sy=>IDX[sy]!==undefined&&rankOf(sy)<=OPENRK;
+ const ok=sy=>{if(IDX[sy]===undefined||rankOf(sy)>OPENRK)return false;const x=INSTR[IDX[sy]];return x.grp!=='Exotiques'||!!(S&&S.exoOpen)};
  /* hit : on élague les marchés fermés, on garde l'événement s'il en reste un */
  POOLS.MACROEV.live.length=0;
  POOLS.MACROEV.all.forEach(e=>{
@@ -716,17 +725,17 @@ const PROFILES=[
 const RISKARCH=[{id:'std',nm:"Contrôle des risques standard",band:0.30,incMult:1.0,sev:1.0,stop:false,lp0:0}];
 const DESKS=[{id:'inhouse',nm:"Desk d'exécution intégré",mult:()=>1.00,fixed:0.0005,poachPain:1.4}];
 const SIZES=[
- {id:'small',lvl:'Débutant',nav:0.1,capX:1,nm:"La boutique de Mayfair — 100 M$",who:"« Trois personnes, deux écrans, un mandat »",
-  p:"Un fonds de niche. Vous ne bougez aucun marché, personne ne vous surveille vraiment, et vos concurrents non plus ne sont pas les meilleurs de la place. Trois marchés par classe au départ : les autres s'ouvriront quand votre encours aura grossi.",
-  ef:[["g","impact de marché négligeable : environ trois fois moins cher qu'au full-floor"],["g","investisseurs et comité indulgents"],["g","concurrents moins aguerris que la moyenne de la place"],["b","trois marchés par classe au départ ; un quatrième à 1,4 fois l'encours initial, un cinquième au double"],["b","des commissions modestes en valeur absolue"]],
-  rivSkill:0.050,rivVol:0.95,lpNeg:0.75,rcNeg:0.75,lp0:8,flowMult:0.7,goalMult:1},
- {id:'mid',lvl:'Normal',nav:1.0,capX:1,nm:"Le full-floor de Hudson Yards — 1 Md$",who:"« Un étage entier, et un loyer qui va avec »",
-  p:"Assez gros pour intéresser les allocataires institutionnels et les chasseurs de têtes, assez petit pour encore bouger vite. Quatre marchés par classe ; le cinquième, le plus étroit, s'ouvre quand l'encours a grossi de 40 %.",
-  ef:[["g","quatre marchés par classe : la diversification devient exploitable"],["g","commissions substantielles"],["b","impact de marché sensible sur les carnets étroits"],["b","investisseurs exigeants, comité vigilant"],["b","des concurrents sérieux, qui battent le marché plus souvent qu'à leur tour"]],
+ {id:'small',lvl:'Débutant',nav:0.1,capX:1,perf:0.15,nm:"Facile — 15 % de performance",who:"« Des concurrents à votre portée »",
+  p:"Des concurrents solides mais battables, un comité qui vous laisse respirer, des investisseurs qui pardonnent un mauvais trimestre. Vous touchez 15 % de la performance au-dessus du plus haut historique.",
+  ef:[["g","concurrents moins adroits"],["g","investisseurs patients, flux plus calmes"],["g","comité indulgent"],["b","commission de performance : 15 %"]],
+  rivSkill:0.020,rivVol:0.95,lpNeg:0.75,rcNeg:0.75,lp0:8,flowMult:0.75,goalMult:1},
+ {id:'mid',lvl:'Normal',nav:0.1,capX:1,perf:0.20,nm:"Moyen — 20 % de performance",who:"« La place telle qu'elle est »",
+  p:"Trois très bons concurrents, un comité vigilant, des investisseurs qui comparent. La commission de performance habituelle du métier : 20 %.",
+  ef:[["g","commission de performance : 20 %"],["b","concurrents très bons, chacun dans son style"],["b","investisseurs exigeants, comité vigilant"]],
   rivSkill:0.050,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1},
- {id:'mega',lvl:'Expert',nav:10.0,capX:1,nm:"Le mastodonte de Greenwich — 10 Md$",who:"« À cette taille, vous êtes le marché »",
-  p:"Tous les marchés vous sont ouverts, y compris les plus étroits — mais chaque ordre y déplace les prix, et un gros ordre sur un petit carnet coûte une fortune. Chaque trimestre est commenté, et les meilleurs gérants du monde vous attendent au tournant.",
-  ef:[["g","cinq marchés par classe : l'univers complet, d'emblée"],["g","des commissions considérables"],["b","impact de marché lourd : environ trois fois plus cher qu'au full-floor, bien davantage sur les carnets étroits"],["b","investisseurs impitoyables, comité sur votre dos"],["b","concurrents au sommet de leur art : à cette taille, vous jouez contre les meilleurs du monde"]],
+ {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.25,nm:"Difficile — 25 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
+  p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 25 % de la performance.",
+  ef:[["g","commission de performance : 25 %"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
   rivSkill:0.090,rivVol:1.10,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:1.35,goalMult:1}
 ];
 const UNIVS=[
@@ -736,12 +745,14 @@ const UNIVS=[
  {id:'com',edge:1.0,lpMult:1.0,lvl:'Normal',nm:"Le grand bassin",who:"« Le mandat global macro standard »",
   p:"On a enlevé les brassards. Les trois classes financières plus les matières premières : de quoi jouer l'inflation par l'or, le pétrole, le cuivre ou le blé plutôt que par les seuls taux, et découvrir que l'offre a ses raisons que la demande ignore.",
   ef:[["g","l'inflation devient un pari à part entière"],["g","l'or et le pétrole décorrèlent le book des actions"],["b","marchés plus étroits : fourchettes et impact plus lourds"],["b","des chocs d'offre que personne ne voit venir"]]},
- {id:'ext',edge:1.5,lpMult:1.05,lvl:'Expert',nm:"Le monde est votre huître",who:"« Tout ce qui cote, et quelques choses qui ne devraient pas »",
+ {id:'ext',edge:1,lpMult:1,lvl:'Expert',nm:"Le monde est votre huître",who:"« Tout ce qui cote, et quelques choses qui ne devraient pas »",
   p:"Les cinq classes. Le bitcoin, qui ne dort jamais et n'obéit à personne ; la volatilité, qui vous paie un portage négatif tous les jours en échange du droit de vous sauver un jour ; le carbone, dont le prix est une décision politique déguisée en marché. Le meilleur potentiel de diversification du jeu, dans les carnets les plus hostiles. Les marchés les plus étroits de cette classe ne s'ouvrent qu'aux gros fonds, ou à ceux qui grossissent.",
   ef:[["g","marchés peu efficients : tendance, portage et valeur rapportent 50 % de plus"],["g","cinq classes : le meilleur potentiel de diversification du jeu"],["g","des marchés presque indépendants des facteurs macro classiques"],["b","fourchettes très larges, liquidité qui disparaît sans prévenir"],["b","le fret s'ouvre au full-floor, les dérivés climatiques au mastodonte — ou quand l'encours a grossi"],["b","investisseurs mal à l'aise avec ce qu'ils ne comprennent pas : jauge 5 % plus nerveuse"]]}
 ];
 const RECO={prof:'flux',arch:'std',desk:'inhouse',size:'mid',univ:'com',vol:'std',dur:'normal'};
 function SIZE(){return SIZES.find(x=>x.id===S.size)||SIZES[1]}
+/* commission de performance : fixée par la difficulté (15 / 20 / 25 %) */
+function perfFee(){return (S&&SIZE().perf)||0.20}
 function UNIV(){return UNIVS.find(x=>x.id===(S&&S.univ))||UNIVS[1]}
 const VOLP=[
  {id:'prud',lvl:'Débutant',nm:"Mandat prudent — vol cible 15 %",who:"« L'assureur zurichois »",
@@ -2156,7 +2167,7 @@ const DEPTH={ES:60,NQ:30,ESTX:20,TOPX:15,MXEF:8,TN:80,GBL:40,JGB:25,R:20,OAT:15,
  GC:20,CL:15,ZW:2,HG:4,KC:0.25,BTC:3,VX:2,EUA:1.2,BDI:0.12,NRAM:0.06};
 function depthMult(x,bn){const d=DEPTH[x.sym];return d?Math.sqrt(1+bn/(d*((S&&S.capBoost)||1))):1}
 /* Un marché fermé ne prend aucune position ; un marché ouvert, le mandat. */
-function mktOpen(i){const x=INSTR[i];return !!x&&x.rk<=OPENRK}
+function mktOpen(i){const x=INSTR[i];return !!x&&x.rk<=OPENRK&&(x.grp!=='Exotiques'||!!(S&&S.exoOpen))}
 function kCap(i){return mktOpen(i)?((S&&S.maxk)||5):0}
 function clampK(i,v){const c=kCap(i);return Math.max(-c,Math.min(c,v))}
 /* Encours auquel s'ouvre le rang rk, pour la taille de départ : ×1,4 puis ×2. */
@@ -2182,11 +2193,12 @@ function QT(){return (S&&S.qtot)||8}
 
 let S;
 function newGame(seed,prof,arch,desk,vol,size,univ,dur){
+ vol='std';univ='ext';S=null;   /* lot 49 : 20 % de vol et l'univers complet pour tous ; les exotiques se gagnent */
  rng=mulberry32(seed);spare=null;setUniverse(size,univ);resetB();
  const A=RISKARCH.find(r=>r.id===arch),V=VOLP.find(v=>v.id===vol),Z=SIZES.find(x=>x.id===size)||SIZES[1];
  U=V.tgt/8;
  const D=DUREES.find(x=>x.id===dur)||DUREES[1];
- S={seed,prof,arch,desk,vol,size:Z.id,univ:univ||'com',dur:D.id,qtot:D.q,tuto:TUTO?0:99,q:0,nav:Z.nav,aum0:Z.nav,hwm:Z.nav,peak:Z.nav,maxdd:0,
+ S={seed,prof,arch,desk,vol,size:Z.id,univ:univ||'com',dur:D.id,qtot:D.q,tuto:TUTO?0:99,exoOpen:false,q:0,nav:Z.nav,aum0:Z.nav,hwm:Z.nav,peak:Z.nav,maxdd:0,
    lp:62+A.lp0+Z.lp0,rc:70+Z.lp0/2,tgt:V.tgt,maxk:5,rate:0.0425,liq:1.0,
    tcv:{c:INSTR.map(()=>0.6*gauss()),v:INSTR.map(()=>0.6*gauss())},lastR2:new Array(N).fill(0),
    bPrev:INSTR.map(x=>[...x.b]),rupture:null,rumors:[],
@@ -2456,7 +2468,7 @@ const sgnp=(x,d=1)=>(x>=0?'+':'−')+dec(Math.abs(x*100),d)+'\u00a0%';
 const bn=(x,d=1)=>`<b class="${cls(x)}">${x>=0?'+':'−'}${moneyB(Math.abs(x))}</b>`;
 const mn=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${mm(Math.abs(x))}</b>`;
 const cls=x=>x>0.00005?'pos-g':(x<-0.00005?'neg-g':'dim-g');
-let setup={prof:'fonda',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'com',dur:'normal'};/* arch et desk sont figés : redondants avec les budgets */
+let setup={prof:'fonda',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'ext',dur:'normal'};/* arch et desk sont figés : redondants avec les budgets */
 /* Le tutoriel ne doit revenir ni au rechargement de la page ni à la partie suivante. */
 function tutoSeen(){try{return localStorage.getItem('lebook_tuto_v1')==='1'}catch(e){return false}}
 function markTutoSeen(){try{localStorage.setItem('lebook_tuto_v1','1')}catch(e){}}
@@ -2466,7 +2478,7 @@ const SETUPHINTS={
  prof:"Votre style décide du poids accordé aux rumeurs que vous achetez face aux signaux de marché — tendance, portage, valeur. Le systématique suit les signaux et se passe de conviction ; le fondamental mise sur l'information et paie pour l'avoir.",
  arch:"L'architecture fixe la largeur de la bande de tolérance autour de votre volatilité cible, et la sévérité du comité quand vous en sortez. Allégée, vous avez de la liberté et peu de filet.",
  desk:"L'organisation de l'exécution multiplie ou divise le coût de chaque changement de position. Le courtier est simple et cher ; l'interne est équilibré ; l'algorithmique est le moins cher mais laisse voir vos intentions.",
- size:"La taille commande trois choses à la fois : le nombre de marchés ouverts dans chaque classe, l'impact de vos ordres sur les prix, et la patience des investisseurs. C'est le curseur de difficulté principal.",
+ size:"Tout le monde part avec 100 M$ et une volatilité cible de 20 %. La difficulté règle l'adresse des trois concurrents, la vigilance du comité, la voracité des investisseurs et la nervosité de leurs flux — et la commission de performance que vous touchez : 15, 20 ou 25 %.",
  univ:"L'univers décide des classes d'actifs autorisées. Plus il est large, plus vous pouvez diversifier — et plus les marchés du bout de la liste sont étroits et hostiles.",
  dur:"La durée fixe le nombre de trimestres joués. Court, la chance compte davantage ; long, le style finit par se voir, et les commissions s'accumulent.",
  vol:"Le niveau de risque du mandat fixe votre volatilité cible, la taille d'une unité de position, les frais que vous facturez et l'objectif de rendement qu'on vous demandera de tenir."
@@ -2571,7 +2583,7 @@ function screenIntro(){
    <input id="fname" class="namein" value="${fundName}" maxlength="42" spellcheck="false" autocomplete="off">
    <div class="namerow"><button class="cta ghost" id="shuffle" style="margin:0">Proposez-m'en un</button></div>
    <div class="kicker" style="margin-top:14px">ET UN ÉCUSSON</div>
-   <div class="crestrow" id="crests">${CRESTS.map((c,i)=>`<button class="crestb${i===fundCrest?' on':''}" data-c="${i}" title="${c.nm}">${crestSvg(i,40)}</button>`).join('')}</div>
+   <div class="crestrow" id="crests">${CRESTS.slice(0,NPC).map((c,i)=>`<button class="crestb${i===fundCrest?' on':''}" data-c="${i}" title="${c.nm}">${crestSvg(i,40)}</button>`).join('')}</div>
   </div>
   <button class="cta gold" id="found">Fonder le fonds</button>
   ${hasSave()?`<button class="cta ghost" id="resume">Reprendre la partie en cours</button><button class="cta ghost" id="dropsave" style="margin-top:6px;font-size:12px;opacity:.6">Abandonner cette partie</button>`:''}
@@ -2601,9 +2613,8 @@ function screenIntro(){
  document.getElementById('hall').onclick=()=>screenHall(screenIntro);
 }
 function feeLine(){
- const v=setup.vol?VOLP.find(x=>x.id===setup.vol):null;
- if(!v)return `Ils dépendent du niveau de risque que vous choisirez plus bas : de <strong>1,5 % + 15 %</strong> pour le mandat prudent à <strong>2,5 % + 25 %</strong> pour le mandat agressif, plus le budget d'exploitation que vous fixez chaque trimestre.`;
- return `Votre mandat facture <strong>${dec((v.mgmt*400),1)} % de gestion</strong> et <strong>${(v.perf*100).toFixed(0)} % de la performance</strong> au-dessus du plus haut historique, plus le budget d'exploitation que vous fixez chaque trimestre. Objectif : <strong>${(v.goal*100).toFixed(0)} % net par an</strong>.`;
+ const z=SIZES.find(x=>x.id===setup.size)||SIZES[1];
+ return `Votre mandat facture <strong>2 % de gestion</strong> et <strong>${(z.perf*100).toFixed(0)} % de la performance</strong> au-dessus du plus haut historique, plus le budget d'exploitation que vous fixez chaque trimestre. Objectif : <strong>12 % net par an</strong>.`;
 }
 function screenSetup(){
  app.innerHTML=`<div class="hero fade" style="padding-top:34px">
@@ -2643,7 +2654,7 @@ function screenSetup(){
 }
 function renderPicks(){
  const ICO={prof:{fonda:'📚',flux:'⚡',syst:'🤖'},arch:{light:'🪶',std:'⚖️',inst:'🛡️'},
-  desk:{inhouse:'🏛️',broker:'🤝',algo:'💻'},size:{small:'🏠',mid:'🏢',mega:'🏙️'},univ:{fin:'🏦',com:'🛢️',ext:'🌐'},dur:{express:'⏱️',normal:'📅',saison:'🗓️'},
+  desk:{inhouse:'🏛️',broker:'🤝',algo:'💻'},size:{small:'🎯',mid:'⚔️',mega:'🔥'},univ:{fin:'🏦',com:'🛢️',ext:'🌐'},dur:{express:'⏱️',normal:'📅',saison:'🗓️'},
   vol:{prud:'🧊',std:'🎯',risk:'🔥'}};
  const grp=(title,hint,arr,key)=>`<div class="pickgrp">
    <div class="pickhead"><h2>${title}${SETUPHINTS[key]?`<button class="hintq" data-hintq="${key}" aria-label="À quoi ça sert ?">?</button>`:''}</h2><span>${hint}</span></div>
@@ -2656,9 +2667,7 @@ function renderPicks(){
   </div>`;
  document.getElementById('picks').innerHTML=
    grp("Votre style de gestion","1 sur 3",PROFILES,'prof')+
-   grp("Le niveau de risque du mandat","1 sur 3 · la volatilité que vous facturez",VOLP,'vol')+
-   grp("La taille du fonds","1 sur 3 · la difficulté et le nombre de marchés par classe",SIZES,'size')+
-   grp("L'univers d'investissement","1 sur 3 · les classes d'actifs autorisées",UNIVS,'univ')+
+   grp("La difficulté","1 sur 3 · la place, le comité, les investisseurs",SIZES,'size')+
    grp("La durée du mandat","1 sur 3 · le nombre de trimestres",DUREES,'dur');
  app.querySelectorAll('[data-hintq]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();
    openModal(b.closest('.pickhead').querySelector('h2').childNodes[0].textContent.trim(),`<p>${SETUPHINTS[b.dataset.hintq]}</p>`)});
@@ -2704,7 +2713,7 @@ function rivalMgrQuarter(rv,r){
  }
  const mg=v.mgmt*rv.mAum,cost=rivalCostQ()*rv.mAum;
  rv.mAum*=(1+r);
- const perf=v.perf*Math.max(0,rv.mAum-rv.mHwm);rv.mHwm=Math.max(rv.mHwm,rv.mAum);
+ const perf=perfFee()*Math.max(0,rv.mAum-rv.mHwm);rv.mHwm=Math.max(rv.mHwm,rv.mAum);
  rv.mgr+=mg+perf-cost;
 }
 function rivalMgrMedian(){const v=S.rivals.map(r=>r.mgr||0).sort((a,b)=>a-b),n=v.length;return n?(n%2?v[n>>1]:(v[n/2-1]+v[n/2])/2):0}
@@ -2733,10 +2742,11 @@ const GOLDQ=[];let goldOn=false;
 function goldPop(b){GOLDQ.push(b);if(!goldOn)goldNext()}
 function goldNext(){
  const b=GOLDQ.shift();if(!b){goldOn=false;return}
+ const T=b.tier||'or',TN={bronze:'BRONZE',argent:'ARGENT',or:'OR'}[T]||'OR';
  goldOn=true;let el=document.getElementById('gold');if(el)el.remove();
  el=document.createElement('div');el.id='gold';
- el.innerHTML=`<div class="gcard" role="dialog" aria-label="${b.t}"><div class="gvis"><svg viewBox="0 0 96 96" aria-hidden="true">${GV[b.v]||GV.star}</svg></div>
-  <div class="gkick">${b.k||'BONUS'}</div><h3>${b.t}</h3>${b.d?`<p>${b.d}</p>`:''}${b.g?`<div class="ggain">${b.g}</div>`:''}<div class="gtap">toucher pour continuer</div></div>`;
+ el.innerHTML=`<div class="gcard t-${T}" role="dialog" aria-label="${b.t}"><div class="gvis"><svg viewBox="0 0 96 96" aria-hidden="true">${(GV[b.v]||GV.star).replace(/#D9B06A/g,'var(--tc)').replace(/#F3D48C/g,'var(--tl)').replace(/rgba\(217,176,106,/g,'rgba(var(--trgb),')}</svg></div>
+  <div class="gtier">${TN}</div><div class="gkick">${b.k||'BONUS'}</div><h3>${b.t}</h3>${b.d?`<p>${b.d}</p>`:''}${b.g?`<div class="ggain">${b.g}</div>`:''}<div class="gtap">toucher pour continuer</div></div>`;
  document.body.appendChild(el);
  el.onclick=()=>{el.remove();goldNext()};
 }
@@ -2758,54 +2768,57 @@ function bonusClose(o){
  if(S.freeAdjB>0&&S.freeAdjB<99)S.freeAdjB--;
  const g=S.nav/S.aum0,conf0=conf();
  const B=(id,test,f)=>{if(!hasBonus(id)&&test){markBonus(id);goldLater(f())}};
+ if(!S.exoOpen&&S.rivals.every(r=>(r.last||0)<o.qTotal)){S.exoOpen=true;applyPools();
+  const nx=INSTR.filter((x,i)=>x.grp==='Exotiques'&&mktOpen(i));
+  goldLater({v:'rocket',tier:'or',k:'PREMIER DU TRIMESTRE',t:'Les marchés exotiques vous sont ouverts',d:"Vous avez battu toute la place : le comité vous confie les marchés que personne ne sait gérer.",g:nx.map(x=>`${x.sym} · ${x.nm.toLowerCase()}`).join('<br>')})}
  /* croissance : les marchés du rang suivant s'ouvrent quand l'encours franchit son seuil */
  while(typeof OPENRK!=='undefined'&&OPENRK<5&&S.nav>=unlockNav(OPENRK+1)){
   OPENRK++;S.openRk=OPENRK;applyPools();
   const nw=INSTR.filter(x=>x.rk===OPENRK);
-  if(nw.length)goldLater({v:'doors',k:`CROISSANCE · ENCOURS ${mm(unlockNav(OPENRK))}`,t:"De nouveaux carnets s'ouvrent",
+  if(nw.length)goldLater({v:'doors',k:`CROISSANCE · ENCOURS ${mm(unlockNav(OPENRK))}`,tier:'argent',t:"De nouveaux carnets s'ouvrent",
    d:"Votre courtier vous donne accès aux marchés que votre taille ne justifiait pas encore.",g:nw.map(x=>`${x.sym} · ${x.nm.toLowerCase()}`).join('<br>')});
  }
  /* croissance */
  B('blocs',g>=1.3,()=>{S.capBoost=Math.max(S.capBoost||1,1.5);S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
-  return {v:'key',k:'CROISSANCE · ENCOURS ×1,3',t:'Accès aux blocs',d:"Les grandes maisons vous proposent désormais leurs blocs de gré à gré.",g:'plafonds de capacité ×1,5 · coûts d\'exécution −10 %'}});
+  return {v:'key',k:'CROISSANCE · ENCOURS ×1,3',tier:'bronze',t:'Accès aux blocs',d:"Les grandes maisons vous proposent désormais leurs blocs de gré à gré.",g:'plafonds de capacité ×1,5 · coûts d\'exécution −10 %'}});
  B('prime',g>=1.6,()=>{if(PROF().freeAdj){S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
-   return {v:'bank',k:'CROISSANCE · ENCOURS ×1,6',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'coûts d\'exécution −10 %'}}
-  S.freeAdjB=99;return {v:'bank',k:'CROISSANCE · ENCOURS ×1,6',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'un ajustement gratuit par trimestre'}});
+   return {v:'bank',k:'CROISSANCE · ENCOURS ×1,6',tier:'argent',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'coûts d\'exécution −10 %'}}
+  S.freeAdjB=99;return {v:'bank',k:'CROISSANCE · ENCOURS ×1,6',tier:'argent',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'un ajustement gratuit par trimestre'}});
  B('dark',g>=2.2,()=>{S.capBoost=Math.max(S.capBoost||1,2);S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
-  return {v:'doors',k:'CROISSANCE · ENCOURS ×2,2',t:'Les dark pools vous ouvrent leurs portes',d:"Vous traitez désormais là où personne ne voit passer vos ordres.",g:'plafonds de capacité ×2 · coûts d\'exécution −10 %'}});
+  return {v:'doors',k:'CROISSANCE · ENCOURS ×2,2',tier:'or',t:'Les dark pools vous ouvrent leurs portes',d:"Vous traitez désormais là où personne ne voit passer vos ordres.",g:'plafonds de capacité ×2 · coûts d\'exécution −10 %'}});
  /* séries et trophées */
  B('hot',(S.streak||0)>=5,()=>{const m=flowInB(0.03);gauge(4,0,'Main chaude');
-  return {v:'bolt',k:'SÉRIE · CINQ TRIMESTRES POSITIFS',t:'Main chaude',d:"Les allocataires qui hésitaient se décident.",g:`souscription ${mm(m)} (+3 % d'encours) · investisseurs +4`}});
+  return {v:'bolt',k:'SÉRIE · CINQ TRIMESTRES POSITIFS',tier:'argent',t:'Main chaude',d:"Les allocataires qui hésitaient se décident.",g:`souscription ${mm(m)} (+3 % d'encours) · investisseurs +4`}});
  B('ft',o.qTotal>Math.max(...S.rivals.map(r=>r.last))+0.10&&S.rivals.every(r=>r.cum<S.idx),()=>{gauge(6,2,'À la une du Financial Times');
-  return {v:'paper',k:'TROPHÉE · EN TÊTE DE LA PLACE',t:'À la une du Financial Times',d:"« Le fonds qui a battu tout le monde ce trimestre » : votre nom en première page.",g:'investisseurs +6 · comité +2'}});
+  return {v:'paper',k:'TROPHÉE · EN TÊTE DE LA PLACE',tier:'argent',t:'À la une du Financial Times',d:"« Le fonds qui a battu tout le monde ce trimestre » : votre nom en première page.",g:'investisseurs +6 · comité +2'}});
  if(S.q%4===0){const y=S.q/4,yid='year'+y;
   const base=S.rets.slice(-4).reduce((a,r)=>a*(1+r),1)-1;
   const best=S.rivals.every(r=>(r.hist||[]).slice(-4).reduce((a,x)=>a*(1+x),1)-1<base);
   B(yid,best&&base>0.10,()=>{const m=flowInB(0.05);gauge(8,4,"Fonds macro de l'année");
-   return {v:'crown',k:`TROPHÉE · ANNÉE ${y}`,t:"Fonds macro de l'année",d:"Le jury vous décerne le prix, devant les trois maisons que vous affrontez.",g:`souscription ${mm(m)} (+5 %) · investisseurs +8 · comité +4`}})}
+   return {v:'crown',k:`TROPHÉE · ANNÉE ${y}`,tier:'or',t:"Fonds macro de l'année",d:"Le jury vous décerne le prix, devant les trois maisons que vous affrontez.",g:`souscription ${mm(m)} (+5 %) · investisseurs +8 · comité +4`}})}
  /* institutionnel et rares */
  B('souv',g>=1.6&&conf0>=78,()=>{const m=flowInB(0.20);S.bandTight=0.8;
-  return {v:'hand',k:'INSTITUTIONNEL',t:'Le fonds souverain frappe à la porte',d:"Un mandat de taille, avec ses conditions : le comité resserre votre bande de volatilité.",g:`souscription ${mm(m)} (+20 % d'encours) · bande du comité −20 %`}});
+  return {v:'hand',k:'INSTITUTIONNEL',tier:'or',t:'Le fonds souverain frappe à la porte',d:"Un mandat de taille, avec ses conditions : le comité resserre votre bande de volatilité.",g:`souscription ${mm(m)} (+20 % d'encours) · bande du comité −20 %`}});
  B('carte',(S.inBand||0)>=4,()=>{gauge(0,3,'Carte blanche du comité');S.freeAdjB=Math.max(S.freeAdjB||0,1);
-  return {v:'key',k:'INSTITUTIONNEL · QUATRE TRIMESTRES DANS LA BANDE',t:'Carte blanche du comité',d:"Le comité vous fait confiance : il ne vous demandera pas de comptes sur le prochain ajustement.",g:'comité +3 · un ajustement gratuit au prochain trimestre'}});
+  return {v:'key',k:'INSTITUTIONNEL · QUATRE TRIMESTRES DANS LA BANDE',tier:'argent',t:'Carte blanche du comité',d:"Le comité vous fait confiance : il ne vous demandera pas de comptes sur le prochain ajustement.",g:'comité +3 · un ajustement gratuit au prochain trimestre'}});
  const bestEv=Math.max(0,...(S.evLog||[]).map(x=>x.pnl||0));
  B('century',bestEv>=0.15,()=>{gauge(3,0,'Le trade du siècle');
-  return {v:'rocket',k:'RARE',t:'Le trade du siècle',d:`Une seule dépêche vous a rapporté ${sgnp(bestEv,1)} d'encours.`,g:'investisseurs +3 · on en parlera au dîner'}});
+  return {v:'rocket',k:'RARE',tier:'or',t:'Le trade du siècle',d:`Une seule dépêche vous a rapporté ${sgnp(bestEv,1)} d'encours.`,g:'investisseurs +3 · on en parlera au dîner'}});
  B('swan',(S.regime==='crise'||S.regime==='recession')&&o.qTotal>0,()=>{const m=flowInB(0.03);gauge(5,0,'Le cygne noir apprivoisé');
-  return {v:'swan',k:'RARE',t:'Le cygne noir apprivoisé',d:"Un trimestre où presque tout le monde a perdu, et vous finissez devant.",g:`souscription ${mm(m)} (+3 %) · investisseurs +5`}});
+  return {v:'swan',k:'RARE',tier:'or',t:'Le cygne noir apprivoisé',d:"Un trimestre où presque tout le monde a perdu, et vous finissez devant.",g:`souscription ${mm(m)} (+3 %) · investisseurs +5`}});
 }
 /* Bonus de début de trimestre : talents et information. */
 function bonusOpen(){
  if(S.srcBonusN>0)S.srcBonusN--;
  S.jh=false;
  if(!hasBonus('fed')&&S.q>=1&&S.bud.res>=4&&bonusDraw('fed')<0.30){markBonus('fed');S.srcBonusN=2;
-  goldLater({v:'glass',k:'TALENT · RECHERCHE',t:"L'ancien économiste de la Fed signe chez vous",d:"Trente ans de réunions du FOMC, et un carnet d'adresses qu'on ne trouve pas dans les manuels.",g:'+2 sources par trimestre, pendant deux trimestres'})}
+  goldLater({v:'glass',k:'TALENT · RECHERCHE',tier:'argent',t:"L'ancien économiste de la Fed signe chez vous",d:"Trente ans de réunions du FOMC, et un carnet d'adresses qu'on ne trouve pas dans les manuels.",g:'+2 sources par trimestre, pendant deux trimestres'})}
  if(!hasBonus('star')&&S.q>=1&&S.bud.exec>=BUDMAX&&bonusDraw('star')<0.30){markBonus('star');
   const rv=S.rivals.slice().sort((a,b)=>b.cum-a.cum)[0],i=Math.floor(bonusDraw('starmkt')*N);
   S.star=i;rv.skill=Math.max(0.5,rv.skill-0.02);
-  goldLater({v:'star',k:'TALENT · DÉBAUCHAGE',t:`Le trader star de ${rv.nm}`,d:`Il traite ${INSTR[i].nm.toLowerCase()} mieux que personne, et il a choisi votre desk.`,g:`coûts ÷3 sur ${INSTR[i].sym} ce trimestre · ${rv.nm} affaibli`})}
+  goldLater({v:'star',k:'TALENT · DÉBAUCHAGE',tier:'or',t:`Le trader star de ${rv.nm}`,d:`Il traite ${INSTR[i].nm.toLowerCase()} mieux que personne, et il a choisi votre desk.`,g:`coûts ÷3 sur ${INSTR[i].sym} ce trimestre · ${rv.nm} affaibli`})}
  if(!hasBonus('jh')&&S.q>=1&&conf()>=75&&bonusDraw('jh')<0.25){markBonus('jh');S.jh=true;
-  goldLater({v:'glass',k:'INFORMATION',t:'Dîner à Jackson Hole',d:"Entre la poire et le fromage, un gouverneur laisse entendre ce qui va tomber.",g:'la première dépêche du trimestre vous est pré-annoncée à coup sûr'})}
+  goldLater({v:'glass',k:'INFORMATION',tier:'argent',t:'Dîner à Jackson Hole',d:"Entre la poire et le fromage, un gouverneur laisse entendre ce qui va tomber.",g:'la première dépêche du trimestre vous est pré-annoncée à coup sûr'})}
 }
 function budgetBp(){return BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK().fixed*1e4}
 /* budget si l'on basculait un seul poste sur un autre niveau */
@@ -2920,7 +2933,19 @@ function crestMark(i,cx,cy,r){const c=CRESTS[((i|0)%CRESTS.length+CRESTS.length)
  return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r}" fill="${c.a}" opacity=".95"/>`
   +`<g transform="translate(${(cx-r*0.75).toFixed(1)},${(cy-r*0.75).toFixed(1)}) scale(${s.toFixed(3)})">`
   +`<path d="${c.m}" fill="#0E1621"/></g>`;}
-const RIVCREST=[1,3,8,10];
+/* Emblèmes des concurrents : ajoutés après les douze du joueur, jamais proposés au choix. */
+CRESTS.push(
+ {nm:"Le pont-levis",a:'#E07A5F',b:'#F2CC8F',
+  d:'<path d="M18 62V32H54V62" fill="none" stroke="$a" stroke-width="2.6" stroke-linejoin="round"/><path d="M26 62V46A10 10 0 0 1 46 46V62Z" fill="$b" opacity=".85"/><path d="M18 32 27 45M54 32 45 45" stroke="$a" stroke-width="1.6"/><path d="M14 32H58" stroke="$a" stroke-width="2"/>',
+  m:'M3 21V7h18v14h-5v-6a4 4 0 0 0-8 0v6Z'},
+ {nm:"Le médaillon",a:'#4FC3D9',b:'#E8D7A0',
+  d:'<circle cx="36" cy="42" r="17" fill="none" stroke="$a" stroke-width="2.6"/><circle cx="36" cy="42" r="8" fill="$b"/><path d="M36 19V25M36 59V65M13 42H19M53 42H59" stroke="$a" stroke-width="2"/>',
+  m:'M12 3a9 9 0 1 0 .01 0Zm0 5a4 4 0 1 1-.01 0Z'},
+ {nm:"Le trident",a:'#B18CF0',b:'#F0E6FF',
+  d:'<path d="M36 22V64M24 26V38C24 46 48 46 48 38V26" fill="none" stroke="$a" stroke-width="2.6" stroke-linecap="round"/><path d="M20 27 24 19 28 27ZM32 26 36 18 40 26ZM44 27 48 19 52 27Z" fill="$b"/>',
+  m:'M11 22V12H8C6 12 5 10 5 8V3h2v5h2V3h2v6h2V3h2v5h2V3h2v5c0 2-1 4-3 4h-3v10Z'});
+const NPC=12;   /* écussons proposés au joueur */
+const RIVCREST=[12,13,14,13];   /* Pont-Levis, Médaillon, Citadelle (et un 4e pour les vieilles sauvegardes) */
 
 const RIVCOL=['#7C8FF0','#D9B06A','#A98CE0','#5FBFC4'];
 function rivTag(nm){const w=String(nm||'').replace(/^(le|la|les|l')\s+/i,'').split(/[\s'’-]+/).filter(Boolean);
@@ -3338,7 +3363,7 @@ function showGauge(id){
    <p style="margin-top:10px">Au-delà de <em>${Math.round(ddMax()*100)} % de repli</em> depuis le pic, des investisseurs demandent leur sortie. Le fonds ne s'arrête que sous <em>${moneyB(NAVEND*S.aum0)}</em>, 5 % de l'encours de départ.</p>`);
  } else if(id==='perf'){
   const rows=S.rets.map((r,i)=>[`T${i+1} · ${REG[S.regimes[i]].nm}`,`<span class="${cls(r)}">${sgn(r,1)}</span>`,`<span class="${cls(r)}">${M$(r*S.navs[i])}</span>`]);
-  openModal('Performance cumulée nette',`<p>Ce qu'un investisseur entré au premier jour a gagné ou perdu, <em>après tout</em> : frais de gestion (${dec((VOL().mgmt*400),1)} % par an), commission de performance (${(VOL().perf*100).toFixed(0)} % au-dessus du plus haut historique) et incidents. Les coûts de transaction et le budget d'exploitation sont payés par votre société de gestion : ils ne pèsent pas sur cette courbe. Le collatéral rapporte le taux au jour le jour (${dec((S.rate*100),1)} % actuellement), inclus.</p>
+  openModal('Performance cumulée nette',`<p>Ce qu'un investisseur entré au premier jour a gagné ou perdu, <em>après tout</em> : frais de gestion (${dec((VOL().mgmt*400),1)} % par an), commission de performance (${(perfFee()*100).toFixed(0)} % au-dessus du plus haut historique) et incidents. Les coûts de transaction et le budget d'exploitation sont payés par votre société de gestion : ils ne pèsent pas sur cette courbe. Le collatéral rapporte le taux au jour le jour (${dec((S.rate*100),1)} % actuellement), inclus.</p>
    ${tbl([['Depuis le début',`<span class="${cls(S.nav/S.aum0-1)}">${sgn(S.nav/S.aum0-1,1)}</span>`,`<span class="${cls(S.nav-S.aum0)}">${bn(S.nav-S.aum0,2)}</span>`],['Coûts d\'exécution payés par vous','',`−${mm(S.totalTC)}`],['Budget d\'exploitation payé par vous','',`−${mm(S.totalOps)}`],...rows],['Période','Net','Md$'])}
    <p style="margin-top:10px">L'objectif de votre mandat est <em>${(VOL().goal*100).toFixed(0)} % net annualisés</em> sur deux ans, soit environ +${((Math.pow(1+VOL().goal,2)-1)*100).toFixed(0)} % cumulés.</p>`);
  } else if(id==='lp'){
@@ -3456,22 +3481,22 @@ function loadJ(k,def){try{const st=store();if(!st)return def;const v=st.getItem(
 function saveJ(k,v){try{const st=store();if(st)st.setItem(k,JSON.stringify(v))}catch(e){}}
 function unlocked(){return loadJ(FEATKEY,[])}
 function award(id){const u=unlocked();if(u.includes(id))return;u.push(id);saveJ(FEATKEY,u);
- const f=FEATS.find(x=>x.id===id);if(f){const b={v:f.tier>=3?'crown':'trophy',k:'HAUT FAIT · '+TIERS[f.tier].toUpperCase(),t:`${f.ic} ${f.nm}`,d:f.d};if(S&&S.phase!=='final'&&!S.over)goldLater(b);else goldPop(b)}}
+ const f=FEATS.find(x=>x.id===id);if(f){const b={v:f.tier>=3?'crown':'trophy',tier:f.tier>=4?'or':f.tier>=2?'argent':'bronze',k:'HAUT FAIT · '+TIERS[f.tier].toUpperCase(),t:`${f.ic} ${f.nm}`,d:f.d};if(S&&S.phase!=='final'&&!S.over)goldLater(b);else goldPop(b)}}
 function recordRun(o){
  const h=loadJ(HALLKEY,[]);
  h.push({f:S.fundName,g:S.mgrFees-S.mgrCosts,ix:mgrIndex(),v:o.verdict,c:o.cagr,r:o.rank,s:S.size,p:S.prof,q:S.q,d:Date.now()});
- h.sort((a,b)=>(b.ix===undefined?-1e9:b.ix)-(a.ix===undefined?-1e9:a.ix)||b.g-a.g);saveJ(HALLKEY,h.slice(0,20));
+ h.sort((a,b)=>b.g-a.g);saveJ(HALLKEY,h.slice(0,20));
 }
 function screenHall(back){
  const h=loadJ(HALLKEY,[]),u=unlocked();
- const SZ={small:'100 M$',mid:'1 Md$',mega:'10 Md$'},PR={fonda:'fondamental',flux:'flux',syst:'systématique'};
+ const SZ={small:'facile',mid:'moyen',mega:'difficile'},PR={fonda:'fondamental',flux:'flux',syst:'systématique'};
  app.innerHTML=`<div class="fade" style="padding-top:28px">
   <div class="kicker">PALMARÈS</div><h1 style="font-family:var(--serif);font-size:clamp(32px,10vw,50px);line-height:1;margin:10px 0 0">Vos meilleures années</h1>
-  <p class="prose" style="margin-top:12px">Vos parties sont conservées dans ce navigateur. Le classement se fait sur l'indice du gérant — 100, c'est le gérant médian de la place : il compare des fonds de 100 M$ et de 10 Md$ à armes égales.</p>
+  <p class="prose" style="margin-top:12px">Vos parties sont conservées dans ce navigateur. Le classement se fait sur les commissions nettes encaissées : c'est le score du jeu.</p>
   ${h.length?h.slice(0,10).map((r,i)=>`<div class="hrow ${i===0?'top':''}">
     <span class="hrk">${i+1}</span>
     <span class="hmid"><b>${r.f}</b><span class="hsub">${SZ[r.s]||''} · ${PR[r.p]||''} · ${r.q} trimestre${r.q>1?'s':''} · ${r.v.toLowerCase()}</span></span>
-    <span class="hval"><b class="gold-g">${r.ix===undefined?score(r.g):'indice '+Math.round(r.ix)}</b><span class="hsub ${cls(r.c)}">${r.ix===undefined?'':score(r.g)+' · '}${sgnp(r.c,0)} par an</span></span>
+    <span class="hval"><b class="gold-g">${score(r.g)}</b><span class="hsub ${cls(r.c)}">${sgnp(r.c,0)} par an</span></span>
    </div>`).join(''):`<p class="note">Aucune partie terminée pour l'instant.</p>`}
   <div class="blockhead" style="margin-top:24px"><h2>Hauts faits</h2><span class="hint">${u.length} / ${FEATS.length}</span></div>
   ${TIERS.map((tn,ti)=>{const fs=FEATS.filter(f=>f.tier===ti),nu=fs.filter(f=>u.includes(f.id)).length;
@@ -3530,7 +3555,10 @@ function loadGame(){
   if(!S.budN&&S.bud){const M3=[0,3,5];for(const k in S.bud)S.bud[k]=M3[S.bud[k]]!==undefined?M3[S.bud[k]]:3;S.budN=7}
   /* sauvegarde des lots 39 à 44 : onze crans ramenés à sept */
   if(S.budN===11&&S.bud){const M11=[0,1,1,2,3,3,4,4,5,6,6];for(const k in S.bud)S.bud[k]=M11[S.bud[k]]!==undefined?M11[S.bud[k]]:3;S.budN=7}
-  if(S.openRk){OPENRK=S.openRk;applyPools()}
+  if(S.openRk)OPENRK=S.openRk;
+  else if(S.aum0>=0.5)OPENRK=S.aum0>=5?5:4;   /* full-floor et mastodonte d'avant le lot 49 */
+  if(S.exoOpen===undefined)S.exoOpen=(S.univ==='ext');   /* l'univers « monde entier » les avait d'emblée */
+  applyPools();
   if(S.goal&&S.goal.nm)S.goal=QGOALS.find(g=>g.nm===S.goal.nm)||null;
   S.evQueue=(d.evQ||[]).map(evFromTag).filter(Boolean);S.preDesk=evFromTag(d.preD);
   const P={phaseOpen:()=>phaseOpen(),screenBudget:()=>screenBudget(),phaseDesk:()=>phaseDesk(),screenPlay:()=>screenPlay(),
@@ -3640,7 +3668,7 @@ function planSignalsAfterBudget(){
  S.star=-1;
  if(STARP[S.bud.exec]>0&&rng()<STARP[S.bud.exec])S.star=Math.floor(rng()*N);
  if(S.star>=0){const rv=S.rivals[Math.floor(bonusDraw('recrue')*S.rivals.length)];
-  goldLater({v:'star',k:'RECRUE DU TRIMESTRE',t:`Débauché chez ${rv.nm}`,d:`Un trader ${INSTR[S.star].nm.toLowerCase()} quitte ${rv.nm} pour votre desk.`,g:`coûts d'exécution ÷3 sur ${INSTR[S.star].sym} ce trimestre`})}
+  goldLater({v:'star',k:'RECRUE DU TRIMESTRE',tier:'bronze',t:`Débauché chez ${rv.nm}`,d:`Un trader ${INSTR[S.star].nm.toLowerCase()} quitte ${rv.nm} pour votre desk.`,g:`coûts d'exécution ÷3 sur ${INSTR[S.star].sym} ce trimestre`})}
  bonusOpen();
 }
 function drawBuds(){
@@ -3753,7 +3781,7 @@ function drawRows(){
    const nb=notionalBn(S.k[i],i);
    h+=`<div class="pos">
      <div class="top"><span class="sym" style="color:${GRPC[g]}">${x.sym}</span>
-      <span class="nm">${x.nm}<span class="crowd" style="background:${cc}"></span>${mktOpen(i)?'':`<span class="capb">fermé · s'ouvre à ${mm(unlockNav(x.rk))}</span>`}</span>
+      <span class="nm">${x.nm}<span class="crowd" style="background:${cc}"></span>${mktOpen(i)?'':`<span class="capb">${x.grp==='Exotiques'&&x.rk<=OPENRK?'fermé · finissez un trimestre premier':`fermé · s'ouvre à ${mm(unlockNav(x.rk))}`}</span>`}</span>
       <span class="rr ${lr===null?'dim-g':cls(lr)}">${lr===null?'—':sgn(lr,1)}</span></div>
      <div class="seg" data-row="${i}">${seg}</div>
      <div class="rowinfo" id="ri${i}"></div>
@@ -4394,7 +4422,7 @@ function resolveQuarter(){
  const mgmtM=S.qMgmtM||0;                 /* déjà prélevée à l'ouverture du trimestre */
  const grQ=((gross+collateral)*nb+(S.qEvM||0)+(S.qIncM||0)-mgmtM)/q0;
  const idxPre=S.idx*(1+grQ);
- const perfQ0=idxPre>S.hwmIdx?VOL().perf*(idxPre-S.hwmIdx)/Math.max(1e-9,S.idx):0;
+ const perfQ0=idxPre>S.hwmIdx?perfFee()*(idxPre-S.hwmIdx)/Math.max(1e-9,S.idx):0;
  const perf=perfQ0*q0/nb;
  const net=gross+collateral-perf;
  S.nav*=(1+net);
@@ -4467,19 +4495,21 @@ function resolveQuarter(){
  /* débauchage / collecte */
  S.poachMsg=null;
  const rel=qTotal-med;
- /* les allocataires comparent : c'est l'écart à la médiane des concurrents qui commande, pas la performance absolue */
- const pOut=Math.min(0.95,(0.06+Math.max(0,-rel)*32+(S.lp<40?0.20:0)+(dd>0.10?0.12:0)+(S.flighty?0.10:0))*SIZE().flowMult);
- const pIn=Math.min(0.85,0.05+Math.max(0,rel)*32+(S.lp>70?0.12:0)+(S.nav>=S.hwm-1e-9?0.06:0));
- const doOut=()=>{const out=Math.min(0.30,uni(0.01,0.05)*(1+Math.max(0,-rel)*30+(S.lp<30?0.5:0)));S.flows-=out*S.nav;S.qFlow=(S.qFlow||0)-out*S.nav;S.nav*=(1-out);
-   const rv=pick(S.rivals.filter(x=>x.last>qTotal))||S.rivals[0];
-   S.poachMsg=`Rachats : ${dec((out*100),1)} % de l'encours sont partis${rel<-0.005?` vers ${rv.nm}`:''}. ${rel<-0.001?`Vous avez fait ${pct(Math.abs(rel),1)} de moins que la médiane des concurrents ce trimestre.`:'Les allocataires ne vous reprochent pas votre performance, seulement leur propre calendrier.'}`;
-   if(rng()<(0.5+S.poachBoost)*RETM[S.bud.ret]*(rel<-0.005?1:0.4)){S.execPenalty*=1.14;S.poachMsg+=` ${(pick(S.rivals.filter(x=>x.poacher))||S.rivals[2]).boss} a débauché deux de vos gérants : coûts d'exécution +14 % durablement.`}}
- const doIn=()=>{const inn=Math.min(0.25,uni(0.01,0.05)*(1+Math.max(0,rel)*28));S.flows+=inn*S.nav;S.qFlow=(S.qFlow||0)+inn*S.nav;S.nav*=(1+inn);
-   S.poachMsg=`Collecte : ${dec((inn*100),1)} % d'encours supplémentaire.${rel>0.001?` Vous avez battu la médiane des concurrents de ${pct(rel,1)} ce trimestre, et ça se sait.`:''}`;
-   if(S.bud.ret>=BUDMAX&&rng()<0.4){S.execPenalty=Math.max(0.7,S.execPenalty*0.92);S.poachMsg+=" Vous avez recruté un trader chez un concurrent : coûts d'exécution −8 %."}}
- /* le sens du flux est commandé par l'écart aux concurrents ; la probabilité module l'intensité */
- if(rel>0.002){if(rng()<pIn)doIn();else if(rng()<pOut*0.45)doOut()}
- else{if(rng()<pOut)doOut();else if(rng()<pIn*0.45)doIn()}
+ /* Lot 49 : chaque concurrent a sa clientèle, plus ou moins nerveuse. Battre un concurrent
+    attire une part de ses clients ; perdre contre lui en envoie chez lui. La somme des trois
+    fait le flux net ; la voracité (difficulté) grossit les sorties, une confiance basse aussi. */
+ const CLI={syst:0.6,fonda:1.0,flux:1.6};
+ const fl=S.rivals.map(rv=>{const d=qTotal-(rv.last||0),s=CLI[rv.style]||1;
+   let f=Math.max(-0.06,Math.min(0.06,0.5*s*d));if(f<0)f*=SIZE().flowMult;return {rv,d,f}});
+ let tot=fl.reduce((a,x)=>a+x.f,0);
+ if(S.lp<40)tot-=0.04*(40-S.lp)/40*SIZE().flowMult;
+ tot=Math.max(-0.25,Math.min(0.20,tot+(rng()-0.5)*0.01));
+ S.qFlowBy=fl.map(x=>({nm:x.rv.nm,d:x.d,f:x.f}));
+ const amt=tot*S.nav;S.nav+=amt;S.flows+=amt;S.qFlow=(S.qFlow||0)+amt;
+ const lines=fl.filter(x=>Math.abs(x.f)>=0.002).map(x=>`${x.rv.nm} ${x.f>0?'+':'−'}${dec(Math.abs(x.f)*100,1)} % (${x.d>0?'battu':'devant vous'} de ${dec(Math.abs(x.d)*100,1)} pt${Math.abs(x.d)>=0.015?'s':''})`);
+ S.poachMsg=`${tot>=0?'Collecte':'Rachats'} : ${tot>=0?'+':'−'}${dec(Math.abs(tot)*100,1)} % d'encours (${mm(Math.abs(amt))}).${lines.length?' Clients par concurrent — '+lines.join(' · ')+'.':''}`;
+ if(tot<-0.01&&rng()<(0.5+S.poachBoost)*RETM[S.bud.ret]*(rel<-0.005?1:0.4)){S.execPenalty*=1.14;S.poachMsg+=` ${(pick(S.rivals.filter(x=>x.poacher))||S.rivals[S.rivals.length-1]).boss} a débauché deux de vos gérants : coûts d'exécution +14 % durablement.`}
+ if(tot>0.01&&S.bud.ret>=BUDMAX&&rng()<0.4){S.execPenalty=Math.max(0.7,S.execPenalty*0.92);S.poachMsg+=" Vous avez recruté un trader chez un concurrent : coûts d'exécution −8 %."}
  /* objectif du trimestre */
  S.streak=qTotal>0?(S.streak||0)+1:0;S.streakMax=Math.max(S.streakMax||0,S.streak);
  if(qTotal<=0)S.qNeg=(S.qNeg||0)+1;
@@ -4491,7 +4521,7 @@ function resolveQuarter(){
   const bon=ok?goalBon(S.goal):0;
   if(ok)S.mgrFees+=bon;
   S.qGoal={nm:S.goal.nm,d:S.goal.d,ok,bonus:bon};
-  if(ok)goldLater({v:'trophy',k:'OBJECTIF DU TRIMESTRE',t:S.goal.nm,d:S.goal.d,g:`${mm(bon)} de bonus sur vos gains`});
+  if(ok)goldLater({v:'trophy',tier:(S.goal.b||0)>=0.09?'or':(S.goal.b||0)>=0.06?'argent':'bronze',k:'OBJECTIF DU TRIMESTRE',t:S.goal.nm,d:S.goal.d,g:`${mm(bon)} de bonus sur vos gains`});
   if(ok)S.goalsWon=(S.goalsWon||0)+1;
  }
  {const fc=goalCtx({qTotal,med,rank:rivalRank(),dd,navBefore:S.navQ0});
@@ -4524,7 +4554,7 @@ function resolveQuarter(){
  if(S.rc<=13&&S.maxk>3){S.maxk=3;S.k=S.k.map(v=>Math.max(-3,Math.min(3,v)));S.qLog.push('mandat')}
  S.kEff=null;
  if(S.nav>=S.hwm-1e-9&&qTotal>0&&perf>0&&!S.hwmShown){S.hwmShown=S.idx;
-  goldLater({v:'chart',k:'COMMISSION DE PERFORMANCE',t:'Nouveau plus haut historique',d:"Le fonds dépasse son sommet : la commission de performance tombe.",g:`${mm(perf*navBefore)} de commission de performance`})}
+  goldLater({v:'chart',k:'COMMISSION DE PERFORMANCE',tier:'bronze',t:'Nouveau plus haut historique',d:"Le fonds dépasse son sommet : la commission de performance tombe.",g:`${mm(perf*navBefore)} de commission de performance`})}
  if(Math.abs(pvol(weights(S.k))-S.tgt)/S.tgt>bandNow())S.inBand=0;else S.inBand=(S.inBand||0)+1;
  if(!S.over)bonusClose({qTotal});
  S.phase='debrief';S.tcMultQ=1;S.leakQ=false;S.poachBoost=0;
@@ -4899,7 +4929,7 @@ function screenDebrief(o){
  goldFlush(5600);
  if(!S.over&&S.q<QT()){const nx=document.getElementById('nx'),qb=document.createElement('button');
   qb.className='quitb';qb.id='quit';qb.textContent='Abandonner';nx.after(qb);
-  qb.onclick=()=>{openModal('Abandonner la partie ?',`<p>Le mandat s'arrête ici. Vos commissions nettes, ${score(S.mgrFees-S.mgrCosts)}, restent les vôtres et la partie entre au palmarès avec un indice de ${Math.round(mgrIndex())}.</p>
+  qb.onclick=()=>{openModal('Abandonner la partie ?',`<p>Le mandat s'arrête ici. Vos commissions nettes, ${score(S.mgrFees-S.mgrCosts)}, restent les vôtres et la partie entre au palmarès.</p>
    <p style="margin-top:14px;display:flex;gap:10px"><button class="buy" id="quitok">Rendre les clés</button><button class="buy" id="quitno">Continuer</button></p>`);
    document.getElementById('quitno').onclick=()=>{document.getElementById('modal').style.display='none'};
    document.getElementById('quitok').onclick=()=>{document.getElementById('modal').style.display='none';S.over='quit';save('screenDebrief');screenFinal();window.scrollTo(0,0)}}}
@@ -4986,7 +5016,7 @@ function screenFinal(){
    <div class="cell"><div class="cl">Exécution payée de votre poche</div><div class="cv">${moneyB(S.totalTC)}</div></div>
    <div class="cell"><div class="cl">Budget d'exploitation payé</div><div class="cv">${moneyB(S.totalOps)}</div></div>
    <div class="cell"><div class="cl">Encours final</div><div class="cv">${moneyB(S.nav)}</div></div>
-   <div class="cell" style="grid-column:1/-1;background:linear-gradient(180deg,rgba(217,176,106,.20),rgba(217,176,106,.04))"><div class="cl" style="color:var(--gold)">Indice du gérant · 100 = le gérant médian de la place</div><div class="cv" style="color:var(--gold);font-size:34px">${Math.round(mgrIndex())}</div><div class="cl" style="margin-top:4px">${score(S.mgrFees-S.mgrCosts)} de gains, soit ${sgnp((S.mgrFees-S.mgrCosts)/S.aum0,1)} de l'encours initial · gérant médian ${sgnp(rivalMgrMedian()/S.aum0,1)}</div></div>
+   <div class="cell" style="grid-column:1/-1;background:linear-gradient(180deg,rgba(217,176,106,.20),rgba(217,176,106,.04))"><div class="cl" style="color:var(--gold)">Vos gains de gérant · le score</div><div class="cv" style="color:var(--gold);font-size:34px">${score(S.mgrFees-S.mgrCosts)}</div><div class="cl" style="margin-top:4px">le gérant médian de la place a gagné ${score(rivalMgrMedian())}</div></div>
    <div class="cell"><div class="cl">Classement sur quatre fonds</div><div class="cv">${rank}<sup style="font-size:12px">${rank===1?'er':'e'}</sup></div></div>
   </div>
   <div class="block"><div class="blockhead"><h2>Classement final</h2><span class="hint">performance cumulée</span></div>
@@ -5008,13 +5038,13 @@ function screenFinal(){
  recordRun({verdict,cagr,rank});
  document.getElementById('hall2').onclick=()=>screenHall(screenFinal);
  document.getElementById('share').onclick=async()=>{
-  const txt=`${S.fundName} — ${verdict}. Indice du gérant ${Math.round(mgrIndex())} (100 = gérant médian), ${score(S.mgrFees-S.mgrCosts)} de gains, ${sgnp(cagr,1)} net annualisés sur ${n} trimestre${n>1?'s':''}, ${rank}${rank===1?'er':'e'} sur 4, perte max −${dec((S.maxdd*100),1)} %, Sharpe ${dec(sr,2)}. Profil ${PROF().nm.toLowerCase()}, ${VOL().nm.toLowerCase()}. Graine ${S.seed} — faites mieux : ${location.href.split('#')[0]}`;
+  const txt=`${S.fundName} — ${verdict}. ${score(S.mgrFees-S.mgrCosts)} de gains de gérant, ${sgnp(cagr,1)} net annualisés sur ${n} trimestre${n>1?'s':''}, ${rank}${rank===1?'er':'e'} sur 4, perte max −${dec((S.maxdd*100),1)} %, Sharpe ${dec(sr,2)}. Profil ${PROF().nm.toLowerCase()}, ${VOL().nm.toLowerCase()}. Graine ${S.seed} — faites mieux : ${location.href.split('#')[0]}`;
   const b=document.getElementById('share');
   try{if(navigator.share){await navigator.share({title:'Le Book',text:txt});return}}catch(e){}
   try{await navigator.clipboard.writeText(txt);b.textContent='Résultat copié — collez-le où vous voulez'}catch(e){prompt('Copiez ce texte :',txt)}
  };
  document.getElementById('again').onclick=()=>{setup={prof:'fonda',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'com',dur:'normal'};screenSetup();window.scrollTo(0,0)};
- document.getElementById('same').onclick=()=>{newGame(S.seed,S.prof,S.arch,S.desk,S.vol,S.size);phaseOpen()};
+ document.getElementById('same').onclick=()=>{newGame(S.seed,S.prof,S.arch,S.desk,'std',S.size,'ext',S.dur);phaseOpen()};
 }
 if(!(hasSave()&&location.hash==='#resume'))screenIntro();else loadGame();
 </script>

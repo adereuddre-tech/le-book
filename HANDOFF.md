@@ -409,6 +409,24 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   sur 21 ; concurrents 29 / 25 / 23 % par an (quant / fondamental / flux) ; 14 à 19 cartes dorées
   par partie, dont une majorité d'objectifs tenus et de hauts faits.
 
+- **Lot 49 — refonte des choix de départ** (`99zk-difficulte.py`). Plus de choix de taille, d'univers
+  ni de risque : 100 M$, vol cible 20 %, 2 % de gestion pour tous. `SIZES` porte trois niveaux de
+  difficulté (ids small / mid / mega conservés) : adresse des concurrents, vigilance du comité,
+  voracité et nervosité des investisseurs, commission de performance 15 / 20 / 25 % (`perfFee`).
+  Marchés : trois par classe au départ, 4e rang à 1,4× l'encours, 5e au double ; exotiques
+  (`S.exoOpen`) ouverts la première fois que le joueur finit premier d'un trimestre (carte or).
+  Score : gain net cumulé du gérant (l'indice reste calculé, plus affiché). Flux clients par
+  concurrent : 0,5 × sensibilité (quant 0,6, fondamental 1,0, flux 1,6) × écart de performance,
+  ±6 % par concurrent, sorties × `flowMult`, confiance < 40 en plus ; détail dans le débriefing
+  (`S.qFlowBy`). Emblèmes des concurrents (pont-levis, médaillon, trident) ajoutés à `CRESTS`
+  après les douze du joueur (`NPC`), `RIVCREST=[12,13,14,13]`. Cartes en trois paliers (bronze,
+  argent, or) : `tier` sur chaque carte, couleurs et visuels recolorés par palier.
+  Migration : `S.exoOpen` absent → ouvert si l'univers était « monde entier » ; `OPENRK` déduit de
+  l'encours initial pour les anciens full-floor et mastodontes.
+  Mesure (bot, 21 parties par niveau) : gains médians 15,0 / 16,4 / 15,8 M$, survie 20 / 16 / 16,
+  flux nets cumulés +18 % / −28 % / −60 % de l'encours initial, exotiques ouverts dans 21 / 18 / 16
+  parties, 18 à 20 cartes par partie ; concurrents 27 / 32 / 21 % par an.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
