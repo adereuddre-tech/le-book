@@ -26,6 +26,7 @@ function playGame(o){
   const bud=o.bud||[3,3,3];   /* lot 45 : sept crans, le standard est le cran 3 */const smart=o.policy!=='naive';
   w.eval(`refreshStatus=function(){};toast=function(){};window.__plan=null;(function(){const E=evPlans;window.evPlans=function(){const r=E.apply(this,arguments);window.__plan=r;return r}})()`);
   if(o.probe)w.eval(o.probe);          /* sonde injectée dans la page, avant la partie */
+  if(o.pre)w.eval(o.pre);   /* sonde injectée avant la partie (tools/expchk.js…) */
   const st={ev:0,follow:0,verified:0};let steps=0,done=false;
   while(steps++<4000&&!done){
     if($('#tutooff')){click($('#tutooff'));continue}

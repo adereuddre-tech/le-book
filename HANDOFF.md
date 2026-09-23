@@ -438,6 +438,27 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   Mesure (21 parties par niveau) : gains médians 15,0 / 14,3 / 18,6 M$, survie 20 / 17 / 15, flux
   nets cumulés +12 % / −44 % / −75 %.
 
+- **Lot 51 — rendement attendu ± 2σ** (`99zm-attendu.py`) : `expRet(i)` = σ·(Σ b·f̂ + 0,12 T̂ + 0,10 Ĉ + 0,08 V̂)
+  + dérive, avec les SEULES informations du joueur (`S.factEst`, `S.tcvEst`) ; incertitude
+  σ·√(Σ b²·`EXPVF` + propre² + bruit des lectures). `expBook(k)` au niveau du book (bloc `#xbook`).
+  Dosage : facile = chiffre + intervalle + barre, moyen = chiffre + barre, difficile = sens et
+  étoiles de conviction. Calibration `tools/expchk.js` (option `pre` ajoutée à `bot.js`) : écart
+  type des z 0,97, 95,1 % des mouvements dans ± 2σ (marchés), book 0,95 / 97,6 %.
+- **Lot 52 — signaux par style** (`99zn-styles.py`) : `STYLESIG` (quant portage, flux tendance,
+  discrétionnaire valeur) lu avec un bruit ×0,3, les autres ×1,3 ; quant : classement du portage
+  au-dessus du book ; flux : tendance du trimestre à mi-parcours (`fluxMid`) ; discrétionnaire :
+  deux catalyseurs par trimestre (`S.cat`, tirage pur) où le terme de valeur compte double dans
+  `drawReturns` pour tous — seul lui le sait (badge ⚡, pris en compte dans son `expRet`).
+  Le signal du style s'affiche en premier et en gras.
+- **Lot 53 — cartons du comité** (`99zo-cartons.py`) : `conf()` = `S.lp`. Plus de rachat « comité »
+  ni de mandat réduit sous 13. Cartons à la clôture (`S.cards`, `S.qCard`) : rouge pour risque
+  > 2× cible, perte > 2,2 σ, appel de marge, deuxième jaune ; jaune pour book validé (`S.kVal`)
+  au-dessus de la bande, > 75 % du risque sur un facteur, book vide, patience du comité en baisse
+  de 25 points dans le trimestre. Rouge : mandat ±3 au trimestre suivant (`S.redNext`/`S.redOn`),
+  5 % d'encours, confiance −6. Quatre trimestres propres retirent un jaune. `gz()` affiche
+  « confiance ±x » et « ⚖️ ±y ». Desk du flux ramené à 120 % de la cible (135 % hors bande).
+  Mesure (moyen, 15 parties) : 1,4 jaune et 0,9 rouge par partie.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
