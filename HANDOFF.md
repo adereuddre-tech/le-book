@@ -459,6 +459,21 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   « confiance ±x » et « ⚖️ ±y ». Desk du flux ramené à 120 % de la cible (135 % hors bande).
   Mesure (moyen, 15 parties) : 1,4 jaune et 0,9 rouge par partie.
 
+- **Lot 54 — lecture du book** (`99zp-lecture.py`) : attendu du book dans la tuile « Risque » de la
+  barre d'état (visible sur tous les écrans du trimestre, dosé par difficulté) ; par marché, la barre
+  disparaît au profit de « unité » (gain attendu pour le fonds d'une unité, ± 2σ en facile) et
+  « risque » (contribution d'Euler au risque affiché, en points, somme = chiffre de la barre ; sans
+  position, l'effet d'une unité ajoutée : `riskPts`, `riskAdd`). Signaux toujours dans l'ordre
+  Tendance · Portage · Valeur, celui du style en gras léger. Le détail d'un marché agrège facteurs
+  (exposition × lecture → effet), signaux, dérive, attendu, intervalle, gain par unité, risque
+  (`expParts`).
+- **Lot 55 — nettoyage** (`99zq-nettoyage.py`) : desk à trois sources visibles (les autres repliées),
+  lecture consolidée repliée, aide des sources réécrite ; book sans la ligne des codes d'exposition,
+  marchés fermés sur une ligne ; débriefing : flux clients en tête, « Du brut au net » replié,
+  « Ce qu'ils en disent » = confiance et carton. La tuile « Vos gains » affiche le score (elle
+  montrait la trésorerie, 500 k$ de plus que « Cumul depuis le début »). Hauteur à 380 px : book
+  6 180 → 3 258 px, débriefing 2 449 → 2 118 px.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
