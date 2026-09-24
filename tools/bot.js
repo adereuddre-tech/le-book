@@ -5,7 +5,7 @@ const CACHE={};
 const num=t=>parseFloat(String(t).replace('−','-').replace(',','.'));
 function utilText(t){
   t=t.replace(/\s+/g,' ');let u=0;
-  for(const m of t.matchAll(/(investisseurs|comité)\s*([+−-])\s*(\d+)/gi))u+=(m[2]==='+'?1:-1)*(+m[3]);
+  for(const m of t.matchAll(/(investisseurs|comité|confiance)\s*([+−-])\s*(\d+)/gi))u+=(m[2]==='+'?1:-1)*(+m[3]);
   for(const m of t.matchAll(/(\d+)\s*%\s*de (?:risque[^:]*:\s*)?([+−-])\s*(\d+(?:,\d+)?)\s*%/g))u+=8*(+m[1]/100)*(m[2]==='+'?1:-1)*num(m[3]);
   for(const m of t.matchAll(/sinon\s*([+−-])\s*(\d+(?:,\d+)?)\s*%/g)){const p=t.match(/(\d+)\s*%\s*de/);u+=8*(1-(p?+p[1]/100:0.5))*(m[1]==='+'?1:-1)*num(m[2])}
   for(const m of t.matchAll(/(^|[^\d])([+−-])(\d+(?:,\d+)?)\s*pb/g))u+=0.08*(m[2]==='+'?1:-1)*num(m[3]);
@@ -58,15 +58,16 @@ function playGame(o){
       if($('#send').disabled&&$('#fitbook'))click($('#fitbook'));
       if($('#send').disabled){errs.push('book bloque');break}
       click($('#send'));continue}
-    const ev=d.querySelectorAll('.choice.evopt');
+    const ev=d.querySelectorAll('.choice.evopt');const evOk=[...ev].map(b=>!b.disabled);
     if(ev.length){st.ev++;
-      const i=w.eval(`(()=>{const P=window.__plan,SC=S.sc;if(!P)return 1;const ph=[SC.ph,1-SC.ph];
+      let i=w.eval(`(()=>{const P=window.__plan,SC=S.sc;if(!P)return 1;const ph=[SC.ph,1-SC.ph];
         const lo=Math.min(S.lp,S.rc),beta=1+Math.max(0,(45-lo)/8);
-        const U=P.map(o=>ph.reduce((a,p,s)=>a+p*(o.pay[s]*1e4*0.35+beta*(o.gz[s].lp+o.gz[s].rc)),0));
+        const U=P.map(o=>ph.reduce((a,p,s)=>a+p*(o.pay[s]*1e4*0.35+beta*(o.gz[s].lp+(typeof cf==='function'?0:o.gz[s].rc))),0));
         return ${smart}?(U[0]>U[1]?0:1):(Math.random()<0.6?0:1)})()`);
+      if(!evOk[i])i=ev.length-1;
       if(w.eval('S.sc&&S.sc.ver'))st.verified++;
       if(i===0)st.follow++;click(ev[i]);continue}
-    const chs=[...d.querySelectorAll('.choice')];
+    const chs=[...d.querySelectorAll('.choice')].filter(b=>!b.disabled);
     if(chs.length){let bi=chs.length-1;
       if(smart){let bu=-1e9;chs.forEach((c,j)=>{const u=utilText(c.textContent);if(u>bu+1e-9){bu=u;bi=j}})}
       else bi=Math.floor(Math.random()*chs.length);

@@ -25,7 +25,24 @@ w.eval(`window.__chk=[];if(typeof evPlans!=="undefined")(function(){const R=reso
  window.__chk.push({dl,dr,si,p,exp:imm+o.pay[si]*(S.nav? 1:1)});
  if(Math.abs(dl)>1e-6||Math.abs(dr)>1e-6)window.__bad=(window.__bad||0)+1;
  return r}})()`);
-const SIG=[];while(steps++<3000&&!done){
+w.eval(`window.__v=[];window.__nav=0;window.__navbad=[];window.__red={};
+(function(){const PQ=planQuarter;let n=0;window.planQuarter=function(){
+  if(S.q>=1&&window.__forceRed){const id=REDC[n%REDC.length].id;n++;const keep=REDC.slice();REDC.length=0;REDC.push(keep.find(c=>c.id===id));S.redLast=null;
+   S.redNext=redDraw(weights(S.k));REDC.length=0;keep.forEach(c=>REDC.push(c))}
+  return PQ.apply(this,arguments)};
+ const CO=commitOrders;window.commitOrders=function(){const sp=riskShown(weights(S.k)).total,id=S.redOn&&S.redC?S.redC.id:'-';
+  window.__red[id]=(window.__red[id]||0)+1;
+  const v=[];if(S.k.some((x,i)=>Math.abs(x)>kCap(i)))v.push('cap');if(id==='cap'&&S.k.some(x=>Math.abs(x)>2))v.push('cap2');
+  if(id==='risk'&&sp>0.7*S.tgt+1e-9)v.push('risk');if(id==='noadd'&&sp>S.tgt+1e-9)v.push('noadd');if(id==='lines'&&S.k.filter(x=>x).length>4)v.push('lines');
+  if(id==='budget'&&S.bud.risk<5)v.push('budget:'+S.bud.risk);if((id==='shut'||id==='class')&&S.redC.syms.some(sy=>S.k[IDX[sy]]))v.push('shut');
+  if(Math.abs(S.maxk)>(S.capK||5))v.push('maxk');
+  if(v.length)window.__v.push(S.q+':'+id+':'+v.join('/'));return CO.apply(this,arguments)};
+ const RQ=resolveQuarter;window.resolveQuarter=function(){const id=S.redOn&&S.redC?S.redC.id:'-';const r=RQ.apply(this,arguments);
+  if(id==='collat'&&!(S.colRes&&S.colRes.nm==='Collatéral renforcé'))window.__v.push('collat');return r};
+})()`);
+if(a.includes('--red'))w.eval('window.__forceRed=1');
+const navChk=()=>{try{const t=d.querySelector('#navtile');if(t){const e=w.eval('moneyB(navNow())');if(t.textContent!==e)w.__navbad.push(t.textContent+'≠'+e);w.__nav++}}catch(e){}};
+const SIG=[];while(steps++<3000&&!done){navChk();
  if(steps%1===0){const h=(d.querySelector('h1,h2,h3')||{}).textContent||'?';const b=[...d.querySelectorAll('button')].filter(x=>!x.disabled).map(x=>x.id||x.className).join(',').slice(0,90);const sg=h+' :: '+b;if(SIG[SIG.length-1]!==sg)SIG.push(sg);if(SIG.length>400)SIG.shift()}
  const t=$('#tutooff');if(t){click(t);continue}
  if($('#again')){done=true;break}
@@ -56,6 +73,6 @@ const SIG=[];while(steps++<3000&&!done){
  if(any.length){click(any[0]);continue}
  errs.push('bloqué: '+d.body.textContent.slice(0,200));break;
 }
-const chk=w.eval('window.__chk')||[];const res={resumed,bad:w.eval('window.__bad||0'),npo:chk.filter(c=>c.si===0).length,pbar:chk.reduce((a,c)=>a+c.p,0)/Math.max(1,chk.length),seed,cfg,sage,done,steps,errs:errs.slice(0,5),nerr:errs.length,stats,over:w.eval('S&&S.over'),q:w.eval('S&&S.q'),nav:w.eval('S&&S.nav')};
+const chk=w.eval('window.__chk')||[];const res={resumed,bad:w.eval('window.__bad||0'),npo:chk.filter(c=>c.si===0).length,pbar:chk.reduce((a,c)=>a+c.p,0)/Math.max(1,chk.length),seed,cfg,sage,done,steps,errs:errs.slice(0,5),nerr:errs.length,stats,over:w.eval('S&&S.over'),q:w.eval('S&&S.q'),nav:w.eval('S&&S.nav'),viol:w.eval('window.__v'),red:w.eval('window.__red'),navN:w.__nav,navBad:(w.__navbad||[]).slice(0,3),xev:w.eval('(S.usedX||[]).length'),capK:w.eval('S.capK'),cards:w.eval('JSON.stringify(S.cards&&S.cards.log)')};
 if(a.includes('--log'))res.plog=plog.slice(0,3);if(!done)res.sig=SIG.slice(-6);
 console.log(JSON.stringify(res));

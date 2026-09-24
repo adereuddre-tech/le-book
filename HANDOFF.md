@@ -484,6 +484,49 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   ⚖️, minuteur compact, le résultat ne répète plus son titre. Hauteurs à 380 px : budget 1 667 →
   1 231, annonce 1 305 → 1 062, exécution 1 394 → 1 086, résultat de dépêche 822 → 801.
 
+- **Lot 58** (`99zt-lot58.py`) — demandes d'Antoine :
+  - **NAV** : tuile d'encours = `navNow()` seule (latent des positions et collatéral couru compris,
+    même formule que `liveRet`), plus de flèche ni d'ancienne valeur. `chk58.js` compare la tuile à
+    `moneyB(navNow())` à chaque écran : 0 écart sur ~3 000 rendus.
+  - **Comité sans jauge** : `cf(lp,rc)` = lp + rc/2, arrondi à l'entier, borné ±15. `gauge()` n'applique
+    plus que `cf` à la confiance (`S.rc` continue de courir en cachette pour le jaune « griefs
+    accumulés ») et renvoie `{lp:cf, rc:brut}` ; `evPlans` porte dans `gz[s].lp` la somme exacte des
+    `cf` appel par appel (invariant 9, sonde `play.js` : 0 écart). **Les valeurs du journal (`evLog`,
+    `gLog`, `S.evImmG`, `lastG`) sont déjà repliées : les afficher par `gz(x,0)`, jamais `gz(lp,rc)`.**
+    Les 277 mentions « comité ±N / investisseurs ±N » des textes sont lues en confiance à l'affichage
+    par `fxTxt(s,e)` (valeur recalculée sur `e`, groupe conditionnel `riskLp/riskRc` à part,
+    « confiance inchangée » si les deux se compensent). Colonne ⚖️ des dépêches, lignes comité des
+    résultats, de l'incident et du débriefing supprimées.
+  - **Carton** : tuile `cardTile()` (vide / jaune / rouge), clic → pop-up `card`. Un rouge tire
+    `redDraw()` parmi `REDC` (9 : plafond ±2, risque ≤ 70 % de la cible, stop ex post −4 %, 3 marchés
+    fermés, classe fermée, collatéral renforcé, 4 lignes, contrôle au cran 5, gel des renforcements),
+    jamais deux fois de suite la même ; `S.redNext` (objet) → `S.redC`/`S.redOn` dans `planQuarter`.
+    Garde : `redBlock()` bloque « Passer les ordres », `fitBook()` ramène le book dans la contrainte
+    puis au payable ; « Suivre » grisé sous `risk`/`noadd`. Marchés fermés : `S.shut[sym]===S.q`
+    dans `mktOpen`. `chk58.js --red` force un rouge à chaque trimestre et vérifie chaque contrainte au
+    moment de la validation : 12 parties de 12 trimestres, les 9 couvertes, 0 violation.
+  - **Plafond de position** : `S.capK` 3 au départ ; « Accès aux blocs » (encours ×1,2) → ±4,
+    « Accès aux blocs · premier cercle » (×1,5) → ±5. `S.maxk` recalculé à chaque `planQuarter`.
+    Sauvegardes antérieures : `capK` absent → 5.
+  - **Événements extrêmes** : 10 dépêches `x:1` dans `MACROEV`, hors tirage ordinaire, jamais
+    pré-annoncées ; `XPROB`=0,15 par trimestre à partir de T2 (tirage pur `hash32('xev'+q)`). `shut`
+    ferme des marchés : aucun ordre dans la dépêche, fermés au fonds le trimestre suivant.
+  - **Collatéral** : bloc sur l'écran du budget, `COLL` (Trésor / monétaire +0,3 % 5 % de −2 % /
+    repo +0,7 % 10 % de −4 % / titrisations +1,4 % 20 % de −6 %, par trimestre). `colYield()` dans la
+    clôture et le ruban ; perte tirée à la clôture (`hash32('coll'+q)`), ligne au débriefing.
+  - **Budget** : crans hors trésorerie grisés (ils étaient `disabled` sans style) ; un budget reconduit
+    qui dépasse la caisse redescend à l'ouverture. « Suivre » grisé si la trésorerie ne suit pas.
+  - **Risque marginal** par marché : `riskMarg` = (R(k+1) − R(k−1))/2 en points (book vide : effet
+    d'une unité), à la place de la contribution d'Euler.
+  - Outils : `play.js` et `bot.js` ignorent les boutons désactivés, `play.js` choisit un placement de
+    collatéral au hasard, `bot.js` lit « confiance ±N ». Nouveau `tools/chk58.js`.
+  - Mesures : régression 18 parties, `cover2` 662 choix, `cover3` 2 952 plans, reprise à froid :
+    0 erreur, 0 écart. Bot, 14 graines × 3 styles, avant → après : score moyen quant 23,2 → 20,9,
+    fondamental 23,9 → 14,8, flux 33,3 → 23,4 M$ ; survie 14 / 13 / 12 → 14 / 12 / 11. La baisse
+    vient surtout du plafond ±3 et des extrêmes ; le bot laisse le collatéral au Trésor.
+  - **Défaut connu, non corrigé** : suivre une dépêche fait payer les frais au fonds (`S.nav-=cost`)
+    **et** au gérant (`pendingTC`).
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
