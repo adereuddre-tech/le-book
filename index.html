@@ -2631,12 +2631,14 @@ function screenIntro(){
   <button class="cta gold" id="found">Fonder le fonds</button>
   ${hasSave()?`<button class="cta ghost" id="resume">Reprendre la partie en cours</button><button class="cta ghost" id="dropsave" style="margin-top:6px;font-size:12px;opacity:.6">Abandonner cette partie</button>`:''}
   <button class="cta ghost" id="hall">Palmarès et hauts faits</button>
-  <div class="isec">LES VINGT-CINQ MARCHÉS</div>
+  <details class="wire" style="margin-top:18px"><summary>Les marchés et la concurrence</summary>
+  <div class="isec" style="margin-top:14px">LES VINGT-CINQ MARCHÉS</div>
   <p class="splash-p" style="margin-top:8px">Actions, taux, devises, matières premières, et quelques objets moins recommandables. La taille de votre fonds décide de ceux qui vous sont ouverts.</p>
   ${mktWall()}
   <div class="isec">CEUX D'EN FACE</div>
   <p class="splash-p" style="margin-top:8px">Quatre fonds jouent le même trimestre que vous. Vos investisseurs comparent — et c'est l'écart à la médiane qui décide des rachats, pas votre performance absolue.</p>
   ${introRivals()}
+  </details>
   <p class="splash-p" style="margin:18px 0 0">Le monde ne vous attendra pas : guerres, élections, sécheresses, faillites, rumeurs de couloir et traders à fort caractère. Vous allez adorer. Ou pas.</p>
  </div>`;
  const inp=document.getElementById('fname');
@@ -4198,7 +4200,7 @@ function screenExec(){
   /* le bilan d'exécution était replié dans « Le détail » : c'est précisément ce que le joueur
      doit voir pour sentir le poids de son choix */
   const KEY=[['Coûts d\'exécution du trimestre',`<span class="neg-g">−${mm(S.pendingTC*S.nav)}</span>`],['Marché et prix moyen pendant l\'exécution',`<span class="${cls(pnl)}">${sgn(pnl,1)} · ${mn(pnl*navB0)}</span>`],['Investisseurs · comité',`<span class="${cls(g.lp+g2.lp+g3.lp)}">${sd1(g.lp+g2.lp+g3.lp)}</span> · <span class="${cls(g.rc+g2.rc+g3.rc)}">${sd1(g.rc+g2.rc+g3.rc)}</span>`]];
-  resultCard('EXÉCUTION · '+ev.who.split(' ·')[0].toUpperCase(),ch.b,[ch.s,...msg],[],
+  resultCard('EXÉCUTION · '+ev.who.split(' ·')[0].toUpperCase(),ch.b,msg.length?msg:[''],[],
    "Lancer le trimestre",phaseLive,{key:KEY});
  });
 }
@@ -4451,7 +4453,7 @@ function screenTraderEvent(ev,next){
   const g=total?pnlGauge(total,`${ev.who.split(' ·')[0]} — ${ch.b}`):{lp:0,rc:0};
   const g2=(e.rc||e.lp)?gauge(e.lp||0,e.rc||0,`${ev.who.split(' ·')[0]} — ${ch.b}`):{lp:0,rc:0};
   S.evLog.push({t:ev.t,pnl:total,m:total*navB,lp:g.lp+g2.lp,rc:g.rc+g2.rc});
-  resultCard(`LE DESK · ${ev.who.split(' ·')[0].toUpperCase()}`,ch.b,[ev.after||ch.s,...msg],
+  resultCard(`LE DESK · ${ev.who.split(' ·')[0].toUpperCase()}`,ch.b,ev.after?[ev.after,...msg]:(msg.length?msg:['']),
    [],
    next===stepEvents?"Continuer le trimestre":"Aller sur le desk",next,{key:[['<b>Résultat</b>',`<span class="${cls(total)}">${sgn(total,1)} · ${mn(total*navB)}</span>`],['Investisseurs · comité',`<span class="${cls(g.lp+g2.lp)}">${sd1(g.lp+g2.lp)}</span> · <span class="${cls(g.rc+g2.rc)}">${sd1(g.rc+g2.rc)}</span>`]]});
  };
@@ -5172,9 +5174,10 @@ function screenFinal(){
   ${S.incidents.length?`<div class="block"><div class="blockhead"><h2>Incidents</h2><span class="hint">${S.incidents.length}</span></div>
    ${S.incidents.map(x=>`<div class="attr"><span class="an">${x.t}</span><span class="av neg-g">${sgn(-x.loss,1)}</span></div>`).join('')}</div>`:''}
   <div class="psr"><h2 style="font-size:15px">Ce que ces chiffres prouvent</h2>
-   <p>Sur ${n} observations trimestrielles, l'écart-type d'estimation de votre Sharpe annualisé est d'environ <b class="num">±${dec(seSR,2)}</b>. Votre Sharpe probabiliste — la probabilité que le vrai Sharpe soit strictement positif, corrigée de l'asymétrie et de l'épaisseur des queues — ressort à <b class="num">${(psr*100).toFixed(0)} %</b>.</p>
-   <p>${psr>0.95?"Au-delà de 95 %, c'est le seuil habituellement retenu pour dire qu'un historique contient autre chose que du bruit. Vous y êtes — sur huit points, ce qui reste très peu.":"En dessous de 95 %, un allocataire sérieux ne peut pas distinguer votre compétence de la chance. C'est vrai de la quasi-totalité des historiques de deux ans, y compris les bons."}</p>
-   <div class="f">PSR = Φ[ ŜR·√(n−1) / √(1 − γ₃·ŜR + (γ₄−1)/4·ŜR²) ]<br>n = ${n} · ŜR<sub>trim</sub> = ${dec(srQ,3)} · γ₃ = ${dec(m3,2)} · γ₄ = ${dec(m4,2)}</div></div>
+   <p>Votre Sharpe probabiliste — la probabilité que le vrai Sharpe soit strictement positif, corrigée de l'asymétrie et de l'épaisseur des queues — ressort à <b class="num">${(psr*100).toFixed(0)} %</b>.</p>
+   <details><summary>Le calcul</summary>
+   <p style="margin-top:8px">Sur ${n} observations trimestrielles, l'écart-type d'estimation de votre Sharpe annualisé est d'environ <b class="num">±${dec(seSR,2)}</b>. ${psr>0.95?"Au-delà de 95 %, c'est le seuil habituellement retenu pour dire qu'un historique contient autre chose que du bruit. Vous y êtes — sur huit points, ce qui reste très peu.":"En dessous de 95 %, un allocataire sérieux ne peut pas distinguer votre compétence de la chance. C'est vrai de la quasi-totalité des historiques de deux ans, y compris les bons."}</p>
+   <div class="f">PSR = Φ[ ŜR·√(n−1) / √(1 − γ₃·ŜR + (γ₄−1)/4·ŜR²) ]<br>n = ${n} · ŜR<sub>trim</sub> = ${dec(srQ,3)} · γ₃ = ${dec(m3,2)} · γ₄ = ${dec(m4,2)}</div></details></div>
   <div class="block"><div class="blockhead"><h2>Hauts faits de la partie</h2><span class="hint">${FEATS.filter(f=>S.fl[f.id]).length} débloqués</span></div>
    <div class="feats">${FEATS.filter(f=>S.fl[f.id]).map(f=>`<div class="feat on"><span class="fic">${f.ic}</span><b>${f.nm}</b><span class="fd">${f.d}</span></div>`).join('')||'<p class="note">Aucun cette fois.</p>'}</div></div>
   <button class="cta gold" id="share">Partager ce résultat</button>
