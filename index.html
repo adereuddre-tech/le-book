@@ -360,6 +360,14 @@ summary::marker{color:var(--dimmer)}
 .srcmore{margin-top:8px}.srcmore>summary{font-size:13.5px;color:var(--dim)}
 .rowinfo .xk{color:var(--dimmer);font-size:10.5px;margin-right:3px}
 .pos.locked{opacity:.55;padding:6px 0}.pos.locked .top{margin:0}
+.rowinfo .fx{white-space:nowrap}.rowinfo .fxe{white-space:nowrap}
+.rowinfo{font-size:10px!important}
+.stks b{display:inline!important;margin:0!important;font-size:inherit!important}
+.commrow b i{font-style:normal}
+.fxe b{font-weight:600;margin-right:1px}
+.rowinfo .ord{flex-basis:100%;color:var(--dim)}
+.stks{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:5px;font-family:var(--mono);font-size:11.5px;color:var(--dimmer)}.stks em{font-style:normal;font-weight:600}
+.evtimer{padding:5px 10px 5px 5px!important}.evtimer .tdial{transform:scale(.72);transform-origin:left center;margin-right:-14px}.evtimer .tlb{font-size:10.5px!important;max-width:120px}
 .lvls{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .lvls .lvl b{font-size:15px}.lvls .lvl span{font-size:8.5px;letter-spacing:-.02em}
 .lvsel{display:flex;justify-content:space-between;align-items:baseline;margin:2px 0 5px}
@@ -799,7 +807,7 @@ const BUDGET=[
   d:"Traders, moteurs d'exécution, accès aux blocs, et ce que vous payez pour garder vos gérants. La salle décide de ce que coûte chaque changement de position, de votre résistance au débauchage, et de la finesse avec laquelle vos écrans mesurent la tendance, le portage et la valeur — ces chiffres-là sortent du desk, pas de la recherche.",
   lv:[{nm:"Minimal",bp:2},{nm:"Serré",bp:3},{nm:"Sobre",bp:9},{nm:"Standard",bp:18},{nm:"Confortable",bp:32},{nm:"Renforcé",bp:51},{nm:"Sans limite",bp:75}]},
  {id:'risk',ico:'⚖️',nm:"Le contrôle des risques",
-  d:"Surveillance pré-trade, réconciliation quotidienne, contrôle des communications, audit interne. Un contrôle sérieux évite les incidents et, surtout, achète la confiance du comité : mieux vous êtes tenu, plus large est la bande de volatilité qu'on vous laisse.",
+  d:"Surveillance pré-trade, réconciliation quotidienne, contrôle des communications, audit interne. Un contrôle sérieux évite les incidents, élargit la bande de volatilité que le comité vous laisse, et apaise ses griefs — moins de cartons.",
   lv:[{nm:"Minimal",bp:4},{nm:"Serré",bp:5},{nm:"Sobre",bp:8},{nm:"Standard",bp:12},{nm:"Confortable",bp:18},{nm:"Renforcé",bp:26},{nm:"Sans limite",bp:36}]},
  {id:'res',ico:'🔭',nm:"La recherche macro",
   d:"Économistes, réseau de terrain, données alternatives, abonnements que personne ne relit. La recherche décide du nombre de sources qui arrivent sur votre bureau chaque trimestre et de la part d'entre elles qui sont dignes de foi.",
@@ -3340,7 +3348,7 @@ function armTimer(fn){
    <circle class="tfill" cx="38" cy="38" r="${R}"/>
    <circle class="ttrack" cx="38" cy="38" r="${R}"/>
    <circle class="tarc" cx="38" cy="38" r="${R}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="0"/>
-  </svg><b class="tnum">${t}</b></span><span class="tlb">Sans décision de votre part, l'option du bas sera retenue.</span>`;
+  </svg><b class="tnum">${t}</b></span><span class="tlb">sans choix : l'option du bas</span>`;
  const arc=el.querySelector('.tarc'),fill=el.querySelector('.tfill'),num=el.querySelector('.tnum'),dial=el.querySelector('.tdial');
  const draw=()=>{const f=Math.max(0,t/sec);
   arc.setAttribute('stroke-dashoffset',(C*(1-f)).toFixed(1));
@@ -3682,7 +3690,7 @@ function screenBudget(){
  S.mgrCosts-=S.qOps||0;S.qOps=budgetBp()*1e-4*S.nav;S.mgrCosts+=S.qOps;
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Budget d'exploitation du trimestre</h2><span class="hint">à votre charge</span></div>
-   <p class="note" style="margin-top:0">Ces dépenses sortent de <em>votre poche de gérant</em> : elles viennent en déduction de vos gains, pas de la performance du fonds. Vous ne pouvez engager que ce que votre société a en caisse — les commissions encaissées, moins ce que vous avez déjà payé. Un point de base vaut <em>${(S.nav*100).toFixed(0)} k$</em>.</p>
+   <p class="note" style="margin-top:0">Payé de votre poche, pas par le fonds, dans la limite de votre trésorerie. 1 pb = <em>${(S.nav*100).toFixed(0)} k$</em>.</p>
    <div class="kv"><span>Trésorerie disponible ce trimestre</span><b id="btre">${mm(mgrCash()+(S.qOps||0))}</b></div>
    <div id="buds"></div>
    <div class="budtot"><span>Total du trimestre</span><b id="btot"></b></div>
@@ -3711,12 +3719,12 @@ function drawBuds(){
  const purse=mgrCash()+(S.qOps||0);
  const ok=(id,i)=>i===0||budgetBpIf(id,i)*1e-4*S.nav<=purse;
  document.getElementById('buds').innerHTML=BUDGET.map(b=>`<div class="brow">
-   <div class="bh"><b><span class="bico">${b.ico}</span>${b.nm}</b><span>${b.lv[S.bud[b.id]].bp} pb · ${mm(b.lv[S.bud[b.id]].bp*1e-4*S.nav)}</span></div><p>${b.d}</p>
+   <div class="bh"><b><span class="bico">${b.ico}</span>${b.nm}</b><span>${b.lv[S.bud[b.id]].bp} pb · ${mm(b.lv[S.bud[b.id]].bp*1e-4*S.nav)}</span></div>
    <div class="lvsel"><b>${b.lv[S.bud[b.id]].nm}</b><span>cran ${S.bud[b.id]+1} sur ${b.lv.length}</span></div>
    <div class="lvls">${b.lv.map((l,i)=>`<button class="lvl ${S.bud[b.id]===i?'on':''}" data-b="${b.id}" data-i="${i}"${ok(b.id,i)?'':' disabled'} title="${l.nm}${ok(b.id,i)?'':' · hors caisse'}">
      <b>${l.bp}</b><span>${ok(b.id,i)?mm(l.bp*1e-4*S.nav):'—'}</span></button>`).join('')}</div>
    <div class="lvef">${budEf(b.id,S.bud[b.id])}</div>
-   <details style="margin-top:8px"><summary>Les sept crans</summary><ul class="efl">${b.lv.map((l,i)=>`<li><b>${l.nm}</b> · ${l.bp} pb · ${budEf(b.id,i)}</li>`).join('')}</ul></details></div>`).join('');
+   <details style="margin-top:8px"><summary>À quoi sert ce budget · les sept crans</summary><p class="note">${b.d}</p><ul class="efl">${b.lv.map((l,i)=>`<li><b>${l.nm}</b> · ${l.bp} pb · ${budEf(b.id,i)}</li>`).join('')}</ul></details></div>`).join('');
  const bp=BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK().fixed*1e4;
  document.getElementById('btot').textContent=`${bp.toFixed(0)} pb · ${mm(bp*1e-4*S.nav)} · ${dec((bp*4/100),1)} % par an`;
  {const t=document.getElementById('btre');if(t){const v=mgrCash()+(S.qOps||0)-bp*1e-4*S.nav;t.textContent=mm(v);t.className=v>=0?'':'neg-g'}}
@@ -3960,13 +3968,17 @@ function rowInfo(i){
  /* lot 55 : les expositions sont dans le détail du marché ; ici, ce qui décide */
  let gl='';
  if(mktOpen(i)&&S.tcvEst){const o=expRet(i),w1=U/x.sig,g={m:w1*o.m,s:w1*o.s},rp=S.k[i]?riskPts(S.k)[i]:riskAdd(i,S.k);
-  gl=`<span class="xk">unité</span> ${expShort(g)}${(S.size||'mid')==='small'?`<span class="dim-g"> ±${dec(2*g.s*100,1)}</span>`:''} <span class="xk" style="margin-left:8px">${S.k[i]?'risque':'+1'}</span> <span class="${rp>0.05?'neg-g':rp<-0.05?'pos-g':'dim-g'}">${rp>=0?'+':'−'}${dec(Math.abs(rp),1)} pt</span>`}
+  gl=`<span class="xk">unité</span>${expShort(g)}${(S.size||'mid')==='small'?`<span class="dim-g"> ±${dec(2*g.s*100,1)}</span>`:''}<span class="xk" style="margin-left:7px">${S.k[i]?'risque':'+1'}</span><span class="${rp>0.05?'neg-g':rp<-0.05?'pos-g':'dim-g'}">${rp>=0?'+':'−'}${dec(Math.abs(rp),1)} pt</span>`}
+ /* expositions aux quatre facteurs : le facteur survolé dans la barre reste surligné */
+ const ex=x.b.map((b,k)=>{const a=Math.abs(b),hot=S.hotFactor===k?';text-decoration:underline':'';
+   if(a<0.15)return `<b style="color:var(--dimmer)${hot}">${FACT[k].id}0</b>`;
+   const n=a>=0.55?3:a>=0.32?2:1;return `<b style="color:${b>0?'var(--long)':'var(--short)'}${hot}">${FACT[k].id}${(b>0?'+':'−').repeat(n)}</b>`}).join(' ');
  const k0=S.k0?S.k0[i]:S.k[i],d=S.k[i]-k0;
  let right='';
  if(Math.abs(d)>1e-9){const t=tcost(d,i);
    right=`${d>0?'achat':'vente'} ${moneyB(t.bn)}<span style="color:var(--dimmer)"> · coût ${mm(t.cost)}</span>`}
- else right='<span style="color:var(--dimmer)">sans ordre</span>';
- el.innerHTML=`<span class="fx">${gl}</span><span>${right}</span>`;
+ else right='';
+ el.innerHTML=`<span class="fxe">${ex}</span><span class="fx">${gl}</span>${right?`<span class="ord">${right}</span>`:''}`;
 }
 /* Coût de la facture d'ordres si le marché i passait à la position v. Sert à griser les
    cases inabordables, exactement comme les niveaux de budget hors caisse. */
@@ -4085,18 +4097,20 @@ function screenComm(){
    ret:2*g,win:{lp:12,rc:12},lose:{lp:-12,rc:-12}}
  ];
  app.innerHTML=statusBar()+`<div class="fade">
-  <div class="block"><div class="blockhead"><h2>Ce que vous annoncez</h2><span class="hint">investisseurs et comité</span></div>
-   <p class="note" style="margin-top:0">Avant l'exécution, vous rencontrez les investisseurs et le comité des risques. Que promettez-vous pour ce trimestre ? Touchez votre réponse, elle est validée aussitôt.</p>
+  <div class="block"><div class="blockhead"><h2>Ce que vous annoncez</h2><span class="hint">aux investisseurs</span></div>
+   <p class="note" style="margin-top:0">Touchez votre promesse : elle se solde à la clôture, sur le résultat tout compris.</p>
+   ${S.tcvEst?`<div class="kv"><span>Votre attendu pour ce book</span><b>${expShort(expBook(S.k))}</b></div>`:''}
    <div class="kv"><span>Objectif trimestriel du mandat</span><b>${pct(g,1)} · ${mm(g*S.nav)}</b></div>
   </div>
   ${opts.map((o,i)=>`<div class="cardwrap"><button class="card commgo" data-i="${i}">
-   <div class="who">${o.who}</div><b><span class="commico">${o.ico}</span>${o.nm}</b><p>${o.p}</p>
-   ${o.ret===null?`<div class="commrow"><span>En fin de trimestre, quoi qu'il arrive</span><b class="dim-g">investisseurs et comité inchangés</b></div>`
-    :`<div class="commrow"><span>Vous promettez pour ce trimestre</span><b>au moins ${sgnp(o.ret,1)} · ${mm(o.ret*S.nav)}</b></div>
-      <div class="commrow"><span>Si c'est tenu</span><b class="pos-g">investisseurs et comité +${o.win.lp}</b></div>
-      <div class="commrow"><span>Si c'est manqué</span><b class="neg-g">investisseurs et comité −${-o.lose.lp}</b></div>`}
+   <div class="who">${o.who}</div><b><span class="commico">${o.ico}</span>${o.nm}</b>
+   ${o.ret===null?`<div class="commrow"><span>En fin de trimestre, quoi qu'il arrive</span><b class="dim-g">rien ne bouge</b></div>`
+    :`<div class="commrow"><span>Vous promettez</span><b>au moins ${sgnp(o.ret,1)} · ${mm(o.ret*S.nav)}</b></div>
+      <div class="commrow"><span>Tenu · manqué</span><b>confiance <i class="pos-g">+${o.win.lp}</i> · <i class="neg-g">−${-o.lose.lp}</i></b></div>
+      ${S.tcvEst&&(S.size||'mid')!=='mega'?(()=>{const b=expBook(S.k),z=b.s>0?(b.m-o.ret)/b.s:0,p=1/(1+Math.exp(-1.702*z));
+        return `<div class="commrow"><span>Chance de tenir, d'après votre attendu</span><b>${Math.round(p*100)} %</b></div>`})():''}`}
    </button></div>`).join('')}
-  <p class="note">L'annonce ne change rien tout de suite : elle se solde à la fin du trimestre, sur le résultat tout compris, commissions et coûts déduits.</p></div>`;
+  </div>`;
  app.querySelectorAll('.card[data-i]').forEach(b=>b.onclick=()=>{
   const o=opts[+b.dataset.i];S.comm={id:o.id,nm:o.nm,ret:o.ret,win:o.win,lose:o.lose};
   S.commPick=null;screenExec();window.scrollTo(0,0);
@@ -4117,22 +4131,21 @@ function screenExec(){
   if(x.tcMult){
    let sub=0;if(x.tcMultOn){orders.forEach(o=>{if(x.tcMultOn.includes(INSTR[o.i].sym))sub+=o.t.cost})}else sub=tot;
    const d=sub*(x.tcMult-1);bill=tot+d;
-   if(Math.abs(d)>=1e-9)out.push(`<b class="${d<0?'pos-g':'neg-g'}">${d<0?'−':'+'}${mm(Math.abs(d))}</b> sur les ordres${x.tcMultOn?'':', même tarif sur vos ajustements'}`);
+   if(Math.abs(d)>=1e-9)out.push(`<span class="stk">ordres <em class="${d<0?'pos-g':'neg-g'}">${d<0?'−':'+'}${mm(Math.abs(d))}</em></span>`);
   }
   const im=execImpactAmt(bill,x.tcMult,x.leakQ);
-  if(im)out.push(`<b class="neg-g">${mm(Math.abs(im))}</b> d'impact de marché pour le fonds`);
+  if(im)out.push(`<span class="stk">impact fonds <em class="neg-g">−${mm(Math.abs(im))}</em></span>`);
   const gx=execGz(x.tcMult,x.leakQ);
-  if(gx.lp||gx.rc)out.push(gz(gx.lp,gx.rc));
-  return out.length?' '+out.join(' · '):''};
+  if(gx.lp||gx.rc)out.push(`<span class="stk">${gz(gx.lp,gx.rc)}</span>`);
+  return out.length?`<span class="stks">${out.join('')}</span>`:''};
  const lqNm=S.liq>1.5?'très dégradée':S.liq>1.2?'dégradée':S.liq>1.05?'un peu tendue':S.liq<0.92?'excellente':'normale';
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>${orders.length?'Les traders passent vos ordres':'Aucun ordre à passer'}</h2><span class="hint">T${S.q+1} · exécution</span></div>
-   ${orders.length?`<div class="kv"><span>Coût total des ordres, à votre charge</span><b class="neg-g">${mm(tot)} · ${(tot/S.nav*1e4).toFixed(0)} pb de l'encours</b></div>
-   <div class="kv"><span>Impact de marché estimé, payé par le fonds</span><b class="neg-g">${mm(Math.abs(execImpactAmt(tot,1,S.leakQ)))} · ${(Math.abs(execImpactAmt(tot,1,S.leakQ))/S.nav*1e4).toFixed(0)} pb de l'encours</b></div>
-   <div class="kv"><span>Trésorerie de votre société après paiement</span><b class="${(mgrCash())>=0?'':'neg-g'}">${mm(mgrCash())}</b></div>
-   <p class="note" style="margin:8px 0 0">${orders.length} marché${orders.length>1?'s':''} à travailler, liquidité ${lqNm} (×${dec(S.liq,2)}), taux au jour le jour ${dec((S.rate*100),1)} %. Le desk a son mot à dire sur la manière de faire.</p>`
+   ${orders.length?`<div class="kv"><span>Ordres, à votre charge</span><b class="neg-g">${mm(tot)}</b></div>
+   <div class="kv"><span>Impact de marché, pour le fonds</span><b class="neg-g">${mm(Math.abs(execImpactAmt(tot,1,S.leakQ)))}</b></div>`
    :`<p class="note" style="margin:0">Le book est reconduit tel quel : vous ne payez rien. Le desk en profite pour vous parler d'autre chose.</p>`}
-   ${orders.length?`<details style="margin-top:10px"><summary>Détail des ordres et des coûts, marché par marché</summary>
+   ${orders.length?`<details style="margin-top:10px"><summary>Détail des ordres et des coûts</summary>
+    <p class="note" style="margin:8px 0 0">${orders.length} marché${orders.length>1?'s':''} à travailler · liquidité ${lqNm} (×${dec(S.liq,2)}) · taux au jour le jour ${dec((S.rate*100),1)} % · trésorerie après paiement ${mm(mgrCash())} · ordres ${(tot/S.nav*1e4).toFixed(0)} pb, impact ${(Math.abs(execImpactAmt(tot,1,S.leakQ))/S.nav*1e4).toFixed(0)} pb de l'encours.</p>
     <div class="wire" style="margin-top:8px">${orders.map(o=>`<div class="attr"><span class="an"><span class="num" style="color:${GRPC[INSTR[o.i].grp]}">${INSTR[o.i].sym}</span> <span class="recap" style="color:var(--dimmer)">${S.k0[o.i]>0?'+':''}${S.k0[o.i]} → ${S.k[o.i]>0?'+':''}${S.k[o.i]} · ${moneyB(o.t.bn)}</span></span><span class="av neg-g">${dec(o.t.bp,1)} pb · ${mm(o.t.cost)}</span></div>`).join('')}
     <p class="note">Multiplicateur du trimestre ×${dec(mult,2)} : budget desk ×${dec(EXECM[S.bud.exec],2)}, liquidité ×${dec(S.liq,2)}, taux ×${dec((1+(S.rate-0.03)*4),2)}, profil ×${dec(PROF().tcMult,2)}${S.execPenalty!==1?`, débauchage ×${dec(S.execPenalty,2)}`:''}.${S.star>=0?` Recrue du trimestre sur ${INSTR[S.star].sym} : ÷3.`:''}</p></div></details>`:''}
   </div>
@@ -4232,14 +4245,14 @@ function screenMacroEvent(ev){
  const UM=pickU(plan.flatMap(o=>o.pay.map(v=>v*S.nav)));
  const unitLab=UM.s.trim();
  const gcell=v=>{const r=Math.round(v);return `<span class="pn" style="color:${r>0?'var(--long)':r<0?'var(--short)':'var(--dim)'}">${r>0?'+':r<0?'−':''}${Math.abs(r)}</span>`};
- const ptab=o=>`<span class="ptab"><span class="ph">Mouvement</span><span class="ph pn">${SC.ver?'Proba ✓':'Proba'}</span><span class="ph pn">P&amp;L ${unitLab}</span><span class="ph pn">Invest.</span><span class="ph pn">Comité</span>
+ const ptab=o=>`<span class="ptab"><span class="ph">Mouvement</span><span class="ph pn">${SC.ver?'Proba ✓':'Proba'}</span><span class="ph pn">P&amp;L ${unitLab}</span><span class="ph pn">Confiance</span><span class="ph pn">⚖️</span>
   ${['Poursuite','Retournement'].map((nm,s)=>`<span class="pl">${nm}</span><span class="pn">${Math.round(PR[s]*100)} %</span><span class="pn" style="color:${o.pay[s]>0?'var(--long)':o.pay[s]<0?'var(--short)':'var(--dim)'}">${uNum(o.pay[s]*S.nav,UM)}</span>${gcell(o.gz[s].lp)}${gcell(o.gz[s].rc)}`).join('')}</span>`;
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard">${evHead(ev.who,'news')}<h3>${ev.t}</h3><p>${ev.p}</p>
    <div class="shock">${chips}</div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px">
    <div class="kv nowrp"><span>P&amp;L immédiat</span><b>${sgn(imm,1)} · ${mn(imm*navB)}</b></div>
-   <div class="kv nowrp"><span>Effets</span><b>${gz(S.evImmG.lp,S.evImmG.rc,'always')}</b></div>
+   ${(Math.abs(S.evImmG.lp||0)>=0.05||Math.abs(S.evImmG.rc||0)>=0.5)?`<div class="kv nowrp"><span>Effets</span><b>${gz(S.evImmG.lp,S.evImmG.rc)}</b></div>`:''}
   </div>
   <div class="block"><div class="blockhead"><h2>Votre réaction</h2><span class="hint">sur la suite du mouvement</span></div>
    ${SC.ver?`<p class="note" style="margin:0 0 8px"><b>Source vérifiée</b> : votre réseau a recoupé l'information, la probabilité affichée est la vraie.</p>`:''}
@@ -4336,7 +4349,7 @@ function resolveEvent(ev,touched,o,imm,navB){
  const keyRows=[['<b>Bilan de la dépêche</b>',`${sgn(total,1)} · ${inU(total*navB,UE)}`],
   ['Effets',gz(tg.lp,tg.rc,'always')]];
  resultCard(`DÉPÊCHE · ${ev.t.toUpperCase()}`,['Le mouvement s\'est poursuivi','Le mouvement s\'est retourné'][si],
-  [`<b>${scName}</b> ${flav} ${what}`,...flowLines,`La suite du mouvement, marché par marché :`,tbl(perM.map(r=>[r[0],r[1],r[2],inU(r[3]*navR,UE)]),['Marché','Position','Mouvement','Sur le book']),`Votre book capte au total <em class="${cls(resid)}">${sgn(resid,1)}</em> sur la suite du mouvement.`],
+  [`${flav} ${what}`,...flowLines,`La suite du mouvement, marché par marché :`,tbl(perM.map(r=>[r[0],r[1],r[2],inU(r[3]*navR,UE)]),['Marché','Position','Mouvement','Sur le book']),`Votre book capte au total <em class="${cls(resid)}">${sgn(resid,1)}</em> sur la suite du mouvement.`],
   [['P&amp;L immédiat',`${sgn(imm,1)} · ${inU(imm*navB,UE)}`],
    ['Suite du mouvement',`${sgn(resid,1)} · ${inU(resid*navR,UE)}`],
    ['Coûts d\'ajustement',cost>1e-9?inU(-cost,UE):'<b class="dim-g">aucun</b>'],

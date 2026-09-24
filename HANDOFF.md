@@ -474,6 +474,16 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   montrait la trésorerie, 500 k$ de plus que « Cumul depuis le début »). Hauteur à 380 px : book
   6 180 → 3 258 px, débriefing 2 449 → 2 118 px.
 
+- **Lot 56 — nettoyage, deuxième passe** (`99zr-nettoyage2.py`) : expositions factorielles revenues
+  dans le book (ligne d'info : expositions à gauche, « unité » et « risque » à droite, ordre en
+  dessous seulement s'il existe). Budget : intro d'une ligne, description de chaque poste dans le
+  repli « À quoi sert ce budget · les sept crans ». Annonce : attendu du book, promesse, « confiance
+  +x · −y », et en facile / moyen la chance de tenir d'après l'attendu (Φ logistique). Exécution :
+  deux lignes (ordres, impact), le reste dans le détail ; enjeux des options en ligne (ils étaient
+  en `<b>`, affichés en bloc). Dépêches : « Effets » masqué quand rien ne bouge, colonnes Confiance /
+  ⚖️, minuteur compact, le résultat ne répète plus son titre. Hauteurs à 380 px : budget 1 667 →
+  1 231, annonce 1 305 → 1 062, exécution 1 394 → 1 086, résultat de dépêche 822 → 801.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
