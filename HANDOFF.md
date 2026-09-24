@@ -617,12 +617,19 @@ est binaire : soit on explose, soit on croise loin du seuil. Si la difficulté d
 retouchée un jour, le levier intéressant est la patience des investisseurs (`lp`), qui est une
 pression graduelle et jouable, pas la liquidation, qui est une falaise.
 
+- **Lot 57 — nettoyage, troisième passe** (`99zs-nettoyage3.py`) : écran d'accueil, le mur des
+  25 marchés et les concurrents passent dans un repli « Les marchés et la concurrence » (le
+  joueur voyait tout défiler avant même le bouton « Fonder le fonds »). Anecdotes du desk
+  (exécution et mi-parcours) : le texte de tête répétait mot pour mot la ligne du bouton déjà
+  lue, pendant que l'effet chiffré était caché sous « Le détail » ; c'est inversé, plus de
+  répétition quand il n'y a rien d'autre à dire. Rapport final : la démonstration du Sharpe
+  probabiliste (deux paragraphes + formule) passe dans un repli « Le calcul », seul le chiffre
+  reste en tête. Régression 11 parties (9 combinaisons + fondamental + flux), reprise à froid,
+  `cover3` 2 832 plans : 0 erreur, 0 écart.
+
 ## Reste à faire
 
 ### En premier
-- **Publication** : les lots 1 à 5 ne sont pas encore en ligne au moment d'écrire cette note.
-  Le fichier construit est validé (régression 18 parties, 6 reprises à froid, `cover3` 2 700
-  plans, `powerchk` identique au fichier publié — toutes à 0 erreur).
 - **Reconstruire les outils perdus** : `cover.js`/`cover2.js` (couverture forcée des anecdotes
   et dépêches, chaque choix), `goalchk.js` (108 prédicats d'objectif), `featchk.js`,
   `flowchk.js`. Sans eux, toute production de texte est non vérifiée. `resumechk.js` est
