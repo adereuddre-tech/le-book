@@ -546,6 +546,24 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   - Contrôles : régression 18 parties, `cover3` 2 952 plans, `chk58 --red` 12 trimestres, reprise à
     froid : 0 erreur, 0 écart.
 
+- **Lot 60** (`99zv-lot60.py`) :
+  - **Lignes de marché** identiques aux trois niveaux (fin de l'« affichage dosé ») : grille ordre
+    (achat / vente / aucun, en unités), attendu d'une unité ± 2σ, risque +1 et −1 unité (points de
+    risque total), coût de fourchette, impact de marché (`tcost` renvoie `spr` et `imp`).
+  - **Risque avec bruit d'estimation** : `covE()` = facteurs × `EXPVF` (1,15) + idiosyncrasique +
+    bruit des signaux T/C/V (`SIGW²·(sigNoise²+0,1)`, comme `expRet`), en cache. `pvol`,
+    `riskContrib`, `volStress` la lisent. `COV` reste le modèle générateur.
+  - **Cases grisées** : `updateRow` revoit toutes les cases à chaque clic (seule la ligne touchée
+    l'était). `chk58.js` compte les cases actives non payables : 0.
+  - **Collatéral** : espérance du trimestre versée au fonds à la validation du budget (`S.qColM`,
+    base `S.colBaseNav`), écart versé à la clôture ; `grQ`, `collM`, `liveRet`, `navNow` en tiennent compte.
+  - **Équilibrage** : facile `lpNeg` 0,60, `flowIn` 0,60 ; difficile `flowMult` 1,60, `flowIn` 2,60 ;
+    fondamental +5 sources ; flux `ddMax` 0,16. Bot intelligent (8 graines × 3 styles) : facile
+    16,2 / 12,4, moyen 19,2 / 15,5, difficile 19,9 / 19,3 (progression en moyenne et en variance).
+    Bot nul (6 × 3) : 5,8 / 5,7 / 6,6 — pas de progression négative mesurable. Styles, bot intelligent :
+    quant 18,7 / 17,5, fondamental 18,1 / 14,6, flux 18,5 / 16,0 — à plat. Erreur type ≈ 3 M$ par
+    cellule : il faut ~30 graines par combinaison pour trancher.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;

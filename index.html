@@ -370,6 +370,9 @@ summary::marker{color:var(--dimmer)}
 .xline .xk{color:var(--dimmer);margin-right:4px}
 .srcmore{margin-top:8px}.srcmore>summary{font-size:13.5px;color:var(--dim)}
 .rowinfo .xk{color:var(--dimmer);font-size:10.5px;margin-right:3px}
+.rgrid{display:grid;grid-template-columns:1.05fr 1.25fr 1fr 1fr .95fr .95fr;gap:0 6px;margin-top:5px;width:100%;font-family:var(--mono);align-items:baseline}
+.rgrid span{font-size:9.5px;color:var(--dimmer);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--sans,inherit)}
+.rgrid div{font-size:11px;white-space:nowrap}.rgrid div b{font-weight:600}.rgrid div i{font-style:normal;color:var(--dimmer);font-size:9.5px;margin-left:2px}
 .pos.locked{opacity:.55;padding:6px 0}.pos.locked .top{margin:0}
 .rowinfo .fx{white-space:nowrap}.rowinfo .fxe{white-space:nowrap}
 .rowinfo{font-size:10px!important}
@@ -758,12 +761,12 @@ const PROFILES=[
   sigBonus:0,capture:0.50,tcMult:1.0,rumBonus:0.05,lpMult:0.90,modelScale:0.80,ddMax:0.40,incMult:0.60,numeric:true,noAdj:true},
  {id:'fonda',lvl:'Normal',who:"« Je peux avoir raison plus longtemps que le marché ne peut rester solvable »",nm:"Gérant fondamental discrétionnaire",
   p:"Vous construisez une vue du monde, ligne par ligne, et vous la défendez contre le marché, contre le comité, contre vos propres analystes. Vous avez passé trois nuits sur la balance courante d'un pays que personne ne regarde. Vous aurez raison. La seule question est de savoir si votre mandat vous survivra jusque-là.",
-  ef:[['g',"<b>Pouvoir propre — la source vérifiée</b> : chaque trimestre, deux rumeurs sont recoupées par votre réseau et vous sont données pour certaines"],['g',"+6 sources par trimestre : on vous rappelle, on vous parle"],['g',"les pré-annonces d'événements vous parviennent 13 pts plus souvent"],['g',"une fois par trimestre, la probabilité de suite d'une dépêche vous est donnée exacte"],['b',"réaction mesurée : vous ne captez que 60 % d'un mouvement en cours de trimestre"],['g',"trois catalyseurs par trimestre, que vous seul connaissez : la valeur y compte triple"],['b',"votre desk vise 110 % de la vol cible : des convictions, et le risque qui va avec"],['b',"coûts de transaction +8 % : vous arbitrez tard, et cher"]],
-  sigBonus:6,capture:0.60,tcMult:1.08,rumBonus:0.18,lpMult:1.0,incMult:1.0,modelScale:1.10,numeric:false,verified:true},
+  ef:[['g',"<b>Pouvoir propre — la source vérifiée</b> : chaque trimestre, deux rumeurs sont recoupées par votre réseau et vous sont données pour certaines"],['g',"+5 sources par trimestre : on vous rappelle, on vous parle"],['g',"les pré-annonces d'événements vous parviennent 13 pts plus souvent"],['g',"une fois par trimestre, la probabilité de suite d'une dépêche vous est donnée exacte"],['b',"réaction mesurée : vous ne captez que 60 % d'un mouvement en cours de trimestre"],['g',"trois catalyseurs par trimestre, que vous seul connaissez : la valeur y compte triple"],['b',"votre desk vise 110 % de la vol cible : des convictions, et le risque qui va avec"],['b',"coûts de transaction +8 % : vous arbitrez tard, et cher"]],
+  sigBonus:5,capture:0.60,tcMult:1.08,rumBonus:0.18,lpMult:1.0,incMult:1.0,modelScale:1.10,numeric:false,verified:true},
  {id:'flux',lvl:'Expert',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez rien. Vous écoutez. Le marché parle en permanence et la plupart des gens sont trop occupés à avoir des opinions pour l'entendre. Vous regardez un carnet d'ordres comme d'autres regardent la mer. Vos analystes ont renoncé à vous demander vos raisons ; votre comité a renoncé à les consigner. Il vous arrive d'avoir raison avant d'avoir compris pourquoi.",
-  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, un facteur macro vous souffle le sens de sa réalisation avant tout le monde, et elle ne se trompe qu'environ une fois sur cinq. Ne demandez pas comment"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : jauge 60 % plus nerveuse"],['b',"de l'argent rapide : rachats pour repli dès 13 % de perte au lieu de 28 %"],['b',"votre desk vise 120 % de la vol cible : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"]],
-  sigBonus:0,capture:0.85,tcMult:0.90,rumBonus:0.05,lpMult:1.60,ddMax:0.13,modelScale:1.20,incMult:1.25,numeric:false,freeAdj:true,hunch:true}
+  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, un facteur macro vous souffle le sens de sa réalisation avant tout le monde, et elle ne se trompe qu'environ une fois sur cinq. Ne demandez pas comment"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : jauge 60 % plus nerveuse"],['b',"de l'argent rapide : rachats pour repli dès 16 % de perte au lieu de 28 %"],['b',"votre desk vise 120 % de la vol cible : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"]],
+  sigBonus:0,capture:0.85,tcMult:0.90,rumBonus:0.05,lpMult:1.60,ddMax:0.16,modelScale:1.20,incMult:1.25,numeric:false,freeAdj:true,hunch:true}
 ];
 /* figés depuis le retrait de ces deux choix de l'écran d'accueil */
 const RISKARCH=[{id:'std',nm:"Contrôle des risques standard",band:0.30,incMult:1.0,sev:1.0,stop:false,lp0:0}];
@@ -772,7 +775,7 @@ const SIZES=[
  {id:'small',lvl:'Débutant',nav:0.1,capX:1,perf:0.15,nm:"Facile — 15 % de performance",who:"« Des concurrents à votre portée »",
   p:"Des concurrents solides mais battables, un comité qui vous laisse respirer, des investisseurs qui pardonnent un mauvais trimestre. Vous touchez 15 % de la performance au-dessus du plus haut historique.",
   ef:[["g","concurrents moins adroits"],["g","investisseurs patients, flux plus calmes"],["g","comité indulgent"],["b","commission de performance : 15 %"]],
-  rivSkill:0.020,rivVol:0.95,lpNeg:0.75,rcNeg:0.75,lp0:8,flowMult:0.75,goalMult:1},
+  rivSkill:0.020,rivVol:0.95,lpNeg:0.60,rcNeg:0.75,lp0:8,flowMult:0.75,flowIn:0.60,goalMult:1},
  {id:'mid',lvl:'Normal',nav:0.1,capX:1,perf:0.20,nm:"Moyen — 20 % de performance",who:"« La place telle qu'elle est »",
   p:"Trois très bons concurrents, un comité vigilant, des investisseurs qui comparent. La commission de performance habituelle du métier : 20 %.",
   ef:[["g","commission de performance : 20 %"],["b","concurrents très bons, chacun dans son style"],["b","investisseurs exigeants, comité vigilant"]],
@@ -780,7 +783,7 @@ const SIZES=[
  {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.25,nm:"Difficile — 25 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
   p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 25 % de la performance, et les souscriptions arrivent aussi vite que les rachats.",
   ef:[["g","commission de performance : 25 %"],["g","flux violents dans les deux sens : un bon trimestre attire gros"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
-  rivSkill:0.120,rivVol:1.10,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:2.10,flowIn:2.10,goalMult:1}
+  rivSkill:0.120,rivVol:1.10,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:1.60,flowIn:2.60,goalMult:1}
 ];
 const UNIVS=[
  {id:'fin',edge:0.75,lpMult:0.90,lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
@@ -2107,9 +2110,24 @@ function uni(a,b){return a+rng()*(b-a)}
 /* ════════════════════ 5. RISQUE & COÛTS ════════════════════ */
 function weights(k){return k.map((v,i)=>v*U/INSTR[i].sig)}
 function notionalBn(ki,i){return ki*U/INSTR[i].sig*S.nav}
-function pvol(w){let v=0;for(let i=0;i<N;i++)for(let j=0;j<N;j++)v+=w[i]*w[j]*COV[i][j];return Math.sqrt(Math.max(v,0))}
+/* lot 60 : covariance vue du gérant = facteurs (variance résiduelle EXPVF) + idiosyncrasique
+   + bruit d'estimation des indicateurs. Mise en cache par état du bruit. */
+let _CE=null,_CEk='';
+function covE(){
+ const sn=['t','c','v'].map(z=>typeof sigNoise==='function'&&S&&S.bud?sigNoise(z):1);
+ let h=N*7919+sn[0]*13+sn[1]*17+sn[2]*19;for(let i=0;i<N;i++){const b=INSTR[i].b;h+=(i+1)*(b[0]*3.1+b[1]*5.3+b[2]*7.7+b[3]*11.9)}
+ const key=h;
+ if(_CE&&_CEk===key)return _CE;
+ const sv=SIGW.t**2*(sn[0]**2+0.1)+SIGW.c**2*(sn[1]**2+0.1)+SIGW.v**2*(sn[2]**2+0.1);
+ _CE=[];for(let i=0;i<N;i++){_CE[i]=[];const xi=INSTR[i];for(let j=0;j<N;j++){const xj=INSTR[j];
+  let c=0;for(let k=0;k<K;k++)c+=xi.b[k]*xj.b[k];
+  if(i===j){const bb=c;_CE[i][j]=xi.sig**2*(EXPVF*bb+Math.max(0,1-bb)+sv)}
+  else _CE[i][j]=xi.sig*xj.sig*EXPVF*c}}
+ _CEk=key;return _CE;
+}
+function pvol(w){const CE=covE();let v=0;for(let i=0;i<N;i++)for(let j=0;j<N;j++)v+=w[i]*w[j]*CE[i][j];return Math.sqrt(Math.max(v,0))}
 function riskContrib(w){const sp=pvol(w);if(sp<1e-9)return w.map(()=>0);
- return w.map((wi,i)=>{let s=0;for(let j=0;j<N;j++)s+=COV[i][j]*w[j];return wi*s/sp})}
+ const CE=covE();return w.map((wi,i)=>{let s=0;for(let j=0;j<N;j++)s+=CE[i][j]*w[j];return wi*s/sp})}
 function varDecomp(w){const fv=[];let tot=0;
  for(let k=0;k<K;k++){let e=0;for(let i=0;i<N;i++)e+=w[i]*INSTR[i].sig*INSTR[i].b[k];fv.push(e*e);tot+=e*e}
  let idio=0;for(let i=0;i<N;i++)idio+=(w[i]*INSTR[i].sig*INSTR[i].idio)**2;
@@ -2172,8 +2190,8 @@ function volStress(w,kap){
  kap=kap===undefined?MGC.kap():kap;
  let v=0;
  for(let i=0;i<N;i++)for(let j=0;j<N;j++){
-  const si=INSTR[i].sig,sj=INSTR[j].sig;
-  let rho=i===j?1:COV[i][j]/(si*sj);
+  const CE=covE(),si=Math.sqrt(CE[i][i]),sj=Math.sqrt(CE[j][j]);
+  let rho=i===j?1:CE[i][j]/(si*sj);
   if(i!==j){const sg=w[i]*w[j]>=0?1:-1;rho=rho+kap*(1-Math.abs(rho))*sg}
   v+=w[i]*w[j]*si*sj*rho;
  }
@@ -2213,8 +2231,8 @@ function tcost(dk,i){
  if(S.leak&&Math.abs(S.k[i])>2)m*=1.45;
  if(S.star===i)m*=0.35;
  bp*=m;
- const cost=bn*bp*1e-4;
- return {cost,bp,bn};
+ const cost=bn*bp*1e-4,spr=Math.min(cost,bn*x.s*TCK*m*1e-4);
+ return {cost,bp,bn,spr,imp:cost-spr};
 }
 /* Fin de partie : l'encours sous 5 % de son niveau de départ (−95 %). */
 const NAVEND=0.05;
@@ -2355,7 +2373,7 @@ function planQuarter(){
  S.qGoal=null;S.qName=null;S.lastG=null;
  /* ce sont des futures : le book repart à plat, on le reconstruit chaque trimestre */
  S.k=new Array(N).fill(0);S.k0=new Array(N).fill(0);
- S.rumors=[];S.evVerified=false;S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
+ S.qColM=0;S.colBaseNav=0;S.rumors=[];S.evVerified=false;S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
  S.pendingTC=0;S.freeAdjUsed=false;S.live=false;S.execSlipQ=0;
  /* la commission de gestion est prélevée sur le fonds et vous est versée dès l'ouverture ;
     la performance et le bonus d'objectif attendent la clôture */
@@ -2981,13 +2999,13 @@ function qElapsed(){if(!S.live)return 0;   /* lot 50 : avant le lancement, le tr
 /* lot 58 : encours instantané, latent des positions et collatéral couru compris — le ruban,
    la tuile « Perf. » et la tuile d'encours disent la même chose au même instant */
 function navNow(){if(!S)return 0;if(S.phase!=='events'||!S.live||!S.rBase)return S.nav;
- const t=qElapsed(),w=weights(S.k);let g=0;for(let i=0;i<N;i++)g+=w[i]*S.rBase[i];g+=colYield();return S.nav*(1+t*g)}
+ const t=qElapsed(),w=weights(S.k);let g=0;for(let i=0;i<N;i++)g+=w[i]*S.rBase[i];if(!S.qColM)g+=colYield();return S.nav*(1+t*g)}
 function liveRet(){
  if(!S.rBase)return 0;
  const t=qElapsed(),w=weights(S.k);
  let g=0;for(let i=0;i<N;i++)g+=w[i]*S.rBase[i];
- g+=colYield();   /* le collatéral court aussi : sans lui le ruban ratait la clôture de ~108 pb */
- return (t*g*S.nav+(S.qEvM||0)+(S.qIncM||0)-(S.qMgmtM||0))/Math.max(1e-9,S.navQ0);
+ if(!S.qColM)g+=colYield();   /* lot 60 : versé d'avance, sinon couru */
+ return (t*g*S.nav+(S.qColM||0)+(S.qEvM||0)+(S.qIncM||0)-(S.qMgmtM||0))/Math.max(1e-9,S.navQ0);
 }
 /* Indice de performance nette, base 100 au premier jour de l'année en cours. */
 function ytdIdx(){
@@ -3831,7 +3849,11 @@ function screenBudget(){
  drawBuds();drawColl();
  document.getElementById('ok').onclick=()=>{
    const bp=BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK().fixed*1e4;
-   S.budBp=bp;planSignalsAfterBudget();phaseDesk();
+   S.budBp=bp;
+   if(S.colPaidQ!==S.q){const o=colOpt(),ex=colYield()-(redOn('collat')?0:o.p*o.l);   /* lot 60 */
+    S.colPaidQ=S.q;S.colBaseNav=S.nav;S.qColM=ex*S.nav;S.nav+=S.qColM;
+    toast(`Collatéral : espérance du trimestre versée, <b>${mm(S.qColM)}</b>${o.p&&!redOn('collat')?` · l'écart éventuel à la clôture`:''}`)}
+   planSignalsAfterBudget();phaseDesk();
  };
 }
 function planSignalsAfterBudget(){
@@ -3991,7 +4013,6 @@ function riskMarg(i,k){const R=kk=>riskShown(weights(kk)).total,kp=[...k],km=[..
  return (k.some(v=>v)?(R(kp)-R(km))/2:R(kp)-R(k))*100}
 function riskAdd(i,k){const k1=[...k];k1[i]=(k1[i]||0)+1;return (riskShown(weights(k1)).total-riskShown(weights(k)).total)*100}
 function expShort(o){const r=o.s>0?o.m/o.s:0;
- if((S.size||'mid')==='mega'){const n=Math.min(3,Math.floor(Math.abs(r)/0.35));return `<span class="${o.m>=0?'pos-g':'neg-g'}">${n?(o.m>=0?'▲':'▼').repeat(n):'·'}</span>`}
  return `<span class="${cls(o.m)}">${sgn(o.m,1)}</span>`}
 function expBook(k){
  const w=weights(k);let m=S.rate/4,vf=0,vi=0;const fl=[0,0,0,0];
@@ -4001,9 +4022,9 @@ function expBook(k){
  for(let kk=0;kk<K;kk++)vf+=fl[kk]*fl[kk]*EXPVF;
  return {m,s:Math.sqrt(Math.max(0,vf+vi))};
 }
-/* Affichage dosé : facile = chiffres et intervalle, moyen = barre et attendu, difficile = sens et conviction. */
+/* lot 60 : chiffres et intervalle à tous les niveaux. */
 function expView(o,book){
- const lv=S.size||'mid',r=o.s>0?o.m/o.s:0;
+ const lv='small',r=o.s>0?o.m/o.s:0;   /* lot 60 : même affichage aux trois niveaux */
  const lo=o.m-2*o.s,hi=o.m+2*o.s,sc=Math.max(0.02,Math.abs(lo),Math.abs(hi));
  const pos=v=>(50+50*v/sc).toFixed(1);
  const bar=`<span class="xbar"><em></em><i style="left:${pos(lo)}%;width:${(pos(hi)-pos(lo)).toFixed(1)}%"></i><b class="${o.m>=0?'up':'dn'}" style="left:${pos(o.m)}%"></b></span>`;
@@ -4111,19 +4132,21 @@ function rowInfo(i){
  const el=document.getElementById('ri'+i);if(!el)return;
  const x=INSTR[i];
  /* lot 55 : les expositions sont dans le détail du marché ; ici, ce qui décide */
- let gl='';
- if(mktOpen(i)&&S.tcvEst){const o=expRet(i),w1=U/x.sig,g={m:w1*o.m,s:w1*o.s},rp=riskMarg(i,S.k);
-  gl=`<span class="xk">unité</span>${expShort(g)}${(S.size||'mid')==='small'?`<span class="dim-g"> ±${dec(2*g.s*100,1)}</span>`:''}<span class="xk" style="margin-left:7px">marg.</span><span class="${rp>0.05?'neg-g':rp<-0.05?'pos-g':'dim-g'}">${rp>=0?'+':'−'}${dec(Math.abs(rp),1)} pt</span>`}
  /* expositions aux quatre facteurs : le facteur survolé dans la barre reste surligné */
  const ex=x.b.map((b,k)=>{const a=Math.abs(b),hot=S.hotFactor===k?';text-decoration:underline':'';
    if(a<0.15)return `<b style="color:var(--dimmer)${hot}">${FACT[k].id}0</b>`;
    const n=a>=0.55?3:a>=0.32?2:1;return `<b style="color:${b>0?'var(--long)':'var(--short)'}${hot}">${FACT[k].id}${(b>0?'+':'−').repeat(n)}</b>`}).join(' ');
- const k0=S.k0?S.k0[i]:S.k[i],d=S.k[i]-k0;
- let right='';
- if(Math.abs(d)>1e-9){const t=tcost(d,i);
-   right=`${d>0?'achat':'vente'} ${moneyB(t.bn)}<span style="color:var(--dimmer)"> · coût ${mm(t.cost)}</span>`}
- else right='';
- el.innerHTML=`<span class="fxe">${ex}</span><span class="fx">${gl}</span>${right?`<span class="ord">${right}</span>`:''}`;
+ let gl='';
+ if(mktOpen(i)){
+  const R=kk=>riskShown(weights(kk)).total,r0=R(S.k),kp=[...S.k],km=[...S.k];kp[i]+=1;km[i]-=1;
+  const rP=(R(kp)-r0)*100,rM=(R(km)-r0)*100,rc=v=>`<b class="${v>0.05?'neg-g':v<-0.05?'pos-g':'dim-g'}">${v>=0?'+':'−'}${dec(Math.abs(v),1)} pt</b>`;
+  let ex1='<b class="dim-g">—</b>';
+  if(S.tcvEst){const o=expRet(i),w1=U/x.sig,g={m:w1*o.m,s:w1*o.s};ex1=`<b class="${cls(g.m)}">${g.m>=0?'+':'−'}${dec(Math.abs(g.m*100),1)} %</b><i>±${dec(2*g.s*100,1)}</i>`}
+  const k0=S.k0?S.k0[i]:S.k[i],d=S.k[i]-k0,t=tcost(d,i);
+  const od=d>0?`<b class="pos-g">achat ${d}</b>`:d<0?`<b class="neg-g">vente ${-d}</b>`:'<b class="dim-g">aucun</b>';
+  gl=`<div class="rgrid"><span>Ordre</span><span>Attendu /u</span><span>Risque +1</span><span>Risque −1</span><span>Coût</span><span>Impact</span>
+   <div>${od}</div><div>${ex1}</div><div>${rc(rP)}</div><div>${rc(rM)}</div><div><b>${mm(t.spr||0)}</b></div><div><b>${mm(t.imp||0)}</b></div></div>`}
+ el.innerHTML=`<span class="fxe">${ex}</span>${gl}`;
 }
 /* Coût de la facture d'ordres si le marché i passait à la position v. Sert à griser les
    cases inabordables, exactement comme les niveaux de budget hors caisse. */
@@ -4147,6 +4170,9 @@ function segStyle(i,v,dis){
  return `background:rgba(${rgb},${a.toFixed(2)});color:${txt}`;
 }
 function updateRow(i){
+ /* lot 60 : la facture des autres lignes change ce qui reste payable : toutes les cases sont revues */
+ app.querySelectorAll('.seg button').forEach(b=>{const j=+b.dataset.i,v=+b.dataset.v;if(isNaN(j))return;
+  const dis=S.k[j]!==v&&(Math.abs(v)>kCap(j)||!segAfford(j,v));b.disabled=dis;if(j!==i)b.setAttribute('style',segStyle(j,v,dis))});
  const seg=app.querySelector(`.seg[data-row="${i}"]`);if(!seg)return;
  seg.querySelectorAll('button').forEach(b=>{const v=+b.dataset.v;b.classList.remove('on','lit');
   if(S.k[i]===v)b.classList.add('on');
@@ -4690,20 +4716,21 @@ function resolveQuarter(){
   }
  }
  const cO=colOpt(),cHit=!redOn('collat')&&cO.p>0&&prng32(hash32('coll'+S.q,S.seed))()<cO.p;
- const collateral=colYield()-(cHit?cO.l:0);
- S.colRes={nm:redOn('collat')?'Collatéral renforcé':cO.nm,x:collateral-S.rate/4,hit:cHit,l:cO.l,m:(collateral-S.rate/4)*S.nav,show:redOn('collat')||cO.id!=='tres'};
+ const collTot=(colYield()-(cHit?cO.l:0))*(S.colBaseNav||S.nav);   /* montant du trimestre */
+ const collateral=(collTot-(S.qColM||0))/S.nav;   /* reste à verser (négatif si défaut) */
+ S.colRes={nm:redOn('collat')?'Collatéral renforcé':cO.nm,x:collTot/(S.colBaseNav||S.nav)-S.rate/4,hit:cHit,l:cO.l,m:collTot-S.rate/4*(S.colBaseNav||S.nav),show:redOn('collat')||cO.id!=='tres'};
  const ops=S.budBp*1e-4;
  const tc=S.pendingTC;S.pendingTC=0;      /* à la charge du gérant, plus à celle du fonds */
  const navBefore=S.nav;
  const nb=S.nav,q0=Math.max(1e-9,S.navQ0);
  const mgmtM=S.qMgmtM||0;                 /* déjà prélevée à l'ouverture du trimestre */
- const grQ=((gross+collateral)*nb+(S.qEvM||0)+(S.qIncM||0)-mgmtM)/q0;
+ const grQ=((gross+collateral)*nb+(S.qColM||0)+(S.qEvM||0)+(S.qIncM||0)-mgmtM)/q0;
  const idxPre=S.idx*(1+grQ);
  const perfQ0=idxPre>S.hwmIdx?perfFee()*(idxPre-S.hwmIdx)/Math.max(1e-9,S.idx):0;
  const perf=perfQ0*q0/nb;
  const net=gross+collateral-perf;
  S.nav*=(1+net);
- const grossM=gross*navBefore,collM=collateral*navBefore,tcM=-tc*navBefore,feeM=-(mgmtM+perf*navBefore);
+ const grossM=gross*navBefore,collM=collateral*navBefore+(S.qColM||0),tcM=-tc*navBefore,feeM=-(mgmtM+perf*navBefore);
  const evM=S.qEvM||0,incM=S.qIncM||0;
  const perfM=grossM+collM+feeM+evM+incM;  /* tcM n'y est pas : c'est vous qui payez */
  const qTotal=perfM/S.navQ0;

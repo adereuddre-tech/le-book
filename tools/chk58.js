@@ -41,7 +41,7 @@ w.eval(`window.__v=[];window.__nav=0;window.__navbad=[];window.__red={};
   if(id==='collat'&&!(S.colRes&&S.colRes.nm==='Collatéral renforcé'))window.__v.push('collat');return r};
 })()`);
 if(a.includes('--red'))w.eval('window.__forceRed=1');
-const navChk=()=>{try{const t=d.querySelector('#navtile');if(t){const e=w.eval('moneyB(navNow())');if(t.textContent!==e)w.__navbad.push(t.textContent+'≠'+e);w.__nav++}}catch(e){}};
+const navChk=()=>{try{if(d.querySelector('#send')){const n=w.eval(`[...document.querySelectorAll('.seg button')].filter(b=>!b.disabled&&S.k[+b.dataset.i]!==+b.dataset.v&&(!segAfford(+b.dataset.i,+b.dataset.v)||Math.abs(+b.dataset.v)>kCap(+b.dataset.i))).length`);w.__aff=(w.__aff||0)+n;w.__affN=(w.__affN||0)+1;const L=[...d.querySelectorAll('.seg button:not([disabled])')];for(let z=0;z<3&&L.length;z++)click(L[Math.floor(rnd()*L.length)])}}catch(e){}try{const t=d.querySelector('#navtile');if(t){const e=w.eval('moneyB(navNow())');if(t.textContent!==e)w.__navbad.push(t.textContent+'≠'+e);w.__nav++}}catch(e){}};
 const SIG=[];while(steps++<3000&&!done){navChk();
  if(steps%1===0){const h=(d.querySelector('h1,h2,h3')||{}).textContent||'?';const b=[...d.querySelectorAll('button')].filter(x=>!x.disabled).map(x=>x.id||x.className).join(',').slice(0,90);const sg=h+' :: '+b;if(SIG[SIG.length-1]!==sg)SIG.push(sg);if(SIG.length>400)SIG.shift()}
  const t=$('#tutooff');if(t){click(t);continue}
@@ -73,6 +73,6 @@ const SIG=[];while(steps++<3000&&!done){navChk();
  if(any.length){click(any[0]);continue}
  errs.push('bloqué: '+d.body.textContent.slice(0,200));break;
 }
-const chk=w.eval('window.__chk')||[];const res={resumed,bad:w.eval('window.__bad||0'),npo:chk.filter(c=>c.si===0).length,pbar:chk.reduce((a,c)=>a+c.p,0)/Math.max(1,chk.length),seed,cfg,sage,done,steps,errs:errs.slice(0,5),nerr:errs.length,stats,over:w.eval('S&&S.over'),q:w.eval('S&&S.q'),nav:w.eval('S&&S.nav'),viol:w.eval('window.__v'),red:w.eval('window.__red'),navN:w.__nav,navBad:(w.__navbad||[]).slice(0,3),xev:w.eval('(S.usedX||[]).length'),capK:w.eval('S.capK'),cards:w.eval('JSON.stringify(S.cards&&S.cards.log)')};
+const chk=w.eval('window.__chk')||[];const res={resumed,bad:w.eval('window.__bad||0'),npo:chk.filter(c=>c.si===0).length,pbar:chk.reduce((a,c)=>a+c.p,0)/Math.max(1,chk.length),seed,cfg,sage,done,steps,errs:errs.slice(0,5),nerr:errs.length,stats,over:w.eval('S&&S.over'),q:w.eval('S&&S.q'),nav:w.eval('S&&S.nav'),viol:w.eval('window.__v'),red:w.eval('window.__red'),navN:w.__nav,affBad:w.__aff||0,affN:w.__affN||0,navBad:(w.__navbad||[]).slice(0,3),xev:w.eval('(S.usedX||[]).length'),capK:w.eval('S.capK'),cards:w.eval('JSON.stringify(S.cards&&S.cards.log)')};
 if(a.includes('--log'))res.plog=plog.slice(0,3);if(!done)res.sig=SIG.slice(-6);
 console.log(JSON.stringify(res));
