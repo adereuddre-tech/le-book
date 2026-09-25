@@ -580,6 +580,16 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   de trimestre en fantôme relié au book courant (doré, rouge au-dessus de la bande). En-tête : risque %
   et profit % (deux décimales).
 
+- **Lot 63** (`99zy-lot63.py`) : plus de capital de départ (`mgrCash()` = `mgrNet()`, trésorerie =
+  gains nets). Choix du collatéral → `refreshStatus()` (profit du panneau à jour). Lignes de marché :
+  indicateurs T/C/V au-dessus, expositions en toutes lettres, « Ordre … coût », puis « +1 profit / risque »
+  et « −1 profit / risque » (risque en %) ; impact retiré de l'affichage (il est dans le profit).
+  Nuage : axes en bas / à gauche, valeurs du joueur en blanc au bord des axes, plus de point initial,
+  zoom sur la bande, les concurrents et le joueur. Ruban (`tapeSvg`) : échelle limitée à l'étendue des
+  quatre fonds, trait du joueur de sa couleur de blason (`myCol`, jamais celle d'un concurrent).
+  Carton rouge : pop-up rouge (`.redbox`) à la clôture. Dépêches : confiance avant la décision, confiance
+  finale par issue dans la colonne Confiance, « 62 → 58 » au résultat.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
