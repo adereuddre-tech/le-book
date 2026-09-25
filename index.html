@@ -267,7 +267,7 @@ em{font-style:italic;color:var(--txt)}
 .fg .ft2.lin .band{border-left:1px solid rgba(201,168,106,.35);border-right:1px solid rgba(201,168,106,.35)}
 .fg .ft2.lin .band{position:absolute;top:0;bottom:0;background:rgba(79,169,140,.22)}
 .fg b{font-family:var(--mono);font-size:11px;font-weight:500;white-space:nowrap}
-.fg.hot{border-color:var(--gold)}
+.fg.hot{border-color:var(--line)}
 .rowinfo{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px 8px;font-family:var(--mono);font-size:10.5px;color:var(--dimmer);margin-top:5px}
 .rowinfo>span:last-child{overflow:hidden;text-overflow:ellipsis}
 .rowinfo .fx{letter-spacing:.02em}
@@ -370,7 +370,7 @@ summary::marker{color:var(--dimmer)}
 .xline .xk{color:var(--dimmer);margin-right:4px}
 .srcmore{margin-top:8px}.srcmore>summary{font-size:13.5px;color:var(--dim)}
 .rowinfo .xk{color:var(--dimmer);font-size:10.5px;margin-right:3px}
-.rgrid{display:grid;grid-template-columns:1.05fr 1.25fr 1fr 1fr .95fr .95fr;gap:0 6px;margin-top:5px;width:100%;font-family:var(--mono);align-items:baseline}
+.rgrid{display:grid;grid-template-columns:1.05fr 1fr 1.15fr 1fr .95fr .95fr;gap:0 6px;margin-top:5px;width:100%;font-family:var(--mono);align-items:baseline}
 .rgrid span{font-size:9.5px;color:var(--dimmer);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--sans,inherit)}
 .rgrid div{font-size:11px;white-space:nowrap}.rgrid div b{font-weight:600}.rgrid div i{font-style:normal;color:var(--dimmer);font-size:9.5px;margin-left:2px}
 .pos.locked{opacity:.55;padding:6px 0}.pos.locked .top{margin:0}
@@ -2980,6 +2980,7 @@ function drawColl(){
  el.querySelectorAll('.coll').forEach(b=>b.onclick=()=>{S.col=+b.dataset.c;drawColl();const o=colOpt();
   toast(`Collatéral → <b>${o.nm}</b> · ${dec((S.rate/4+colY(o))*100,1)} % ce trimestre${o.p?`, ${Math.round(o.p*100)} % de risque de −${dec(o.l*100,1)} %`:''}`)});
 }
+function budRest(){const e=document.getElementById('brest');if(!e)return;const r=mgrCash()+(S.qOps||0)-budgetBp()*1e-4*S.nav;e.textContent=mm(r);e.className=r>=0?'gold-g':'neg-g'}
 function budgetBpIf(id,lv){return BUDGET.reduce((a,b)=>a+b.lv[b.id===id?lv:S.bud[b.id]].bp,0)+DESK().fixed*1e4}
 /* Le score : commissions encaissées moins tout ce que le gérant a payé, coûts d'exécution
    du trimestre en cours compris — ils bougent pendant qu'on construit le book. */
@@ -3282,12 +3283,12 @@ function statusBar(done){
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
    <button class="tile gauge${(mvL||mvR)?' moved':''}" data-gauge="lp" style="flex:2.1${mvSty(mvL||mvR)}"><span><i>Confiance</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,conf()):Math.round(conf())}${S.phase==='book'&&S._pv?(()=>{const nl=Math.max(0,Math.min(100,S.lp+cf(S._pv.lp,S._pv.rc))),nc=nl,d=nc-conf();return Math.abs(d)>=0.05?`<span class="${cls(d)}">→${Math.round(nc)}</span>`:''})():''}</b></span><span class="track"><i style="width:${conf()}%;background:${gc(conf())}"></i></span></button>
    ${cardTile()}
-   <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Vos gains</span><b id="gaintile" class="${mgrNet()>=0?'':'neg-g'}">${score(mgrNet())}</b></button>
+   <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Trésorerie</span><b id="gaintile" class="${mgrCash()>=0?'':'neg-g'}">${score(mgrCash())}</b></button>
   </div>
   <div class="srow">
    ${[0,1,2,3].map(fg).join('')}
    <button class="fg" data-gauge="risk" style="flex:2.2">${''}${(()=>{const ex=S.tcvEst&&S.k.some(v=>v)&&S.phase!=='debrief';const rv=`${Math.round(sp*100)}/${Math.round(S.tgt*100)}`;
-       return `<span class="fl">${ex?`Risque ${rv}`:'Risque'}</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><span class="mand" style="left:50%"></span><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b>${ex?`<span class="fxa">attendu</span> ${expShort(expBook(S.k))}`:rv}</b>`})()}</button>
+       return `<span class="fl">${ex?`Risque ${rv}`:'Risque'}</span><span class="tri none">&nbsp;</span><span class="ft2 lin"><span class="mand" style="left:50%"></span><i style="left:0;width:${Math.min(100,rk*50)}%;background:${rcol}"></i></span><b><span class="fxa">profit</span> ${pc2(profitBook(S.k))}</b>`})()}</button>
   </div>${(S.phase==='events'&&S.live&&!S.bigTape)?tapeBand():ticker()}</div>`;
 }
 /* « 61 → 58 » : valeur avant le dernier mouvement, puis valeur actuelle en couleur */
@@ -3460,7 +3461,7 @@ function resultCard(kick,title,paras,rows,btn,next,extra){
  if(hold)theatre(app.querySelector('.evwrap'));   /* racine propre à l'écran : ses écouteurs meurent avec lui */
 }
 function refreshGain(){const e=document.getElementById('gaintile');if(!e||!S)return;
- const v=mgrNet();e.textContent=score(v);e.className=v>=0?'':'neg-g'}
+ const v=mgrCash();e.textContent=score(v);e.className=v>=0?'':'neg-g'}
 function refreshStatus(){const el=app.querySelector('.status');if(el)el.outerHTML=statusBar(S.statusDone)}
 function openModal(title,html){
  let m=document.getElementById('modal');
@@ -3839,6 +3840,8 @@ function screenBudget(){
    ${redNote()}
    <p class="note" style="margin-top:0">Payé de votre poche, pas par le fonds, dans la limite de votre trésorerie. 1 pb = <em>${(S.nav*100).toFixed(0)} k$</em>.</p>
    <div class="kv"><span>Trésorerie disponible ce trimestre</span><b id="btre">${mm(mgrCash()+(S.qOps||0))}</b></div>
+   <div class="kv"><span>Reste pour les ordres du trimestre</span><b id="brest"></b></div>
+   <p class="note" style="margin:4px 0 8px">⚠ La même trésorerie paie vos ordres de marché : ce que le budget consomme, le book ne peut plus le dépenser. En début de partie, quand la caisse se limite au capital de départ et à la première commission, gardez des budgets serrés ; vous les relèverez quand les commissions de performance rentreront.</p>
    <div id="buds"></div>
    <div class="budtot"><span>Total du trimestre</span><b id="btot"></b></div>
   </div>
@@ -3850,9 +3853,7 @@ function screenBudget(){
  document.getElementById('ok').onclick=()=>{
    const bp=BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK().fixed*1e4;
    S.budBp=bp;
-   if(S.colPaidQ!==S.q){const o=colOpt(),ex=colYield()-(redOn('collat')?0:o.p*o.l);   /* lot 60 */
-    S.colPaidQ=S.q;S.colBaseNav=S.nav;S.qColM=ex*S.nav;S.nav+=S.qColM;
-    toast(`Collatéral : espérance du trimestre versée, <b>${mm(S.qColM)}</b>${o.p&&!redOn('collat')?` · l'écart éventuel à la clôture`:''}`)}
+   /* lot 61 : le rendement du collatéral est acquis au fonds et versé en entier à la clôture */
    planSignalsAfterBudget();phaseDesk();
  };
 }
@@ -3871,6 +3872,7 @@ function planSignalsAfterBudget(){
 function drawBuds(){
  /* caisse avant le budget de ce trimestre : un niveau qui la dépasse est verrouillé */
  const purse=mgrCash()+(S.qOps||0);
+ setTimeout(budRest,0);
  const ok=(id,i)=>(i===0||budgetBpIf(id,i)*1e-4*S.nav<=purse)&&!(id==='risk'&&redOn('budget')&&i<5&&i<S.bud.risk);
  document.getElementById('buds').innerHTML=BUDGET.map(b=>`<div class="brow">
    <div class="bh"><b><span class="bico">${b.ico}</span>${b.nm}</b><span>${b.lv[S.bud[b.id]].bp} pb · ${mm(b.lv[S.bud[b.id]].bp*1e-4*S.nav)}</span></div>
@@ -4014,6 +4016,13 @@ function riskMarg(i,k){const R=kk=>riskShown(weights(kk)).total,kp=[...k],km=[..
 function riskAdd(i,k){const k1=[...k];k1[i]=(k1[i]||0)+1;return (riskShown(weights(k1)).total-riskShown(weights(k)).total)*100}
 function expShort(o){const r=o.s>0?o.m/o.s:0;
  return `<span class="${cls(o.m)}">${sgn(o.m,1)}</span>`}
+function colExp(){const o=colOpt();return redOn('collat')?S.rate/4*0.6:S.rate/4+colY(o)-o.p*o.l}
+function profitBook(k){
+ k=k||S.k;const w=weights(k),k0=S.k0||S.k;let m=colExp();
+ for(let i=0;i<N;i++){if(w[i])m+=w[i]*expRet(i).m;const d=k[i]-k0[i];if(d)m-=tcost(d,i).imp/S.nav}
+ const sg=riskShown(w).total;return m-0.5*sg*sg/4;
+}
+const pc2=x=>`<b class="${Math.abs(x)<5e-5?'dim-g':cls(x)}">${x>=0?'+':'−'}${dec(Math.abs(x*100),2)} %</b>`;
 function expBook(k){
  const w=weights(k);let m=S.rate/4,vf=0,vi=0;const fl=[0,0,0,0];
  for(let i=0;i<N;i++){if(!w[i])continue;const x=INSTR[i],o=expRet(i);m+=w[i]*o.m;
@@ -4133,19 +4142,18 @@ function rowInfo(i){
  const x=INSTR[i];
  /* lot 55 : les expositions sont dans le détail du marché ; ici, ce qui décide */
  /* expositions aux quatre facteurs : le facteur survolé dans la barre reste surligné */
- const ex=x.b.map((b,k)=>{const a=Math.abs(b),hot=S.hotFactor===k?';text-decoration:underline':'';
+ const ex=x.b.map((b,k)=>{const a=Math.abs(b),hot='';
    if(a<0.15)return `<b style="color:var(--dimmer)${hot}">${FACT[k].id}0</b>`;
    const n=a>=0.55?3:a>=0.32?2:1;return `<b style="color:${b>0?'var(--long)':'var(--short)'}${hot}">${FACT[k].id}${(b>0?'+':'−').repeat(n)}</b>`}).join(' ');
  let gl='';
  if(mktOpen(i)){
   const R=kk=>riskShown(weights(kk)).total,r0=R(S.k),kp=[...S.k],km=[...S.k];kp[i]+=1;km[i]-=1;
   const rP=(R(kp)-r0)*100,rM=(R(km)-r0)*100,rc=v=>`<b class="${v>0.05?'neg-g':v<-0.05?'pos-g':'dim-g'}">${v>=0?'+':'−'}${dec(Math.abs(v),1)} pt</b>`;
-  let ex1='<b class="dim-g">—</b>';
-  if(S.tcvEst){const o=expRet(i),w1=U/x.sig,g={m:w1*o.m,s:w1*o.s};ex1=`<b class="${cls(g.m)}">${g.m>=0?'+':'−'}${dec(Math.abs(g.m*100),1)} %</b><i>±${dec(2*g.s*100,1)}</i>`}
+  const ex1=pc2(profitBook(kp)-profitBook(S.k));
   const k0=S.k0?S.k0[i]:S.k[i],d=S.k[i]-k0,t=tcost(d,i);
   const od=d>0?`<b class="pos-g">achat ${d}</b>`:d<0?`<b class="neg-g">vente ${-d}</b>`:'<b class="dim-g">aucun</b>';
-  gl=`<div class="rgrid"><span>Ordre</span><span>Attendu /u</span><span>Risque +1</span><span>Risque −1</span><span>Coût</span><span>Impact</span>
-   <div>${od}</div><div>${ex1}</div><div>${rc(rP)}</div><div>${rc(rM)}</div><div><b>${mm(t.spr||0)}</b></div><div><b>${mm(t.imp||0)}</b></div></div>`}
+  gl=`<div class="rgrid"><span>Ordre</span><span>Risque −1</span><span>Profit +1</span><span>Risque +1</span><span>Coût</span><span>Impact</span>
+   <div>${od}</div><div>${rc(rM)}</div><div>${ex1}</div><div>${rc(rP)}</div><div><b>${mm(t.spr||0)}</b></div><div><b>${mm(t.imp||0)}</b></div></div>`}
  el.innerHTML=`<span class="fxe">${ex}</span>${gl}`;
 }
 /* Coût de la facture d'ordres si le marché i passait à la position v. Sert à griser les

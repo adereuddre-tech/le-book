@@ -564,6 +564,16 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
     quant 18,7 / 17,5, fondamental 18,1 / 14,6, flux 18,5 / 16,0 — à plat. Erreur type ≈ 3 M$ par
     cellule : il faut ~30 graines par combinaison pour trancher.
 
+- **Lot 61** (`99zw-lot61.py`) : collatéral de nouveau versé en entier à la clôture (acquis au fonds).
+  `profitBook(k)` = collatéral espéré + Σ w·attendu − impact des ordres en cours (`tcost().imp`) −
+  ½σ²/4 (drain de volatilité, σ = risque affiché bruit compris) ; affiché « profit » dans la tuile
+  Risque (aussi book vide : c'est alors le collatéral seul) et, par marché, « Profit +1 » =
+  profitBook(k+1) − profitBook(k), deux décimales. Grille : ordre | risque −1 | profit +1 | risque +1 |
+  coût | impact. Facteurs : plus de cadre ni de soulignement. Tuile dorée = **Trésorerie**
+  (`mgrCash`, capital de départ compris), les gains restent dans sa pop-up : c'est la trésorerie qui
+  borne les cases, et les « gains » négatifs du premier trimestre faisaient croire à un défaut de
+  grisage (`chk58 --tight` : 0 case fautive). Budget : « reste pour les ordres » et mise en garde.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
