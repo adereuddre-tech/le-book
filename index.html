@@ -353,6 +353,17 @@ summary::marker{color:var(--dimmer)}
 .carryrk{font-family:var(--mono);font-size:12px;line-height:1.7}
 .rules2{margin:8px 0 0 18px;font-size:13.5px;line-height:1.5;color:var(--dim)}.rules2 li{margin-bottom:5px}
 .cardb{font-style:normal;margin-left:4px;font-size:11px}
+.sgrid{display:flex;gap:6px;margin-top:5px;align-items:stretch}
+.sgrid .sl{flex:1.45;display:flex;flex-direction:column;gap:5px;min-width:0}
+.sgrid .sl .srow{margin-top:0}
+.sgrid .tile{padding:4px 5px}.sgrid .tile b{font-size:13.5px;overflow:visible;text-overflow:clip;white-space:nowrap}.sgrid .tile.gauge>span{display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 4px}.sgrid .tile.gauge span i{font-size:11px!important;overflow:visible!important;text-overflow:clip!important;flex:0 0 auto}
+.sgrid .tile.gauge{flex:1.45!important}.sgrid .tile.gold{flex:1.35!important}.sgrid .tile.gold span{font-size:10.5px}
+.sgrid .tile.cardt{flex:0 0 24px;padding:1px}.sgrid .tile.cardt svg{width:14px;height:19px}
+.srow.fcomp{gap:4px}.srow.fcomp .fg{padding:3px 2px 2px}.srow.fcomp .fg .ft2{display:none}
+.srow.fcomp .fg .fl{font-size:9px}
+.sgrid .fg.rmt{flex:1;min-width:0;padding:3px 4px;display:flex}
+.sgrid .rmap{height:100%;min-height:108px}
+.crestmini{display:inline-block;vertical-align:-3px;margin-right:4px}.crestmini svg{display:block}
 .mbox.redbox{border:2px solid #D2463C;box-shadow:0 0 0 3px rgba(210,70,60,.25)}
 .mbox.redbox .mhead h3{color:#E5675C}
 .redpop{text-align:center}.redpop svg{display:block;margin:4px auto 10px}.redpop ul{text-align:left}
@@ -3145,7 +3156,7 @@ function tapePieces(p,x,y,base){
 /* opt.anim : tracé animé avec fenêtre glissante. Sinon rendu statique complet. */
 /* couleur du joueur : celle de son blason, sinon l'or, sinon l'ivoire — jamais celle d'un concurrent */
 function myCol(rv){const used=(rv||[]).map((r,j)=>CRESTS[(r.crest!==undefined?r.crest:RIVCREST[j%4])%CRESTS.length].a.toLowerCase());
- const c0=CRESTS[((S&&S.crest)||0)%CRESTS.length].a;return [c0,'#E8C547','#F3EEE4'].find(c=>!used.includes(c.toLowerCase()))}
+ const c0=CRESTS[((S&&S.crest)||0)%CRESTS.length].a;return ['#E8C547',c0,'#F3EEE4'].find(c=>!used.includes(c.toLowerCase()))}
 function tapeSvg(p,from,opt){
  opt=opt||{};
  const W=320,H=opt.h||78,pad=6,n=p.length,rv=opt.rivals||[];
@@ -3289,22 +3300,23 @@ function statusBar(done){
  const rhue=150-140*Math.pow(Math.min(1,rdev),0.62);
  const rcol=`hsl(${rhue.toFixed(0)} ${(30+18*Math.min(1,rdev)).toFixed(0)}% ${(46+6*Math.min(1,rdev)).toFixed(0)}%)`;
  const fg=k=>{const v=ex[k],pc=Math.min(50,Math.abs(v)/0.15*50);
-  return `<button class="fg ${S.hotFactor===k?'hot':''}" data-gauge="f${k}"><span class="fl">${FACT[k].nm.split(' ')[0].slice(0,9)}</span>${readTri(k)}<span class="ft2"><em style="left:50%"></em><i style="${v>=0?'left:50%':'right:50%'};width:${pc}%;background:${v>=0?'var(--long)':'var(--short)'}"></i></span>${(()=>{const r=Math.round(v*100);return `<b class="${r===0?'dim-g':(r>0?'pos-g':'neg-g')}">${r>0?'+':r<0?'−':''}${Math.abs(r)}</b>`})()}</button>`};
+  return `<button class="fg ${S.hotFactor===k?'hot':''}" data-gauge="f${k}"><span class="fl">${['Crois.','Infl.','Dollar','Appét.'][k]||FACT[k].nm.slice(0,6)}</span>${readTri(k)}<span class="ft2"><em style="left:50%"></em><i style="${v>=0?'left:50%':'right:50%'};width:${pc}%;background:${v>=0?'var(--long)':'var(--short)'}"></i></span>${(()=>{const r=Math.round(v*100);return `<b class="${r===0?'dim-g':(r>0?'pos-g':'neg-g')}">${r>0?'+':r<0?'−':''}${Math.abs(r)}</b>`})()}</button>`};
  return `<div class="status">
   <div class="srow">
-   <button class="tile" data-gauge="cap"><span><i>${S.fundName.split(' ')[0]}${done?` · T${S.q}`:` · T${Math.min(S.q+1,QT())}`}</i><b>${rank}<sup>${rank===1?'er':'e'}</sup>/4</b></span><b id="navtile">${moneyB(navNow())}</b></button>
+   <button class="tile" data-gauge="cap"><span><i><span class="crestmini">${crestSvg(S.crest||0,15)}</span>${S.fundName.split(' ')[0]}${done?` · T${S.q}`:` · T${Math.min(S.q+1,QT())}`}</i><b>${rank}<sup>${rank===1?'er':'e'}</sup>/4</b></span><b id="navtile">${moneyB(navNow())}</b></button>
    <button class="tile" data-gauge="perf"><span><i>Perf.</i>${dd>0.005?`<b class="neg-g">repli ${(dd*100).toFixed(0)} %</b>`:'<b class="dim-g">au plus haut</b>'}</span><b class="${cls(cum)}">${sgnp(cum,1)}</b></button>
   </div>
+  <div class="sgrid"><div class="sl">
   <div class="srow">
-   <span class="crestbadge">${crestSvg(S.crest||0,26)}</span>
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
    <button class="tile gauge${(mvL||mvR)?' moved':''}" data-gauge="lp" style="flex:2.1${mvSty(mvL||mvR)}"><span><i>Confiance</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,conf()):Math.round(conf())}${S.phase==='book'&&S._pv?(()=>{const nl=Math.max(0,Math.min(100,S.lp+cf(S._pv.lp,S._pv.rc))),nc=nl,d=nc-conf();return Math.abs(d)>=0.05?`<span class="${cls(d)}">→${Math.round(nc)}</span>`:''})():''}</b></span><span class="track"><i style="width:${conf()}%;background:${gc(conf())}"></i></span></button>
    ${cardTile()}
    <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Trésorerie</span><b id="gaintile" class="${mgrCash()>=0?'':'neg-g'}">${treso(mgrCash())}</b></button>
   </div>
-  <div class="srow">
+  <div class="srow fcomp">
    ${[0,1,2,3].map(fg).join('')}
-   <button class="fg rmt" data-gauge="risk" style="flex:2.8">${riskMap(sp)}</button>
+  </div></div>
+   <button class="fg rmt" data-gauge="risk">${riskMap(sp)}</button>
   </div>${(S.phase==='events'&&S.live&&!S.bigTape)?tapeBand():ticker()}</div>`;
 }
 /* « 61 → 58 » : valeur avant le dernier mouvement, puis valeur actuelle en couleur */
@@ -4043,7 +4055,7 @@ function rivPt(rv){
 }
 function rivCol(j){const r=S.rivals[j];return CRESTS[((r&&r.crest!==undefined)?r.crest:RIVCREST[j%4])%CRESTS.length].a}
 function riskMap(sp,big){
- const W=big?320:150,H=big?210:66,x0=big?30:3,x1=W-(big?8:3),yb=H-(big?18:2),yt=big?8:3,fs=big?11:9,ls=big?10:7;
+ const W=big?320:150,H=big?210:118,x0=big?30:3,x1=W-(big?8:3),yb=H-(big?18:2),yt=big?8:3,fs=big?11:9,ls=big?10:7;
  const pr=profitBook(S.k),R=(S.rivals||[]).map((rv,j)=>Object.assign(rivPt(rv),{c:rivCol(j),nm:rv.nm})),bd=bandNow();
  const xs=[sp,S.tgt*(1+bd),S.tgt*(1-bd),...R.map(r=>r.x)],ys=[pr,0,...R.map(r=>r.y)];
  const xa=Math.min(...xs)*0.85,xm=Math.max(...xs)*1.08,ya=Math.min(...ys),yz=Math.max(...ys),yp=(yz-ya)*0.18+0.002;

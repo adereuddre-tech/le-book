@@ -600,6 +600,11 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   Carton rouge « marchés fermés » / « classe interdite » : lignes à contribution positive au risque du
   book de fin de trimestre, puis taille de position ; le hasard seulement à book vide.
 
+- **Lot 65** (`99zza-lot65.py`) : panneau du haut en disposition A (choix d'Antoine) : `.sgrid` = colonne
+  gauche (confiance · carton · trésorerie, puis quatre facteurs compacts sans barre, `.fcomp`) et nuage
+  risque/profit à droite sur deux rangées (viewBox 150 × 118). Blason dans la tuile d'encours
+  (`.crestmini`). Point du joueur doré par défaut (`myCol` : or, puis couleur du blason, puis ivoire).
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
