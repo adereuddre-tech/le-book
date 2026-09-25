@@ -574,6 +574,12 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   borne les cases, et les « gains » négatifs du premier trimestre faisaient croire à un défaut de
   grisage (`chk58 --tight` : 0 case fautive). Budget : « reste pour les ordres » et mise en garde.
 
+- **Lot 62** (`99zx-lot62.py`) : tuile Risque = nuage `riskMap(sp)` (choix B d'Antoine) : risque
+  annualisé en abscisse, profit du trimestre en ordonnée, bande du mandat et cible, zéro de profit,
+  concurrents (`rivPt` : espérance fermée de `rivalE`, même convention que `profitBook`), book de début
+  de trimestre en fantôme relié au book courant (doré, rouge au-dessus de la bande). En-tête : risque %
+  et profit % (deux décimales).
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
