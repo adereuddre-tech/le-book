@@ -605,6 +605,40 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   risque/profit à droite sur deux rangées (viewBox 150 × 118). Blason dans la tuile d'encours
   (`.crestmini`). Point du joueur doré par défaut (`myCol` : or, puis couleur du blason, puis ivoire).
 
+- **Lot 66** (`99zzb-lot66.py`) — demandes d'Antoine :
+  - **Panneau du haut** : encours + performance (et repli) dans une seule tuile `.aum` ; 2ᵉ ligne Trésorerie ·
+    Confiance · Carton ; nuage sur toute la hauteur de la colonne de droite (`.rmt` en position relative, `.rmap`
+    absolu : le bas suit celui des facteurs). La pop-up « cap » reprend la performance par trimestre.
+  - **Plus de mandat de volatilité.** `S.tgt` (20 %) ne sert plus que de référence au modèle (`recoBook`) et au bruit
+    du ruban. `riskRc` ne note plus que le book vide ; `previewGauge`, clôture, drapeaux du book, pop-ups, textes,
+    presse et débriefing ne parlent plus de cible ni de bande. `bandNow()` n'a plus d'effet visible.
+  - **Accidents de levier** : `TAIL={x0:0.25,w:0.35,p:0.50}`, `tailP(sp)` = 0 sous 25 % de risque, 50 % à 60 %, ×`TAILM`
+    (budget contrôle, 1,48 → 0,30). `tailL(sp)` perte de référence (plafond 0,62), L = gravité × tailL ≤ 0,40.
+    `TAILEV` (12). Tirage pur `hash32('tail'+q)` en fin de file (`stepEvents`, `S.tailEv`/`S.tailDone`, remis à zéro
+    dans `planQuarter`) ; `screenTail` : tenir (½ : 0,3 L, ½ : 1,5 L), couper la moitié du book (0,5 L + impact ×5,
+    ≤ 8 %), couvrir (0,30 L fonds + 0,20 L trésorerie, grisé hors trésorerie). Perte dans `S.qIncM`, `S.tails`.
+    `tailExp` entre dans `profitBook` (donc « profit +1 ») et dans `rivPt`.
+  - **Cartons** sur pertes et replis : rouge trimestre ≤ −12 %, repli ≥ 25 % (puis +5 pts), appel de marge, 2ᵉ jaune ;
+    jaune trimestre ≤ −5 %, repli ≥ 12 % (puis +4 pts, réarmé sous 8 %), 10 pts sous la médiane, book vide, griefs.
+    `S.bandTight` resserre ces seuils. `S.inBand` = trimestres sans carton (carte blanche). Haut fait « Irréprochable »
+    = aucun carton sur 8 trimestres (`nocard`).
+  - **Concurrents** : `RIVSTRAT` — Médaillon « Kelly fractionnaire » (26 %), Pont-Levis « Conviction » (16 % + 26 × force
+    du scénario), Citadelle « Plein levier » (34 %). `rivVolQ` posé dans `planQuarter` (`rv.vq`, sans tirage), borné par
+    `rivCapVol` = mêmes règles que le joueur (12 marchés, +4 à 1,4×, +4 à 2× ; plafond ±3/4/5 à 1×/1,2×/1,5×).
+    Rendement `(v/2)(RIVK·e + bruit) − 0,8 % − rivDrag(v) − rivTail` ; `RIVK` 0,35 → 0,20 (l'adresse se dilue quand le
+    book grossit). Colonne « Risque » et stratégie au débriefing, stratégies à l'accueil.
+  - **Nuage** ancré à l'origine, sans pointillés ni bande, zoom sur le fonds le plus risqué, zone d'accidents teintée ;
+    petit format : points et libellés en HTML (%), pas de déformation.
+  - **Rubans** (`tapeSvg`) : échelle log bornée aux tracés, traits fins tous les 10 % (20/50/100 si plus de 7 lignes).
+  - **Objectifs** : 11 textes/prédicats sans jauge ni bande (`c.sp` ajouté au contexte). **Textes** : +32 dépêches,
+    +6 incidents, +12 accidents.
+  - Mesures (copie figée) : régression 18 parties 0 erreur 0 écart ; `cover3` 3 264 plans 0 anomalie ; `goalchk`
+    aucun prédicat cassé ; reprise à froid OK. 36 parties `play.js --lev 1|1.6` : 0 erreur, ~0,9 accident par partie
+    à 1,6×, 1,5 rouge par partie avant le réglage du seuil médiane ; concurrents médians ×1,08 / ×1,65 / ×0,82 en deux
+    ans (Citadelle ramenée ensuite de 40 à 34 %). `play.js` : option `--lev` et sorties `tails`, `red`, `riv`, `idx`.
+  - Constat ancien, non corrigé : avec `play.js`, le style flux finit presque toujours à quelques M$ d'encours malgré
+    une performance positive (rachats) — déjà vrai sur le fichier publié. À mesurer au bot intelligent.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
@@ -765,6 +799,8 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   l'échelle (max 1,5× au lieu de 2×). Décision d'Antoine attendue.
 
 ### Plus loin
+- **Lot 66 à calibrer au bot intelligent** : `bot.js` dimensionne encore sur `S.tgt` ; lui apprendre à choisir son
+  risque (et une réponse aux accidents), puis ~30 graines × 3 styles pour régler `TAIL`, `RIVK` et `RIVSTRAT`.
 - Production de texte : 200 anecdotes d'exécution (145 aujourd'hui) et 300 dépêches (269),
   plus la démultiplication des débriefings.
 - Rentabilité des budgets : non remesurée depuis le changement d'économie. Avec un seul cœur,
