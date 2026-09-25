@@ -23,7 +23,7 @@ function playGame(o){
       w.setInterval=()=>0;w.clearInterval=()=>{};w.setTimeout=f=>{try{f()}catch(e){errs.push('t:'+e.message)}return 0}}});
   const w=dom.window,d=w.document,$=s=>d.querySelector(s),click=el=>{try{el.click()}catch(e){errs.push('click:'+e.message)}};
   const cfg={prof:o.prof,vol:o.vol||'std',size:o.size||'mid',univ:o.univ||'com',dur:o.dur||'normal'};
-  const bud=o.bud||[3,3,3];   /* lot 45 : sept crans, le standard est le cran 3 */const smart=o.policy!=='naive';
+  const bud=o.bud||[3,3,3];   /* lot 45 : sept crans, le standard est le cran 3 */const smart=!o.policy||o.policy==='smart',dumb=o.policy==='dumb';   /* dumb : book au hasard, choix au hasard */
   w.eval(`refreshStatus=function(){};toast=function(){};window.__plan=null;(function(){const E=evPlans;window.evPlans=function(){const r=E.apply(this,arguments);window.__plan=r;return r}})()`);
   if(o.probe)w.eval(o.probe);          /* sonde injectée dans la page, avant la partie */
   if(o.pre)w.eval(o.pre);   /* sonde injectée avant la partie (tools/expchk.js…) */
@@ -44,11 +44,12 @@ function playGame(o){
       if(ch)continue}
     if($('#send')){
       w.eval(`(()=>{const smart=${smart};
+        if(${dumb}){S.k=S.k.map((v,i)=>mktOpen(i)?Math.round((Math.random()*2-1)*Math.min(3,S.maxk)):0);return}
         if(!smart||S.prof==='syst'){const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));return}
         const {W,f:f0}=styleEst();const f=[...f0];
         if(S.hunch)f[S.hunch.k]+=(S.hunch.up?1:-1)*1.2;
         const sc=INSTR.map((x,i)=>{let v=0;for(let k=0;k<K;k++)v+=x.b[k]*f[k]*Math.max(W.F,0.5);
-          if(S.tcvEst)v+=0.24*W.T*S.tcvEst.t[i]+0.20*W.C*S.tcvEst.c[i]+0.18*W.V*S.tcvEst.v[i];
+          if(S.tcvEst)v+=0.24*W.T*S.tcvEst.t[i]+0.20*W.C*S.tcvEst.c[i]+0.18*W.V*S.tcvEst.v[i]*((S.prof==='fonda'&&S.cat&&S.cat.includes(i))?(typeof CATM!=='undefined'?CATM:2):1);
           v+=W.X*0.30*S.crowd[i];return v});
         const mx=Math.max(0.001,...sc.map(Math.abs));const raw=sc.map(v=>v/mx*3);
         const tg=S.tgt*0.95*(PROF().modelScale||1);let a=tg/Math.max(1e-9,pvol(weights(raw)));

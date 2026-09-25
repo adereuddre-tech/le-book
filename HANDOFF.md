@@ -524,8 +524,27 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
     0 erreur, 0 écart. Bot, 14 graines × 3 styles, avant → après : score moyen quant 23,2 → 20,9,
     fondamental 23,9 → 14,8, flux 33,3 → 23,4 M$ ; survie 14 / 13 / 12 → 14 / 12 / 11. La baisse
     vient surtout du plafond ±3 et des extrêmes ; le bot laisse le collatéral au Trésor.
-  - **Défaut connu, non corrigé** : suivre une dépêche fait payer les frais au fonds (`S.nav-=cost`)
-    **et** au gérant (`pendingTC`).
+
+- **Lot 59** (`99zu-lot59.py`) :
+  - **Double facturation supprimée** : suivre une dépêche ou une rivalité retirait le coût des ordres
+    de l'encours (`S.nav-=cost`) ET l'ajoutait à la facture du gérant. Le fonds ne paie plus ; les
+    montants des boutons de dépêche sont hors coûts (même calcul des deux côtés, invariant 9).
+  - **Collatéral** : rendement du trimestre affiché (taux / 4 + surcroît) ; `colY(o)` fait varier le
+    surcroît de ±35 % par trimestre (tirage pur `hash32('coly'+id+q)`). Espérances moyennes mesurées :
+    0 / +0,20 / +0,40 / +0,59 % par trimestre, ~0,5 inversion d'ordre par trimestre.
+  - **Difficulté** : commissions 15 / 20 / 25 % (difficile : 30 → 25 %). Difficile : flux clients ×2,1
+    dans les deux sens (`flowMult`, nouveau `flowIn`), concurrents les plus adroits (`rivSkill` 0,12).
+  - **Fondamental** : deux sources vérifiées, +6 sources, trois catalyseurs (`CATM`=3, pour tous les
+    marchés, seul le fondamental les voit), signal de valeur 0,10 (`SIGW`, `drawReturns`), capture 0,60,
+    `modelScale` 1,10.
+  - **Bot** : `--policy dumb` (book et choix au hasard) ; l'ancien « naive » reprend le book du modèle
+    et gagne presque autant que « smart ». `bot.js` exploite les catalyseurs du fondamental.
+  - Mesures (graines appariées, M$, moyenne / écart-type) : styles, bot intelligent, trois difficultés :
+    quant 15,9 / 12,6, fondamental 19,9 / 15,0, flux 20,1 / 17,0. Bot intelligent : moyen 19,1 / 16,2
+    (p10–p90 3–37), difficile 17,8 / 16,3 (p10–p90 1–46), facile 17,6 / 12,6. Bot nul : 5,6 / 6,6 / 6,7.
+    Erreur type ≈ 3 M$ : la forme est là, les marges ne sont pas démontrées.
+  - Contrôles : régression 18 parties, `cover3` 2 952 plans, `chk58 --red` 12 trimestres, reprise à
+    froid : 0 erreur, 0 écart.
 
 ## Calibration (bot intelligent, `tools/bot.js`)
 

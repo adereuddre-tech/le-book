@@ -758,8 +758,8 @@ const PROFILES=[
   sigBonus:0,capture:0.50,tcMult:1.0,rumBonus:0.05,lpMult:0.90,modelScale:0.80,ddMax:0.40,incMult:0.60,numeric:true,noAdj:true},
  {id:'fonda',lvl:'Normal',who:"« Je peux avoir raison plus longtemps que le marché ne peut rester solvable »",nm:"Gérant fondamental discrétionnaire",
   p:"Vous construisez une vue du monde, ligne par ligne, et vous la défendez contre le marché, contre le comité, contre vos propres analystes. Vous avez passé trois nuits sur la balance courante d'un pays que personne ne regarde. Vous aurez raison. La seule question est de savoir si votre mandat vous survivra jusque-là.",
-  ef:[['g',"<b>Pouvoir propre — la source vérifiée</b> : chaque trimestre, une rumeur est recoupée par votre réseau et vous est donnée pour certaine"],['g',"+4 sources par trimestre : on vous rappelle, on vous parle"],['g',"les pré-annonces d'événements vous parviennent 13 pts plus souvent"],['g',"une fois par trimestre, la probabilité de suite d'une dépêche vous est donnée exacte"],['b',"réaction lente : vous ne captez que 45 % d'un mouvement en cours de trimestre"],['b',"coûts de transaction +8 % : vous arbitrez tard, et cher"]],
-  sigBonus:4,capture:0.45,tcMult:1.08,rumBonus:0.18,lpMult:1.0,incMult:1.0,numeric:false,verified:true},
+  ef:[['g',"<b>Pouvoir propre — la source vérifiée</b> : chaque trimestre, deux rumeurs sont recoupées par votre réseau et vous sont données pour certaines"],['g',"+6 sources par trimestre : on vous rappelle, on vous parle"],['g',"les pré-annonces d'événements vous parviennent 13 pts plus souvent"],['g',"une fois par trimestre, la probabilité de suite d'une dépêche vous est donnée exacte"],['b',"réaction mesurée : vous ne captez que 60 % d'un mouvement en cours de trimestre"],['g',"trois catalyseurs par trimestre, que vous seul connaissez : la valeur y compte triple"],['b',"votre desk vise 110 % de la vol cible : des convictions, et le risque qui va avec"],['b',"coûts de transaction +8 % : vous arbitrez tard, et cher"]],
+  sigBonus:6,capture:0.60,tcMult:1.08,rumBonus:0.18,lpMult:1.0,incMult:1.0,modelScale:1.10,numeric:false,verified:true},
  {id:'flux',lvl:'Expert',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez rien. Vous écoutez. Le marché parle en permanence et la plupart des gens sont trop occupés à avoir des opinions pour l'entendre. Vous regardez un carnet d'ordres comme d'autres regardent la mer. Vos analystes ont renoncé à vous demander vos raisons ; votre comité a renoncé à les consigner. Il vous arrive d'avoir raison avant d'avoir compris pourquoi.",
   ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, un facteur macro vous souffle le sens de sa réalisation avant tout le monde, et elle ne se trompe qu'environ une fois sur cinq. Ne demandez pas comment"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : jauge 60 % plus nerveuse"],['b',"de l'argent rapide : rachats pour repli dès 13 % de perte au lieu de 28 %"],['b',"votre desk vise 120 % de la vol cible : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"]],
@@ -777,10 +777,10 @@ const SIZES=[
   p:"Trois très bons concurrents, un comité vigilant, des investisseurs qui comparent. La commission de performance habituelle du métier : 20 %.",
   ef:[["g","commission de performance : 20 %"],["b","concurrents très bons, chacun dans son style"],["b","investisseurs exigeants, comité vigilant"]],
   rivSkill:0.050,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1},
- {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.30,nm:"Difficile — 30 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
-  p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 30 % de la performance.",
-  ef:[["g","commission de performance : 30 %"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
-  rivSkill:0.090,rivVol:1.10,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:1.35,goalMult:1}
+ {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.25,nm:"Difficile — 25 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
+  p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 25 % de la performance, et les souscriptions arrivent aussi vite que les rachats.",
+  ef:[["g","commission de performance : 25 %"],["g","flux violents dans les deux sens : un bon trimestre attire gros"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
+  rivSkill:0.120,rivVol:1.10,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:2.10,flowIn:2.10,goalMult:1}
 ];
 const UNIVS=[
  {id:'fin',edge:0.75,lpMult:0.90,lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
@@ -2335,7 +2335,7 @@ function planQuarter(){
  S.tcv.t=INSTR.map((x,i)=>Math.max(-2.5,Math.min(2.5,(S.lastR[i]+0.5*S.lastR2[i])/x.sigQ)));
  /* catalyseurs : deux marchés où l'écart de valeur se referme ce trimestre (tirage pur) */
  {const c=INSTR.map((x,i)=>i).filter(i=>mktOpen(i)&&Math.abs(S.tcv.v[i])>=1);
-  S.cat=c.map(i=>({i,u:prng32(hash32('cat'+i+'_'+S.q,S.seed))()})).sort((a,b)=>a.u-b.u).slice(0,2).map(o=>o.i)}
+  S.cat=c.map(i=>({i,u:prng32(hash32('cat'+i+'_'+S.q,S.seed))()})).sort((a,b)=>a.u-b.u).slice(0,3).map(o=>o.i)}
  S.rBase=drawReturns();
  /* le concurrent qui a eu raison : une fois sur deux, une dépêche de rivalité */
  reseed('riv');
@@ -2478,7 +2478,7 @@ function genRumors(){
  /* pouvoir du gérant fondamental : une source recoupée, donnée pour certaine */
  if(PROF().verified){
    const cand=out.filter(r=>!r.ev&&r.truth);
-   if(cand.length){const r=pick(cand);r.truth=true;r.p=0.97;r.rel='forte';r.sure=true}
+   for(let n=0;n<2&&cand.length;n++){const r=cand.splice(Math.floor(rng()*cand.length),1)[0];r.truth=true;r.p=0.97;r.rel='forte';r.sure=true}
  }
  for(let i=out.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[out[i],out[j]]=[out[j],out[i]]}
  const PM={faible:1.4,moyenne:3.5,forte:8.0},RM=[1.3,1.0,0.6][S.bud.res];
@@ -2504,7 +2504,7 @@ function drawReturns(){
    let z=0;for(let k=0;k<K;k++)z+=x.b[k]*S.f[k];
    z+=x.idio*R.si*gauss();
    let r=x.sigQ*z;
-   r+=x.sigQ*(0.12*S.tcv.t[i]+0.10*S.tcv.c[i]+0.08*S.tcv.v[i]*((S.cat&&S.cat.includes(i))?2:1))*(UNIV().edge||1);
+   r+=x.sigQ*(0.12*S.tcv.t[i]+0.10*S.tcv.c[i]+0.10*S.tcv.v[i]*((S.cat&&S.cat.includes(i))?CATM:1))*(UNIV().edge||1);
    if(x.drift)r+=x.drift*(S.truth==='crise'?-2.2:S.truth==='recession'?-0.9:1);
    if(R.crowd)r-=R.crowd*S.crowd[i]*x.sigQ;
    return r;
@@ -2945,19 +2945,22 @@ function budgetBp(){return BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK()
 const COLL=[
  {id:'tres',nm:'Bons du Trésor',ico:'🏛️',y:0,p:0,l:0,d:"Le taux sans risque, rien de plus, rien de moins."},
  {id:'mmf',nm:'Monétaire prime',ico:'💧',y:0.003,p:0.05,l:0.02,d:"Du papier commercial bien noté. Rarement un problème, jamais zéro."},
- {id:'repo',nm:'Repo contre crédit',ico:'🔁',y:0.007,p:0.10,l:0.04,d:"Vous prêtez contre des obligations d'entreprises : le gage vaut ce que vaut le marché du crédit."},
- {id:'abs',nm:'Titrisations',ico:'🧨',y:0.014,p:0.20,l:0.06,d:"Des tranches de prêts titrisés. Le rendement paie un risque que tout le monde connaît."},
+ {id:'repo',nm:'Repo contre crédit',ico:'🔁',y:0.008,p:0.10,l:0.04,d:"Vous prêtez contre des obligations d'entreprises : le gage vaut ce que vaut le marché du crédit."},
+ {id:'abs',nm:'Titrisations',ico:'🧨',y:0.018,p:0.20,l:0.06,d:"Des tranches de prêts titrisés. Le rendement paie un risque que tout le monde connaît."},
 ];
 function colOpt(){return COLL[(S&&S.col)||0]||COLL[0]}
-function colYield(){const b=(S.rate||0)/4;return redOn('collat')?b*0.6:b+colOpt().y}
+/* surcroît du trimestre : ±35 % autour de la moyenne, tirage pur par trimestre et par placement */
+function colY(o){if(!o.y)return 0;const u=prng32(hash32('coly'+o.id+'_'+S.q,S.seed))();return o.y*(1+0.7*(u-0.5))}
+function colYield(){const b=(S.rate||0)/4;return redOn('collat')?b*0.6:b+colY(colOpt())}
 function drawColl(){
  const el=document.getElementById('colls');if(!el)return;const lock=redOn('collat');if(lock)S.col=0;
  el.innerHTML=(lock?redNote():'')+`<div class="colls">${COLL.map((o,i)=>`<button class="coll ${(S.col||0)===i?'on':''}" data-c="${i}"${lock&&i?' disabled':''}>
-   <b><span class="ci">${o.ico}</span> ${o.nm}</b><span class="${o.y?'pos-g':'dim-g'}">${o.y?`+${dec(o.y*100,1)} % · ${mm(o.y*S.nav)}`:'taux sans risque'}</span>
-   <span class="${o.p?'neg-g':'dim-g'}">${o.p?`${Math.round(o.p*100)} % de −${dec(o.l*100,1)} %`:'aucun risque'}</span></button>`).join('')}</div>
-  <p class="note" style="margin-top:6px">${colOpt().d} ${colOpt().p?`Espérance ${sgn(colOpt().y-colOpt().p*colOpt().l,1)} sur le trimestre.`:''}</p>`;
+   <b><span class="ci">${o.ico}</span> ${o.nm}</b><span>${dec((S.rate/4+colY(o))*100,1)} % ce trimestre</span><span class="${o.y?'pos-g':'dim-g'}">${o.y?`dont +${dec(colY(o)*100,1)} % · ${mm(colY(o)*S.nav)}`:'taux sans risque'}</span>
+   <span class="${o.p?'neg-g':'dim-g'}">${o.p?`${Math.round(o.p*100)} % de −${dec(o.l*100,1)} %`:'aucun risque'}</span>
+   <span class="dim-g">attendu ${sgn(colY(o)-o.p*o.l,1)}</span></button>`).join('')}</div>
+  <p class="note" style="margin-top:6px">${colOpt().d} Le surcroît de chaque placement change d'un trimestre à l'autre ; en moyenne, plus le risque est grand, plus l'attendu l'est.</p>`;
  el.querySelectorAll('.coll').forEach(b=>b.onclick=()=>{S.col=+b.dataset.c;drawColl();const o=colOpt();
-  toast(`Collatéral → <b>${o.nm}</b>${o.y?` · +${dec(o.y*100,1)} % par trimestre, ${Math.round(o.p*100)} % de risque de −${dec(o.l*100,1)} %`:''}`)});
+  toast(`Collatéral → <b>${o.nm}</b> · ${dec((S.rate/4+colY(o))*100,1)} % ce trimestre${o.p?`, ${Math.round(o.p*100)} % de risque de −${dec(o.l*100,1)} %`:''}`)});
 }
 function budgetBpIf(id,lv){return BUDGET.reduce((a,b)=>a+b.lv[b.id===id?lv:S.bud[b.id]].bp,0)+DESK().fixed*1e4}
 /* Le score : commissions encaissées moins tout ce que le gérant a payé, coûts d'exécution
@@ -3822,7 +3825,7 @@ function screenBudget(){
    <div class="budtot"><span>Total du trimestre</span><b id="btot"></b></div>
   </div>
   <div class="block"><div class="blockhead"><h2>Placement du collatéral</h2><span class="hint">pour le fonds</span></div>
-   <p class="note" style="margin-top:0">L'encours qui ne sert pas de marge est placé : taux sans risque ${dec(S.rate*100,1)} % l'an, ou un surcroît de rendement contre un risque de perte connu d'avance, tiré à la clôture.</p>
+   <p class="note" style="margin-top:0">L'encours qui ne sert pas de marge est placé : taux sans risque ${dec(S.rate*100,1)} % l'an, soit <em>${dec(S.rate/4*100,1)} %</em> ce trimestre, ou un surcroît de rendement contre un risque de perte connu d'avance, tiré à la clôture.</p>
    <div id="colls"></div></div>
   <button class="cta" id="ok">Valider le budget et voir le desk</button></div>`;
  drawBuds();drawColl();
@@ -3954,7 +3957,7 @@ const MFLAG={ES:'🇺🇸',NQ:'🇺🇸',ESTX:'🇪🇺',TOPX:'🇯🇵',MXEF:'�
 const CSYM={'Actions':'📜','Taux':'%','Devises':'💱','Matières premières':'⛏️','Exotiques':'🧪'};
 /* ── rendement attendu : ce que VOS informations disent du trimestre ────────────── */
 const EXPVF=1.15;   /* variance résiduelle d'un facteur une fois les sources lues (calibrée) */
-const SIGW={t:0.12,c:0.10,v:0.08};
+const SIGW={t:0.12,c:0.10,v:0.10},CATM=3;
 /* le signal que chaque style lit le mieux */
 const STYLESIG={syst:'c',flux:'t',fonda:'v'},SIGNM={t:'Tendance',c:'Portage',v:'Valeur'};
 function sigNoise(key){const e=TCVQ[S.bud.exec]*(S.tcvPerm?0.33:1);return e*((typeof STYLESIG!=='undefined'&&STYLESIG[S.prof]===key)?0.3:(typeof STYLESIG!=='undefined'?1.3:1))}
@@ -3962,7 +3965,7 @@ function expRet(i){
  const x=INSTR[i],f=S.factEst||[0,0,0,0],e=S.tcvEst;
  let z=0;for(let k=0;k<K;k++)z+=x.b[k]*f[k];
  let v=0;for(let k=0;k<K;k++)v+=x.b[k]*x.b[k]*EXPVF;
- if(e){const cv=(S.prof==='fonda'&&S.cat&&S.cat.includes(i))?2:1;   /* seul le discrétionnaire connaît ses catalyseurs */
+ if(e){const cv=(S.prof==='fonda'&&S.cat&&S.cat.includes(i))?CATM:1;   /* seul le discrétionnaire connaît ses catalyseurs */
   z+=(SIGW.t*e.t[i]+SIGW.c*e.c[i]+SIGW.v*cv*e.v[i])*(UNIV().edge||1);
   v+=SIGW.t**2*(sigNoise('t')**2+0.1)+SIGW.c**2*(sigNoise('c')**2+0.1)+SIGW.v**2*(sigNoise('v')**2+0.1)}
  v+=(x.idio||0)**2;
@@ -3971,7 +3974,7 @@ function expRet(i){
 /* L'attendu d'un marché, morceau par morceau (mêmes termes que expRet). */
 function expParts(i){
  const x=INSTR[i],f=S.factEst||[0,0,0,0],e=S.tcvEst||{t:[],c:[],v:[]},ed=UNIV().edge||1;
- const cv=(S.prof==='fonda'&&S.cat&&S.cat.includes(i))?2:1;
+ const cv=(S.prof==='fonda'&&S.cat&&S.cat.includes(i))?CATM:1;
  return {fac:x.b.map((b,k)=>({b,f:f[k],v:x.sigQ*b*f[k]})),
   t:x.sigQ*SIGW.t*(e.t[i]||0)*ed,c:x.sigQ*SIGW.c*(e.c[i]||0)*ed,v:x.sigQ*SIGW.v*cv*(e.v[i]||0)*ed,cv,drift:x.drift||0};
 }
@@ -4097,7 +4100,7 @@ function showMarket(i){
     ['Position',S.k[i]===0?'à plat':`${S.k[i]>0?'+':''}${S.k[i]} · ${bn(notionalBn(S.k[i],i),1)}`],
     ['Autres fonds',Math.abs(S.crowd[i])<0.25?'neutres':(S.crowd[i]>0?'majoritairement longs':'majoritairement courts')]])}
   <details style="margin-top:10px"><summary>Comment lire ce tableau</summary>
-   <p style="margin-top:8px">Facteurs : l'exposition du marché (de −1 à +1) multipliée par ce que vos sources disent du facteur. Signaux : ce que tendance, portage et valeur ajoutent${XP.cv>1?' — la valeur compte double sur un catalyseur':''}. L'intervalle couvre environ 95 trimestres sur 100 : il mesure ce que vous ne savez pas.</p>
+   <p style="margin-top:8px">Facteurs : l'exposition du marché (de −1 à +1) multipliée par ce que vos sources disent du facteur. Signaux : ce que tendance, portage et valeur ajoutent${XP.cv>1?' — la valeur compte triple sur un catalyseur':''}. L'intervalle couvre environ 95 trimestres sur 100 : il mesure ce que vous ne savez pas.</p>
    <p><em>Tendance</em> — ${TCVTXT.t.d}</p><p><em>Portage</em> — ${TCVTXT.c.d[x.grp]}</p><p><em>Valeur</em> — ${TCVTXT.v.d}</p>
    <p>Votre style lit son signal trois fois plus nettement que les deux autres ; la salle de marché règle le bruit (±${dec(TCVQ[S.bud.exec],2)} cran).</p></details>
   <details><summary>Le marché</summary>
@@ -4402,7 +4405,7 @@ function screenMacroEvent(ev){
    ${SC.ver?`<p class="note" style="margin:0 0 8px"><b>Source vérifiée</b> : votre réseau a recoupé l'information, la probabilité affichée est la vraie.</p>`:''}
    ${plan.map((o,i)=>{const ban=o.a==='follow'&&o.trades.length&&(redOn('risk')||redOn('noadd')),ko=o.a==='follow'&&o.cost>0&&o.cost>Math.max(0,mgrCash());
      return `<button class="choice evopt" data-i="${i}"${ban||ko?' disabled':''}><b>${o.b}</b><span class="evs">${o.s}${ban?' <b class="neg-g">interdit par le comité (carton rouge)</b>':ko?' <b class="neg-g">hors trésorerie</b>':''}</span>${ptab(o)}</button>`}).join('')}
-   <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, coûts d'ajustement déduits ; votre desk n'est en place qu'à ${(prof.capture*100).toFixed(0)} % quand le marché repart, c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
+   <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion ; votre desk n'est en place qu'à ${(prof.capture*100).toFixed(0)} % quand le marché repart, c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
   </div>
  </div>`;
  const go=i=>{clearTimer();resolveEvent(ev,touched,plan[i],imm,navB)};
@@ -4424,7 +4427,7 @@ function evPlans(ev,touched){
  const free=cost>0&&(prof.freeAdj||S.freeAdjB>0)&&!S.freeAdjUsed;
  const costP=free?0:cost;
  const band0=riskRc(S.k),band1=riskRc(t),v0=pvol(weights(S.k)),v1=pvol(weights(t));
- const payF=SC.m.map(m=>{const we=weights(kE);let v=0;touched.forEach(i=>v+=we[i]*m*ev.hit[INSTR[i].sym]*INSTR[i].sigQ);return v-costP/S.nav});
+ const payF=SC.m.map(m=>{const we=weights(kE);let v=0;touched.forEach(i=>v+=we[i]*m*ev.hit[INSTR[i].sym]*INSTR[i].sigQ);return v   /* lot 59 : les ordres sont payés par le gérant, pas par le fonds */});
  const fixRc=[];
  if(trades.length){
   fixRc.push([-Math.min(3,0.25*drift+0.5),`Écart au book de départ (${drift} unité${drift>1?'s':''})`]);
@@ -4438,7 +4441,7 @@ function evPlans(ev,touched){
   return {lp:c,rc,pnl:a}});
  const syms=trades.map(x=>INSTR[x.i].sym).join(', ');
  const fS=!trades.length?'Déjà au maximum autorisé sur les marchés touchés : aucun ordre possible.'
-  :`${syst?'Dérogation au modèle : ':''}+2 unités dans le sens du choc sur ${syms}. ${free?`Coût ${nb(mm(cost))} offert par le desk`:`Coût ${nb(mm(cost))}`} · vol ex-ante ${pctc(v0)} → ${pctc(v1)}${S.noAddQ?' · interdit par le comité':''}.`;
+  :`${syst?'Dérogation au modèle : ':''}+2 unités dans le sens du choc sur ${syms}. ${free?`Coût ${nb(mm(cost))} offert par le desk`:`Coût ${nb(mm(cost))} à votre charge`} · vol ex-ante ${pctc(v0)} → ${pctc(v1)}${S.noAddQ?' · interdit par le comité':''}.`;
  pieces.push({a:'follow',b:'Suivre le mouvement',s:fS,t,kE,trades,cost:costP,costRaw:cost,free,pay:payF,gz:gzF,fixRc});
  /* ne pas réagir */
  const payN=SC.m.map(m=>{const we=weights(S.k);let v=0;touched.forEach(i=>v+=we[i]*m*ev.hit[INSTR[i].sym]*INSTR[i].sigQ);return v});
@@ -4465,9 +4468,9 @@ function resolveEvent(ev,touched,o,imm,navB){
  const wE=weights(o.kE);let resid=0;const perM=[];
  touched.forEach(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ*mult;const pi=wE[i]*m;resid+=pi;
    perM.push([INSTR[i].sym,`${k0[i]>0?'+':''}${k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,`${sgn(m,1)}`,pi])});
- const navR=S.nav;S.nav*=(1+resid);S.nav-=cost;S.qEvM+=resid*navR-cost;
- const react=resid-cost/navR;
- const total=imm+resid*navR/navB-cost/navB;
+ const navR=S.nav;S.nav*=(1+resid);S.qEvM+=resid*navR;
+ const react=resid;
+ const total=imm+resid*navR/navB;
  if(acted&&react>0.01){S.fl.coche=1;award('coche')}
  /* on applique exactement les pièces affichées dans le bouton */
  const pz=o.gz[si].pnl;
@@ -4516,7 +4519,7 @@ function screenRivalEvent(e){
   <div class="evcard">${evHead(rv.boss+' · '+src,'rival')}<h3>${t1}</h3><p>${p}</p>
    <div class="shock"><span style="color:${dir>0?'var(--long)':'var(--short)'}">${x.sym} ${sgn(half,1)} déjà réalisé</span><span>vous : ${S.k[i]===0?'plat':(S.k[i]>0?'+':'')+S.k[i]}</span><span>${rv.nm} : ${dir>0?'long':'court'}</span></div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px"><div class="kv"><span>Effet de l'article</span><b><span class="${cls(g0.lp)}">investisseurs ${sd1(g0.lp)}</span> · <span class="${cls(g0.rc)}">comité ${sd1(g0.rc)}</span></b></div></div>
-  <button class="choice" data-a="follow"><b>Suivre ${rv.boss} : passer ${x.sym} à ${nk>0?'+':''}${nk}</b><span>Coût ${(t.cost*1000*1.5).toFixed(0)} M$ dans un marché qui a déjà bougé. La suite du mouvement vaut en moyenne un tiers de ce qui a été fait, avec beaucoup de bruit. Si ça continue, la presse parle d'un rattrapage ; sinon, d'un gérant qui court après les autres.</span></button>
+  <button class="choice" data-a="follow"><b>Suivre ${rv.boss} : passer ${x.sym} à ${nk>0?'+':''}${nk}</b><span>Coût ${mm(t.cost*1.5)}, à votre charge, dans un marché qui a déjà bougé. La suite du mouvement vaut en moyenne un tiers de ce qui a été fait, avec beaucoup de bruit. Si ça continue, la presse parle d'un rattrapage ; sinon, d'un gérant qui court après les autres.</span></button>
   <button class="choice" data-a="fade"><b>Prendre le contre-pied : ${x.sym} à ${(-nk)>0?'+':''}${-nk}</b><span>Vous pariez que ${rv.boss} a tort de rester. Même coût, même bruit, gloire ou ridicule.</span></button>
   <button class="choice" data-a="none"><b>Ne pas répondre à la presse</b><span>Vous ne changez rien. Investisseurs −1,5 de plus : ils voulaient une réaction.</span></button></div>`;
  const pickR=a=>{clearTimer();const navB=S.nav;let msg=[],cost=0,pnl=0;
@@ -4524,8 +4527,8 @@ function screenRivalEvent(e){
     resultCard(`RIVALITÉ · ${rv.nm.toUpperCase()}`,"Vous laissez dire",[`${rv.boss} a eu ses colonnes. Vous gardez votre book.`],[['Jauges',`<span class="${cls(g0.lp+g.lp)}">${sd1(g0.lp+g.lp)}</span> · <span class="${cls(g0.rc+g.rc)}">${sd1(g0.rc+g.rc)}</span>`]],"Continuer le trimestre",stepEvents);return}
   const target=a==='follow'?nk:-nk;const tt=tcost(target-S.k[i],i);cost=tt.cost*1.5*S.tcMultQ;S.k[i]=target;S.pendingTC+=cost/S.nav;S.totalTC+=cost;
   const resid=r*(0.17+0.45*gauss());const w=weights(S.k);pnl=w[i]*resid;
-  S.nav*=(1+pnl);S.nav-=cost;S.qEvM+=pnl*navB-cost;
-  const total=pnl-cost/navB;
+  S.nav*=(1+pnl);S.qEvM+=pnl*navB;
+  const total=pnl;   /* lot 59 : coût payé par le gérant seul */
   const g=pnlGauge(total,`${a==='follow'?'Rattrapage sur':'Contre-pied face à'} ${rv.nm} — ${x.sym}`);
   if(a==='fade'&&total>0){S.fl.contra=1;award('contra')}
   const g2=(a==='follow'&&total>0)?gauge(2,0,"La presse parle d'un rattrapage"):(a==='fade'&&total>0)?gauge(3,1,`La presse parle d'un gérant qui a osé contredire ${rv.boss}`):(a==='fade'&&total<0)?gauge(-2,-1,`La presse rit : ${rv.boss} avait raison deux fois`):gauge(-1,0,"La presse parle d'un gérant qui court après les autres");
@@ -4777,7 +4780,7 @@ function resolveQuarter(){
     fait le flux net ; la voracité (difficulté) grossit les sorties, une confiance basse aussi. */
  const CLI={syst:0.6,fonda:1.0,flux:1.6};
  const fl=S.rivals.map(rv=>{const d=qTotal-(rv.last||0),s=CLI[rv.style]||1;
-   let f=Math.max(-0.06,Math.min(0.06,0.5*s*d));if(f<0)f*=SIZE().flowMult;return {rv,d,f}});
+   let f=Math.max(-0.06,Math.min(0.06,0.5*s*d));if(f<0)f*=SIZE().flowMult;else f*=(SIZE().flowIn||1);return {rv,d,f}});
  let tot=fl.reduce((a,x)=>a+x.f,0);
  if(S.lp<40)tot-=0.04*(40-S.lp)/40*SIZE().flowMult;
  tot=Math.max(-0.25,Math.min(0.20,tot+(rng()-0.5)*0.01));
