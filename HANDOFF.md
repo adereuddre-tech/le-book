@@ -590,6 +590,16 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   Carton rouge : pop-up rouge (`.redbox`) à la clôture. Dépêches : confiance avant la décision, confiance
   finale par issue dans la colonne Confiance, « 62 → 58 » au résultat.
 
+- **Lot 64** (`99zz-lot64.py`) : minuteur des dépêches selon la difficulté (facile 45–60 s, moyen
+  25–35 s, difficile 15–25 s). Sources : mode d'emploi, lecture consolidée et matrice dans un seul volet
+  replié. Budget : le texte trésorerie / ordres passe dans un 2ᵉ écran de tutoriel (4 écrans : jauges,
+  budget, sources, facteurs). Tuile Trésorerie en M$ à une décimale (`treso`). `bridgePts` : bruit au
+  moins proportionnel à l'ampleur du pas (plus de rampes droites). Nuage : point du joueur à sa couleur
+  (`myCol`), concurrents à la leur (`rivCol`), sans libellés d'axes, profit à une décimale ; clic →
+  grand nuage (noms, valeurs, bande) en tête de la pop-up Risque (`window.__pre` lu par `openModal`).
+  Carton rouge « marchés fermés » / « classe interdite » : lignes à contribution positive au risque du
+  book de fin de trimestre, puis taille de position ; le hasard seulement à book vide.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;

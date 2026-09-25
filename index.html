@@ -2102,6 +2102,7 @@ function prng32(a){let s=a|0;return function(){s=s+0x6D2B79F5|0;let t=Math.imul(
 /* Pont brownien géométrique : m points de v0 à v1, texture de cours, extrémités clouées. */
 function bridgePts(v0,v1,m,seed,vol){
  const r=prng32(seed),a=Math.log(Math.max(1e-9,v0)),b=Math.log(Math.max(1e-9,v1));
+ vol=Math.max(vol,Math.abs(b-a)*0.55/Math.sqrt(Math.max(1,m)));   /* lot 64 : un grand pas reste brownien */
  const raw=[];let w=0;
  for(let i=0;i<m;i++){w+=(r()*2-1)*vol;raw.push(w)}
  const last=raw[m-1]||0,out=[];
@@ -2942,12 +2943,16 @@ function redOn(id){return !!(S&&S.redOn&&S.redC&&S.redC.id===id)}
 function redDraw(w){
  const u=prng32(hash32('redc'+S.q+'_'+((S.cards&&S.cards.r)||0),S.seed));
  const av=REDC.filter(c=>c.id!==S.redLast),c=Object.assign({},av[Math.floor(u()*av.length)]);
- if(c.id==='shut'){const rc=riskContrib(w);
-  let o=INSTR.map((x,i)=>({i,v:Math.abs(rc[i]||0)})).filter(z=>mktOpen(z.i)).sort((a,b)=>b.v-a.v||a.i-b.i);
-  if(!(o[0]&&o[0].v>1e-9))o=o.map(z=>({i:z.i,v:u()})).sort((a,b)=>b.v-a.v);
-  c.syms=o.slice(0,3).map(z=>INSTR[z.i].sym);c.t=`${c.syms.join(', ')} fermés au fonds`}
+ /* lot 64 : les marchés fermés sont ceux où le risque a été pris — contribution positive au
+    risque du book de fin de trimestre, puis taille de position ; le hasard seulement à book vide */
+ const rcw=riskContrib(w),kk=S.kVal||S.k;
+ if(c.id==='shut'){
+  let o=INSTR.map((x,i)=>({i,v:rcw[i]||0,k:Math.abs(kk[i]||0)})).filter(z=>mktOpen(z.i)&&(z.v>1e-9||z.k>0)).sort((a,b)=>b.v-a.v||b.k-a.k||a.i-b.i);
+  if(!o.length)o=INSTR.map((x,i)=>({i,v:u()})).filter(z=>mktOpen(z.i)).sort((a,b)=>b.v-a.v);
+  c.syms=o.slice(0,3).map(z=>INSTR[z.i].sym);c.t=`${c.syms.join(', ')} fermés au fonds : les lignes qui portaient le plus de risque`}
  if(c.id==='class'){const cl=[...new Set(INSTR.filter((x,i)=>mktOpen(i)).map(x=>x.grp))];
-  const g=cl[Math.floor(u()*cl.length)];c.syms=INSTR.filter((x,i)=>x.grp===g&&mktOpen(i)).map(x=>x.sym);
+  const cr=g=>INSTR.reduce((a,x,i)=>a+(x.grp===g?Math.max(0,rcw[i]||0):0),0);
+  const g=cl.slice().sort((a,b)=>cr(b)-cr(a))[0]&&cr(cl.slice().sort((a,b)=>cr(b)-cr(a))[0])>1e-9?cl.slice().sort((a,b)=>cr(b)-cr(a))[0]:cl[Math.floor(u()*cl.length)];c.syms=INSTR.filter((x,i)=>x.grp===g&&mktOpen(i)).map(x=>x.sym);
   c.t=`toute la classe « ${g.toLowerCase()} » interdite (${c.syms.join(', ')})`}
  if(c.syms){S.shut=S.shut||{};c.syms.forEach(sy=>S.shut[sy]=S.q)}   /* fermés pendant le trimestre qui vient */
  S.redLast=c.id;return c;
@@ -3295,7 +3300,7 @@ function statusBar(done){
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
    <button class="tile gauge${(mvL||mvR)?' moved':''}" data-gauge="lp" style="flex:2.1${mvSty(mvL||mvR)}"><span><i>Confiance</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,conf()):Math.round(conf())}${S.phase==='book'&&S._pv?(()=>{const nl=Math.max(0,Math.min(100,S.lp+cf(S._pv.lp,S._pv.rc))),nc=nl,d=nc-conf();return Math.abs(d)>=0.05?`<span class="${cls(d)}">→${Math.round(nc)}</span>`:''})():''}</b></span><span class="track"><i style="width:${conf()}%;background:${gc(conf())}"></i></span></button>
    ${cardTile()}
-   <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Trésorerie</span><b id="gaintile" class="${mgrCash()>=0?'':'neg-g'}">${score(mgrCash())}</b></button>
+   <button class="tile gold" data-gauge="gain" style="flex:.95"><span>Trésorerie</span><b id="gaintile" class="${mgrCash()>=0?'':'neg-g'}">${treso(mgrCash())}</b></button>
   </div>
   <div class="srow">
    ${[0,1,2,3].map(fg).join('')}
@@ -3472,13 +3477,13 @@ function resultCard(kick,title,paras,rows,btn,next,extra){
  if(hold)theatre(app.querySelector('.evwrap'));   /* racine propre à l'écran : ses écouteurs meurent avec lui */
 }
 function refreshGain(){const e=document.getElementById('gaintile');if(!e||!S)return;
- const v=mgrCash();e.textContent=score(v);e.className=v>=0?'':'neg-g'}
+ const v=mgrCash();e.textContent=treso(v);e.className=v>=0?'':'neg-g'}
 function refreshStatus(){const el=app.querySelector('.status');if(el)el.outerHTML=statusBar(S.statusDone)}
 function openModal(title,html){
  let m=document.getElementById('modal');
  if(!m){m=document.createElement('div');m.id='modal';document.body.appendChild(m)}
- m.innerHTML=`<div class="mback"></div><div class="mbox fade"><div class="mhead"><h3>${title}</h3><button class="mclose" aria-label="Fermer">×</button></div><div class="mbody">${html}</div></div>`;
- m.style.display='block';
+ m.innerHTML=`<div class="mback"></div><div class="mbox fade"><div class="mhead"><h3>${title}</h3><button class="mclose" aria-label="Fermer">×</button></div><div class="mbody">${window.__pre||''}${html}</div></div>`;
+ m.style.display='block';window.__pre='';
  m.querySelector('.mback').onclick=m.querySelector('.mclose').onclick=()=>{m.style.display='none'};
 }
 let TID=null;
@@ -3489,7 +3494,7 @@ function armTimer(fn){
  let el=document.getElementById('evtimer');
  if(!el){el=document.createElement('div');el.id='evtimer';el.className='evtimer';document.body.appendChild(el)}
  el.classList.add('on');
- const sec=15+Math.floor(Math.random()*16);let t=sec;   /* tirage uniforme 15–30 s */
+ const TR={small:[45,60],mid:[25,35],mega:[15,25]}[(S&&S.size)||'mid']||[25,35],sec=TR[0]+Math.floor(Math.random()*(TR[1]-TR[0]+1));let t=sec;   /* lot 64 : selon la difficulté */
  const R=30,C=2*Math.PI*R;
  el.innerHTML=`<span class="tdial"><svg viewBox="0 0 76 76">
    <circle class="tfill" cx="38" cy="38" r="${R}"/>
@@ -3540,6 +3545,7 @@ function sig3(v,unit){const a=Math.abs(v);const d=a>=100?0:a>=10?1:2;
  return (v<0?'−':'')+Math.abs(v).toFixed(d).replace('.',',')+' '+unit}
 /* Trésorerie et gains : en milliers de dollars tant qu'on est sous dix millions, ce qui est
    la plage où se joue la partie, puis en millions. 9 999 k$, puis 13,23 M$. */
+const treso=x=>{const a=Math.abs(x),sg=x<0?'−':'';if(a>=1)return sig3(x,'Md$');if(a>=0.001)return sg+(a*1000).toFixed(1).replace('.',',')+' M$';return sg+Math.round(a*1e6)+' k$'};
 const score=x=>{const a=Math.abs(x),sg=x<0?'−':'';
  if(a>=1)return sig3(x,'Md$');
  if(a>=0.01)return sg+(a*1000).toFixed(2).replace('.',',')+' M$';
@@ -3587,6 +3593,7 @@ function showGauge(id){
    <p class="note">L'exposition n'est pas le risque : un book brut de 4× réparti sur des marchés qui s'annulent peut être moins volatil qu'un book de 1× concentré sur un seul facteur. La jauge Risque, elle, tient compte des corrélations. Les deux se lisent ensemble — un écart important entre elles signale un book qui repose sur des compensations, et les compensations se défont dans les crises.</p>`);
  }
  else if(id==='risk'){
+  window.__pre=riskMap(riskShown(w).total,1);   /* lot 64 : le nuage en grand, puis la page */
   const vd=varDecomp(w),rc=riskContrib(w);
   const top=rc.map((v,i)=>({v,i})).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,5).filter(o=>Math.abs(o.v)>1e-6);
   const RS=riskShown(w),MGU=marginPct(S.k);
@@ -3816,18 +3823,21 @@ function phaseClose(o){
 const TUTOS=[
  {id:0,t:"Les jauges, en haut de l'écran",
   h:`<p>Tout le jeu se lit dans cette barre. La <b>confiance</b> résume deux jugements : celui des investisseurs, qui regardent la performance, et celui du comité des risques, qui regarde la discipline. Sous 20, l'un comme l'autre fait partir de l'argent par des rachats. La partie ne s'arrête que si l'encours tombe sous 5 % de son niveau de départ.</p>
-  <p><b>Risque du book</b> affiche votre volatilité ex-ante majorée, à comparer à la cible de votre mandat. <b>Vos gains</b> est votre score : les commissions encaissées, moins ce que vous dépensez. Chaque jauge s'ouvre d'un clic et explique son propre calcul.</p>`},
- {id:1,t:"Les sources, et ce qu'elles valent",
+  <p><b>Risque du book</b> affiche votre volatilité ex-ante majorée, à comparer à la cible de votre mandat. <b>Trésorerie</b>, c'est votre score : les commissions encaissées, moins ce que vous dépensez. Chaque jauge s'ouvre d'un clic et explique son propre calcul.</p>`},
+ {id:1,t:"Le budget, et votre trésorerie",
+  h:`<p>Le budget d'exploitation est payé <b>de votre poche</b>, pas par le fonds, dans la limite de votre <b>trésorerie</b> — la tuile dorée du haut. Votre société n'a pas de capital : sa trésorerie, ce sont vos gains nets. Un point de base d'encours vaut 10 k$ pour un fonds de 100 M$.</p>
+  <p>⚠ La même trésorerie paie vos <b>ordres de marché</b> : ce que le budget consomme, le book ne peut plus le dépenser, et les cases trop chères se grisent. En début de partie, la caisse se limite à la première commission de gestion : gardez des budgets serrés, vous les relèverez quand les commissions de performance rentreront.</p>`},
+ {id:2,t:"Les sources, et ce qu'elles valent",
   h:`<p>Chaque trimestre un certain nombre de sources arrivent sur votre bureau : leur nombre et leur fiabilité dépendent du budget de recherche macro que vous avez fixé et de votre style. Une source porte une orientation par facteur et une classe de fiabilité — faible, moyenne, forte — qui est la probabilité qu'elle dise vrai.</p>
   <p>Plusieurs sources qui pointent dans le même sens valent mieux qu'une seule très fiable : c'est l'accumulation d'indices indépendants qui déplace l'estimation. Une <em>pré-annonce</em> concerne une dépêche qui peut tomber en cours de trimestre — ou pas.</p>`},
- {id:2,t:"Facteurs et signaux : d'où vient la performance",
+ {id:3,t:"Facteurs et signaux : d'où vient la performance",
   h:`<p>Chaque marché porte quatre sensibilités, affichées sur sa ligne : <b>C</b>roissance, <b>I</b>nflation, <b>D</b>ollar, <b>A</b>ppétit pour le risque. Un <em>+</em> ou <em>−</em> indique le sens, doublé quand la sensibilité est forte, <em>0</em> quand le marché y est insensible. Le rendement d'un trimestre est d'abord la réalisation de ces quatre facteurs appliquée à vos positions.</p>
   <p>Les trois colonnes <b>tendance</b>, <b>portage</b> et <b>valeur</b> sont des signaux de marché, indépendants des rumeurs. Votre style de gestion décide du poids relatif accordé aux sources et à ces signaux : c'est ce qui construit le book que le desk vous recommande.</p>`}
 ];
 function tuto(n,next){
  if(!S||S.tuto>n||S.q>1)return;
  const T=TUTOS[n];S.tuto=n+1;
- setTimeout(()=>{openModal(`Tutoriel · ${n+1} sur 3 — ${T.t}`,
+ setTimeout(()=>{openModal(`Tutoriel · ${n+1} sur 4 — ${T.t}`,
   T.h+`<p style="margin-top:12px">${next!==undefined?'<button class="buy" id="tutonext">Suivant →</button> ':''}<button class="buy" id="tutooff">Ne plus afficher le tutoriel</button></p>`);
   const nb=document.getElementById('tutonext');
   if(nb)nb.onclick=()=>{const m=document.getElementById('modal');if(m)m.remove();tuto(next)};
@@ -3836,7 +3846,7 @@ function tuto(n,next){
  },420);
 }
 function screenBudget(){
- tuto(0);
+ tuto(0,1);
  S.phase='budget';
  save('screenBudget');S.hotFactor=null;
  S.mgrCosts-=S.qOps||0;S.qOps=0;
@@ -3848,10 +3858,6 @@ function screenBudget(){
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Budget d'exploitation du trimestre</h2><span class="hint">à votre charge</span></div>
    ${redNote()}
-   <p class="note" style="margin-top:0">Payé de votre poche, pas par le fonds, dans la limite de votre trésorerie. 1 pb = <em>${(S.nav*100).toFixed(0)} k$</em>.</p>
-   <div class="kv"><span>Trésorerie disponible ce trimestre</span><b id="btre">${mm(mgrCash()+(S.qOps||0))}</b></div>
-   <div class="kv"><span>Reste pour les ordres du trimestre</span><b id="brest"></b></div>
-   <p class="note" style="margin:4px 0 8px">⚠ La même trésorerie paie vos ordres de marché : ce que le budget consomme, le book ne peut plus le dépenser. En début de partie, quand la caisse se limite à la première commission de gestion, gardez des budgets serrés ; vous les relèverez quand les commissions de performance rentreront.</p>
    <div id="buds"></div>
    <div class="budtot"><span>Total du trimestre</span><b id="btot"></b></div>
   </div>
@@ -3904,13 +3910,14 @@ function drawBuds(){
 
 /* ---------- positionnement ---------- */
 function screenPlay(){
- tuto(1,2);
+ tuto(2,3);
  goldFlush(500);
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Bruits de salle et rumeurs</h2><span class="hint">T${S.q+1} · ${S.rumors.length} sources</span></div>
    ${S.rupture?`<div class="flag" style="margin:0 0 10px"><span><b>Rupture factorielle sur ${INSTR[S.rupture.i].sym}</b> — sa sensibilité au facteur « ${FACT[S.rupture.k].nm.toLowerCase()} » passe de ${S.rupture.old>=0?'+':'−'}${dec(Math.abs(S.rupture.old),2)} à ${S.rupture.nw>=0?'+':'−'}${dec(Math.abs(S.rupture.nw),2)} : ${S.rupture.why}.</span></div>`:''}
    <div class="wire" id="news"></div>
-   <details style="margin-top:8px"><summary>Comment lire ces sources</summary><p class="note">Chaque source prétend un effet sur les quatre facteurs (▼▼ à ▲▲) et porte une <em>fiabilité</em> : la probabilité qu'elle dise vrai. Leur nombre et leur fiabilité dépendent du budget de recherche macro et de votre style. Les quatre tuiles de la barre du haut en donnent la lecture consolidée ; le rendement attendu de chaque marché en tient compte.</p></details>
+   <details style="margin-top:8px"><summary>Lire les sources · lecture consolidée · matrice</summary>
+   <details style="margin-top:4px"><summary>Comment lire ces sources</summary><p class="note">Chaque source prétend un effet sur les quatre facteurs (▼▼ à ▲▲) et porte une <em>fiabilité</em> : la probabilité qu'elle dise vrai. Leur nombre et leur fiabilité dépendent du budget de recherche macro et de votre style. Les quatre tuiles de la barre du haut en donnent la lecture consolidée ; le rendement attendu de chaque marché en tient compte.</p></details>
    <details style="margin-top:10px"><summary>Lecture consolidée · déjà dans la barre du haut</summary>
    ${PROF().numeric?`<div class="wire" style="margin-bottom:8px"><div class="kv" style="padding-bottom:6px"><span><b>Le book que le modèle construirait</b></span></div><div id="factest"></div>
     <details style="margin-top:6px"><summary>Comment votre desk raisonne</summary><p class="note">${STYLEW[S.prof].txt} Il agrège les impacts prétendus de vos sources achetées, pondérés par leur fiabilité (2p−1) et par la famille de la source, puis traduit le tout en positions via la matrice factorielle, en y ajoutant les signaux de tendance, de portage et de valeur selon les poids de votre style. La lecture consolidée ci-dessus dit <em>ce que pensent les sources</em> ; ce book dit <em>ce qu'il faudrait acheter ou vendre</em> si vous suiviez votre desk. À vous de suivre, de nuancer ou d'ignorer.</p></details></div>`:''}
@@ -3919,6 +3926,7 @@ function screenPlay(){
    <details class="wire" style="margin-top:8px"><summary>Matrice d'exposition factorielle${S.rupture?' <b style="color:var(--warn)">· rupture</b>':''}</summary>
     <div id="bmat" style="overflow-x:auto"></div>
     <p class="note">Chargements b<sub>ik</sub> de chaque marché sur les quatre facteurs. La matrice dérive lentement d'un trimestre à l'autre ; ↑↓ signale un changement supérieur à 0,10 depuis le trimestre précédent. Le point coloré à droite de chaque marché donne le positionnement des autres fonds : vert, le monde est long ; rouge, le monde est court.</p>
+   </details>
    </details>
   </div>
   <div class="block"><div class="blockhead"><h2>Le book</h2><span class="hint">unités de risque, de −${S.maxk} à +${S.maxk}</span></div>
@@ -4033,29 +4041,34 @@ function rivPt(rv){
  else E=(2*s-1)*1.6*1.8;
  return {x:rv.vol,y:S.rate/4+(rv.vol/2)*0.35*E-0.008-0.5*rv.vol*rv.vol/4,l:(rv.nm||'?').replace(/^(Le |La |L')/,'')[0]};
 }
-function riskMap(sp){
- const W=150,H=66,x0=3,x1=W-3,yb=H-2,yt=3;   /* axe des abscisses tout en bas du cadre */
- const pr=profitBook(S.k),R=(S.rivals||[]).map(rivPt),bd=bandNow();
+function rivCol(j){const r=S.rivals[j];return CRESTS[((r&&r.crest!==undefined)?r.crest:RIVCREST[j%4])%CRESTS.length].a}
+function riskMap(sp,big){
+ const W=big?320:150,H=big?210:66,x0=big?30:3,x1=W-(big?8:3),yb=H-(big?18:2),yt=big?8:3,fs=big?11:9,ls=big?10:7;
+ const pr=profitBook(S.k),R=(S.rivals||[]).map((rv,j)=>Object.assign(rivPt(rv),{c:rivCol(j),nm:rv.nm})),bd=bandNow();
  const xs=[sp,S.tgt*(1+bd),S.tgt*(1-bd),...R.map(r=>r.x)],ys=[pr,0,...R.map(r=>r.y)];
- const xa=Math.min(...xs)*0.85,xm=Math.max(...xs)*1.08;
- const ya=Math.min(...ys),yz=Math.max(...ys),yp=(yz-ya)*0.18+0.002;
+ const xa=Math.min(...xs)*0.85,xm=Math.max(...xs)*1.08,ya=Math.min(...ys),yz=Math.max(...ys),yp=(yz-ya)*0.18+0.002;
  const X=v=>x0+(x1-x0)*(v-xa)/(xm-xa),Y=v=>yb-(yb-yt)*(v-(ya-yp))/((yz+yp)-(ya-yp));
- const hi=sp>S.tgt*(1+bd)+1e-9,col=hi?'#D2463C':'var(--gold)',f=v=>v.toFixed(1);
+ const hi=sp>S.tgt*(1+bd)+1e-9,me=myCol(S.rivals||[]),f=v=>v.toFixed(1);
  let g=`<rect x="${f(X(S.tgt*(1-bd)))}" y="${yt}" width="${f(X(S.tgt*(1+bd))-X(S.tgt*(1-bd)))}" height="${yb-yt}" fill="var(--long)" opacity=".13"/>`
   +`<line x1="${f(X(S.tgt))}" x2="${f(X(S.tgt))}" y1="${yt}" y2="${yb}" stroke="var(--long)" stroke-width=".8" stroke-dasharray="2 2" opacity=".7"/>`
   +`<line x1="${x0}" x2="${x1}" y1="${f(Y(0))}" y2="${f(Y(0))}" stroke="var(--dimmer)" stroke-width=".6" stroke-dasharray="2 2"/>`
-  +`<line x1="${x0}" x2="${x1}" y1="${yb}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".8"/><line x1="${x0}" x2="${x0}" y1="${yt}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".8"/>`
-  +`<text x="${x1}" y="${yb-2}" font-size="6.5" text-anchor="end" fill="var(--dimmer)" font-family="var(--mono)">risque</text>`
-  +`<text x="${x0+2}" y="${yt+6}" font-size="6.5" fill="var(--dimmer)" font-family="var(--mono)">profit</text>`;
- R.forEach(r=>{g+=`<circle cx="${f(X(r.x))}" cy="${f(Y(r.y))}" r="2.1" fill="var(--dim)"/><text x="${f(X(r.x)+3)}" y="${f(Y(r.y)+2.5)}" font-size="7" fill="var(--dim)" font-family="var(--mono)">${r.l}</text>`});
+  +`<line x1="${x0}" x2="${x1}" y1="${yb}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".8"/><line x1="${x0}" x2="${x0}" y1="${yt}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".8"/>`;
+ if(big){
+  const t=(v,lab)=>`<text x="${f(X(v))}" y="${yb+12}" font-size="9" text-anchor="middle" fill="var(--dim)" font-family="var(--mono)">${lab}</text>`;
+  g+=t(S.tgt*(1-bd),dec(S.tgt*(1-bd)*100,0)+' %')+t(S.tgt,'cible')+t(S.tgt*(1+bd),dec(S.tgt*(1+bd)*100,0)+' %')
+   +`<text x="${x0-3}" y="${f(Y(0)+3)}" font-size="9" text-anchor="end" fill="var(--dim)" font-family="var(--mono)">0</text>`
+   +`<text x="${f(X(S.tgt*(1-bd))+3)}" y="${yt+10}" font-size="9" fill="var(--long)" font-family="var(--mono)" opacity=".8">bande du mandat</text>`;
+ }
+ R.forEach(r=>{g+=`<circle cx="${f(X(r.x))}" cy="${f(Y(r.y))}" r="${big?4:2.4}" fill="${r.c}"/><text x="${f(X(r.x)+(big?6:3.2))}" y="${f(Y(r.y)+(big?3.5:2.5))}" font-size="${ls}" fill="${r.c}" font-family="var(--mono)">${big?`${r.nm} · ${dec(r.x*100,0)} % · ${r.y>=0?'+':'−'}${dec(Math.abs(r.y)*100,1)} %`:r.l}</text>`});
  const px=X(sp),py=Y(pr);
- /* repères du joueur : tirets vers les axes, valeurs en blanc au bord de chaque axe */
  g+=`<line x1="${f(px)}" x2="${f(px)}" y1="${f(py)}" y2="${yb}" stroke="#F3EEE4" stroke-width=".5" stroke-dasharray="1.5 1.5" opacity=".6"/>`
   +`<line x1="${x0}" x2="${f(px)}" y1="${f(py)}" y2="${f(py)}" stroke="#F3EEE4" stroke-width=".5" stroke-dasharray="1.5 1.5" opacity=".6"/>`
-  +`<text x="${f(Math.min(x1-16,Math.max(x0+14,px)))}" y="${yb-2}" font-size="7.5" text-anchor="middle" fill="#F3EEE4" font-family="var(--mono)" font-weight="600">${dec(sp*100,1)} %</text>`
-  +`<text x="${x0+2}" y="${f(Math.min(yb-9,Math.max(yt+14,py-2)))}" font-size="7.5" fill="#F3EEE4" font-family="var(--mono)" font-weight="600">${pr>=0?'+':'−'}${dec(Math.abs(pr)*100,2)} %</text>`
-  +`<circle cx="${f(px)}" cy="${f(py)}" r="3.6" fill="${col}" stroke="var(--bg,#0b1020)" stroke-width=".8"/>`;
- return `<svg class="rmap" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${g}</svg>`;
+  +`<text x="${f(Math.min(x1-20,Math.max(x0+20,px)))}" y="${yb-3}" font-size="${fs}" text-anchor="middle" fill="${hi?'#E5675C':'#F3EEE4'}" font-family="var(--mono)" font-weight="700">${dec(sp*100,1)} %</text>`
+  +`<text x="${x0+2}" y="${f(Math.min(yb-fs-3,Math.max(yt+fs,py-3)))}" font-size="${fs}" fill="#F3EEE4" font-family="var(--mono)" font-weight="700">${pr>=0?'+':'−'}${dec(Math.abs(pr)*100,1)} %</text>`
+  +`<circle cx="${f(px)}" cy="${f(py)}" r="${big?5.5:3.8}" fill="${me}" stroke="${hi?'#D2463C':'var(--bg,#0b1020)'}" stroke-width="${hi?1.6:.8}"/>`
+  +(big?`<text x="${f(px+8)}" y="${f(py-6)}" font-size="10" fill="${me}" font-family="var(--mono)" font-weight="700">Vous</text>`:'');
+ return big?`<p class="note" style="margin:0 0 4px">Risque annualisé du book (bruit d'estimation compris) en abscisse, profit attendu du trimestre en ordonnée — collatéral, impact et drain de volatilité compris. Les concurrents sont placés à leur couple estimé.</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:10px">${g}</svg>`
+  :`<svg class="rmap" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${g}</svg>`;
 }
 function colExp(){const o=colOpt();return redOn('collat')?S.rate/4*0.6:S.rate/4+colY(o)-o.p*o.l}
 function profitBook(k){
