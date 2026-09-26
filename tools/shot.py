@@ -9,6 +9,7 @@ if($('#go')&&$('#picks')){for(const [k,v] of Object.entries({prof:'flux',vol:'st
 if($('#send')){const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));if(typeof drawRows==='function')drawRows();if(typeof refreshSend==='function')refreshSend();if($('#send').disabled&&$('#fitbook'))c($('#fitbook'));c($('#send'));return 1}
 const ch=document.querySelectorAll('.choice');if(ch.length){c(ch[0]);return 1}
 if($('#commok')){c($('#commok'));return 1}
+if($('.commgo')){c($('.commgo'));return 1}
 for(const id of ['#ok','#go2','#rgo','#pgo','#nx']){const b=$(id);if(b&&!b.disabled){c(b);return 1}}
 const a=[...document.querySelectorAll('button.cta,button.buy')].filter(b=>!b.disabled);if(a.length){c(a[0]);return 1}return 0}"""
 with sync_playwright() as p:
