@@ -714,6 +714,10 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   fonds sur chaque jauge ; ses deux valeurs prennent la couleur de la jauge à leur position. Étiquettes des
   concurrents basculées à gauche du point près du bord droit. Identifiants de dégradé uniques (`riskMap.n`) : la
   vignette et le grand format coexistent dans la page. Régression 18 parties 0 erreur 0 écart.
+- **Lot 74** (`99zzl-lot74.py`) : jauges raccourcies à la valeur du fonds (`gzBar`) — risque de l'origine au risque
+  du fonds, rentabilité de zéro à la rentabilité du fonds (vers le bas si négative) — sur une trace pâle (opacité
+  0,14) de l'axe entier. Dégradé en `userSpaceOnUse` calé sur l'axe complet : la couleur au bout de la barre est
+  celle de la valeur, pas celle du bout de l'échelle.
 
 ## Calibration (bot intelligent, `tools/bot.js`)
 
