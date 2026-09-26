@@ -899,7 +899,7 @@ Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1�
 
 Apparié : fonda − quant +12,1 ± 8,9 ; flux − fonda **−18,6 ± 5,5** ; flux − quant −6,6 ± 7,4.
 L'ordre voulu quant < fondamental < flux est **violé** : le flux est dernier et seul à mourir.
-Survie 100 % du quant et du fondamental : la partie ne tue plus qu'eux… à savoir personne.
+Survie 100 % du quant et du fondamental : seul le flux peut encore perdre la partie.
 
 | Option | Δscore ± se | Δrend. | Δbudget | Δsurvie |
 |---|---|---|---|---|
