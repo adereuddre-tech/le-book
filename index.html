@@ -366,7 +366,7 @@ summary::marker{color:var(--dimmer)}
 .sgrid .tile.aum>span.aumv{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:inherit;color:inherit}
 .sgrid .tile.aum>span.aumv b{font-family:var(--mono);font-size:15px;font-weight:500}.sgrid .tile.aum>span.aumv b:first-child{color:var(--txt)}
 .sgrid .tile.aum>span.aumv em{font-style:normal;font-size:10.5px}
-.bkd{display:block;margin-top:4px;font-size:11.5px;color:var(--dim);font-family:var(--mono)}.bkd b{font-weight:600}
+.bkd{display:block;margin-top:4px;font-size:11.5px;color:var(--dim);font-family:var(--mono)}.bkd b{font-weight:600}.bkd>span{display:block}
 .rmap .rd{position:absolute;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%}
 .rmap .rd.me{width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border:1px solid var(--bg,#0b1020)}.rmap .rd.me.hot{border:1.5px solid #D2463C}
 .rmap .rl{position:absolute;font-family:var(--mono);font-size:7px;line-height:1;white-space:nowrap}
@@ -2352,7 +2352,7 @@ function tcost(dk,i){
  bp=(x.s+x.c*Math.pow(bnE,pw)*(pw===0.5?1:1.9)*depthMult(x,bn))*TCK;
  let m=EXECM[S.bud.exec]*desk.mult(x)*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult;
  if(S.leak&&Math.abs(S.k[i])>2)m*=1.45;
- if(S.star>=0&&INSTR[S.star]&&INSTR[i].grp===INSTR[S.star].grp)m*=0.5;   /* lot 68 : toute la classe */
+ if((S.stars||[]).includes(INSTR[i].grp))m*=0.5;   /* lot 70 : recrues gardées jusqu'à la fin, ÷2 sur leur classe (sans cumul) */
  bp*=m;
  const cost=bn*bp*1e-4,spr=Math.min(cost,bn*x.s*TCK*m*1e-4);
  return {cost,bp,bn,spr,imp:cost-spr};
@@ -3034,8 +3034,8 @@ function bonusOpen(){
   goldLater({v:'glass',k:'TALENT · RECHERCHE',tier:'argent',t:"L'ancien économiste de la Fed signe chez vous",d:"Trente ans de réunions du FOMC, et un carnet d'adresses qu'on ne trouve pas dans les manuels.",g:'+2 sources par trimestre, pendant deux trimestres'})}
  if(!hasBonus('star')&&S.q>=1&&S.bud.exec>=BUDMAX&&bonusDraw('star')<0.30){markBonus('star');
   const rv=S.rivals.slice().sort((a,b)=>b.cum-a.cum)[0],i=Math.floor(bonusDraw('starmkt')*N);
-  S.star=i;rv.skill=Math.max(0.5,rv.skill-0.02);
-  goldLater({v:'star',k:'TALENT · DÉBAUCHAGE',tier:'or',t:`Le trader star de ${rv.nm}`,d:`Il traite ${INSTR[i].nm.toLowerCase()} mieux que personne, et il a choisi votre desk.`,g:`coûts ÷2 sur toute la classe ${INSTR[i].grp.toLowerCase()} ce trimestre · ${rv.nm} affaibli`})}
+  S.stars=S.stars||[];if(!S.stars.includes(INSTR[i].grp))S.stars.push(INSTR[i].grp);rv.skill=Math.max(0.5,rv.skill-0.02);
+  goldLater({v:'star',k:'TALENT · DÉBAUCHAGE',tier:'or',t:`Le trader star de ${rv.nm}`,d:`Il traite ${INSTR[i].nm.toLowerCase()} mieux que personne, et il a choisi votre desk.`,g:`coûts ÷2 sur toute la classe ${INSTR[i].grp.toLowerCase()} tant qu'il reste chez vous · ${rv.nm} affaibli`})}
  if(!hasBonus('jh')&&S.q>=1&&conf()>=75&&bonusDraw('jh')<0.25){markBonus('jh');S.jh=true;
   goldLater({v:'glass',k:'INFORMATION',tier:'argent',t:'Dîner à Jackson Hole',d:"Entre la poire et le fromage, un gouverneur laisse entendre ce qui va tomber.",g:'la première dépêche du trimestre vous est pré-annoncée à coup sûr'})}
 }
@@ -3498,7 +3498,9 @@ function bkD(k1,cost,hid){
  if(!k1)return '';const same=k1.every((v,i)=>v===S.k[i]);if(same&&!hid&&!cost)return '';
  const R=kk=>riskShown(weights(kk)).total,dr=(R(k1)-R(S.k))*100,dp=profitBook(k1)-profitBook(S.k);
  const ch=k1.map((v,i)=>v!==S.k[i]?`${INSTR[i].sym} ${S.k[i]>0?'+':''}${S.k[i]}→${v>0?'+':''}${v}`:null).filter(Boolean);
- return `<span class="bkd">${ch.length?`${ch.slice(0,4).join(', ')}${ch.length>4?'…':''} · rentabilité ${pc2(dp)} · risque <b class="${dr>0.05?'neg-g':dr<-0.05?'pos-g':'dim-g'}">${dr>=0?'+':'−'}${dec(Math.abs(dr),1)} pt</b>`:''}${cost>0?` · coûts <b>${mm(cost)}</b>`:cost<0?` · coûts <b class="pos-g">−${mm(-cost)}</b>`:''}${hid?`${ch.length?' · ':''}<i>positions supplémentaires tirées au moment de l'exécution</i>`:''}</span>`;
+ const cs=cost>0?`coûts <b>${mm(cost)}</b>`:cost<0?`coûts <b class="pos-g">−${mm(-cost)}</b>`:'';
+ const l1=[ch.length?`${ch.slice(0,4).join(', ')}${ch.length>4?'…':''}`:'',cs].filter(Boolean).join(' · ');
+ return `<span class="bkd">${l1?`<span>${l1}</span>`:''}${ch.length?`<span>rentabilité ${pc2(dp)}</span><span>risque <b class="${dr>0.05?'neg-g':dr<-0.05?'pos-g':'dim-g'}">${dr>=0?'+':'−'}${dec(Math.abs(dr),1)} pt</b></span>`:''}${hid?`<span><i>positions supplémentaires tirées au moment de l'exécution</i></span>`:''}</span>`;
 }
 function bkPrev(e,mode){if(!e)return '';const p=kPrev(e,mode);return p?bkD(p.k,p.cost,p.hid):''}
 function fxTxt(s,x){
@@ -4040,10 +4042,11 @@ function planSignalsAfterBudget(){
  let pInc=0.09*ARCH().incMult*RISKM[S.bud.risk]*PROF().incMult+(DESK().algo?0.03:0);
  S.incidentDue=rng()<pInc;
  /* trader star */
- S.star=-1;
+ S.star=-1;S.stars=S.stars||[];
  if(STARP[S.bud.exec]>0&&rng()<STARP[S.bud.exec])S.star=Math.floor(rng()*N);
+ if(S.star>=0&&!S.stars.includes(INSTR[S.star].grp))S.stars.push(INSTR[S.star].grp);
  if(S.star>=0){const rv=S.rivals[Math.floor(bonusDraw('recrue')*S.rivals.length)];
-  goldLater({v:'star',k:'RECRUE DU TRIMESTRE',tier:'bronze',t:`Débauché chez ${rv.nm}`,d:`Un trader ${INSTR[S.star].nm.toLowerCase()} quitte ${rv.nm} pour votre desk.`,g:`coûts d'exécution ÷2 sur toute la classe ${INSTR[S.star].grp.toLowerCase()} ce trimestre`})}
+  goldLater({v:'star',k:'RECRUE DU TRIMESTRE',tier:'bronze',t:`Débauché chez ${rv.nm}`,d:`Un trader ${INSTR[S.star].nm.toLowerCase()} quitte ${rv.nm} pour votre desk.`,g:`coûts d'exécution ÷2 sur toute la classe ${INSTR[S.star].grp.toLowerCase()}, tant qu'il reste chez vous`})}
  bonusOpen();
 }
 function drawBuds(){
@@ -5142,7 +5145,8 @@ function resolveQuarter(){
  const amt=tot*S.nav;S.nav+=amt;S.flows+=amt;S.qFlow=(S.qFlow||0)+amt;
  const lines=fl.filter(x=>Math.abs(x.f)>=0.002).map(x=>`${x.rv.nm} ${x.f>0?'+':'−'}${dec(Math.abs(x.f)*100,1)} % (${x.d>0?'battu':'devant vous'} de ${dec(Math.abs(x.d)*100,1)} pt${Math.abs(x.d)>=0.015?'s':''})`);
  S.poachMsg=`${tot>=0?'Collecte':'Rachats'} : ${tot>=0?'+':'−'}${dec(Math.abs(tot)*100,1)} % d'encours (${mm(Math.abs(amt))}).${lines.length?' Clients par concurrent — '+lines.join(' · ')+'.':''}`;
- if(tot<-0.01&&rng()<(0.5+S.poachBoost)*RETM[S.bud.ret]*(rel<-0.005?1:0.4)){S.execPenalty*=1.14;S.poachMsg+=` ${(pick(S.rivals.filter(x=>x.poacher))||S.rivals[S.rivals.length-1]).boss} a débauché deux de vos gérants : coûts d'exécution +14 % durablement.`}
+ if(tot<-0.01&&rng()<(0.5+S.poachBoost)*RETM[S.bud.ret]*(rel<-0.005?1:0.4)){S.execPenalty*=1.14;S.poachMsg+=` ${(pick(S.rivals.filter(x=>x.poacher))||S.rivals[S.rivals.length-1]).boss} a débauché deux de vos gérants : coûts d'exécution +14 % durablement.`;
+  if((S.stars||[]).length){const g=S.stars.pop();S.poachMsg+=` Votre recrue ${g.toLowerCase()} part avec eux : la remise sur cette classe disparaît.`}}
  if(tot>0.01&&S.bud.ret>=BUDMAX&&rng()<0.4){S.execPenalty=Math.max(0.7,S.execPenalty*0.92);S.poachMsg+=" Vous avez recruté un trader chez un concurrent : coûts d'exécution −8 %."}
  /* objectif du trimestre */
  S.streak=qTotal>0?(S.streak||0)+1:0;S.streakMax=Math.max(S.streakMax||0,S.streak);
@@ -5546,7 +5550,7 @@ function screenDebrief(o){
   <div class="block"><div class="blockhead"><h2>La concurrence</h2><span class="hint">${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur quatre</span></div>
    <table class="qt"><thead><tr><th>Fonds</th><th>Risque</th><th>Trim.</th><th>Cumul</th></tr></thead><tbody>
    ${all.map(a=>{const c=cums.find(z=>z.nm===(a.me?S.fundName:a.nm.split(' · ')[0]));return {a,cv:c?c.v:0}}).sort((x,y)=>y.cv-x.cv).map(({a,cv})=>
-     `<tr class="${a.me?'me':''}"><td>${a.nm}${a.st?`<br><span class="dim-g" style="font-size:11px">${a.st}${a.th?' · <span class="neg-g">accident</span>':''}</span>`:''}</td><td>${a.rk!==undefined?dec(a.rk*100,0)+' %':''}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(cv)}">${sgn(cv,1)}</td></tr>`).join('')}
+     `<tr class="${a.me?'me':''}"><td>${a.nm}${a.th?`<br><span class="neg-g" style="font-size:11px">accident de levier</span>`:''}</td><td>${a.rk!==undefined?dec(a.rk*100,0)+' %':''}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(cv)}">${sgn(cv,1)}</td></tr>`).join('')}
    </tbody></table></div>
 
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Du brut au net · en ${UQ.s.trim()}</summary>

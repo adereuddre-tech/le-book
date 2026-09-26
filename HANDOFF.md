@@ -688,6 +688,12 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   `S._kGhost`. Marche pour tous les chemins de changement ; remis à zéro dans `planQuarter`. Contrôle
   `tools/tmp/ghost.js` ; régression 18 parties 0 erreur 0 écart.
 
+- **Lot 70** (`99zzg-lot70.py`) : aperçu des choix (`bkD`) sur lignes distinctes (marchés et coûts / rentabilité /
+  risque) ; débriefing : plus de stratégie des concurrents (l'accident de levier reste signalé). Recrues : `S.stars`
+  (classes d'actifs) remplace `S.star` pour la remise — ×0,5 sur toute la classe, sans cumul, **jusqu'à la fin** ;
+  un débauchage subi à la clôture reprend la dernière recrue. Régression 18 parties 0 erreur 0 écart ; remise vérifiée
+  (actions ×0,50, taux ×1,00).
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
