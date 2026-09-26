@@ -6,7 +6,7 @@ if($('#tutooff')){c($('#tutooff'));return 1}
 if(eval(stop))return 'STOP';
 if($('#found')){c($('#found'));return 1}
 if($('#go')&&$('#picks')){for(const [k,v] of Object.entries({prof:'flux',vol:'std',size:'mid',univ:'ext',dur:'normal'})){const e=$(`.card[data-key="${k}"][data-id="${v}"]`);if(e)c(e)}$('#sd').value='11';c($('#go'));return 1}
-if($('#send')){const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));c($('#send'));return 1}
+if($('#send')){const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));if(typeof drawRows==='function')drawRows();if(typeof refreshSend==='function')refreshSend();if($('#send').disabled&&$('#fitbook'))c($('#fitbook'));c($('#send'));return 1}
 const ch=document.querySelectorAll('.choice');if(ch.length){c(ch[0]);return 1}
 if($('#commok')){c($('#commok'));return 1}
 for(const id of ['#ok','#go2','#rgo','#pgo','#nx']){const b=$(id);if(b&&!b.disabled){c(b);return 1}}

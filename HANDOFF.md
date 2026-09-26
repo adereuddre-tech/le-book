@@ -667,6 +667,22 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
     Performance médiane décroissante avec la difficulté (quant 1,89 / 1,69 / 1,48). Concurrents médians sur deux ans
     +91 / +95 / +65 %. Régression 18 parties, `cover3` 3 264 plans, reprise à froid : 0 erreur, 0 écart.
 
+- **Lot 68** (`99zzd-lot68.py`) :
+  - Trader débauché (`S.star`) : coûts ×0,5 sur **toute sa classe** (`grp`), plus ÷3 sur un seul marché.
+  - `kPrev(e,mode)` simule sur une copie du book les effets déterministes d'un choix (« mid » = règles de
+    `screenTraderEvent`, « exec » = anecdotes d'exécution) et rend le coût des ordres ; `bkD(k1,cost,hid)` affiche
+    marchés modifiés, rentabilité, risque (comme les lignes de marché) et coûts. Branché sur anecdotes, desk,
+    exigences, conseil, « suivre le mouvement » des dépêches, suivre/contrer un concurrent (coût désormais ×`tcMultQ`,
+    comme appliqué) et « couper » d'un accident. `randAdd`/`trendAdd` signalés, pas chiffrés. Contrôle : 482 choix,
+    0 échec, book restauré (`tools/tmp/prevchk.js`).
+  - Nuage : μ et σ **trimestriels** (σ annuel / 2), traits tous les 5 %, point jaune pâle = book avant les derniers
+    changements (`S.k0` sur la page du book, `S.kVal` pendant le trimestre). Les lignes de marché restent en σ annuel.
+  - Or : lingot SVG dans `MFLAG`. Hauts faits durcis (série 4, objectifs 4/7, acier 6 % sur 8 trimestres, confiance 95,
+    commissions ×0,75/×2/×5, Sharpe probabiliste 97,5 %, performance +200 %/+400 %) ; Graal : 8 trimestres, premier,
+    aucun trimestre négatif, aucun carton, +150 %, repli < 8 %.
+  - `tools/shot.py` restait bloqué au premier book (bouton d'envoi grisé) : il ajuste le book (`#fitbook`) avant d'envoyer.
+  - Régression 18 parties : 0 erreur, 0 écart ; `goalchk` : aucun prédicat cassé. Fréquence des hauts faits non mesurée.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
