@@ -4510,11 +4510,18 @@ function gzCol(st,v){   /* st : [[valeur,'g'|'a'|'r'],…] croissant */
  return c(st[st.length-1][1]);
 }
 const rgb=a=>`rgb(${a.join(',')})`;
-function gzGrad(id,st,lo,hi,vert){   /* dégradé SVG, offsets en fraction de l'axe */
+function gzGrad(id,st,lo,hi,vert,pa,pb){   /* lot 74 : dégradé en coordonnées de l'axe (pa = pixel de lo, pb = de hi) */
  const o=v=>Math.max(0,Math.min(1,(v-lo)/(hi-lo)));
- const s=st.map(([v,k])=>`<stop offset="${(vert?1-o(v):o(v)).toFixed(3)}" stop-color="${rgb(GZC[k])}"/>`);
- if(vert)s.reverse();
- return `<linearGradient id="${id}" x1="0" y1="0" x2="${vert?0:1}" y2="${vert?1:0}">${s.join('')}</linearGradient>`;
+ const s=st.map(([v,k])=>`<stop offset="${o(v).toFixed(3)}" stop-color="${rgb(GZC[k])}"/>`);
+ const c=vert?`x1="0" x2="0" y1="${pa}" y2="${pb}"`:`x1="${pa}" x2="${pb}" y1="0" y2="0"`;
+ return `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" ${c}>${s.join('')}</linearGradient>`;
+}
+/* barre de jauge d'une valeur à une autre, sur une trace pâle de l'axe entier */
+function gzBar(id,vert,fix,th,a,b,full0,full1,rx){
+ const lo=Math.min(a,b),hi=Math.max(a,b),f0=Math.min(full0,full1),f1=Math.max(full0,full1),r=rx?` rx="${rx}"`:'';
+ const R=(p,q,op)=>vert?`<rect x="${fix}" y="${p.toFixed(2)}" width="${th}" height="${Math.max(0,q-p).toFixed(2)}"${r} fill="url(#${id})"${op?` opacity="${op}"`:''}/>`
+  :`<rect x="${p.toFixed(2)}" y="${fix}" width="${Math.max(0,q-p).toFixed(2)}" height="${th}"${r} fill="url(#${id})"${op?` opacity="${op}"`:''}/>`;
+ return R(f0,f1,.14)+R(lo,hi);
 }
 function riskMap(sp,big){
  /* lot 68 : trimestriel — μ du trimestre, σ trimestriel = σ annuel / 2. gh = le fonds avant ses derniers changements
@@ -4541,9 +4548,8 @@ function riskMap(sp,big){
  if(big){
   const W=320,H=210,x0=40,x1=W-8,yb=H-16,yt=8;
   const X=v=>x0+(x1-x0)*v/xm,Y=v=>yb-(yb-yt)*(v-y0)/(y1-y0);
-  let g=`<defs>${gzGrad('gzxB',stX,0,xm,0)}${gzGrad('gzyB',stY,y0,y1,1)}</defs>`
-   +`<rect x="${x0}" y="${yb+1}" width="${x1-x0}" height="3" rx="1.5" fill="url(#gzxB)"/>`
-   +`<rect x="${x0-4}" y="${yt}" width="3" height="${yb-yt}" rx="1.5" fill="url(#gzyB)"/>`;
+  let g=`<defs>${gzGrad('gzxB',stX,0,xm,0,x0,x1)}${gzGrad('gzyB',stY,y0,y1,1,Y(y0),Y(y1))}</defs>`
+   +gzBar('gzxB',0,yb+1,3,x0,X(sq),x0,x1,1.5)+gzBar('gzyB',1,x0-4,3,Y(0),Y(pr),Y(y0),Y(y1),1.5);
   if(TAIL.x0/2<xm)g+=`<rect x="${f(X(TAIL.x0/2))}" y="${yt}" width="${f(x1-X(TAIL.x0/2))}" height="${f(yb-yt)}" fill="#D2463C" opacity=".10"/>`
    +`<text x="${f(X(TAIL.x0/2)+3)}" y="${yt+10}" font-size="9" fill="#E5675C" font-family="var(--mono)" opacity=".85">accidents de levier</text>`;
   lv(0.05,xm).forEach(v=>{g+=`<line x1="${f(X(v))}" x2="${f(X(v))}" y1="${yt}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".3" opacity=".6"/><text x="${f(X(v))}" y="${yb+13}" font-size="8" text-anchor="middle" fill="var(--dimmer)" font-family="var(--mono)">${Math.round(v*100)}</text>`});
@@ -4569,9 +4575,8 @@ function riskMap(sp,big){
  const L=3,Rr=4,T=5,B=3,gid='gz'+(++riskMap.n);
  const X=v=>L+(100-L-Rr)*v/xm,Y=v=>100-B-(100-B-T)*(v-y0)/(y1-y0);
  let s=`<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">`
-  +`<defs>${gzGrad(gid+'x',stX,0,xm,0)}${gzGrad(gid+'y',stY,y0,y1,1)}</defs>`
-  +`<rect x="${L}" y="${100-B+.6}" width="${100-L-Rr}" height="${B-.6}" fill="url(#${gid}x)"/>`
-  +`<rect x="0" y="${T}" width="${L-.6}" height="${100-B-T}" fill="url(#${gid}y)"/>`
+  +`<defs>${gzGrad(gid+'x',stX,0,xm,0,L,100-Rr)}${gzGrad(gid+'y',stY,y0,y1,1,Y(y0),Y(y1))}</defs>`
+  +gzBar(gid+'x',0,100-B+.6,B-.6,L,X(sq),L,100-Rr)+gzBar(gid+'y',1,0,L-.6,Y(0),Y(pr),Y(y0),Y(y1))
   +(TAIL.x0/2<xm?`<rect x="${f(X(TAIL.x0/2))}" y="${T}" width="${f(100-Rr-X(TAIL.x0/2))}" height="${f(100-B-T)}" fill="#D2463C" opacity=".10"/>`:'')
   +lv(0.05,xm).map(v=>`<line x1="${f(X(v))}" x2="${f(X(v))}" y1="${T}" y2="${100-B}" stroke="var(--dimmer)" stroke-width=".5" opacity=".45" vector-effect="non-scaling-stroke"/>`).join('')
   +lv(y0,y1).filter(v=>v>y0+1e-9).map(v=>`<line x1="${L}" x2="${100-Rr}" y1="${f(Y(v))}" y2="${f(Y(v))}" stroke="var(--dimmer)" stroke-width="${Math.abs(v)<1e-9?.9:.5}" opacity="${Math.abs(v)<1e-9?.8:.45}" vector-effect="non-scaling-stroke"/>`).join('')
