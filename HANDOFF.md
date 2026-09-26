@@ -718,6 +718,15 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   du fonds, rentabilité de zéro à la rentabilité du fonds (vers le bas si négative) — sur une trace pâle (opacité
   0,14) de l'axe entier. Dégradé en `userSpaceOnUse` calé sur l'axe complet : la couleur au bout de la barre est
   celle de la valeur, pas celle du bout de l'échelle.
+- **Lot 75** (`99zzm-lot75.py`) : ordres du book en notionnel (`amt3`, 3 chiffres significatifs, k$/M$) ; noms
+  anglais des sous-jacents (`nm`), libellé français en tête de `sub` ; jauges du nuage à couleur uniforme, bouts
+  ronds, pastille (vignette en HTML `.gzt/.gzb/.gzk`, `gzGrad`/`gzBar` ne servent plus) ; scandale comptable tech sur
+  NQ ; minuteur pleine largeur de l'app + `body.tmron` qui réserve 150 px ; confiance d'exécution (`execGz`) dans
+  le texte du choix, plus en pastille ; cartes de croissance à ×1,15 / 1,7 / 2,5 / 3,2 (ouvertures inchangées à
+  ×1,4 et ×2,0) ; conseil : effets chiffrés `boardFx` ; carte « Débauché » par classe (« exotic markets ») ;
+  OAT appétit +0,25 (covariance vérifiée définie positive sur les 9 univers) ; ruban « DEPUIS LE LANCEMENT » ;
+  classement du portage du quant retiré ; gérant à la ligne dans les classements (`.bossn`).
+  Régression 18 parties 0 erreur 0 écart. `tools/shot.py` clique désormais `.commgo` (écran d'annonce).
 
 ## Calibration (bot intelligent, `tools/bot.js`)
 
