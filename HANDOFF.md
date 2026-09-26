@@ -13,7 +13,7 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
 - **Un lot par fichier, rejouable.** `base.html` est le fichier publié intact, `patches/NN-*.py`
   applique un lot chacun (via `patches/_lib.py`), `build.sh` reconstruit `index.html` en
   rejouant tout dans l'ordre. Une session coupée ne perd rien : il suffit de relancer
-  `./build.sh`. Chaque patch porte en tête le constat mesuré qui le justifie.
+  `sh build.sh` (le fichier n'est pas exécutable). Chaque patch porte en tête le constat mesuré qui le justifie.
 - **Test jsdom d'une partie complète avant publication.** Le harnais est versionné dans
   `tools/` (voir `tools/README.md`) : le récupérer depuis le dépôt en début de session,
   puis `npm i jsdom`.
@@ -63,7 +63,8 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
 
 ## Architecture du fichier
 
-- **Marchés** : `INSTR_ALL` (25 marchés, 5 classes × 5), champ `rk` = rang d'ouverture.
+- **Marchés** : `INSTR_ALL` (25 marchés, 5 classes × 5), champ `rk` = rang d'ouverture, **par liquidité croissante dans la classe**
+  (coût d'une unité à l'ouverture, lot 72) ; l'ordre du tableau suit `rk`.
   `MKPERCL={small:3,mid:4,mega:5}` (marchés par classe), `NCLASS={fin:3,com:4,ext:5}` (classes).
   `setUniverse(size,univ)` reconstruit `INSTR`, `N`, `IDX`, `GRP` **et filtre les sept pools
   d'événements** pour qu'aucun marché fermé ne soit cité.
@@ -134,8 +135,8 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   aussi `S.lastG`.
 - **Annonce** : ids `none`/`prud`/`fort`. `prud` = « Communication standard », objectif entier,
   sélectionnée par défaut ; `fort` = deux fois l'objectif.
-- **Textes** : `MACROEV` (269 dépêches), `TRADER_EXEC` (145 anecdotes d'exécution), `TRADER_MID`,
-  `STAKE`, `INCIDENTS`, `BOARDEV`, `RUMORS`, `PRESS_SRC` (24), `PRESS_EXTRA`.
+- **Textes** : `MACROEV` (347 dépêches, 13 extrêmes), `TRADER_EXEC` (170), `TRADER_MID` (51),
+  `STAKE` (34), `INCIDENTS` (19), `TAILEV` (18), `BOARDEV` (16), `RUMORS` (88), `PRESS_SRC` (24), `PRESS_EXTRA`.
 - **Ruban de P&L en direct** : dès `S.phase==='events'`, `tapeBand()` remplace le bandeau
   d'informations dans `statusBar`. Chaque segment est un **pont brownien géométrique**
   (`bridgePts`) : bruit cumulé en log moins sa dérive terminale, puis exponentielle — texture
@@ -200,6 +201,8 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
     tout montant en dur se retrouve à des dizaines de pour cent de l'encours.
 13. Le gérant ne peut jamais être définitivement bloqué : la commission de gestion (50 pb)
     dépasse toujours le budget minimum (15 pb), et un book inchangé est toujours validable.
+14. L'ordre de `INSTR_ALL` fait partie du format de sauvegarde (`d.ord`) : le changer invalide les
+    sauvegardes en cours. Ne jamais indexer un marché par position.
 
 ## Livré
 
@@ -693,6 +696,17 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   (classes d'actifs) remplace `S.star` pour la remise — ×0,5 sur toute la classe, sans cumul, **jusqu'à la fin** ;
   un débauchage subi à la clôture reprend la dernière recrue. Régression 18 parties 0 erreur 0 écart ; remise vérifiée
   (actions ×0,50, taux ×1,00).
+- **Lot 71** (`99zzi-lot71.py`) : contenu. Dépêches +36 (dont 3 extrêmes), rumeurs +16, exécution +25, desk +12,
+  exigences +10, conseil +8, incidents +8, accidents de levier +6. Dépêches orientées vers les marchés peu cités
+  et vers la hausse. Doublons thématiques écartés à la main contre les titres existants (23 retirés du premier jet) :
+  **avant d'écrire, lister les titres existants par mot-clé**. Aucune clé d'effet nouvelle. `cover.js` 758 choix sans
+  défaut, `cover2.js` sans anomalie, `cover3.js` 0 anomalie. Les tirages des canaux `rum` et `ev` sont décalés.
+- **Lot 72** (`99zzj-lot72.py`) : marchés classés par liquidité dans chaque classe (coût d'une unité à l'ouverture,
+  pb de l'encours, identique aux trois tailles) : NQ 0,17 < ES 0,19 < ESTX < TOPX < MXEF ; TN < GBL < R < OAT < JGB 2,70 ;
+  CL 0,56 < HG 0,66 < GC 0,89 < KC < ZW 1,87 ; devises et exotiques inchangés. Départ : Nasdaq, gilt et cuivre
+  remplacent TOPIX, JGB et blé. Sauvegarde signée `d.ord` (liste des symboles) : une sauvegarde d'avant est refusée
+  sans être effacée, et `#resume` raté retombe sur l'accueil au lieu d'une page vide. **Change l'équilibre**
+  (marchés de départ moins chers) : non recalibré. Régression 18 parties 0 erreur 0 écart, 3 reprises à froid.
 
 ## Calibration (bot intelligent, `tools/bot.js`)
 
@@ -856,8 +870,9 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
 ### Plus loin
 - **Équilibre des styles** : le bot intelligent classe quant > flux > fondamental sur 108 parties, l'inverse sur les 72
   précédentes. Il faut ~100 parties par style et par difficulté (graines communes) avant de toucher aux styles.
-- Production de texte : 200 anecdotes d'exécution (145 aujourd'hui) et 300 dépêches (269),
-  plus la démultiplication des débriefings.
+- Production de texte : 200 anecdotes d'exécution (170 aujourd'hui) ; les dépêches (347) dépassent l'objectif de 300.
+  Reste la démultiplication des débriefings.
+- Campagne de calibration après le lot 72 (marchés de départ plus liquides, coûts plus bas).
 - Rentabilité des budgets : non remesurée depuis le changement d'économie. Avec un seul cœur,
   une campagne de 90 parties prend ~7 minutes ; compter ~300 parties appariées par niveau.
 - **Réduction de variance : fait au lot 11**, et mesuré. Expérience appariée, 25 graines,
