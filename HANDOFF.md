@@ -887,6 +887,33 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   gestion refacture certains frais — le bénéfice redevient comparable au coût ; (c) resserrer
   l'échelle (max 1,5× au lieu de 2×). Décision d'Antoine attendue.
 
+### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
+
+Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
+
+| Style | Score | σ | Médiane | Survie |
+|---|---|---|---|---|
+| Quant | 30,7 | 39,0 | 18,1 | 100 % |
+| Fondamental | 42,7 | 32,9 | 33,0 | 100 % |
+| Flux | 24,1 | 21,5 | 17,0 | 73 % (8 liquidations) |
+
+Apparié : fonda − quant +12,1 ± 8,9 ; flux − fonda **−18,6 ± 5,5** ; flux − quant −6,6 ± 7,4.
+L'ordre voulu quant < fondamental < flux est **violé** : le flux est dernier et seul à mourir.
+Survie 100 % du quant et du fondamental : la partie ne tue plus qu'eux… à savoir personne.
+
+| Option | Δscore ± se | Δrend. | Δbudget | Δsurvie |
+|---|---|---|---|---|
+| Durée express / saison | −12,9 ± 3,0 / +31,8 ± 10,1 | | | +13 / −9 pts |
+| Difficulté facile / difficile | −3,8 ± 1,4 / **+6,0 ± 2,2** | | | +7 / −2 pts |
+| Salle de marché 1 / 5 | −2,9 ± 1,7 / +2,5 ± 1,5 | | −1,1 / +2,0 | |
+| Contrôle 1 / 5 | −4,2 ± 2,2 / +4,4 ± 4,2 | | −1,1 / +2,4 | |
+| Recherche 1 / 5 | +2,1 ± 3,1 / +3,6 ± 2,8 | +1 / +27 ± 10 % | −1,1 / +4,4 | |
+
+Le niveau difficile rapporte plus (commission 25 %) pour 2 pts de survie : pas un vrai malus.
+Budgets : aucun écart au-delà de 2 se ; niveaux réduits légèrement perdants, renforcés légèrement
+gagnants. **Piège de plan** : `vol` et `univ` ne sont plus des choix depuis le lot 49, le bot les
+ignore — 180 parties à écart nul exact. Ne plus les mettre dans les plans.
+
 ### Plus loin
 - **Équilibre des styles** : le bot intelligent classe quant > flux > fondamental sur 108 parties, l'inverse sur les 72
   précédentes. Il faut ~100 parties par style et par difficulté (graines communes) avant de toucher aux styles.
