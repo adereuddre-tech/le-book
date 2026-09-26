@@ -373,8 +373,12 @@ summary::marker{color:var(--dimmer)}
 .rmap .rv{position:absolute;font-family:var(--mono);font-size:10px;font-weight:700;color:#F3EEE4;line-height:1.05;white-space:nowrap}
 .rmap .rv small{display:block;font-size:7.5px;font-weight:400;color:var(--dim)}
 .rmap .rv.hot{color:#E5675C}
-.rmap .gzc{position:absolute;width:0;height:0;margin-left:-3.5px;border:3.5px solid transparent;border-bottom:5px solid #F3EEE4;border-top:0}
-.rmap .gzc.v{margin:-3.5px 0 0;border:3.5px solid transparent;border-right:0;border-left:5px solid #F3EEE4}
+.rmap .gzt,.rmap .gzb{position:absolute;border-radius:2px}
+.rmap .gzt{background:rgba(243,238,228,.07)}
+.rmap .gzt.x,.rmap .gzb.x{bottom:1px;height:3px}.rmap .gzt.y,.rmap .gzb.y{left:1px;width:3px}
+.rmap .gzb.x{min-width:3px}.rmap .gzb.y{min-height:3px}
+.rmap .gzk{position:absolute;width:7px;height:7px;border-radius:50%;border:1.5px solid var(--bg,#0b1020);box-sizing:border-box}
+.rmap .gzk.x{bottom:-1px;margin-left:-3.5px}.rmap .gzk.y{left:-1px;margin-top:-3.5px}
 .crestmini{display:inline-block;vertical-align:-3px;margin-right:4px}.crestmini svg{display:block}
 .mbox.redbox{border:2px solid #D2463C;box-shadow:0 0 0 3px rgba(210,70,60,.25)}
 .mbox.redbox .mhead h3{color:#E5675C}
@@ -545,6 +549,11 @@ table.payt th{line-height:1.2;font-size:9.5px}
 .fade{animation:fade .3s ease}
 @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* lot 75 : minuteur pleine largeur (celle de l'app), en bas, place réservée dessous */
+.evtimer{left:max(12px,calc(50% - 328px));right:max(12px,calc(50% - 328px));max-width:none!important;bottom:max(12px,env(safe-area-inset-bottom))}
+.evtimer .tlb{max-width:none!important}
+body.tmron #app{padding-bottom:150px}
+.bossn{display:block;font-size:.82em;color:var(--dim);font-weight:400}
 </style>
 </head>
 <body><div id="app"></div>
@@ -556,31 +565,31 @@ const GRPC={'Actions':'var(--eq)','Taux':'var(--rt)','Devises':'var(--fx)','Mati
    s = demi-fourchette en pb ; c = impact en pb par √(Md$) — loi en racine carrée
    b = charges factorielles [Croissance, Inflation, Dollar, Appétit] */
 const INSTR_ALL=[
- {sym:'NQ',  rk:1,nm:'Technologie américaine', sub:'Nasdaq 100 · long = hausse de la tech US',            grp:'Actions', sig:0.22, s:0.50, c:0.55, b:[ 0.62,-0.34, 0.16, 0.58], mg:0.08},
- {sym:'ES',  rk:2,nm:'Actions américaines',    sub:'S&P 500 · long = hausse des actions US',              grp:'Actions', sig:0.16, s:0.40, c:0.45, b:[ 0.45,-0.22, 0.18, 0.46], mg:0.07},
- {sym:'ESTX',rk:3,nm:'Actions européennes',    sub:'Euro Stoxx 50 · long = hausse des actions de la zone euro', grp:'Actions', sig:0.18, s:1.00, c:0.90, b:[ 0.40,-0.30,-0.52, 0.45], mg:0.07},
- {sym:'TOPX',rk:4,nm:'Actions japonaises',     sub:'TOPIX · long = hausse des actions japonaises',        grp:'Actions', sig:0.18, s:1.10, c:0.95, b:[ 0.26,-0.18,-0.62, 0.38], mg:0.07},
- {sym:'MXEF',rk:5,nm:'Actions émergentes',     sub:'MSCI EM · long = hausse des émergents',               grp:'Actions', sig:0.21, s:2.60, c:2.00, b:[ 0.58, 0.24,-0.34, 0.58], mg:0.09},
- {sym:'TN',  rk:1,nm:'Taux 10 ans américain',  sub:'T-Note · long = baisse des taux US',                  grp:'Taux', sig:0.065, s:0.35, c:0.30, b:[-0.50,-0.40,-0.42,-0.42], mg:0.025},
- {sym:'GBL', rk:2,nm:'Taux 10 ans allemand',   sub:'Bund · long = baisse des taux allemands',             grp:'Taux', sig:0.060, s:0.70, c:0.55, b:[-0.16,-0.58, 0.34,-0.58], mg:0.025},
- {sym:'R',   rk:3,nm:'Taux 10 ans britannique',sub:'Gilt · long = baisse des taux britanniques',          grp:'Taux', sig:0.070, s:1.10, c:1.00, b:[-0.34,-0.52, 0.24,-0.44], mg:0.030},
- {sym:'OAT', rk:4,nm:'Taux 10 ans français',   sub:'OAT · long = baisse des taux français',               grp:'Taux', sig:0.065, s:1.20, c:1.10, b:[-0.20,-0.58, 0.26,-0.08], mg:0.025},
- {sym:'JGB', rk:5,nm:'Taux 10 ans japonais',   sub:'JGB · long = baisse des taux japonais',               grp:'Taux', sig:0.040, s:1.30, c:1.30, b:[-0.16,-0.28, 0.58,-0.18], mg:0.020},
- {sym:'EUR', rk:1,nm:'Euro',     sub:'EUR/USD · long = euro fort',                          grp:'Devises', sig:0.080, s:0.30, c:0.22, b:[ 0.20,-0.18,-0.86, 0.18], mg:0.030},
- {sym:'JPY', rk:2,nm:'Yen',      sub:'JPY/USD · long = yen fort',                           grp:'Devises', sig:0.100, s:0.40, c:0.32, b:[-0.26,-0.20,-0.46,-0.58], mg:0.030},
- {sym:'GBP', rk:3,nm:'Sterling', sub:'GBP/USD · long = sterling fort',                      grp:'Devises', sig:0.090, s:0.60, c:0.45, b:[ 0.30, 0.16,-0.64, 0.36], mg:0.030},
- {sym:'AUD', rk:4,nm:'Dollar australien',      sub:'AUD/USD · long = dollar australien fort',             grp:'Devises', sig:0.110, s:1.30, c:1.10, b:[ 0.54, 0.34,-0.44, 0.30], mg:0.040},
- {sym:'MXP', rk:5,nm:'Peso mexicain',          sub:'MXN/USD · long = peso fort · portage élevé',          grp:'Devises', sig:0.140, s:3.00, c:2.40, b:[ 0.34,-0.18,-0.52, 0.56], mg:0.060},
- {sym:'CL',  rk:1,nm:'Pétrole brut',           sub:'WTI · long = hausse du pétrole',                      grp:'Matières premières', sig:0.32, s:2.50, c:2.20, b:[ 0.60, 0.54,-0.20, 0.20], mg:0.12},
- {sym:'HG',  rk:2,nm:'Cuivre',                 sub:'Comex · long = hausse du cuivre · thermomètre industriel', grp:'Matières premières', sig:0.24, s:2.20, c:1.90, b:[ 0.68, 0.22,-0.38, 0.36], mg:0.10},
- {sym:'GC',  rk:3,nm:'Or',                     sub:'Comex · long = hausse de l\'or',                       grp:'Matières premières', sig:0.15, s:1.80, c:1.60, b:[-0.18, 0.62,-0.58,-0.30], mg:0.07},
- {sym:'KC',  rk:4,nm:'Café',                   sub:'ICE · long = hausse du café · marché très étroit',    grp:'Matières premières', sig:0.38, s:8.00, c:6.50, b:[ 0.16, 0.44,-0.22, 0.30], mg:0.12},
- {sym:'ZW',  rk:5,nm:'Blé',                    sub:'CBOT · long = hausse du blé · marché étroit',         grp:'Matières premières', sig:0.25, s:6.50, c:5.20, b:[-0.18, 0.52,-0.26,-0.20], mg:0.09},
- {sym:'BTC', rk:1,nm:'Bitcoin',                sub:'CME · long = hausse du bitcoin',                      grp:'Exotiques', sig:0.55, s:4.00, c:3.00, b:[ 0.24, 0.40,-0.34, 0.70], mg:0.25},
- {sym:'VX',  rk:2,nm:'Volatilité actions',     sub:'VIX · long = hausse de la peur · portage négatif',    grp:'Exotiques', sig:0.80, s:6.00, c:5.00, b:[-0.42, 0.18, 0.28,-0.76], mg:0.20, drift:-0.085},
- {sym:'EUA', rk:3,nm:'Quota carbone européen', sub:'EUA · long = hausse du prix du carbone',              grp:'Exotiques', sig:0.45, s:5.00, c:4.50, b:[ 0.46,-0.24,-0.30, 0.42], mg:0.15},
- {sym:'BDI', rk:4,nm:'Fret maritime sec',      sub:'Baltic Dry · long = hausse des taux de fret',         grp:'Exotiques', sig:0.60, s:9.00, c:8.00, b:[ 0.66, 0.38,-0.22, 0.28], mg:0.18},
- {sym:'NRAM',rk:5,nm:'Précipitations',         sub:'dérivé climatique · long = pluviométrie supérieure à la normale', grp:'Exotiques', sig:0.50, s:12.0, c:10.0, b:[-0.20, 0.34, 0.16,-0.22], mg:0.12}
+ {sym:'NQ',  rk:1,nm:'Nasdaq 100',sub:'Technologie américaine · long = hausse de la tech US',            grp:'Actions', sig:0.22, s:0.50, c:0.55, b:[ 0.62,-0.34, 0.16, 0.58], mg:0.08},
+ {sym:'ES',  rk:2,nm:'S&P 500',sub:'Actions américaines · long = hausse des actions US',              grp:'Actions', sig:0.16, s:0.40, c:0.45, b:[ 0.45,-0.22, 0.18, 0.46], mg:0.07},
+ {sym:'ESTX',rk:3,nm:'Euro Stoxx 50',sub:'Actions européennes · long = hausse des actions de la zone euro', grp:'Actions', sig:0.18, s:1.00, c:0.90, b:[ 0.40,-0.30,-0.52, 0.45], mg:0.07},
+ {sym:'TOPX',rk:4,nm:'TOPIX',sub:'Actions japonaises · long = hausse des actions japonaises',        grp:'Actions', sig:0.18, s:1.10, c:0.95, b:[ 0.26,-0.18,-0.62, 0.38], mg:0.07},
+ {sym:'MXEF',rk:5,nm:'MSCI Emerging Markets',sub:'Actions émergentes · long = hausse des émergents',               grp:'Actions', sig:0.21, s:2.60, c:2.00, b:[ 0.58, 0.24,-0.34, 0.58], mg:0.09},
+ {sym:'TN',  rk:1,nm:'10-Year T-Note',sub:'Taux 10 ans américain · long = baisse des taux US',                  grp:'Taux', sig:0.065, s:0.35, c:0.30, b:[-0.50,-0.40,-0.42,-0.42], mg:0.025},
+ {sym:'GBL', rk:2,nm:'Euro-Bund',sub:'Taux 10 ans allemand · long = baisse des taux allemands',             grp:'Taux', sig:0.060, s:0.70, c:0.55, b:[-0.16,-0.58, 0.34,-0.58], mg:0.025},
+ {sym:'R',   rk:3,nm:'Long Gilt',sub:'Taux 10 ans britannique · long = baisse des taux britanniques',          grp:'Taux', sig:0.070, s:1.10, c:1.00, b:[-0.34,-0.52, 0.24,-0.44], mg:0.030},
+ {sym:'OAT', rk:4,nm:'Euro-OAT',sub:'Taux 10 ans français · long = baisse des taux français',               grp:'Taux', sig:0.065, s:1.20, c:1.10, b:[-0.20,-0.58, 0.26, 0.25], mg:0.025},
+ {sym:'JGB', rk:5,nm:'10-Year JGB',sub:'Taux 10 ans japonais · long = baisse des taux japonais',               grp:'Taux', sig:0.040, s:1.30, c:1.30, b:[-0.16,-0.28, 0.58,-0.18], mg:0.020},
+ {sym:'EUR', rk:1,nm:'Euro FX',sub:'Euro · long = euro fort',                          grp:'Devises', sig:0.080, s:0.30, c:0.22, b:[ 0.20,-0.18,-0.86, 0.18], mg:0.030},
+ {sym:'JPY', rk:2,nm:'Japanese Yen',sub:'Yen · long = yen fort',                           grp:'Devises', sig:0.100, s:0.40, c:0.32, b:[-0.26,-0.20,-0.46,-0.58], mg:0.030},
+ {sym:'GBP', rk:3,nm:'British Pound',sub:'Sterling · long = sterling fort',                      grp:'Devises', sig:0.090, s:0.60, c:0.45, b:[ 0.30, 0.16,-0.64, 0.36], mg:0.030},
+ {sym:'AUD', rk:4,nm:'Australian Dollar',sub:'Dollar australien · long = dollar australien fort',             grp:'Devises', sig:0.110, s:1.30, c:1.10, b:[ 0.54, 0.34,-0.44, 0.30], mg:0.040},
+ {sym:'MXP', rk:5,nm:'Mexican Peso',sub:'Peso mexicain · long = peso fort · portage élevé',          grp:'Devises', sig:0.140, s:3.00, c:2.40, b:[ 0.34,-0.18,-0.52, 0.56], mg:0.060},
+ {sym:'CL',  rk:1,nm:'WTI Crude Oil',sub:'Pétrole brut · long = hausse du pétrole',                      grp:'Matières premières', sig:0.32, s:2.50, c:2.20, b:[ 0.60, 0.54,-0.20, 0.20], mg:0.12},
+ {sym:'HG',  rk:2,nm:'Copper',sub:'Cuivre · long = hausse du cuivre · thermomètre industriel', grp:'Matières premières', sig:0.24, s:2.20, c:1.90, b:[ 0.68, 0.22,-0.38, 0.36], mg:0.10},
+ {sym:'GC',  rk:3,nm:'Gold',sub:'Or · long = hausse de l\'or',                       grp:'Matières premières', sig:0.15, s:1.80, c:1.60, b:[-0.18, 0.62,-0.58,-0.30], mg:0.07},
+ {sym:'KC',  rk:4,nm:'Coffee',sub:'Café · long = hausse du café · marché très étroit',    grp:'Matières premières', sig:0.38, s:8.00, c:6.50, b:[ 0.16, 0.44,-0.22, 0.30], mg:0.12},
+ {sym:'ZW',  rk:5,nm:'Chicago Wheat',sub:'Blé · long = hausse du blé · marché étroit',         grp:'Matières premières', sig:0.25, s:6.50, c:5.20, b:[-0.18, 0.52,-0.26,-0.20], mg:0.09},
+ {sym:'BTC', rk:1,nm:'Bitcoin',sub:'Bitcoin · long = hausse du bitcoin',                      grp:'Exotiques', sig:0.55, s:4.00, c:3.00, b:[ 0.24, 0.40,-0.34, 0.70], mg:0.25},
+ {sym:'VX',  rk:2,nm:'VIX',sub:'Volatilité actions · long = hausse de la peur · portage négatif',    grp:'Exotiques', sig:0.80, s:6.00, c:5.00, b:[-0.42, 0.18, 0.28,-0.76], mg:0.20, drift:-0.085},
+ {sym:'EUA', rk:3,nm:'EU Carbon Allowances',sub:'Quota carbone européen · long = hausse du prix du carbone',              grp:'Exotiques', sig:0.45, s:5.00, c:4.50, b:[ 0.46,-0.24,-0.30, 0.42], mg:0.15},
+ {sym:'BDI', rk:4,nm:'Baltic Dry Index',sub:'Fret maritime sec · long = hausse des taux de fret',         grp:'Exotiques', sig:0.60, s:9.00, c:8.00, b:[ 0.66, 0.38,-0.22, 0.28], mg:0.18},
+ {sym:'NRAM',rk:5,nm:'Rainfall Index',sub:'Précipitations · dérivé climatique · long = pluviométrie supérieure à la normale', grp:'Exotiques', sig:0.50, s:12.0, c:10.0, b:[-0.20, 0.34, 0.16,-0.22], mg:0.12}
 ];
 const CLASSES=['Actions','Taux','Devises','Matières premières','Exotiques'];
 /* taille du fonds → nombre de marchés ouverts par classe ; univers → nombre de classes */
@@ -1097,7 +1106,7 @@ MACROEV.push(
  {t:"Incident dans une centrale nucléaire européenne",who:"Alerte · 09h05",p:"Périmètre de sécurité, gouvernement en cellule de crise, débat énergétique relancé dans toute l'Europe.",hit:{ESTX:-1.3,EUR:-0.9,GBL:0.8,CL:0.8,GC:0.6}},
  {t:"Panne électrique géante sur la côte Est américaine",who:"Réseau · 16h40",p:"Quatre États dans le noir pendant trente-six heures. Les bourses ouvrent sur les générateurs.",hit:{ES:-0.6,CL:0.5,TN:0.4}},
  {t:"Grève des dockers sur les deux côtes américaines",who:"Syndicat · communiqué",p:"Tous les ports fermés jusqu'à nouvel ordre. Les délais de livraison doublent en une semaine.",rum:"Le desk logistique relève un ton inhabituel dans les préavis syndicaux portuaires.",hit:{ZW:-0.9,CL:-0.4,ES:-0.5,MXEF:-0.5}},
- {t:"Scandale comptable chez un géant de la tech",who:"Enquête · presse financière",p:"Les revenus étaient gonflés depuis trois ans. Le titre perd la moitié de sa valeur, l'indice accuse le coup.",rum:"Un vendeur à découvert connu a réservé une salle de conférence pour une « présentation importante ».",hit:{ES:-1.4,ESTX:-0.4,GC:0.5,TN:0.5}},
+ {t:"Scandale comptable chez un géant de la tech",who:"Enquête · presse financière",p:"Les revenus étaient gonflés depuis trois ans. Le titre perd la moitié de sa valeur, l'indice accuse le coup.",rum:"Un vendeur à découvert connu a réservé une salle de conférence pour une « présentation importante ».",hit:{NQ:-1.6,ESTX:-0.3,GC:0.5,TN:0.5}},
  {t:"Découverte d'un gisement géant de gaz en Méditerranée",who:"Communiqué · compagnie pétrolière",p:"De quoi couvrir dix ans de consommation européenne. L'Europe respire, les producteurs traditionnels toussent.",hit:{CL:-1.1,EUR:0.7,ESTX:0.6}},
  {t:"Sécheresse sur le canal de Panama",who:"Autorité du canal",p:"Le tirant d'eau est réduit de moitié, les files d'attente de navires dépassent trois semaines.",rum:"Les relevés hydrologiques suivis par le desk sont au plus bas depuis un siècle.",hit:{ZW:0.7,CL:0.6,MXEF:-0.4}},
  {t:"Attentat dans une capitale européenne",who:"Alerte · 19h30",p:"La séance ferme sur un mouvement de panique. Le week-end est long.",hit:{ESTX:-0.9,EUR:-0.5,GC:0.6,JPY:0.5,TN:0.5}},
@@ -3254,24 +3263,24 @@ function bonusClose(o){
  const B=(id,test,f)=>{if(!hasBonus(id)&&test){markBonus(id);goldLater(f())}};
  if(!S.exoOpen&&S.rivals.every(r=>(r.last||0)<o.qTotal)){S.exoOpen=true;applyPools();
   const nx=INSTR.filter((x,i)=>x.grp==='Exotiques'&&mktOpen(i));
-  goldLater({v:'rocket',tier:'or',k:'PREMIER DU TRIMESTRE',t:'Les marchés exotiques vous sont ouverts',d:"Vous avez battu toute la place : le comité vous confie les marchés que personne ne sait gérer.",g:nx.map(x=>`${x.sym} · ${x.nm.toLowerCase()}`).join('<br>')})}
+  goldLater({v:'rocket',tier:'or',k:'PREMIER DU TRIMESTRE',t:'Les marchés exotiques vous sont ouverts',d:"Vous avez battu toute la place : le comité vous confie les marchés que personne ne sait gérer.",g:nx.map(x=>`${x.sym} · ${x.nm}`).join('<br>')})}
  /* croissance : les marchés du rang suivant s'ouvrent quand l'encours franchit son seuil */
  while(typeof OPENRK!=='undefined'&&OPENRK<5&&S.nav>=unlockNav(OPENRK+1)){
   OPENRK++;S.openRk=OPENRK;applyPools();
   const nw=INSTR.filter(x=>x.rk===OPENRK);
   if(nw.length)goldLater({v:'doors',k:`CROISSANCE · ENCOURS ${mm(unlockNav(OPENRK))}`,tier:'argent',t:"De nouveaux carnets s'ouvrent",
-   d:"Votre courtier vous donne accès aux marchés que votre taille ne justifiait pas encore.",g:nw.map(x=>`${x.sym} · ${x.nm.toLowerCase()}`).join('<br>')});
+   d:"Votre courtier vous donne accès aux marchés que votre taille ne justifiait pas encore.",g:nw.map(x=>`${x.sym} · ${x.nm}`).join('<br>')});
  }
  /* croissance */
- B('blocs',g>=1.2,()=>{S.capBoost=Math.max(S.capBoost||1,1.5);S.execPenalty=Math.max(0.7,S.execPenalty*0.9);S.capK=Math.max(S.capK||3,4);
-  return {v:'key',k:'CROISSANCE · ENCOURS ×1,2',tier:'bronze',t:'Accès aux blocs',d:"Les grandes maisons vous proposent désormais leurs blocs de gré à gré.",g:'plafond de position ±4 · profondeur ×1,5 · coûts d\'exécution −10 %'}});
- B('blocs2',g>=1.5,()=>{S.capK=Math.max(S.capK||3,5);
-  return {v:'key',k:'CROISSANCE · ENCOURS ×1,5',tier:'argent',t:'Accès aux blocs · premier cercle',d:"Les desks de gré à gré vous servent avant les autres, et en taille.",g:'plafond de position ±5'}});
- B('prime',g>=1.6,()=>{if(PROF().freeAdj){S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
-   return {v:'bank',k:'CROISSANCE · ENCOURS ×1,6',tier:'argent',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'coûts d\'exécution −10 %'}}
-  S.freeAdjB=99;return {v:'bank',k:'CROISSANCE · ENCOURS ×1,6',tier:'argent',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'un ajustement gratuit par trimestre'}});
- B('dark',g>=2.2,()=>{S.capBoost=Math.max(S.capBoost||1,2);S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
-  return {v:'doors',k:'CROISSANCE · ENCOURS ×2,2',tier:'or',t:'Les dark pools vous ouvrent leurs portes',d:"Vous traitez désormais là où personne ne voit passer vos ordres.",g:'plafonds de capacité ×2 · coûts d\'exécution −10 %'}});
+ B('blocs',g>=1.15,()=>{S.capBoost=Math.max(S.capBoost||1,1.5);S.execPenalty=Math.max(0.7,S.execPenalty*0.9);S.capK=Math.max(S.capK||3,4);
+  return {v:'key',k:'CROISSANCE · ENCOURS ×1,15',tier:'bronze',t:'Accès aux blocs',d:"Les grandes maisons vous proposent désormais leurs blocs de gré à gré.",g:'plafond de position ±4 · profondeur ×1,5 · coûts d\'exécution −10 %'}});
+ B('blocs2',g>=1.7,()=>{S.capK=Math.max(S.capK||3,5);
+  return {v:'key',k:'CROISSANCE · ENCOURS ×1,7',tier:'argent',t:'Accès aux blocs · premier cercle',d:"Les desks de gré à gré vous servent avant les autres, et en taille.",g:'plafond de position ±5'}});
+ B('prime',g>=2.5,()=>{if(PROF().freeAdj){S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
+   return {v:'bank',k:'CROISSANCE · ENCOURS ×2,5',tier:'argent',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'coûts d\'exécution −10 %'}}
+  S.freeAdjB=99;return {v:'bank',k:'CROISSANCE · ENCOURS ×2,5',tier:'argent',t:'Prime brokerage de premier rang',d:"Votre courtier principal vous passe au guichet des très gros clients.",g:'un ajustement gratuit par trimestre'}});
+ B('dark',g>=3.2,()=>{S.capBoost=Math.max(S.capBoost||1,2);S.execPenalty=Math.max(0.7,S.execPenalty*0.9);
+  return {v:'doors',k:'CROISSANCE · ENCOURS ×3,2',tier:'or',t:'Les dark pools vous ouvrent leurs portes',d:"Vous traitez désormais là où personne ne voit passer vos ordres.",g:'plafonds de capacité ×2 · coûts d\'exécution −10 %'}});
  /* séries et trophées */
  B('hot',(S.streak||0)>=5,()=>{const m=flowInB(0.03);gauge(4,0,'Main chaude');
   return {v:'bolt',k:'SÉRIE · CINQ TRIMESTRES POSITIFS',tier:'argent',t:'Main chaude',d:"Les allocataires qui hésitaient se décident.",g:`souscription ${mm(m)} (+3 % d'encours) · investisseurs +4`}});
@@ -3302,7 +3311,7 @@ function bonusOpen(){
  if(!hasBonus('star')&&S.q>=1&&S.bud.exec>=BUDMAX&&bonusDraw('star')<0.30){markBonus('star');
   const rv=S.rivals.slice().sort((a,b)=>b.cum-a.cum)[0],i=Math.floor(bonusDraw('starmkt')*N);
   S.stars=S.stars||[];if(!S.stars.includes(INSTR[i].grp))S.stars.push(INSTR[i].grp);rv.skill=Math.max(0.5,rv.skill-0.02);
-  goldLater({v:'star',k:'TALENT · DÉBAUCHAGE',tier:'or',t:`Le trader star de ${rv.nm}`,d:`Il traite ${INSTR[i].nm.toLowerCase()} mieux que personne, et il a choisi votre desk.`,g:`coûts ÷2 sur toute la classe ${INSTR[i].grp.toLowerCase()} tant qu'il reste chez vous · ${rv.nm} affaibli`})}
+  goldLater({v:'star',k:'TALENT · DÉBAUCHAGE',tier:'or',t:`Le trader star de ${rv.nm}`,d:`Il traite ${INSTR[i].nm} mieux que personne, et il a choisi votre desk.`,g:`coûts ÷2 sur toute la classe ${INSTR[i].grp.toLowerCase()} tant qu'il reste chez vous · ${rv.nm} affaibli`})}
  if(!hasBonus('jh')&&S.q>=1&&conf()>=75&&bonusDraw('jh')<0.25){markBonus('jh');S.jh=true;
   goldLater({v:'glass',k:'INFORMATION',tier:'argent',t:'Dîner à Jackson Hole',d:"Entre la poire et le fromage, un gouverneur laisse entendre ce qui va tomber.",g:'la première dépêche du trimestre vous est pré-annoncée à coup sûr'})}
 }
@@ -3912,13 +3921,13 @@ function openModal(title,html){
  m.querySelector('.mback').onclick=m.querySelector('.mclose').onclick=()=>{m.style.display='none'};
 }
 let TID=null;
-function clearTimer(){if(TID){clearInterval(TID);TID=null}
+function clearTimer(){document.body.classList.remove('tmron');if(TID){clearInterval(TID);TID=null}
  const el=document.getElementById('evtimer');if(el)el.classList.remove('on')}
 function armTimer(fn){
  clearTimer();
  let el=document.getElementById('evtimer');
  if(!el){el=document.createElement('div');el.id='evtimer';el.className='evtimer';document.body.appendChild(el)}
- el.classList.add('on');
+ el.classList.add('on');document.body.classList.add('tmron');
  const TR={small:[45,60],mid:[25,35],mega:[15,25]}[(S&&S.size)||'mid']||[25,35],sec=TR[0]+Math.floor(Math.random()*(TR[1]-TR[0]+1));let t=sec;   /* lot 64 : selon la difficulté */
  const R=30,C=2*Math.PI*R;
  el.innerHTML=`<span class="tdial"><svg viewBox="0 0 76 76">
@@ -4314,7 +4323,7 @@ function planSignalsAfterBudget(){
  if(STARP[S.bud.exec]>0&&rng()<STARP[S.bud.exec])S.star=Math.floor(rng()*N);
  if(S.star>=0&&!S.stars.includes(INSTR[S.star].grp))S.stars.push(INSTR[S.star].grp);
  if(S.star>=0){const rv=S.rivals[Math.floor(bonusDraw('recrue')*S.rivals.length)];
-  goldLater({v:'star',k:'RECRUE DU TRIMESTRE',tier:'bronze',t:`Débauché chez ${rv.nm}`,d:`Un trader ${INSTR[S.star].nm.toLowerCase()} quitte ${rv.nm} pour votre desk.`,g:`coûts d'exécution ÷2 sur toute la classe ${INSTR[S.star].grp.toLowerCase()}, tant qu'il reste chez vous`})}
+  goldLater({v:'star',k:'RECRUE DU TRIMESTRE',tier:'bronze',t:`Débauché chez ${rv.nm}`,d:`Un trader ${({Actions:'actions',Taux:'taux',Devises:'devises','Matières premières':'matières premières',Exotiques:'exotic markets'})[INSTR[S.star].grp]||'macro'} quitte ${rv.nm} pour votre desk.`,g:`coûts d'exécution ÷2 sur toute la classe ${INSTR[S.star].grp.toLowerCase()}, tant qu'il reste chez vous`})}
  bonusOpen();
 }
 function drawBuds(){
@@ -4363,9 +4372,6 @@ function screenPlay(){
   </div>
   <div class="block"><div class="blockhead"><h2>Le book</h2><span class="hint">unités de risque, de −${S.maxk} à +${S.maxk}</span></div>
    ${redNote()}
-   ${S.prof==='syst'&&S.tcvEst?(()=>{const o=INSTR.map((x,i)=>({x,i,c:S.tcvEst.c[i]})).filter(o=>mktOpen(o.i));o.sort((a,b)=>b.c-a.c);
-     const L=o.slice(0,3).filter(z=>z.c>0),Sh=o.slice(-3).reverse().filter(z=>z.c<0);
-     return `<details class="xbook" open><summary>Votre modèle · classement du portage</summary><div class="carryrk"><span class="pos-g">À porter</span> ${L.map(z=>`${MFLAG[z.x.sym]||''} ${z.x.sym} ${chip(z.c)}`).join(' · ')||'—'}<br><span class="neg-g">À vendre</span> ${Sh.map(z=>`${MFLAG[z.x.sym]||''} ${z.x.sym} ${chip(z.c)}`).join(' · ')||'—'}</div></details>`})():''}
    <details style="margin:0 0 8px"${S.maxk>3?'':' hidden'}><summary>Le surlevier, au-delà de ±3</summary><p class="note">Au-delà de ±3 vous entrez dans le surlevier : le notionnel dépasse ce que le mandat imagine, le comité le voit, les investisseurs aussi — dans un sens comme dans l'autre.</p></details>
    <div id="rows"></div></div>
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Risque ex-ante du book</summary>
@@ -4548,22 +4554,27 @@ function riskMap(sp,big){
  if(big){
   const W=320,H=210,x0=40,x1=W-8,yb=H-16,yt=8;
   const X=v=>x0+(x1-x0)*v/xm,Y=v=>yb-(yb-yt)*(v-y0)/(y1-y0);
-  let g=`<defs>${gzGrad('gzxB',stX,0,xm,0,x0,x1)}${gzGrad('gzyB',stY,y0,y1,1,Y(y0),Y(y1))}</defs>`
-   +gzBar('gzxB',0,yb+1,3,x0,X(sq),x0,x1,1.5)+gzBar('gzyB',1,x0-4,3,Y(0),Y(pr),Y(y0),Y(y1),1.5);
+  /* lot 75 : jauges pleines, couleur de la valeur, bouts ronds, pastille au bout, trace discrète */
+  const ya=Math.min(Y(0),Y(pr)),yh=Math.abs(Y(pr)-Y(0));
+  let g=`<rect x="${x0}" y="${yb+2}" width="${x1-x0}" height="4" rx="2" fill="#F3EEE4" opacity=".07"/>`
+   +`<rect x="${x0-6}" y="${yt}" width="4" height="${yb-yt}" rx="2" fill="#F3EEE4" opacity=".07"/>`
+   +`<rect x="${x0}" y="${yb+2}" width="${f(Math.max(4,X(sq)-x0))}" height="4" rx="2" fill="${cX}"/>`
+   +`<rect x="${x0-6}" y="${f(ya)}" width="4" height="${f(Math.max(4,yh))}" rx="2" fill="${cY}"/>`
+   +`<line x1="${x0-8}" x2="${x0}" y1="${f(Y(0))}" y2="${f(Y(0))}" stroke="#F3EEE4" stroke-width=".8" opacity=".5"/>`;
   if(TAIL.x0/2<xm)g+=`<rect x="${f(X(TAIL.x0/2))}" y="${yt}" width="${f(x1-X(TAIL.x0/2))}" height="${f(yb-yt)}" fill="#D2463C" opacity=".10"/>`
    +`<text x="${f(X(TAIL.x0/2)+3)}" y="${yt+10}" font-size="9" fill="#E5675C" font-family="var(--mono)" opacity=".85">accidents de levier</text>`;
-  lv(0.05,xm).forEach(v=>{g+=`<line x1="${f(X(v))}" x2="${f(X(v))}" y1="${yt}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".3" opacity=".6"/><text x="${f(X(v))}" y="${yb+13}" font-size="8" text-anchor="middle" fill="var(--dimmer)" font-family="var(--mono)">${Math.round(v*100)}</text>`});
-  lv(y0,y1).forEach(v=>{g+=`<line x1="${x0}" x2="${x1}" y1="${f(Y(v))}" y2="${f(Y(v))}" stroke="var(--dimmer)" stroke-width="${Math.abs(v)<1e-9?.7:.3}" opacity="${Math.abs(v)<1e-9?.9:.6}"/><text x="${x0-7}" y="${f(Y(v)+3)}" font-size="8" text-anchor="end" fill="var(--dimmer)" font-family="var(--mono)">${Math.round(v*100)}</text>`});
+  lv(0.05,xm).forEach(v=>{g+=`<line x1="${f(X(v))}" x2="${f(X(v))}" y1="${yt}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".3" opacity=".6"/><text x="${f(X(v))}" y="${yb+15}" font-size="8" text-anchor="middle" fill="var(--dimmer)" font-family="var(--mono)">${Math.round(v*100)}</text>`});
+  lv(y0,y1).forEach(v=>{g+=`<line x1="${x0}" x2="${x1}" y1="${f(Y(v))}" y2="${f(Y(v))}" stroke="var(--dimmer)" stroke-width="${Math.abs(v)<1e-9?.7:.3}" opacity="${Math.abs(v)<1e-9?.9:.6}"/><text x="${x0-10}" y="${f(Y(v)+3)}" font-size="8" text-anchor="end" fill="var(--dimmer)" font-family="var(--mono)">${Math.round(v*100)}</text>`});
   g+=`<line x1="${x0}" x2="${x1}" y1="${yb}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".8"/><line x1="${x0}" x2="${x0}" y1="${yt}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".8"/>`
-   +`<text x="${x0+2}" y="${yb+13}" font-size="8.5" fill="var(--dim)" font-family="var(--mono)">risque →</text>`
+   +`<text x="${x0+2}" y="${yb+15}" font-size="8.5" fill="var(--dim)" font-family="var(--mono)">risque →</text>`
    +`<text x="${x0+4}" y="${yt+10}" font-size="9" fill="var(--dim)" font-family="var(--mono)">↑ rentabilité</text>`;
   R.forEach(r=>{g+=`<circle cx="${f(X(r.x))}" cy="${f(Y(r.y))}" r="4" fill="${r.c}"/><text x="${f(X(r.x)+(X(r.x)>x1-95?-6:6))}" y="${f(Y(r.y)+3.5)}" font-size="9.5" fill="${r.c}"${X(r.x)>x1-95?' text-anchor="end"':''} font-family="var(--mono)">${r.nm.split(' ')[0]} · ${dec(r.x*100,0)} % · ${r.y>=0?'+':'−'}${dec(Math.abs(r.y)*100,0)} %</text>`});
   const px=X(sq),py=Y(pr);
   if(gh)g+=`<circle cx="${f(X(gh.x))}" cy="${f(Y(gh.y))}" r="5.5" fill="#F3D250" opacity=".30"/>`;
   /* σ et μ du fonds sur les axes, en blanc ; le nom à droite du point, jamais sur la valeur de μ */
   /* curseurs : petits triangles blancs posés sur les jauges, pointés vers le cadre */
-  g+=`<path d="M${f(px-3.5)} ${yb+7.5} L${f(px+3.5)} ${yb+7.5} L${f(px)} ${yb+1.5}Z" fill="#F3EEE4" stroke="var(--bg,#0b1020)" stroke-width=".6"/>`
-   +`<path d="M${x0-7.5} ${f(py-3.5)} L${x0-7.5} ${f(py+3.5)} L${x0-1.5} ${f(py)}Z" fill="#F3EEE4" stroke="var(--bg,#0b1020)" stroke-width=".6"/>`
+  g+=`<circle cx="${f(Math.max(x0+2,px))}" cy="${yb+4}" r="3.4" fill="${cX}" stroke="var(--bg,#0b1020)" stroke-width="1.4"/>`
+   +`<circle cx="${x0-4}" cy="${f(py)}" r="3.4" fill="${cY}" stroke="var(--bg,#0b1020)" stroke-width="1.4"/>`
    +`<text x="${f(Math.min(x1-52,Math.max(x0+40,px)))}" y="${yb-7}" font-size="10" text-anchor="middle" fill="${cX}" font-family="var(--mono)" font-weight="700">risque ${sv}</text>`
    +`<text x="${x0+6}" y="${f(Math.min(yb-18,Math.max(yt+22,py+3.5)))}" font-size="10" fill="${cY}" font-family="var(--mono)" font-weight="700">rentabilité ${mv}</text>`
    +`<circle cx="${f(px)}" cy="${f(py)}" r="5.5" fill="${me}" stroke="${hot?'#D2463C':'var(--bg,#0b1020)'}" stroke-width="${hot?1.6:.8}"/>`
@@ -4575,8 +4586,6 @@ function riskMap(sp,big){
  const L=3,Rr=4,T=5,B=3,gid='gz'+(++riskMap.n);
  const X=v=>L+(100-L-Rr)*v/xm,Y=v=>100-B-(100-B-T)*(v-y0)/(y1-y0);
  let s=`<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">`
-  +`<defs>${gzGrad(gid+'x',stX,0,xm,0,L,100-Rr)}${gzGrad(gid+'y',stY,y0,y1,1,Y(y0),Y(y1))}</defs>`
-  +gzBar(gid+'x',0,100-B+.6,B-.6,L,X(sq),L,100-Rr)+gzBar(gid+'y',1,0,L-.6,Y(0),Y(pr),Y(y0),Y(y1))
   +(TAIL.x0/2<xm?`<rect x="${f(X(TAIL.x0/2))}" y="${T}" width="${f(100-Rr-X(TAIL.x0/2))}" height="${f(100-B-T)}" fill="#D2463C" opacity=".10"/>`:'')
   +lv(0.05,xm).map(v=>`<line x1="${f(X(v))}" x2="${f(X(v))}" y1="${T}" y2="${100-B}" stroke="var(--dimmer)" stroke-width=".5" opacity=".45" vector-effect="non-scaling-stroke"/>`).join('')
   +lv(y0,y1).filter(v=>v>y0+1e-9).map(v=>`<line x1="${L}" x2="${100-Rr}" y1="${f(Y(v))}" y2="${f(Y(v))}" stroke="var(--dimmer)" stroke-width="${Math.abs(v)<1e-9?.9:.5}" opacity="${Math.abs(v)<1e-9?.8:.45}" vector-effect="non-scaling-stroke"/>`).join('')
@@ -4586,7 +4595,10 @@ function riskMap(sp,big){
  const px=X(sq),py=Y(pr);
  if(gh)s+=`<i class="rd me" style="left:${f(X(gh.x))}%;top:${f(Y(gh.y))}%;background:#F3D250;opacity:.30;border:none"></i>`;
  s+=`<i class="rd me${hot?' hot':''}" style="left:${f(px)}%;top:${f(py)}%;background:${me}"></i>`
-  +`<i class="gzc" style="left:${f(px)}%;bottom:0"></i><i class="gzc v" style="left:0;top:${f(py)}%"></i>`
+  +`<i class="gzt x" style="left:${L}%;right:${Rr}%"></i><i class="gzt y" style="top:${T}%;bottom:${B}%"></i>`
+  +`<i class="gzb x" style="left:${L}%;width:${f(Math.max(0,px-L))}%;background:${cX}"></i>`
+  +`<i class="gzb y" style="top:${f(Math.min(Y(0),py))}%;height:${f(Math.abs(py-Y(0)))}%;background:${cY}"></i>`
+  +`<i class="gzk x" style="left:${f(px)}%;background:${cX}"></i><i class="gzk y" style="top:${f(py)}%;background:${cY}"></i>`
   +`<span class="rv" style="left:${f(Math.min(44,Math.max(L+2,px-14)))}%;bottom:7%;color:${cX}">risque ${sv}</span>`
   +`<span class="rv" style="left:${L+2}%;top:${f(Math.min(62,Math.max(T+1,py-12)))}%;color:${cY}">rentabilité ${mv}</span>`;
  return `<div class="rmap">${s}</div>`;
@@ -4713,8 +4725,12 @@ function showMarket(i){
 }
 app.addEventListener('click',e=>{const m=e.target.closest('[data-mkt]');if(m&&S&&S.tcvEst)showMarket(+m.dataset.mkt)});
 /* lot 67 : ordre et coût, en tête de ligne */
+/* lot 75 : montant en k$ / M$ à 3 chiffres significatifs (x en Md$) */
+function amt3(x){let a=Math.abs(x)*1000,u='M$';if(a<1){a*=1000;u='k$'}
+ const p=Math.pow(10,Math.floor(Math.log10(a))-2),r=Math.round(a/p)*p,d=Math.max(0,2-Math.floor(Math.log10(r)));
+ return r.toFixed(d).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'\u202f')+' '+u}
 function ordTxt(i){if(!mktOpen(i))return '';const k0=S.k0?S.k0[i]:S.k[i],d=S.k[i]-k0;if(!d)return '<span class="dim-g">—</span>';
- return `<b class="${d>0?'pos-g':'neg-g'}">${d>0?'achat':'vente'} ${Math.abs(d)}</b> <span class="dim-g">${mm(tcost(d,i).cost||0)}</span>`}
+ return `<b class="${d>0?'pos-g':'neg-g'}">${d>0?'achat':'vente'} ${amt3(notionalBn(Math.abs(d),i))}</b> <span class="dim-g">${mm(tcost(d,i).cost||0)}</span>`}
 function rowInfo(i){
  const el=document.getElementById('ri'+i);if(!el)return;
  const x=INSTR[i];
@@ -4893,7 +4909,6 @@ function screenExec(){
   const im=execImpactAmt(bill,x.tcMult,x.leakQ);
   if(im)out.push(`<span class="stk">impact fonds <em class="neg-g">−${mm(Math.abs(im))}</em></span>`);
   const gx=execGz(x.tcMult,x.leakQ);
-  if(gx.lp||gx.rc)out.push(`<span class="stk">${gz(gx.lp,gx.rc)}</span>`);
   return out.length?`<span class="stks">${out.join('')}</span>`:''};
  const lqNm=S.liq>1.5?'très dégradée':S.liq>1.2?'dégradée':S.liq>1.05?'un peu tendue':S.liq<0.92?'excellente':'normale';
  app.innerHTML=statusBar()+`<div class="fade">
@@ -4908,7 +4923,7 @@ function screenExec(){
   </div>
   ${ev?`<div class="evwrap" style="padding-top:14px"><div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p></div>
    ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=mg<0&&(-mg/1000)>mgrCash();
-     return `<button class="choice" data-i="${i}"${ko?' disabled title="Trésorerie insuffisante"':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${stake(c)}${bkPrev(c.e,'exec')}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`
+     return `<button class="choice" data-i="${i}"${ko?' disabled title="Trésorerie insuffisante"':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${(()=>{const x=c.e||{},q=execGz(x.tcMult,x.leakQ),v=cf(q.lp,q.rc);return v?` Manière d'exécuter : confiance ${v>0?'+':'−'}${Math.abs(v)}.`:''})()}${stake(c)}${bkPrev(c.e,'exec')}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`
    :`<button class="cta" id="go2">Lancer le trimestre</button>`}
  </div>`;
  /* sans anecdote, le fonds paie quand même l'impact d'une exécution standard */
@@ -5149,7 +5164,7 @@ function screenRivalEvent(e){
   const g2=(a==='follow'&&total>0)?gauge(2,0,"La presse parle d'un rattrapage"):(a==='fade'&&total>0)?gauge(3,1,`La presse parle d'un gérant qui a osé contredire ${rv.boss}`):(a==='fade'&&total<0)?gauge(-2,-1,`La presse rit : ${rv.boss} avait raison deux fois`):gauge(-1,0,"La presse parle d'un gérant qui court après les autres");
   S.evLog.push({t:t1,pnl:total,m:total*navB,lp:g0.lp+g.lp+g2.lp,rc:g0.rc+g.rc+g2.rc});
   resultCard(`RIVALITÉ · ${rv.nm.toUpperCase()}`,total>=0?"La presse change de camp":"La presse en remet une couche",
-   [`${x.sym} passe à ${target>0?'+':''}${target} (${mm(cost)} de coûts). La suite du mouvement : ${sgn(resid,1)} sur ${x.nm.toLowerCase()}.`,total>=0?`« ${S.fundName} ${a==='follow'?'recolle':'prend '+rv.boss+' à contre-pied'} », titre ${pick(PRESS_SRC)}.`:`« ${S.fundName} ${a==='follow'?'arrive après la bataille':'s\'entête contre '+rv.boss} », titre ${pick(PRESS_SRC)}.`],
+   [`${x.sym} passe à ${target>0?'+':''}${target} (${mm(cost)} de coûts). La suite du mouvement : ${sgn(resid,1)} sur ${x.nm}.`,total>=0?`« ${S.fundName} ${a==='follow'?'recolle':'prend '+rv.boss+' à contre-pied'} », titre ${pick(PRESS_SRC)}.`:`« ${S.fundName} ${a==='follow'?'arrive après la bataille':'s\'entête contre '+rv.boss} », titre ${pick(PRESS_SRC)}.`],
    [],"Continuer le trimestre",stepEvents,{key:[['<b>Résultat</b>',`<span class="${cls(total)}">${sgn(total,1)} · ${mn(total*navB)}</span>`],['Confiance',`<span class="${cls(g0.lp+g.lp+g2.lp)}">${sd1(g0.lp+g.lp+g2.lp)}</span>`]]});
  };
  app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>pickR(b.dataset.a));
@@ -5234,7 +5249,7 @@ function midTape(){
  try{tapeTick()}catch(err){return {}}
  const p=S.tape&&S.tape.pts||[];if(p.length<3)return {};
  S.bigTape=true;refreshStatus();   /* le petit ruban du bandeau s'efface : pas de doublon */
- return {hold:1,pre:`<div class="tape big" style="margin:4px 0 14px"><div class="tapehead"><span>T${S.q+1} JUSQU'ICI · DEPUIS LE LANCEMENT</span>
+ return {hold:1,pre:`<div class="tape big" style="margin:4px 0 14px"><div class="tapehead"><span>DEPUIS LE LANCEMENT</span>
    <b class="cnt">—</b></div>
    ${tapeSvg(p,S.tape.q0||0,{h:150,anim:1,draw:3,zero:1,rivals:rivalTapes()})}</div>`};
 }
@@ -5820,7 +5835,7 @@ function screenDebrief(o){
    <div class="bar2"><span class="mid"></span><i style="${resid>=0?'left:50%':'right:50%'};width:${wd}%;background:${resid>=0?'var(--long)':'var(--short)'};opacity:.55"></i></div>
    <p class="note" style="margin-top:6px">Les quatre facteurs plus la part propre font le brut des positions, ${sgn(o.gross,1)}. La part propre est ce qui a bougé pour des raisons de marché et non de macro : c'est la portion de votre trimestre qui ne dit rien de la justesse de vos paris.</p>`;}
  let byl=lines.map(z=>`<div class="attr"><span class="an"><span class="num" style="color:var(--txt)">${z.sym}</span> <span style="font-family:var(--mono);font-size:11px;color:var(--dimmer)">${z.k>0?'+':'−'}${Math.abs(z.k)} · marché ${sgn(z.r,1)}</span></span><span class="av ${cls(z.p)}">${sgn(z.p,1)} · ${mn(z.p*S.nav)}</span></div>`).join('');
- const all=[{nm:S.fundName,v:o.qTotal,me:1,rk:o.sp},...S.rivals.map(r=>({nm:r.nm+' · '+r.boss,v:r.last,rk:r.vqLast||rivV(r),st:(RIVSTRAT[r.style]||{}).nm,th:r.tailHit}))].sort((a,b)=>b.v-a.v);
+ const all=[{nm:S.fundName,v:o.qTotal,me:1,rk:o.sp},...S.rivals.map(r=>({nm:r.nm+'<span class="bossn">'+r.boss+'</span>',v:r.last,rk:r.vqLast||rivV(r),st:(RIVSTRAT[r.style]||{}).nm,th:r.tailHit}))].sort((a,b)=>b.v-a.v);
  const cums=[{nm:S.fundName,v:S.idx-1,me:1},...S.rivals.map(r=>({nm:r.nm,v:r.cum-1}))].sort((a,b)=>b.v-a.v);
  const warn=[];
  if(S.poachMsg)warn.push(S.poachMsg);   /* lot 55 : les flux clients par concurrent, en tête */
@@ -5905,6 +5920,18 @@ function screenDebrief(o){
   else{planQuarter();phaseOpen()}
  };
 }
+/* lot 75 : ce que coûte et rapporte chaque choix du conseil, en clair */
+function boardFx(x){x=x||{};const o=[],c=v=>v>0?'pos-g':v<0?'neg-g':'dim-g',sg=v=>(v>0?'+':'−');
+ const v=cf(x.lp,x.rc);if(v)o.push(`confiance <em class="${c(v)}">${sg(v)}${Math.abs(v)}</em>`);
+ if(x.aum)o.push(`encours <em class="${c(x.aum)}">${sg(x.aum)}${dec(Math.abs(x.aum)*100,0)} % · ${sg(x.aum)}${mm(Math.abs(x.aum)*S.nav)}</em>`);
+ if(x.cash)o.push(`fonds <em class="${c(x.cash)}">${sg(x.cash)}${Math.round(Math.abs(x.cash)*1e4)} pb · ${sg(x.cash)}${mm(Math.abs(x.cash)*S.nav)}</em>`);
+ if(x.noise)o.push(`<em class="neg-g">indicateurs plus bruités</em>`);
+ if(x.flighty)o.push(`<em class="neg-g">investisseurs plus prompts à racheter</em>`);
+ if(x.leak)o.push(`<em class="neg-g">positions connues du marché</em>`);
+ if(x.carry)o.push(`<em class="dim-g">book orienté portage</em>`);
+ if(x.tgt)o.push(`cible de risque <em>${pct(x.tgt)}</em>`);
+ if(x.cut)o.push(`<em class="neg-g">${x.cut.filter(s=>IDX[s]!==undefined).join(', ')} coupés de moitié</em>`);
+ return o.length?`<span class="stks">${o.map(s=>`<span class="stk">${s}</span>`).join('')}</span>`:''}
 function screenBoard(){
  hint('board');
  save('screenBoard');
@@ -5913,7 +5940,7 @@ function screenBoard(){
  app.innerHTML=statusBar(true)+`<div class="evwrap fade">
   <div class="evcard">${evHead(ev.who,'inv')}<h3>${ev.t}</h3><p>${ev.p}</p>${evTimerHTML}</div>
   ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=mg<0&&(-mg/1000)>mgrCash();
-    return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
+    return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${c.b}</b><span>${c.s}${boardFx(c.e)}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
  const pickB=idx=>{clearTimer();
   const e=ev.ch[idx].e;
   {const d=cf(e.lp,e.rc);if(d||e.rc)S.lastG={lp:d,rc:e.rc||0,lp0:S.lp,rc0:S.rc};
@@ -5964,7 +5991,7 @@ function screenFinal(){
  else if(cagr>-0.05){verdict="Deux ans pour rien";vtxt="Frais payés, risque pris, rien produit. Les allocataires appellent ça un coût d'option."}
  else{verdict="Sous l'eau";vtxt="Le plus haut historique est loin au-dessus. Vous travaillerez sans commission de performance jusqu'à le retrouver."}
  const qrows=S.rets.map((x,i)=>`<tr><td>T${i+1}</td><td style="text-align:left">${REG[S.regimes[i]].nm}</td><td class="${cls(x)}">${sgn(x,1)}</td><td>${moneyB(S.navs[i+1])}</td></tr>`).join('');
- const lg=[{nm:S.fundName,v:S.idx-1,me:1},...S.rivals.map(x=>({nm:x.nm+' · '+x.boss,v:x.cum-1}))].sort((a,b)=>b.v-a.v);
+ const lg=[{nm:S.fundName,v:S.idx-1,me:1},...S.rivals.map(x=>({nm:x.nm+'<span class="bossn">'+x.boss+'</span>',v:x.cum-1}))].sort((a,b)=>b.v-a.v);
  app.innerHTML=`<div class="fade" style="padding-top:24px">
   <div style="text-align:center;margin-bottom:6px">${crestSvg(S.crest||0,64)}</div>
   <div class="kicker">${S.fundName.toUpperCase()} · RAPPORT AUX INVESTISSEURS · ${S.q} TRIMESTRE${S.q>1?'S':''}</div>
