@@ -707,6 +707,13 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   remplacent TOPIX, JGB et blé. Sauvegarde signée `d.ord` (liste des symboles) : une sauvegarde d'avant est refusée
   sans être effacée, et `#resume` raté retombe sur l'accueil au lieu d'une page vide. **Change l'équilibre**
   (marchés de départ moins chers) : non recalibré. Régression 18 parties 0 erreur 0 écart, 3 reprises à froid.
+- **Lot 73** (`99zzk-lot73.py`) : nuage rentabilité / risque (`riskMap`, vignette et grand format). σ et μ remplacés
+  par « risque » et « rentabilité ». Deux jauges de couleur le long des axes (`gzGrad`, `gzCol`, `GZC`) calées sur
+  le jeu : risque vert jusqu'à la moitié de la cible du mandat, ambre à la cible, rouge au seuil d'accident de levier
+  (`TAIL.x0`) ; rentabilité rouge sous zéro, ambre à zéro, verte au niveau du meilleur concurrent. Curseur blanc du
+  fonds sur chaque jauge ; ses deux valeurs prennent la couleur de la jauge à leur position. Étiquettes des
+  concurrents basculées à gauche du point près du bord droit. Identifiants de dégradé uniques (`riskMap.n`) : la
+  vignette et le grand format coexistent dans la page. Régression 18 parties 0 erreur 0 écart.
 
 ## Calibration (bot intelligent, `tools/bot.js`)
 
