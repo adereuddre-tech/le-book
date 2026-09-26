@@ -32,7 +32,7 @@ function playGame(o){
     if($('#tutooff')){click($('#tutooff'));continue}
     if($('#again')){done=true;break}
     if($('#found')){click($('#found'));continue}
-    if($('#go')&&$('#picks')){for(const k in cfg){const c=$(`.card[data-key="${k}"][data-id="${cfg[k]}"]`);if(c)click(c);else errs.push('carte absente '+k)}
+    if($('#go')&&$('#picks')){for(const k in cfg){const c=$(`.card[data-key="${k}"][data-id="${cfg[k]}"]`);if(c)click(c);else if(!['vol','univ','arch','desk'].includes(k))errs.push('carte absente '+k)}
       $('#sd').value=String(o.seed);click($('#go'));continue}
     const lv=$('#buds .lvl');
     if(lv){const ids=['exec','risk','res'];let ch=false;
@@ -45,18 +45,22 @@ function playGame(o){
     if($('#send')){
       w.eval(`(()=>{const smart=${smart};
         if(${dumb}){S.k=S.k.map((v,i)=>mktOpen(i)?Math.round((Math.random()*2-1)*Math.min(3,S.maxk)):0);return}
-        if(!smart||S.prof==='syst'){const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));return}
+        /* lot 67 : plus de cible de volatilité — le bot intelligent choisit l'échelle de son book qui maximise
+           le rendement attendu (profitBook : collatéral, impact, drain, accidents de levier compris) moins une
+           aversion égale au drain de volatilité. Le « naïf » garde le book du modèle. */
+        const best=raw=>{let bk=null,bu=-1e9;for(let a=0.1;a<=4.01;a+=0.1){const k=raw.map(z=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(z*a))));
+          const sg=riskShown(weights(k)).total,u=profitBook(k)-0.5*sg*sg/4;if(u>bu){bu=u;bk=k}}return bk};
+        if(!smart){const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));return}
+        if(S.prof==='syst'){const R=recoBook();const mx=Math.max(1e-9,...R.k.map(Math.abs));S.k=best(R.k.map(v=>v/mx));return}
         const {W,f:f0}=styleEst();const f=[...f0];
         if(S.hunch)f[S.hunch.k]+=(S.hunch.up?1:-1)*1.2;
         const sc=INSTR.map((x,i)=>{let v=0;for(let k=0;k<K;k++)v+=x.b[k]*f[k]*Math.max(W.F,0.5);
           if(S.tcvEst)v+=0.24*W.T*S.tcvEst.t[i]+0.20*W.C*S.tcvEst.c[i]+0.18*W.V*S.tcvEst.v[i]*((S.prof==='fonda'&&S.cat&&S.cat.includes(i))?(typeof CATM!=='undefined'?CATM:2):1);
           v+=W.X*0.30*S.crowd[i];return v});
         const mx=Math.max(0.001,...sc.map(Math.abs));const raw=sc.map(v=>v/mx*3);
-        const tg=S.tgt*0.95*(PROF().modelScale||1);let a=tg/Math.max(1e-9,pvol(weights(raw)));
-        let k=raw.map(z=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(z*a))));
-        for(let it=0;it<8;it++){const v=pvol(weights(k));if(v<1e-9)break;const r=tg/v;if(r>0.95&&r<1.05)break;a*=r;k=raw.map(z=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(z*a))))}
-        S.k=k;})()`);
+        S.k=best(raw.map(z=>z/3));})()`);
       if($('#send').disabled&&$('#fitbook'))click($('#fitbook'));
+      w.eval('window.__sps=(window.__sps||[]).concat(riskShown(weights(S.k)).total)');
       if($('#send').disabled){errs.push('book bloque');break}
       click($('#send'));continue}
     const ev=d.querySelectorAll('.choice.evopt');const evOk=[...ev].map(b=>!b.disabled);
@@ -68,6 +72,10 @@ function playGame(o){
       if(!evOk[i])i=ev.length-1;
       if(w.eval('S.sc&&S.sc.ver'))st.verified++;
       if(i===0)st.follow++;click(ev[i]);continue}
+    /* accident de levier : le bot intelligent minimise perte du fonds + 2 × ce que paie sa trésorerie */
+    if(smart&&$('.choice[data-t]')){const bs=[...d.querySelectorAll('.choice[data-t]')];
+      const c=JSON.parse(w.eval(`JSON.stringify(tailOpts(S.tailEv).map(o=>(o.id==='hold'?0.9*S.tailEv.L:o.f)+2*o.m))`));
+      let bi=-1,bc=1e9;bs.forEach((b,j)=>{if(!b.disabled&&c[j]<bc){bc=c[j];bi=j}});if(bi>=0){st.tail=(st.tail||0)+1;click(bs[bi]);continue}}
     const chs=[...d.querySelectorAll('.choice')].filter(b=>!b.disabled);
     if(chs.length){let bi=chs.length-1;
       if(smart){let bu=-1e9;chs.forEach((c,j)=>{const u=utilText(c.textContent);if(u>bu+1e-9){bu=u;bi=j}})}
@@ -81,7 +89,7 @@ function playGame(o){
     if(any.length){click(any[0]);continue}
     errs.push('bloqué');break;
   }
-  const r=JSON.parse(w.eval(`JSON.stringify({score:(S.mgrFees-S.mgrCosts)*1000,fees:S.mgrFees*1000,costs:S.mgrCosts*1000,q:S.q,qtot:S.qtot,over:S.over,ret:S.idx-1,nav:S.nav*1000,bud:S.bud,lp:S.lp,rc:S.rc,feats:Object.keys(S.fl||{}).length})`));
+  const r=JSON.parse(w.eval(`JSON.stringify({score:(S.mgrFees-S.mgrCosts)*1000,fees:S.mgrFees*1000,costs:S.mgrCosts*1000,q:S.q,qtot:S.qtot,over:S.over,ret:S.idx-1,nav:S.nav*1000,bud:S.bud,lp:S.lp,rc:S.rc,feats:Object.keys(S.fl||{}).length,red:(S.cards||{}).r||0,yel:((S.cards||{}).log||[]).filter(x=>x.c==='jaune').length,tails:(S.tails||[]).length,sp:(window.__sps||[]).reduce((a,b)=>a+b,0)/Math.max(1,(window.__sps||[]).length),riv:S.rivals.map(r=>+(r.cum-1).toFixed(3))})`));
   if(o.collect){try{r.probe=JSON.parse(w.eval(o.collect))}catch(e){r.probe={err:e.message}}}
   w.close();
   return Object.assign(r,{cfg,budIn:bud,done,steps,nerr:errs.length,err:errs[0],st});

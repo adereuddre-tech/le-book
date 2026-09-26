@@ -639,6 +639,34 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   - Constat ancien, non corrigé : avec `play.js`, le style flux finit presque toujours à quelques M$ d'encours malgré
     une performance positive (rachats) — déjà vrai sur le fichier publié. À mesurer au bot intelligent.
 
+- **Lot 67** (`99zzc-lot67.py`) — demandes d'Antoine :
+  - **Mi-parcours** : latent = trimestre − dépêches/desk/incidents (il était recalculé à part, sans collatéral ni frais,
+    et pouvait contredire le total) ; le titre parle du trimestre entier.
+  - **Nuage μ / σ** : μ = rendement attendu annualisé (4 × trimestre), σ = risque ; abscisses toujours en bas, traits très
+    fins tous les 10 % sur les deux axes, valeurs dans le cadre ; grand format : graduations, nom du fonds au lieu de
+    « Vous », μ collé à l'axe (plus de recouvrement avec le nom).
+  - **Trésorerie** à trois chiffres significatifs (`treso`). **Lignes de marché** : « rentabilité » au lieu de « profit »,
+    ordre et coût en tête de ligne (`ordTxt`) à la place du rendement du trimestre passé.
+  - **Sauts du ruban** : `rivRet` = chemin pur complet (bruit propre `rivNz`, accident à un instant `rtt`), `rivalReturns`
+    = `rivRet(j,1)` sans tirage de `rng` ; dernier pas du trimestre à la densité des autres (`TAPEM`) ; commission de
+    performance provisionnée au fil du trimestre (`liveNet`). Sonde : dernier pas des concurrents nul.
+  - **Confiance / cartons** : plus de double peine (la perte > 10 % n'est plus notée par le comité, le carton s'en
+    charge ; les « griefs accumulés » ne donnent plus de jaune — la dérogation au modèle du quant les nourrissait).
+    Seuils : rouge −20 % / repli 30 % ; jaune −10 % / repli 18 % / 20 pts sous la médiane / book vide.
+  - **Hauts faits et cartes** : libellés « jauge / comité » → confiance ; « Dompter le levier » (trimestre positif malgré
+    un accident) ; carte blanche = quatre trimestres sans carton ; hauts faits d'encours relibellés en performance.
+  - **Équilibrage** : `RIVKS` (quant 0,22, fondamental et flux 0,34), Citadelle 30 % de risque ; flux : `ddMax` 0,22,
+    `lpMult` 1,35, intuition juste 85 %. Couper après un accident : le latent de la moitié coupée est acquis (`qEvM`).
+  - **Bot** (`tools/bot.js`) : l'intelligent choisit l'échelle du book qui maximise `profitBook − ½σ²/4` (plus de cible),
+    répond aux accidents (perte du fonds + 2 × trésorerie) ; sorties `red`, `yel`, `tails`, `sp`, `riv`.
+  - Mesures, version publiée (`/tmp/g67.html`), 108 parties (6 graines × 3 styles × 3 difficultés × bots intelligent et
+    nul) + 54 parties intelligentes : intelligent 100 % de survie (3 abandons flux sur 54), σ choisi 22 à 30 %, 0,2 à
+    0,5 rouge et 0,3 à 1,3 jaune par partie, 0,3 à 1,2 accident ; nul : survie 17 à 83 %, score 2 à 8 M$, 0,5 à 1,2
+    rouge. Scores moyens intelligents (36 parties par style) : quant ~36, flux ~24, fondamental ~18 M$ (σ 10 à 34) —
+    la campagne précédente, sur d'autres graines, donnait l'ordre inverse : **écart de styles non démontré**.
+    Performance médiane décroissante avec la difficulté (quant 1,89 / 1,69 / 1,48). Concurrents médians sur deux ans
+    +91 / +95 / +65 %. Régression 18 parties, `cover3` 3 264 plans, reprise à froid : 0 erreur, 0 écart.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
@@ -799,8 +827,8 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   l'échelle (max 1,5× au lieu de 2×). Décision d'Antoine attendue.
 
 ### Plus loin
-- **Lot 66 à calibrer au bot intelligent** : `bot.js` dimensionne encore sur `S.tgt` ; lui apprendre à choisir son
-  risque (et une réponse aux accidents), puis ~30 graines × 3 styles pour régler `TAIL`, `RIVK` et `RIVSTRAT`.
+- **Équilibre des styles** : le bot intelligent classe quant > flux > fondamental sur 108 parties, l'inverse sur les 72
+  précédentes. Il faut ~100 parties par style et par difficulté (graines communes) avant de toucher aux styles.
 - Production de texte : 200 anecdotes d'exécution (145 aujourd'hui) et 300 dépêches (269),
   plus la démultiplication des débriefings.
 - Rentabilité des budgets : non remesurée depuis le changement d'économie. Avec un seul cœur,
