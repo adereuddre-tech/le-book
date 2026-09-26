@@ -2456,7 +2456,7 @@ function planQuarter(){
  if(rng()<0.45){const sav=STAKE.filter(e=>!S.usedStake.includes(e.t)&&!STAKE_POS.has(e.t));if(sav.length){const se=pick(sav);S.usedStake.push(se.t);S.preDesk={trader:true,stake:true,...se}}}
  S.stopQ=false;S.noAddQ=false;
  (S.rivals||[]).forEach(rv=>{rv.vq=rivVolQ(rv)});   /* lot 66 : risque du trimestre, sans tirage */
- S.tailEv=null;S.tailDone=false;S.tailQ=null;
+ S.tailEv=null;S.tailDone=false;S.tailQ=null;S._kLast=null;S._kGhost=null;
  /* incident opérationnel */
  const desk=DESKS.find(d=>d.id===S.desk);
  let pInc=0.09*ARCH().incMult*RISKM[S.bud.risk]*PROF().incMult+(desk.algo?0.03:0);
@@ -4235,7 +4235,13 @@ function riskMap(sp,big){
  /* lot 68 : trimestriel — μ du trimestre, σ trimestriel = σ annuel / 2. gh = le fonds avant ses derniers changements
     (book de départ sur la page du book, book validé pendant le trimestre), en jaune pâle. */
  const pr=profitBook(S.k),R=(S.rivals||[]).map((rv,j)=>{const p=rivPt(rv);p.x/=2;return Object.assign(p,{c:rivCol(j),nm:rv.nm})});
- const sq=sp/2,kB=(S.phase==='book'?S.k0:S.kVal)||null,gh=kB&&kB.length===S.k.length&&kB.some((v,i)=>v!==S.k[i])?{x:riskShown(weights(kB)).total/2,y:profitBook(kB)}:null;
+ /* lot 69 : S._kLast = book au dernier affichage ; dès qu'il diffère du book courant, il devient le point
+    précédent (S._kGhost). Quel que soit le chemin du changement (case du book, dépêche, desk, accident),
+    le point jaune est donc le book juste avant, les autres positions comprises. Remis à zéro chaque trimestre. */
+ const sq=sp/2;
+ if(!S._kLast||S._kLast.length!==S.k.length){S._kLast=[...S.k];S._kGhost=null}
+ else if(S._kLast.some((v,i)=>v!==S.k[i])){S._kGhost=S._kLast;S._kLast=[...S.k]}
+ const kB=S._kGhost,gh=kB&&kB.length===S.k.length&&kB.some((v,i)=>v!==S.k[i])?{x:riskShown(weights(kB)).total/2,y:profitBook(kB)}:null;
  const xm=Math.max(0.05,sq,...R.map(r=>r.x),...(gh?[gh.x]:[]))*1.10;
  const ys=[pr,...R.map(r=>r.y),...(gh?[gh.y]:[])],ya=Math.min(0,...ys),yz=Math.max(0,...ys),ypad=Math.max(0.01,(yz-ya)*0.14);
  const y0=ya<0?ya-ypad:0,y1=yz+ypad;
@@ -4264,7 +4270,7 @@ function riskMap(sp,big){
    +`<circle cx="${f(px)}" cy="${f(py)}" r="5.5" fill="${me}" stroke="${hot?'#D2463C':'var(--bg,#0b1020)'}" stroke-width="${hot?1.6:.8}"/>`
    +`<text x="${f(px+8)}" y="${f(py-7)}" font-size="10" fill="${me}" font-family="var(--mono)" font-weight="700" ${px>x1-70?'text-anchor="end"':''}>${nm}</text>`;
   const tp=tailP(sp);
-  return `<p class="note" style="margin:0 0 4px">Valeurs <b>trimestrielles</b>. σ : risque du book sur un trimestre (la moitié du σ annuel des lignes de marché), bruit d'estimation compris. μ : rendement attendu du trimestre — collatéral, impact, drain de volatilité et coût moyen des accidents de levier compris. Traits tous les 5 %. Point jaune pâle : votre fonds avant vos derniers changements de position. Les concurrents sont placés à leur couple estimé.</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
+  return `<p class="note" style="margin:0 0 4px">Valeurs <b>trimestrielles</b>. σ : risque du book sur un trimestre (la moitié du σ annuel des lignes de marché), bruit d'estimation compris. μ : rendement attendu du trimestre — collatéral, impact, drain de volatilité et coût moyen des accidents de levier compris. Traits tous les 5 %. Point jaune pâle : votre fonds juste avant votre dernier changement de position, toutes les autres positions comprises. Les concurrents sont placés à leur couple estimé.</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
    +`<p class="note" style="margin:0 0 10px">${tp>0?`À σ ${sv} : <b class="neg-g">${dec(tp*100,0)} % de probabilité</b> d'un accident de levier ce trimestre, perte de l'ordre de ${dec(0.62*tailL(sp)*100,0)} % de l'encours si vous le laissez courir.`:`Sous σ ${dec(TAIL.x0*50,1)} % par trimestre, pas d'accident de levier possible.`}</p>`;
  }
  const L=3,Rr=4,T=5,B=3;

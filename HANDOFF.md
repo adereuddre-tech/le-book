@@ -683,6 +683,11 @@ Dépôt : `adereuddre-tech/le-book`, branche `main`.
   - `tools/shot.py` restait bloqué au premier book (bouton d'envoi grisé) : il ajuste le book (`#fitbook`) avant d'envoyer.
   - Régression 18 parties : 0 erreur, 0 écart ; `goalchk` : aucun prédicat cassé. Fréquence des hauts faits non mesurée.
 
+- **Lot 69** (`99zzf-lot69.py`) : point jaune pâle du nuage = book juste avant le dernier changement, toutes les autres
+  positions comprises. `riskMap` compare le book à `S._kLast` (book au dernier affichage) ; s'il diffère, l'ancien devient
+  `S._kGhost`. Marche pour tous les chemins de changement ; remis à zéro dans `planQuarter`. Contrôle
+  `tools/tmp/ghost.js` ; régression 18 parties 0 erreur 0 écart.
+
 ## Calibration (bot intelligent, `tools/bot.js`)
 
 Méthode : parties appariées (même graine, même style) entre une option et le standard ;
