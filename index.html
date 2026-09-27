@@ -807,8 +807,8 @@ const PROFILES=[
   sigBonus:5,capture:0.60,tcMult:1.08,rumBonus:0.18,lpMult:1.0,incMult:1.0,modelScale:1.10,numeric:false,verified:true},
  {id:'flux',lvl:'Expert',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez rien. Vous écoutez. Le marché parle en permanence et la plupart des gens sont trop occupés à avoir des opinions pour l'entendre. Vous regardez un carnet d'ordres comme d'autres regardent la mer. Vos analystes ont renoncé à vous demander vos raisons ; votre comité a renoncé à les consigner. Il vous arrive d'avoir raison avant d'avoir compris pourquoi.",
-  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, un facteur macro vous souffle le sens de sa réalisation avant tout le monde, et elle ne se trompe qu'environ une fois sur cinq. Ne demandez pas comment"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 35 % plus nerveuse"],['b',"de l'argent rapide : rachats pour repli dès 22 % de perte au lieu de 28 %"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"]],
-  sigBonus:0,capture:0.85,tcMult:0.90,rumBonus:0.05,lpMult:1.35,ddMax:0.22,modelScale:1.20,incMult:1.25,numeric:false,freeAdj:true,hunch:true}
+  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, un facteur macro vous souffle le sens de sa réalisation avant tout le monde, et elle ne se trompe qu'environ une fois sur cinq. Ne demandez pas comment"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"de l'argent rapide : rachats pour repli dès 22 % de perte au lieu de 28 %"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"]],
+  sigBonus:0,capture:0.85,tcMult:0.90,rumBonus:0.05,lpMult:1.20,ddMax:0.22,modelScale:1.20,incMult:1.25,numeric:false,freeAdj:true,hunch:true}
 ];
 /* figés depuis le retrait de ces deux choix de l'écran d'accueil */
 const RISKARCH=[{id:'std',nm:"Contrôle des risques standard",band:0.30,incMult:1.0,sev:1.0,stop:false,lp0:0}];
@@ -825,7 +825,7 @@ const SIZES=[
  {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.25,nm:"Difficile — 25 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
   p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 25 % de la performance, et les souscriptions arrivent aussi vite que les rachats.",
   ef:[["g","commission de performance : 25 %"],["g","flux violents dans les deux sens : un bon trimestre attire gros"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
-  rivSkill:0.120,rivVol:1.10,lpNeg:1.45,rcNeg:1.35,lp0:-8,flowMult:1.60,flowIn:2.60,goalMult:1}
+  rivSkill:0.120,rivVol:1.10,lpNeg:1.60,rcNeg:1.35,lp0:-8,flowMult:1.60,flowIn:1.60,goalMult:1}
 ];
 const UNIVS=[
  {id:'fin',edge:0.75,lpMult:0.90,lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
@@ -2843,7 +2843,9 @@ function rumorEst(){
  const b=S.rumors.filter(r=>r.bought);
  const est=[0,0,0,0];b.forEach(r=>{const p=r.p||RELP[r.rel];r.v.forEach((z,k)=>est[k]+=(2*p-1)*z)});
  S.factEst=est.map(z=>z/Math.max(1,b.length)*2.2);
+ if(S.hunch&&HUNCHW)S.factEst[S.hunch.k]+=(S.hunch.up?1:-1)*HUNCHW;   /* lot 77 */
 }
+var HUNCHW=1.4;   /* poids de l'intuition du flux dans l'attendu : ≈ (2×0,85−1) × |f| typique ×1,4 */
 function renderNews(){
  const el=document.getElementById('news');if(!el)return;
  /* trois sources en vue, les plus parlantes ; les autres repliées */
@@ -5555,7 +5557,8 @@ function resolveQuarter(){
   if(ddp>=0.18*tt&&ddp>(C.ddY||0)+0.04){why.push(`repli de ${dec(ddp*100,0)} % depuis le plus haut`);C.ddY=ddp}
   if(qTotal-med<=-0.20)why.push(`${dec((med-qTotal)*100,0)} pts sous la médiane des concurrents`);
   if(S.midY===S.q-1){why.unshift('confiance tombée à zéro en cours de trimestre');C.y=Math.max(0,C.y-1)}
-  else if(S.lp<=0)why.unshift('confiance des investisseurs à zéro');
+  else if(S.lp<=0&&!(S.lpClose<=0))why.unshift('confiance des investisseurs tombée à zéro');
+  S.lpClose=S.lp;
   S.qCard=null;
   if(!red&&why.length){C.y++;C.clean=0;S.qCard={c:'jaune',why:why[0]};C.log.push({q:S.q,c:'jaune',why:why[0]});
    if(C.y>=2)red='deuxième carton jaune'}

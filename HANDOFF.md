@@ -898,6 +898,15 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   `<span>` (le flex coupait aux `<b>`). Campagne 90 parties appariées : quant −3,8 ± 1,8, fondamental
   −7,4 ± 3,0, flux 0,0 ; jaunes et rouges ×2 à ×4 (le bot reste souvent à confiance nulle).
 
+- **Lot 77** (`lot77/pA.py` + réglages) : ordre des styles et difficulté. L'intuition du flux entre dans
+  `S.factEst` (`HUNCHW` 1,4) : le desk du flux se dimensionnait sur un attendu qui l'ignorait (risque 0,21 → 0,39) ;
+  flux `lpMult` 1,35 → 1,20 ; difficile `flowIn` 2,6 → 1,6, `lpNeg` 1,45 → 1,60 ; jaune de clôture pour confiance
+  nulle seulement au trimestre où elle y tombe (`S.lpClose`). Campagne 180 parties : quant 26,9 (méd. 15,5,
+  survie 100 %), fondamental 35,4 (28,6, 100 %), flux 39,1 (25,5, 83 %, +15,0 ± 3,9 apparié) ; facile −4,4 ± 1,8
+  (survie 96 %), difficile 0,0 ± 1,5 (82 % contre 93 %). Ouvert : quant et fondamental à 100 % de survie au
+  niveau moyen ; ~2 jaunes et ~1,2 rouge par partie, surtout des chutes à zéro en cours de trimestre ;
+  flux − fondamental dans le bruit, ~200 parties par style pour conclure.
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
