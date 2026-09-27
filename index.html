@@ -3424,12 +3424,15 @@ function ytdIdx(){
  const y0=0;let v=1;   /* lot 50 : base 100 au lancement du fonds */
  for(let i=0;i<y0;i++)v*=(1+S.rets[i]);
  let cur=1;for(let i=0;i<S.q;i++)cur*=(1+S.rets[i]);
- return {y0,base:v,now:cur*(1+liveNet())/v*100,closes:S.rets.slice(y0,S.q)};
+ return {y0,base:v,now:cur*(1+((S.phase==='events'&&S.live)?liveNet():0))/v*100,closes:S.rets.slice(y0,S.q)};
 }
 /* Un trimestre fait treize semaines ; à un pas horaire, cela fait quelques centaines de
    points. L'amplitude par pas est calée sur la volatilité cible du mandat et non sur une
    constante : un fonds agressif a un ruban plus nerveux, ce qui est la vérité. */
 const TAPEM=48;
+/* lot 78 : points au prorata du temps couvert — un trimestre fait toujours ~48 points, quel que soit
+   le nombre de mises à jour ; l'amplitude par point est alors la même partout */
+function tapeM(dt){return Math.max(3,Math.round(TAPEM*Math.max(0,dt)))}
 /* Amplitude par pas d'un pont de m points couvrant la fraction dt d'un trimestre, pour une
    volatilité annuelle v (vol cible du mandat par défaut, celle du concurrent pour eux).
    σ_trimestre = v/2 ; l'écart au milieu du pont vaut (v/2)·√dt/2. */
@@ -3447,7 +3450,7 @@ function tapeTick(){
  S.tape.from=S.tape.pts.length-1;   /* rien de neuf : rendu statique */
  if(Math.abs(tgt-last)>0.05){       /* 5 pb : en deçà, le P&L fait du surplace */
   const t1=qElapsed(),t0=(S.tape.ts&&S.tape.ts.length)?S.tape.ts[S.tape.ts.length-1]:0;
-  bridgePts(last,tgt,TAPEM,hash32('tapeq'+S.q+'_'+(S.tape.seg++),S.seed),tapeVol(TAPEM,t1-t0))
+  const mq=tapeM(t1-t0);bridgePts(last,tgt,mq,hash32('tapeq'+S.q+'_'+(S.tape.seg++),S.seed),tapeVol(mq,t1-t0))
     .forEach(x=>S.tape.pts.push(x));
   (S.tape.ts=S.tape.ts||[]).push(t1);   /* les concurrents avancent au même instant */
   if(S.tape.pts.length>3000){const cut=S.tape.pts.length-3000;
@@ -3655,10 +3658,10 @@ function rivalTapes(){
   /* trimestre en cours : un segment par segment du joueur, au même instant t */
   let last=v*100;
   ts.forEach((t,k)=>{const nv=v*(1+rivRet(j,t,tq))*100;
-   bridgePts(last,nv,TAPEM,hash32('rivq'+j+'_'+tq+'_'+k,S.seed),tapeVol(TAPEM,t-(k?ts[k-1]:0),rivV(r))).forEach(z=>pts.push(z));last=nv});
+   bridgePts(last,nv,tapeM(t-(k?ts[k-1]:0)),hash32('rivq'+j+'_'+tq+'_'+k,S.seed),tapeVol(tapeM(t-(k?ts[k-1]:0)),t-(k?ts[k-1]:0),rivV(r))).forEach(z=>pts.push(z));last=nv});
   /* clôture : leur vrai résultat, bruit propre compris, sur le même dernier pas que vous */
   if(closed){const nv=v*(1+((r.hist&&r.hist[tq])||0))*100;
-   bridgePts(last,nv,TAPEM,hash32('rivs'+j+'_'+tq,S.seed),tapeVol(TAPEM,Math.max(0.04,1-(ts.length?ts[ts.length-1]:0)),rivV(r))).forEach(z=>pts.push(z))}
+   bridgePts(last,nv,tapeM(Math.max(0.04,1-(ts.length?ts[ts.length-1]:0))),hash32('rivs'+j+'_'+tq,S.seed),tapeVol(tapeM(Math.max(0.04,1-(ts.length?ts[ts.length-1]:0))),Math.max(0.04,1-(ts.length?ts[ts.length-1]:0)),rivV(r))).forEach(z=>pts.push(z))}
   return {nm:r.nm,crest:RIVCREST[j%4],pts};
  });
 }
@@ -3699,7 +3702,7 @@ function statusBar(done){
  return `<div class="status">
   <div class="sgrid"><div class="sl">
   <div class="srow">
-   <button class="tile aum" data-gauge="cap"><span><i><span class="crestmini">${crestSvg(S.crest||0,15)}</span>${S.fundName.split(' ')[0]}${done?` · T${S.q}`:` · T${Math.min(S.q+1,QT())}`}</i><b>${rank}<sup>${rank===1?'er':'e'}</sup>/4</b></span><span class="aumv"><b id="navtile">${moneyB(navNow())}</b><b class="${cls(cum)}">${sgnp(cum,1)}${dd>0.005?`<em class="neg-g"> ↓${(dd*100).toFixed(0)} %</em>`:''}</b></span></button>
+   <button class="tile aum" data-gauge="cap"><span><i><span class="crestmini">${crestSvg(S.crest||0,15)}</span>${S.fundName.split(' ')[0]}${done?` · T${S.q}`:` · T${Math.min(S.q+1,QT())}`}</i><b>${rank}<sup>${rank===1?'er':'e'}</sup>/4</b></span><span class="aumv"><b id="navtile">${money4(navNow())}</b><b class="${cls(cum)}">${sgnp(cum,1)}${dd>0.005?`<em class="neg-g"> ↓${(dd*100).toFixed(0)} %</em>`:''}</b></span></button>
   </div>
   <div class="srow">
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
@@ -3937,7 +3940,7 @@ function openModal(title,html){
 let TID=null;
 function clearTimer(){document.body.classList.remove('tmron');if(TID){clearInterval(TID);TID=null}
  const el=document.getElementById('evtimer');if(el)el.classList.remove('on')}
-function armTimer(fn){
+function armTimer(fn,lbl){
  clearTimer();
  let el=document.getElementById('evtimer');
  if(!el){el=document.createElement('div');el.id='evtimer';el.className='evtimer';document.body.appendChild(el)}
@@ -3948,7 +3951,7 @@ function armTimer(fn){
    <circle class="tfill" cx="38" cy="38" r="${R}"/>
    <circle class="ttrack" cx="38" cy="38" r="${R}"/>
    <circle class="tarc" cx="38" cy="38" r="${R}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="0"/>
-  </svg><b class="tnum">${t}</b></span><span class="tlb">sans choix : l'option du bas</span>`;
+  </svg><b class="tnum">${t}</b></span><span class="tlb">${lbl||"sans choix : l'option du bas"}</span>`;
  const arc=el.querySelector('.tarc'),fill=el.querySelector('.tfill'),num=el.querySelector('.tnum'),dial=el.querySelector('.tdial');
  const draw=()=>{const f=Math.max(0,t/sec);
   arc.setAttribute('stroke-dashoffset',(C*(1-f)).toFixed(1));
@@ -3988,6 +3991,9 @@ const mm=x=>{const a=Math.abs(x),sg=x<0?'−':'';
  if(a>=1)return sg+a.toFixed(a>=10?1:2).replace('.',',')+' Md$';
  if(a>=0.0005)return sg+(a*1000).toFixed(a>=0.1?0:1).replace('.',',')+' M$';
  return sg+(a*1e6).toFixed(a>=0.00001?0:1).replace('.',',')+' k$'};
+/* lot 78 : encours de la tuile à quatre chiffres significatifs */
+const money4=x=>{const a=Math.abs(x);if(a>=1)return x.toFixed(a>=100?1:a>=10?2:3).replace('.',',')+' Md$';
+ const m=x*1000,b=Math.abs(m);return m.toFixed(b>=100?1:b>=10?2:3).replace('.',',')+' M$'};
 const moneyB=x=>{const a=Math.abs(x);return a>=1?x.toFixed(a>=10?1:2).replace('.',',')+' Md$':(x*1000).toFixed(a>=0.1?0:1).replace('.',',')+' M$'};
 function sig3(v,unit){const a=Math.abs(v);const d=a>=100?0:a>=10?1:2;
  return (v<0?'−':'')+Math.abs(v).toFixed(d).replace('.',',')+' '+unit}
@@ -5334,12 +5340,13 @@ function screenTail(te){
   <div class="evcard bad">${evHead(ev.who,'risk')}<h3>${ev.t}</h3><p>${ev.p}</p>
    <p class="note">${ev.mg?'Appel de marge':'Accident de levier'} : votre book tourne à ${pct(te.sp)} de risque. En dessous de ${dec(TAIL.x0*100,0)} %, il ne serait pas arrivé.</p></div>
   <div class="choices" style="margin-top:12px">${O.map((o,k)=>btn(o,k)).join('')}</div></div>`;
- document.querySelectorAll('.choice[data-t]').forEach(b=>b.onclick=()=>{
+ if(ev.mg)armTimer(()=>{const b=app.querySelector('.choice[data-t="1"]');if(b&&!b.disabled)b.click()},'sans choix : le prime broker liquide la moitié');
+ document.querySelectorAll('.choice[data-t]').forEach(b=>b.onclick=()=>{clearTimer();
   const k=+b.dataset.t,o=O[k],loss=o.f*nav;
   S.nav-=loss;S.qIncM-=loss;
   if(o.m){S.mgrCosts+=o.m*nav;S.qTailMgr=(S.qTailMgr||0)+o.m*nav}
   if(o.id==='cut'){const r0=typeof liveRet==='function'?liveRet():0;S.k=S.k.map(v=>Math.trunc(v/2));const r1=typeof liveRet==='function'?liveRet():0;S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0}
-  const g=gauge(o.c,0,`Accident de levier : ${ev.t}`);
+  const g=gauge(o.c,0,`${ev.mg?'Appel de marge':'Accident de levier'} : ${ev.t}`);
   S.evLog.push({t:ev.t,pnl:-o.f,m:-loss,lp:g.lp,rc:g.rc});(S.tails=S.tails||[]).push({q:S.q,t:ev.t,f:o.f,id:o.id});
   S.tailDone=true;S.tailEv=0;try{refreshGain()}catch(err){}
   const res=o.id==='hold'?(te.good?'La tempête passe sans emporter le book. Cette fois.':'La tempête emporte tout ce qui dépasse.'):o.id==='cut'?'Le book est coupé de moitié, au pire prix de la séance.':'La couverture tient. Elle a coûté ce qu\'on vous a demandé.';
@@ -5530,7 +5537,7 @@ function resolveQuarter(){
   /* toujours posé, même minuscule : les concurrents font le même dernier pas, sur 18 points */
   S.tape.from=S.tape.pts.length-1;S.tape.settled=S.q;   /* avant S.q++ : c'est le trimestre du ruban */
   const dtl=Math.max(0.04,1-((S.tape.ts&&S.tape.ts.length)?S.tape.ts[S.tape.ts.length-1]:0));
-  bridgePts(last,tgt,TAPEM,hash32('settle'+S.q,S.seed),tapeVol(TAPEM,dtl)).forEach(z=>S.tape.pts.push(z));
+  bridgePts(last,tgt,tapeM(dtl),hash32('settle'+S.q,S.seed),tapeVol(tapeM(dtl),dtl)).forEach(z=>S.tape.pts.push(z));S.tape.pts[S.tape.pts.length-1]=tgt;   /* lot 78 : pile sur l'indice, sans résidu d'arrondi */
  }
  S.prevRel=qTotal-med;
  S.regimes.push(S.truth);S.regime=S.truth;S.q++;
@@ -5877,7 +5884,7 @@ function screenDebrief(o){
    <div class="bar2"><span class="mid"></span><i style="${resid>=0?'left:50%':'right:50%'};width:${wd}%;background:${resid>=0?'var(--long)':'var(--short)'};opacity:.55"></i></div>
    <p class="note" style="margin-top:6px">Les quatre facteurs plus la part propre font le brut des positions, ${sgn(o.gross,1)}. La part propre est ce qui a bougé pour des raisons de marché et non de macro : c'est la portion de votre trimestre qui ne dit rien de la justesse de vos paris.</p>`;}
  let byl=lines.map(z=>`<div class="attr"><span class="an"><span class="num" style="color:var(--txt)">${z.sym}</span> <span style="font-family:var(--mono);font-size:11px;color:var(--dimmer)">${z.k>0?'+':'−'}${Math.abs(z.k)} · marché ${sgn(z.r,1)}</span></span><span class="av ${cls(z.p)}">${sgn(z.p,1)} · ${mn(z.p*S.nav)}</span></div>`).join('');
- const all=[{nm:S.fundName,v:o.qTotal,me:1,rk:o.sp},...S.rivals.map(r=>({nm:r.nm+'<span class="bossn">'+r.boss+'</span>',v:r.last,rk:r.vqLast||rivV(r),st:(RIVSTRAT[r.style]||{}).nm,th:r.tailHit}))].sort((a,b)=>b.v-a.v);
+ const all=[{nm:S.fundName,v:o.qTotal,me:1,rk:o.sp,cv:S.idx-1},...S.rivals.map(r=>({nm:r.nm+'<span class="bossn">'+r.boss+'</span>',v:r.last,cv:r.cum-1,rk:r.vqLast||rivV(r),st:(RIVSTRAT[r.style]||{}).nm,th:r.tailHit}))].sort((a,b)=>b.v-a.v);
  const cums=[{nm:S.fundName,v:S.idx-1,me:1},...S.rivals.map(r=>({nm:r.nm,v:r.cum-1}))].sort((a,b)=>b.v-a.v);
  const warn=[];
  if(S.poachMsg)warn.push(S.poachMsg);   /* lot 55 : les flux clients par concurrent, en tête */
@@ -5908,7 +5915,7 @@ function screenDebrief(o){
   <div class="thold">${warn.map(t=>`<div class="flag" style="margin-top:12px"><span>${t}</span></div>`).join('')}
   <div class="block"><div class="blockhead"><h2>La concurrence</h2><span class="hint">${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur quatre</span></div>
    <table class="qt"><thead><tr><th>Fonds</th><th>Risque</th><th>Trim.</th><th>Cumul</th></tr></thead><tbody>
-   ${all.map(a=>{const c=cums.find(z=>z.nm===(a.me?S.fundName:a.nm.split(' · ')[0]));return {a,cv:c?c.v:0}}).sort((x,y)=>y.cv-x.cv).map(({a,cv})=>
+   ${all.map(a=>({a,cv:a.cv})).sort((x,y)=>y.cv-x.cv).map(({a,cv})=>
      `<tr class="${a.me?'me':''}"><td>${a.nm}${a.th?`<br><span class="neg-g" style="font-size:11px">accident de levier</span>`:''}</td><td>${a.rk!==undefined?dec(a.rk*100,0)+' %':''}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(cv)}">${sgn(cv,1)}</td></tr>`).join('')}
    </tbody></table></div>
 

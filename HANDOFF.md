@@ -907,6 +907,15 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   niveau moyen ; ~2 jaunes et ~1,2 rouge par partie, surtout des chutes à zéro en cours de trimestre ;
   flux − fondamental dans le bruit, ~200 parties par style pour conclure.
 
+- **Lot 78** (`lot78/patch.py`, affichage, pas de campagne) : tuile d'encours à quatre chiffres significatifs
+  (`money4`) ; tableau de la concurrence : cumul porté par chaque ligne (la recherche par nom `split(' · ')`
+  ratait selon le nom du fonds → cumul à 0) ; ruban : `ytdIdx` ne compte le latent qu'en séance
+  (`S.phase==='events'&&S.live`) — au débriefing, `liveNet()` recomptait le trimestre clos, d'où un ruban à
+  +408,9 % contre +199,4 % en tête ; dernier point du règlement posé exactement sur l'indice ; volatilité
+  homogène : chaque segment compte `tapeM(dt)=round(48·dt)` points (avant : 48 points par mise à jour, d'où des
+  trimestres en cours étirés et plats), mêmes découpes pour les concurrents ; minuteur sur les appels de marge
+  (`ev.mg`), faute de réponse le prime broker liquide la moitié (option `cut`), `armTimer(fn,lbl)`.
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
