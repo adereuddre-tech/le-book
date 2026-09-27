@@ -827,7 +827,7 @@ const SIZES=[
  {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.25,nm:"Difficile — 25 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
   p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 25 % de la performance, et les souscriptions arrivent aussi vite que les rachats.",
   ef:[["g","commission de performance : 25 %"],["g","flux violents dans les deux sens : un bon trimestre attire gros"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
-  rivSkill:0.150,rivVol:1.10,rivBud:1,lpNeg:1.60,rcNeg:1.35,lp0:-8,flowMult:1.60,flowIn:1.60,goalMult:1}
+  rivSkill:0.150,rivVol:1.10,rivBud:1,lpNeg:1.60,rcNeg:1.35,lp0:-8,flowMult:1.15,flowIn:1.60,goalMult:1}
 ];
 const UNIVS=[
  {id:'fin',edge:0.75,lpMult:0.90,lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
@@ -2544,10 +2544,13 @@ function varDecomp(w){const fv=[];let tot=0;
 function grossBn(k){let g=0;for(let i=0;i<N;i++)g+=Math.abs(notionalBn(k[i],i));return g}
 /* ══════════ marge utilisée et risque majoré ══════════ */
 /* lot 80 : plafonds de risque du comité, jugés sur le book de clôture */
+/* lot 83 : rachats adoucis pour le seuil de clôture (avant : 5 %+0,6 %/pt sous 20 de confiance, repli 10 %+35 %,
+   confiance basse 4 %, risque 0,30 %/pt) */
+const RDM={lp0:0.03,lpk:0.003,dd0:0.06,ddk:0.25,low:0.02},RDMFK=0.15;
 const RISKCAP={y:0.30,r:0.45};
 /* lot 80 : les investisseurs lisent le risque ex ante à chaque clôture — confiance −k par tranche de 5 pts
    au-delà de x0, et retraits au-delà de fl (fraction de l'encours par point de risque), vous comme les concurrents */
-const RISKLP={x0:0.20,k:4,fl:0.20,fk:0.30};
+const RISKLP={x0:0.20,k:4,fl:0.20,fk:RDMFK};
 const MGC={thr:0.50,warn:0.40,cut:0.60,crisis:1.8,trough:0.55};
 
 /* ══════════ capacité : l'encours finit par se payer en impact ══════════ */
@@ -2650,8 +2653,8 @@ function tcost(dk,i){
 }
 /* Fin de partie : l'encours sous 5 % de son niveau de départ (−95 %). */
 const NAVEND=0.05;
-/* lot 82 : le fonds ferme sous 50 M$ d'encours (rachats compris) ou à 50 % de perte depuis le plus haut (hors rachats) */
-const FUNDMIN=0.05,DDEND=0.50;
+/* lot 82-83 : le fonds ferme sous 40 M$ d'encours (rachats compris) ou à 50 % de perte depuis le plus haut (hors rachats) */
+const FUNDMIN=0.04,DDEND=0.50;   /* lot 83 : 40 M$ */
 function ddMax(){return (S&&PROF().ddMax)||0.28}
 /* Profondeur de chaque carnet, en Md$ de notionnel : ce qu'un ordre peut peser avant que le
    marché ne le fasse payer. Au-delà, l'impact croît en racine carrée du rapport. */
@@ -3608,6 +3611,7 @@ function tapeSvg(p,from,opt){
   if(gys.some(v=>Math.abs(v-yy)<Math.max(11,H/7)))continue;gys.push(yy);
   grid+=`<line x1="0" y1="${yy.toFixed(1)}" x2="${W}" y2="${yy.toFixed(1)}" stroke="#2A3A55" stroke-width=".5"/><text x="2" y="${(yy-1.5).toFixed(1)}" font-size="6.5" fill="#5B6E8C" font-family="var(--mono)">${g>0?'+':'−'}${Math.abs(g).toLocaleString('fr-FR')} %</text>`}
  const f=n=>n.toFixed(1);
+ if(opt.qs>0&&opt.qs<n-1){const xq=x(opt.qs);grid+=`<line x1="${xq.toFixed(1)}" y1="${pad}" x2="${xq.toFixed(1)}" y2="${H-pad}" stroke="#8A9BB8" stroke-width=".6" stroke-dasharray="2 2" opacity=".7"/>`+(opt.ql?`<text x="${(xq+2).toFixed(1)}" y="${pad+6}" font-size="6.5" fill="#8A9BB8" font-family="var(--mono)">T${opt.ql}</text>`:'')}   /* lot 83 */
  let body='';
  tapePieces(p,x,y,100).forEach(s=>{
   const c=myCol(rv),pts=s.pts.map(q=>f(q[0])+','+f(q[1])).join(' ');
@@ -3714,10 +3718,11 @@ function tapeBand(){
  try{tapeTick()}catch(err){return ticker()}
  const p=S.tape&&S.tape.pts||[];
  if(p.length<3)return ticker();
- const v=p[p.length-1],up=v>=100;
- return `<div class="tape"><div class="tapehead"><span>P&amp;L DU FONDS · DEPUIS LE LANCEMENT</span>
+ const v=p[p.length-1],up=v>=100,q0=Math.min(p.length-1,S.tape.q0||0),qv=v/p[q0]-1,ql=S.phase==='debrief'?S.q:Math.min(S.q+1,QT());
+ /* lot 83 : la performance du trimestre à date, lue sur le même tracé que le cumul */
+ return `<div class="tape"><div class="tapehead"><span>T${ql} À DATE <b class="${qv>=0?'pos-g':'neg-g'}">${qv>=0?'+':'−'}${dec(Math.abs(qv)*100,1)} %</b> · DEPUIS LE LANCEMENT</span>
    <b class="${up?'pos-g':'neg-g'}">${up?'+':'−'}${dec(Math.abs(v-100),1)} %</b></div>
-  ${tapeSvg(p,S.tape.from||0,{anim:1,draw:3,rivals:rivalTapes()})}</div>`;
+  ${tapeSvg(p,S.tape.from||0,{anim:1,draw:3,rivals:rivalTapes(),qs:q0,ql})}</div>`;
 }
 function statusBar(done){
  S.statusDone=!!done;
@@ -4643,7 +4648,8 @@ function riskMap(sp,big){
  const ys=[pr,...R.map(r=>r.y),...(gh?[gh.y]:[])],ya=Math.min(0,...ys),yz=Math.max(0,...ys),ypad=Math.max(0.01,(yz-ya)*0.14);
  const y0=ya<0?ya-ypad:0,y1=yz+ypad;
  const hot=tailP(sp)>0,me=myCol(S.rivals||[]),f=v=>v.toFixed(1);
- const sv=`${dec(sq*100,1)} %`,mv=`${pr>=0?'+':'−'}${dec(Math.abs(pr)*100,1)} %`;
+ const sv=`${dec(sp*100,1)} %`,   /* lot 83 : risque annualisé, comme partout ailleurs */
+  mv=`${pr>=0?'+':'−'}${dec(Math.abs(pr)*100,1)} %`;
  /* lot 73 : jauges. Risque : cible du mandat et seuil d'accident, en trimestriel. Rentabilité : zéro et meilleur concurrent. */
  const xr=TAIL.x0/2,xa=Math.min((S.tgt||0.2)/2,xr*0.85),stX=[[0,'g'],[xa*0.5,'g'],[xa,'a'],[xr,'r']];
  const best=Math.max(0,...R.map(r=>r.y)),yg=best>0.002?best:y1,stY=[[Math.min(y0,-0.001),'r'],[0,'a'],[yg,'g']];
@@ -4662,7 +4668,7 @@ function riskMap(sp,big){
    +`<line x1="${x0-8}" x2="${x0}" y1="${f(Y(0))}" y2="${f(Y(0))}" stroke="#F3EEE4" stroke-width=".8" opacity=".5"/>`;
   if(TAIL.x0/2<xm)g+=`<rect x="${f(X(TAIL.x0/2))}" y="${yt}" width="${f(x1-X(TAIL.x0/2))}" height="${f(yb-yt)}" fill="#D2463C" opacity=".10"/>`
    +`<text x="${f(X(TAIL.x0/2)+3)}" y="${yt+10}" font-size="9" fill="#E5675C" font-family="var(--mono)" opacity=".85">accidents de levier</text>`;
-  lv(0.05,xm).forEach(v=>{g+=`<line x1="${f(X(v))}" x2="${f(X(v))}" y1="${yt}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".3" opacity=".6"/><text x="${f(X(v))}" y="${yb+15}" font-size="8" text-anchor="middle" fill="var(--dimmer)" font-family="var(--mono)">${Math.round(v*100)}</text>`});
+  lv(0.05,xm).forEach(v=>{g+=`<line x1="${f(X(v))}" x2="${f(X(v))}" y1="${yt}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".3" opacity=".6"/><text x="${f(X(v))}" y="${yb+15}" font-size="8" text-anchor="middle" fill="var(--dimmer)" font-family="var(--mono)">${Math.round(v*200)}</text>`});
   lv(y0,y1).forEach(v=>{g+=`<line x1="${x0}" x2="${x1}" y1="${f(Y(v))}" y2="${f(Y(v))}" stroke="var(--dimmer)" stroke-width="${Math.abs(v)<1e-9?.7:.3}" opacity="${Math.abs(v)<1e-9?.9:.6}"/><text x="${x0-10}" y="${f(Y(v)+3)}" font-size="8" text-anchor="end" fill="var(--dimmer)" font-family="var(--mono)">${Math.round(v*100)}</text>`});
   g+=`<line x1="${x0}" x2="${x1}" y1="${yb}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".8"/><line x1="${x0}" x2="${x0}" y1="${yt}" y2="${yb}" stroke="var(--dimmer)" stroke-width=".8"/>`
    +`<text x="${x0+2}" y="${yb+15}" font-size="8.5" fill="var(--dim)" font-family="var(--mono)">risque →</text>`
@@ -4679,7 +4685,7 @@ function riskMap(sp,big){
    +`<circle cx="${f(px)}" cy="${f(py)}" r="5.5" fill="${me}" stroke="${hot?'#D2463C':'var(--bg,#0b1020)'}" stroke-width="${hot?1.6:.8}"/>`
    +`<text x="${f(px+8)}" y="${f(py-7)}" font-size="10" fill="${me}" font-family="var(--mono)" font-weight="700" ${px>x1-70?'text-anchor="end"':''}>${nm}</text>`;
   const tp=tailP(sp);
-  return `<p class="note" style="margin:0 0 4px">Valeurs <b>trimestrielles</b>. Risque : volatilité du book sur un trimestre (la moitié de la volatilité annuelle des lignes de marché), bruit d'estimation compris ; sa jauge passe à l'ambre à la cible de votre mandat et au rouge là où commencent les accidents de levier. Rentabilité : rendement attendu du trimestre — collatéral, impact, drain de volatilité et coût moyen des accidents de levier compris ; sa jauge est rouge sous zéro et verte au niveau du meilleur concurrent. Traits tous les 5 %. Point jaune pâle : votre fonds juste avant votre dernier changement de position, toutes les autres positions comprises. Les concurrents sont placés à leur couple estimé (risque · rentabilité).</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
+  return `<p class="note" style="margin:0 0 4px">Risque : volatilité <b>annualisée</b> du book, comme partout dans le jeu, bruit d'estimation compris ; rentabilité : rendement attendu <b>du trimestre</b>. Graduations du risque tous les 10 points ; sa jauge passe à l'ambre à la cible de votre mandat et au rouge là où commencent les accidents de levier. Rentabilité : rendement attendu du trimestre — collatéral, impact, drain de volatilité et coût moyen des accidents de levier compris ; sa jauge est rouge sous zéro et verte au niveau du meilleur concurrent. Rentabilité graduée tous les 5 points. Point jaune pâle : votre fonds juste avant votre dernier changement de position, toutes les autres positions comprises. Les concurrents sont placés à leur couple estimé (risque · rentabilité).</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
    +`<p class="note" style="margin:0 0 10px">${tp>0?`À ${sv} de risque : <b class="neg-g">${dec(tp*100,0)} % de probabilité</b> d'un accident de levier ce trimestre, perte de l'ordre de ${dec(TAILSEV*tailL(sp)*100,0)} % de l'encours si vous le laissez courir.`:`Sous ${dec(TAIL.x0*50,1)} % de risque par trimestre, pas d'accident de levier possible.`}</p>`;
  }
  const L=3,Rr=4,T=5,B=3,gid='gz'+(++riskMap.n);
@@ -5566,7 +5572,7 @@ function resolveQuarter(){
  const fl=S.rivals.map(rv=>{const d=qTotal-(rv.last||0),s=CLI[rv.style]||1;
    let f=Math.max(-0.06,Math.min(0.06,0.5*s*d));if(f<0)f*=SIZE().flowMult;else f*=(SIZE().flowIn||1);return {rv,d,f}});
  let tot=fl.reduce((a,x)=>a+x.f,0);
- if(S.lp<40)tot-=0.04*(40-S.lp)/40*SIZE().flowMult;
+ if(S.lp<40)tot-=RDM.low*(40-S.lp)/40*SIZE().flowMult;
  const riskOut=RISKLP.fk*Math.max(0,sp-RISKLP.fl)*SIZE().flowMult;tot-=riskOut;
  tot=Math.max(-0.25,Math.min(0.20,tot+(rng()-0.5)*0.01));
  S.qFlowBy=fl.map(x=>({nm:x.rv.nm,d:x.d,f:x.f}));
@@ -5614,8 +5620,8 @@ function resolveQuarter(){
  S.qRedeem=[];
  {const ddp=Math.max(0,1-S.idx/Math.max(S.hwmIdx||1,S.idx));
   if(ddp<ddMax()/2)S.ddHit=0;
-  if(ddp>=ddMax()&&ddp>(S.ddHit||0)+0.02){S.ddHit=ddp;redeem('repli',0.10+0.35*(ddp-ddMax()))}}
- if(S.lp<=20)redeem('investisseurs',0.05+0.006*(20-S.lp));
+  if(ddp>=ddMax()&&ddp>(S.ddHit||0)+0.02){S.ddHit=ddp;redeem('repli',RDM.dd0+RDM.ddk*(ddp-ddMax()))}}
+ if(S.lp<=20)redeem('investisseurs',RDM.lp0+RDM.lpk*(20-S.lp));
  if(S.nav<FUNDMIN)S.over='nav';else if(1-S.idx/Math.max(S.idx,S.peakIdx||1)>=DDEND-1e-9)S.over='dd';
  /* ── le comité des risques : cartons ── */
  {const C=S.cards=S.cards||{y:0,r:0,clean:0,log:[]},why=[];let red=null;
@@ -5997,8 +6003,8 @@ function screenDebrief(o){
    <div class="num thold ${cls(o.qTotal)}" style="font-size:18px;margin-top:4px">${bn(o.qTotal*o.q0,2)} sur ${moneyB(o.q0)} d'encours en début de trimestre</div>
    <div class="regime">${R.nm}</div><div class="sub">${R.d}</div></div>
   ${(S.tape&&S.tape.pts&&S.tape.pts.length>3)?`<div class="tape big" style="margin-top:12px"><div class="tapehead">
-    <span>LE TRIMESTRE · DEPUIS LE LANCEMENT</span><b class="cnt">—</b></div>
-    ${tapeSvg(S.tape.pts,S.tape.q0||0,{h:150,anim:1,draw:3,zero:1,rivals:rivalTapes()})}</div>`
+    <span>T${S.q} <b class="${cls(o.qTotal)}">${sgn(o.qTotal,1)}</b> · DEPUIS LE LANCEMENT</span><b class="cnt">—</b></div>
+    ${tapeSvg(S.tape.pts,S.tape.q0||0,{h:150,anim:1,draw:3,zero:1,rivals:rivalTapes(),qs:S.tape.q0||0,ql:S.q})}</div>`
    :navBox(`PERFORMANCE NETTE CUMULÉE · ${S.q} TRIMESTRE${S.q>1?'S':''}`,idxSeries(),{anim:1,trough:1})}
   <div class="thold">${ess}${warn.map(t=>`<div class="flag" style="margin-top:12px"><span>${t}</span></div>`).join('')}${coSel}
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">La concurrence · ${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur quatre</summary>

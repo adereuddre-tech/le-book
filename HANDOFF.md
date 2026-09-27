@@ -961,6 +961,13 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   Campagne 179 parties : survie normal 47–49 %, difficile 23–27 %, toutes par encours < 50 M$ (T3,9 en
   moyenne) ; glouton ≈ habituel (15,1 / 15,3 ; 13,6 / 12,8). À régler : rachats trop forts pour ce seuil.
 
+- **Lot 83** (`lot83/patch.py`) : clôture sous 40 M$ (`FUNDMIN` 0,04) ; rachats adoucis (`RDM` : confiance ≤ 20
+  → 3 % + 0,3 %/pt, repli 6 % + 25 %, confiance < 40 → 2 %, risque `RDMFK` 0,15 %/pt) ; difficile `flowMult`
+  1,60 → 1,15. Ruban : « T n À DATE ±x % » (tracé depuis `S.tape.q0`) en plus du cumul, trait pointillé au début
+  du trimestre (`opt.qs`, `opt.ql` de `tapeSvg`), idem au débriefing. Risque annualisé partout : étiquette et
+  graduations du nuage (positions toujours tracées en trimestriel, libellés ×2), note du nuage réécrite.
+  Campagne 180 parties : normal habituel 17,1 (survie 73 %), glouton 17,3 (78 %) ; difficile 16,9 (47 %).
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
