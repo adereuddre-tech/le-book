@@ -2788,6 +2788,7 @@ function planQuarter(){
  /* la commission de gestion est prélevée sur le fonds et vous est versée dès l'ouverture ;
     la performance et le bonus d'objectif attendent la clôture */
  S.qMgmtM=VOL().mgmt*S.nav;S.nav-=S.qMgmtM;S.mgrFees+=S.qMgmtM;refreshGain();
+ S.coinvBase=Math.max(0,mgrCash());   /* lot 81 : la part co-investie est fixée à l'ouverture */
 }
 function eventFactorVec(ev){
  const v=[0,0,0,0];
@@ -3226,11 +3227,11 @@ function rivalMgrQuarter(rv,r){
   /* sauvegarde d'avant le lot 42 : on rejoue les trimestres déjà joués (le dernier de hist est r) */
   const h=(rv.hist||[]).slice(0,-1);rv.mgr=0;h.forEach(g=>rivalMgrQuarter(rv,g));
  }
- const mg=v.mgmt*rv.mAum,cost=rivalCostQ(rv)*rv.mAum;
+ const mg=v.mgmt*rv.mAum,cost=rivalCostQ(rv)*rv.mAum,ci=COINV*Math.max(0,rv.mgr||0)*r;   /* lot 81 : leur co-investissement */
  rv.mAum*=(1+r);
  {const o=1-RISKLP.fk*Math.max(0,rivV(rv)-RISKLP.fl)*((SIZE()&&SIZE().flowMult)||1);rv.mAum*=o;rv.mHwm*=o}   /* lot 80 : leurs clients aussi */
  const perf=perfFee()*Math.max(0,rv.mAum-rv.mHwm);rv.mHwm=Math.max(rv.mHwm,rv.mAum);
- rv.mgr+=mg+perf-cost;
+ rv.mgr+=mg+perf-cost+ci;
 }
 function rivalMgrMedian(){const v=S.rivals.map(r=>r.mgr||0).sort((a,b)=>a-b),n=v.length;return n?(n%2?v[n>>1]:(v[n/2-1]+v[n/2])/2):0}
 /* L'indice du gérant : 100 = le gérant médian de la place. */
@@ -3414,6 +3415,8 @@ function budgetBpIf(id,lv){return BUDGET.reduce((a,b)=>a+b.lv[b.id===id?lv:S.bud
    du trimestre en cours compris — ils bougent pendant qu'on construit le book. */
 function mgrNet(){return S.mgrFees-S.mgrCosts-(S.phase==='book'?liveTC():(S.pendingTC||0)*S.nav)}
 /* Ce qu'il peut encore engager : son score plus le capital de départ de la société. */
+/* lot 81 : co-investissement — un dixième de la trésorerie d'ouverture suit le résultat net du fonds */
+const COINV=0.10;
 function mgrCash(){return mgrNet()}   /* lot 63 : pas de capital de départ, trésorerie = gains nets */
 function liveTC(){let tot=0;const k0=S.k0||S.k;for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}return tot}
 function costsNow(){
@@ -4302,7 +4305,7 @@ function phaseClose(o){
 const TUTOS=[
  {id:0,t:"Les jauges, en haut de l'écran",
   h:`<p>Tout le jeu se lit dans cette barre. La <b>confiance</b> résume deux jugements : celui des investisseurs, qui regardent la performance, et celui du comité des risques, qui regarde la discipline. Sous 20, l'un comme l'autre fait partir de l'argent par des rachats. La partie ne s'arrête que si l'encours tombe sous 5 % de son niveau de départ.</p>
-  <p><b>Le nuage</b> place votre book en risque et en rendement attendu, face aux trois concurrents ; au-delà de 25 % de risque, la zone rouge est celle des accidents de levier. <b>Trésorerie</b>, c'est votre score : les commissions encaissées, moins ce que vous dépensez. Chaque jauge s'ouvre d'un clic et explique son propre calcul.</p>`},
+  <p><b>Le nuage</b> place votre book en risque et en rendement attendu, face aux trois concurrents ; au-delà de 25 % de risque, la zone rouge est celle des accidents de levier. <b>Trésorerie</b>, c'est votre score : les commissions encaissées, moins ce que vous dépensez. Un dixième de la trésorerie d'ouverture est investi dans le fonds et en suit les gains comme les pertes. Chaque jauge s'ouvre d'un clic et explique son propre calcul.</p>`},
  {id:1,t:"Le budget, et votre trésorerie",
   h:`<p>Le budget d'exploitation est payé <b>de votre poche</b>, pas par le fonds, dans la limite de votre <b>trésorerie</b> — la tuile dorée du haut. Votre société n'a pas de capital : sa trésorerie, ce sont vos gains nets. Un point de base d'encours vaut 10 k$ pour un fonds de 100 M$.</p>
   <p>⚠ La même trésorerie paie vos <b>ordres de marché</b> : ce que le budget consomme, le book ne peut plus le dépenser, et les cases trop chères se grisent. En début de partie, la caisse se limite à la première commission de gestion : gardez des budgets serrés, vous les relèverez quand les commissions de performance rentreront.</p>`},
@@ -5477,8 +5480,9 @@ function resolveQuarter(){
  if(S.commRes&&S.commRes.ok&&S.comm.id==='fort')S.fl.parole=1;
  S.peakIdx=Math.max(S.peakIdx||1,S.idx);S.maxdd=Math.max(S.maxdd,1-S.idx/S.peakIdx);
  S.totalOps+=(S.qOps||0);
- S.mgrFees=(S.mgrFees||0)+perf*navBefore;S.mgrCosts+=tc*navBefore;refreshGain();
- S.mgrQ={fees:mgmtM+perf*navBefore,ops:S.qOps||0,rum:0,mgmt:mgmtM,perf:perf*navBefore,tc:tc*navBefore};
+ S.mgrFees=(S.mgrFees||0)+perf*navBefore;S.mgrCosts+=tc*navBefore;
+ const coinv=COINV*(S.coinvBase||0)*qTotal;if(coinv>=0)S.mgrFees+=coinv;else S.mgrCosts-=coinv;S.mgrCoinv=(S.mgrCoinv||0)+coinv;refreshGain();
+ S.mgrQ={fees:mgmtM+perf*navBefore,ops:S.qOps||0,rum:0,mgmt:mgmtM,perf:perf*navBefore,tc:tc*navBefore,coinv,cb:COINV*(S.coinvBase||0)};
  S.lastR2=S.lastR;S.lastR=r;
  S.crowd=S.crowd.map((c,i)=>Math.max(-1,Math.min(1,0.55*c+0.85*(r[i]/INSTR[i].sigQ)/3)));
  /* concurrents */
@@ -5902,7 +5906,7 @@ function screenDebrief(o){
  hint('debrief');
  save('screenDebrief',o);
  const UQ=pickU([o.P.grossM,o.P.evM+o.P.incM,o.P.collM,o.P.tcM,o.P.feeM,o.P.perfM,o.P.flowM]);
- const UG=pickU([S.mgrQ.mgmt,S.mgrQ.perf,S.mgrQ.ops,S.mgrQ.tc||0,S.mgrQ.fees-S.mgrQ.ops]);
+ const UG=pickU([S.mgrQ.mgmt,S.mgrQ.perf,S.mgrQ.ops,S.mgrQ.tc||0,S.mgrQ.coinv||0,S.mgrQ.fees-S.mgrQ.ops]);
  const gT={lp:S.gLog.reduce((a,g)=>a+g.lp,0)+S.lpD.reduce((a,x)=>a+x[1],0),rc:S.gLog.reduce((a,g)=>a+g.rc,0)+S.rcD.reduce((a,x)=>a+x[1],0)};
  const R=S.qName||(S.qName=qRegime());const V=verdicts(o);
  const lines=INSTR.map((x,i)=>({sym:x.sym,nm:x.nm,r:o.r[i],p:o.w[i]*o.r[i],k:S.k[i]}))
@@ -5966,10 +5970,10 @@ function screenDebrief(o){
    <details style="margin-top:8px"><summary>Détails</summary><p class="note">La facture de courtage du trimestre (${mm(-o.P.tcM)}) n'apparaît pas ici : elle est à votre charge, pas à celle du fonds. L'impact de marché de vos ordres, lui, est compté plus haut, avec les dépêches et le desk. Encours de début de trimestre : ${moneyB(o.q0)}. Les dépêches, interactions et incidents ont été comptabilisés au fil du trimestre ; les positions, le collatéral et les frais le sont à la clôture. Les souscriptions et rachats sont des mouvements de capital : ils changent l'encours sans compter dans la performance.</p></details></details>
   </div>
   <div class="block"><div class="blockhead"><h2>Vos gains</h2><span class="hint">le score</span></div>
-   <div class="attr"><span class="an">Net du trimestre</span><span class="av">${inU(S.mgrQ.fees-S.mgrQ.ops-(S.mgrQ.tc||0),UG)}</span></div>
+   <div class="attr"><span class="an">Net du trimestre</span><span class="av">${inU(S.mgrQ.fees-S.mgrQ.ops-(S.mgrQ.tc||0)+(S.mgrQ.coinv||0),UG)}</span></div>
    <div class="attr"><span class="an" style="color:var(--txt)">Cumul depuis le début</span><span class="av"><b class="gold-g">${score(mgrNet())}</b></span></div>
    <details style="margin-top:6px"><summary>Détail</summary>
-    ${tbl([['Commission de gestion (versée à l\'ouverture)',inU(S.mgrQ.mgmt,UG)],['Commission de performance',inU(S.mgrQ.perf,UG)],...(S.qGoal&&S.qGoal.ok?[['Bonus d\'objectif',inU(S.qGoal.bonus,UG)]]:[]),[`Budget d'exploitation (${S.budBp} pb)`,inU(-S.mgrQ.ops,UG)],['Coûts d\'exécution',inU(-(S.mgrQ.tc||0),UG)],['<b>Trésorerie disponible</b>',`<b>${mm(mgrCash())}</b>`]])}</details>
+    ${tbl([['Commission de gestion (versée à l\'ouverture)',inU(S.mgrQ.mgmt,UG)],['Commission de performance',inU(S.mgrQ.perf,UG)],...(S.qGoal&&S.qGoal.ok?[['Bonus d\'objectif',inU(S.qGoal.bonus,UG)]]:[]),[`Budget d'exploitation (${S.budBp} pb)`,inU(-S.mgrQ.ops,UG)],['Coûts d\'exécution',inU(-(S.mgrQ.tc||0),UG)],[`Co-investissement (${Math.round(COINV*100)} % de la trésorerie, ${mm(S.mgrQ.cb||0)})`,inU(S.mgrQ.coinv||0,UG)],['<b>Trésorerie disponible</b>',`<b>${mm(mgrCash())}</b>`]])}</details>
   </div>
   <div class="block"><div class="blockhead"><h2>Ce qu'ils en disent</h2><span class="hint">confiance ${Math.round(conf())}</span></div>
    <div class="wire"><div class="kicker" style="margin-bottom:4px">LES INVESTISSEURS</div><p style="margin:0;color:var(--dim);font-size:13.5px">${V.inv}</p>

@@ -938,6 +938,14 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   +0,9 ± 1,6 avant, 0,0 ± 1,2 normal, +1,7 ± 1,2 difficile. Cause restante : la commission de performance est
   une option d'achat pour le gérant (il touche les gains, ne paie pas les pertes) ; piste : co-investissement.
 
+- **Lot 81** (`lot81/patch.py`) : co-investissement du gérant, `COINV` 0,10 de la trésorerie d'ouverture
+  (`S.coinvBase`, fixée après la commission de gestion) × résultat net du trimestre, passé en `mgrFees` si gain,
+  `mgrCosts` si perte (tous les consommateurs du score restent cohérents), cumul `S.mgrCoinv`, ligne dans le
+  détail « Vos gains » ; concurrents : `ci` dans `rivalMgrQuarter`. Campagne 225 parties : +0,6 ± 0,1 (normal) et
+  +0,4 ± 0,1 (difficile) pour le bot habituel ; glouton − habituel 0,0 ± 1,3 / +1,8 ± 1,3 : inchangé. Attendu :
+  un terme linéaire en rendement ne pénalise pas la variance. Piste : restitution (clawback) des commissions
+  de performance en cas de repli sous le plus-haut, qui est concave.
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
