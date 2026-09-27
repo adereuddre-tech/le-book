@@ -916,6 +916,17 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   trimestres en cours étirés et plats), mêmes découpes pour les concurrents ; minuteur sur les appels de marge
   (`ev.mg`), faute de réponse le prime broker liquide la moitié (option `cut`), `armTimer(fn,lbl)`.
 
+- **Lot 79** (`lot79/patch.py`) : budgets hauts — coûts des crans 4/5/6 ×4/3, ×5/3, ×2 (salle 43/85/150 pb,
+  contrôle 24/43/72, recherche 47/100/192) et effets ramenés à 70 % de leur écart au standard (tous les
+  tableaux EXECM…TAILM, RESN arrondi). Concurrents en difficile (`rivBud:1`, `rivSkill` 0,12 → 0,15) :
+  `rivBudget(rv)` choisit chaque trimestre un cran 3–6 (les trois postes ensemble) qui maximise
+  `RIVBRET[L] − λ·Δcoût`, λ = 3 % de l'encours / trésorerie borné à [0,5 ; 1,5], s'ils ont deux trimestres
+  de surcoût en caisse ; `rivalCostQ(rv)` facture le cran, `bRet` s'ajoute à `rivRet` et `rivPt`.
+  Nuage : `rivPtLive` — en séance, risque ×exp(1,6·r_t) borné à [0,6 ; 1,3], bruit ±5 % par dépêche,
+  attendu + 0,35·r_t (affichage seulement). Campagne 270 parties : standard inchangé ; difficile −0,6 ± 1,5,
+  rang moyen 2,76 contre 1,93, crans des concurrents en fin de partie ≈ 4,6 ; crans 5 : salle −0,6 ± 2,0,
+  contrôle +1,4 ± 2,7, recherche −3,7 ± 2,6 (lot 75 : +2,5 / +4,4 / +3,6).
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.

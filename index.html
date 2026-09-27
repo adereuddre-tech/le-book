@@ -825,7 +825,7 @@ const SIZES=[
  {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.25,nm:"Difficile — 25 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
   p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 25 % de la performance, et les souscriptions arrivent aussi vite que les rachats.",
   ef:[["g","commission de performance : 25 %"],["g","flux violents dans les deux sens : un bon trimestre attire gros"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
-  rivSkill:0.120,rivVol:1.10,lpNeg:1.60,rcNeg:1.35,lp0:-8,flowMult:1.60,flowIn:1.60,goalMult:1}
+  rivSkill:0.150,rivVol:1.10,rivBud:1,lpNeg:1.60,rcNeg:1.35,lp0:-8,flowMult:1.60,flowIn:1.60,goalMult:1}
 ];
 const UNIVS=[
  {id:'fin',edge:0.75,lpMult:0.90,lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
@@ -861,29 +861,31 @@ function VOL(){return VOLP.find(v=>v.id===S.vol)}
 const BUDGET=[
  {id:'exec',ico:'📈',nm:"La salle de marché",
   d:"Traders, moteurs d'exécution, accès aux blocs, et ce que vous payez pour garder vos gérants. La salle décide de ce que coûte chaque changement de position, de votre résistance au débauchage, et de la finesse avec laquelle vos écrans mesurent la tendance, le portage et la valeur — ces chiffres-là sortent du desk, pas de la recherche.",
-  lv:[{nm:"Minimal",bp:2},{nm:"Serré",bp:3},{nm:"Sobre",bp:9},{nm:"Standard",bp:18},{nm:"Confortable",bp:32},{nm:"Renforcé",bp:51},{nm:"Sans limite",bp:75}]},
+  lv:[{nm:"Minimal",bp:2},{nm:"Serré",bp:3},{nm:"Sobre",bp:9},{nm:"Standard",bp:18},{nm:"Confortable",bp:43},{nm:"Renforcé",bp:85},{nm:"Sans limite",bp:150}]},
  {id:'risk',ico:'⚖️',nm:"Le contrôle des risques",
   d:"Surveillance pré-trade, réconciliation quotidienne, contrôle des communications, audit interne. Un contrôle sérieux évite les incidents, rend les accidents de levier plus rares, et apaise les griefs du comité.",
-  lv:[{nm:"Minimal",bp:4},{nm:"Serré",bp:5},{nm:"Sobre",bp:8},{nm:"Standard",bp:12},{nm:"Confortable",bp:18},{nm:"Renforcé",bp:26},{nm:"Sans limite",bp:36}]},
+  lv:[{nm:"Minimal",bp:4},{nm:"Serré",bp:5},{nm:"Sobre",bp:8},{nm:"Standard",bp:12},{nm:"Confortable",bp:24},{nm:"Renforcé",bp:43},{nm:"Sans limite",bp:72}]},
  {id:'res',ico:'🔭',nm:"La recherche macro",
   d:"Économistes, réseau de terrain, données alternatives, abonnements que personne ne relit. La recherche décide du nombre de sources qui arrivent sur votre bureau chaque trimestre et de la part d'entre elles qui sont dignes de foi.",
-  lv:[{nm:"Minimal",bp:4},{nm:"Serré",bp:5},{nm:"Sobre",bp:9},{nm:"Standard",bp:18},{nm:"Confortable",bp:35},{nm:"Renforcé",bp:60},{nm:"Sans limite",bp:96}]}
+  lv:[{nm:"Minimal",bp:4},{nm:"Serré",bp:5},{nm:"Sobre",bp:9},{nm:"Standard",bp:18},{nm:"Confortable",bp:47},{nm:"Renforcé",bp:100},{nm:"Sans limite",bp:192}]}
 ];
-const EXECM=[1.35,1.30,1.04,0.75,0.63,0.50,0.39],   /* lot 38 : trois quarts de l'ancienne facture, le reste se paie en impact de marché */
-RISKM=[2.20,2.00,1.50,1.00,0.48,0.18,0.09],
-RISKS=[2.00,1.93,1.72,1.50,1.10,0.72,0.58],
-RETM =[2.00,1.93,1.51,1.00,0.63,0.29,0.14];
-const RESN=[6,6,7,9,10,12,14],
-RESREL=[-0.08,-0.07,-0.06,0.00,0.04,0.07,0.12],
-RESR  =[0.30,0.32,0.39,0.60,0.78,0.93,0.98],
+const EXECM=[1.35,1.3,1.04,0.75,0.666,0.575,0.498],   /* lot 38 : trois quarts de l'ancienne facture, le reste se paie en impact de marché */
+RISKM=[2.2,2.00,1.5,1.00,0.636,0.426,0.363],
+RISKS=[2.00,1.93,1.72,1.5,1.22,0.954,0.856],
+RETM =[2.00,1.93,1.51,1.00,0.741,0.503,0.398];
+const RESN=[6,6,7,9,10,11,12],
+RESREL=[-0.08,-0.07,-0.06,0.00,0.028,0.049,0.084],
+RESR  =[0.3,0.32,0.39,0.6,0.726,0.831,0.866],
 /* précision de la lecture d'une dépêche : écart-type du bruit sur la probabilité affichée */
-RESPH =[0.160,0.156,0.141,0.100,0.077,0.054,0.029];
+RESPH =[0.16,0.156,0.141,0.1,0.084,0.068,0.05];
 /* la finesse des indicateurs vient du desk, la tolérance du comité du contrôle des risques */
-const TCVQ=[0.90,0.88,0.76,0.60,0.47,0.35,0.25],
-BANDB=[0.18,0.18,0.21,0.25,0.31,0.42,0.51];
+const TCVQ=[0.9,0.88,0.76,0.6,0.509,0.425,0.355],
+BANDB=[0.18,0.18,0.21,0.25,0.292,0.369,0.432];
 /* avis du comité à chaque clôture, et chance de recruter une recrue du trimestre */
-const RISKRC=[-1.0,-0.9,-0.6,0.0,1.0,2.2,3.1],
-STARP=[0.00,0.00,0.00,0.00,0.15,0.31,0.47];
+const RISKRC=[-1.00,-0.9,-0.6,0.00,0.7,1.54,2.17],
+STARP=[0.00,0.00,0.00,0.00,0.105,0.217,0.329];
+/* lot 79 : crans hauts deux fois plus chers au plus (×4/3, ×5/3, ×2) ; leurs effets ramenés à 70 % de leur
+   écart au standard */
 const BUDMAX=5;   /* à partir de ce cran, un budget est « renforcé » pour les objectifs */
 /* Les effets affichés sont calculés à partir des tableaux ci-dessus : aucun libellé ne peut
    diverger de ce qui est appliqué. */
@@ -2731,7 +2733,7 @@ function planQuarter(){
  S.preDesk=null;
  if(rng()<0.45){const sav=STAKE.filter(e=>!S.usedStake.includes(e.t)&&!STAKE_POS.has(e.t));if(sav.length){const se=pick(sav);S.usedStake.push(se.t);S.preDesk={trader:true,stake:true,...se}}}
  S.stopQ=false;S.noAddQ=false;
- (S.rivals||[]).forEach(rv=>{rv.vq=rivVolQ(rv)});   /* lot 66 : risque du trimestre, sans tirage */
+ (S.rivals||[]).forEach(rv=>{rv.vq=rivVolQ(rv);rivBudget(rv)});   /* lot 66 : risque du trimestre, sans tirage */
  S.tailEv=null;S.tailDone=false;S.tailQ=null;S._kLast=null;S._kGhost=null;
  /* incident opérationnel */
  const desk=DESKS.find(d=>d.id===S.desk);
@@ -3199,7 +3201,18 @@ function factorExpo(w){return FACT.map((f,k)=>{let e=0;for(let i=0;i<N;i++)e+=w[
 /* ── le compte de gérant des concurrents : de quoi situer le vôtre ──────────────────
    Budget standard (cran 4 sur 7 des trois postes, masse salariale comprise) et facture
    d'ordres type, par trimestre, en fraction de leur encours. */
-function rivalCostQ(){return (BUDGET.reduce((a,b)=>a+b.lv[3].bp,0)+DESK().fixed*1e4+16)*1e-4}
+function rivalCostQ(rv){const L=(rv&&rv.bl)||3;return (BUDGET.reduce((a,b)=>a+b.lv[L].bp,0)+DESK().fixed*1e4+16)*1e-4}
+/* lot 79 : surcroît de rendement trimestriel d'un concurrent selon son cran de budget (les trois postes au même cran) */
+const RIVBRET=[0,0,0,0,0.008,0.014,0.018];
+function rivBudget(rv){
+ rv.bl=3;rv.bRet=0;if(!(SIZE()&&SIZE().rivBud))return;
+ const A=rv.mAum||S.aum0,cash=rv.mgr||0,c3=rivalCostQ({bl:3});
+ /* l'argent pèse moins quand la caisse est pleine : λ = 1 à 3 % de l'encours en trésorerie */
+ const lam=Math.max(0.5,Math.min(1.5,0.03*A/Math.max(1e-9,cash)));let best=0;
+ for(let L=4;L<=6;L++){const dc=rivalCostQ({bl:L})-c3;
+  if(cash<2*dc*A)break;                      /* deux trimestres de surcoût d'avance, sinon on ne monte pas */
+  const u=RIVBRET[L]-lam*dc;if(u>best){best=u;rv.bl=L;rv.bRet=RIVBRET[L]}}
+}
 function rivalMgrQuarter(rv,r){
  /* champs propres (mAum, mHwm) : `aum` existe déjà chez les concurrents, en unités d'affichage */
  const v=VOL();
@@ -3208,7 +3221,7 @@ function rivalMgrQuarter(rv,r){
   /* sauvegarde d'avant le lot 42 : on rejoue les trimestres déjà joués (le dernier de hist est r) */
   const h=(rv.hist||[]).slice(0,-1);rv.mgr=0;h.forEach(g=>rivalMgrQuarter(rv,g));
  }
- const mg=v.mgmt*rv.mAum,cost=rivalCostQ()*rv.mAum;
+ const mg=v.mgmt*rv.mAum,cost=rivalCostQ(rv)*rv.mAum;
  rv.mAum*=(1+r);
  const perf=perfFee()*Math.max(0,rv.mAum-rv.mHwm);rv.mHwm=Math.max(rv.mHwm,rv.mAum);
  rv.mgr+=mg+perf-cost;
@@ -3644,7 +3657,7 @@ function rivRet(j,t,q){
  const r=S.rivals&&S.rivals[j];if(!r||!S.f||!S.f.length)return 0;
  const e=rivalE(r,prng32(hash32('rivk'+j+'_'+q,S.seed)));
  const v=rivV(r),tl=rivTail(r,j,v,q),tt=0.2+0.7*prng32(hash32('rtt'+j+'_'+q,S.seed))();
- return t*((v/2)*((RIVKS[r.style]||RIVK)*e+(RIVNOISE[r.style]||0.78)*rivNz(j,q))-0.008-rivDrag(v))-(t>=tt?tl:0);
+ return t*((v/2)*((RIVKS[r.style]||RIVK)*e+(RIVNOISE[r.style]||0.78)*rivNz(j,q))-0.008-rivDrag(v)+(r.bRet||0))-(t>=tt?tl:0);
 }
 function rivalTapes(){
  if(!S.rivals||!S.tape)return [];
@@ -4517,7 +4530,7 @@ const TAILMG=0.45;
 /* gravité moyenne relative à celle d'avant le lot 76 (0,62 calé sur 0,581 de sévérité médiane) */
 const TAILSEV=(()=>{const m=a=>a.reduce((s,e)=>s+(e.sev[0]+e.sev[1])/2,0)/Math.max(1,a.length);
  return 0.62/0.5806*(TAILMG*m(TAILEV.filter(e=>e.mg))+(1-TAILMG)*m(TAILEV.filter(e=>!e.mg)))})();
-const TAIL={x0:0.25,w:0.35,p:0.60},TAILM=[1.48,1.41,1.22,1.00,0.69,0.42,0.30];
+const TAIL={x0:0.25,w:0.35,p:0.60},TAILM=[1.48,1.41,1.22,1.00,0.783,0.594,0.51];
 function tailP(sp,std){return Math.max(0,Math.min(1,(sp-TAIL.x0)/TAIL.w))*TAIL.p*(std?1:(TAILM[(S&&S.bud)?S.bud.risk:3]||1))}
 function tailL(sp){return Math.min(0.62,sp*Math.max(0.3,Math.min(1.2,(sp-0.15)/0.25)))}   /* perte de référence, × gravité de l'accident */
 function tailExp(sp,std){return tailP(sp,std)*TAILSEV*tailL(sp)*0.55}          /* coût moyen, sortie la moins chère */
@@ -4537,13 +4550,21 @@ function rivDrag(v){return 0.004*(v/0.2)*(v/0.2)}   /* impact et financement d'u
 function rivTail(rv,j,v,q){const u=prng32(hash32('rtail'+j+'_'+q,S.seed));if(u()>=tailP(v,1))return 0;
  const L=Math.min(0.40,(0.45+0.35*u())*tailL(v)),m=(RIVSTRAT[rv.style]||RIVSTRAT.fonda).tail;
  return m==='cut'?0.5*L:m==='hedge'?0.55*L:(u()<0.5?0.3*L:1.5*L)}
-function rivPt(rv){
- const s=rv.skill,K4=4,v=rivV(rv);let E;
+function rivPt(rv,vv){
+ const s=rv.skill,K4=4,v=vv||rivV(rv);let E;
  if(rv.style==='syst')E=0.9*(2*s-1)*K4*0.8+0.8;
  else if(rv.style==='flux'){const p=Math.min(1,0.5+0.5*Math.max(0,(s-0.5)*1.8));E=1.1*(2*p-1)*K4*0.8}
  else E=(2*s-1)*1.6*1.8;
- return {x:v,y:S.rate/4+(v/2)*(RIVKS[rv.style]||RIVK)*E-0.008-rivDrag(v)-0.5*v*v/4-tailExp(v,1),l:(rv.nm||'?').replace(/^(Le |La |L')/,'')[0]};
+ return {x:v,y:S.rate/4+(v/2)*(RIVKS[rv.style]||RIVK)*E-0.008-rivDrag(v)+(rv.bRet||0)-0.5*v*v/4-tailExp(v,1),l:(rv.nm||'?').replace(/^(Le |La |L')/,'')[0]};
 }
+/* lot 79 : en séance, chaque concurrent ajuste son book à chaque nouvelle : il charge quand il gagne, allège
+   quand il perd, et son attendu intègre ce que le trimestre a déjà montré. Affichage seulement. */
+function rivPtLive(rv,j){
+ if(S.phase!=='events'||!S.live)return rivPt(rv);
+ const t=qElapsed(),rt=rivRet(j,t,S.q),v0=rivV(rv),step=S.evIdx||0;
+ const jit=1+0.10*(prng32(hash32('rlive'+j+'_'+S.q+'_'+step,S.seed))()-0.5);
+ const v=Math.max(0.6*v0,Math.min(1.3*v0,v0*Math.exp(1.6*rt)*jit)),p=rivPt(rv,v);
+ p.y+=0.35*rt;return p}
 function rivCol(j){const r=S.rivals[j];return CRESTS[((r&&r.crest!==undefined)?r.crest:RIVCREST[j%4])%CRESTS.length].a}
 /* lot 66 : nuage rendement / risque ancré à l'origine (les axes sont les zéros), zoomé sur le fonds le plus
    risqué et sur le rendement le plus haut, sans pointillés. Zone d'accidents de levier teintée. */
@@ -4574,7 +4595,7 @@ function gzBar(id,vert,fix,th,a,b,full0,full1,rx){
 function riskMap(sp,big){
  /* lot 68 : trimestriel — μ du trimestre, σ trimestriel = σ annuel / 2. gh = le fonds avant ses derniers changements
     (book de départ sur la page du book, book validé pendant le trimestre), en jaune pâle. */
- const pr=profitBook(S.k),R=(S.rivals||[]).map((rv,j)=>{const p=rivPt(rv);p.x/=2;return Object.assign(p,{c:rivCol(j),nm:rv.nm})});
+ const pr=profitBook(S.k),R=(S.rivals||[]).map((rv,j)=>{const p=rivPtLive(rv,j);p.x/=2;return Object.assign(p,{c:rivCol(j),nm:rv.nm})});
  /* lot 69 : S._kLast = book au dernier affichage ; dès qu'il diffère du book courant, il devient le point
     précédent (S._kGhost). Quel que soit le chemin du changement (case du book, dépêche, desk, accident),
     le point jaune est donc le book juste avant, les autres positions comprises. Remis à zéro chaque trimestre. */
