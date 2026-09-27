@@ -927,6 +927,17 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   rang moyen 2,76 contre 1,93, crans des concurrents en fin de partie ≈ 4,6 ; crans 5 : salle −0,6 ± 2,0,
   contrôle +1,4 ± 2,7, recherche −3,7 ± 2,6 (lot 75 : +2,5 / +4,4 / +3,6).
 
+- **Lot 80** (`lot80/patch.py` + `patch2.py`, réglages C3) : prise de risque pénalisée. Financement convexe du levier
+  `FINK·(σ/0,2)²` par trimestre (`FINK` 0,006, `finDrag`) dans `liveRet`, `navNow`, le brut de clôture et
+  `profitBook` ; concurrents : `rivDrag` au même barème. Accidents dès 20 % (`TAIL` x0 0,20, w 0,30). Comité :
+  jaune à 30 % de risque ex ante de clôture, rouge à 45 % (`RISKCAP`). Investisseurs (`RISKLP`) : confiance −4
+  par tranche de 5 pts au-delà de 20 %, retraits 0,30 %/pt au-delà de 20 % × `flowMult`, idem pour l'encours
+  et le plus-haut des concurrents. Bot : option `av` (aversion, défaut 1 ; 0 = glouton). Campagne (15 graines ×
+  3 styles) : normal glouton 19,5 / habituel 19,5 / prudent 16,4 (avant 25,2 / 24,3 / 21,6), survie 93 %;
+  difficile glouton 19,2 (67 %) / habituel 17,4 (62 %) (avant glouton 24,4, 82 %). Apparié glouton − habituel :
+  +0,9 ± 1,6 avant, 0,0 ± 1,2 normal, +1,7 ± 1,2 difficile. Cause restante : la commission de performance est
+  une option d'achat pour le gérant (il touche les gains, ne paie pas les pertes) ; piste : co-investissement.
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
