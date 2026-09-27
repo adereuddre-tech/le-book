@@ -946,6 +946,21 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   un terme linéaire en rendement ne pénalise pas la variance. Piste : restitution (clawback) des commissions
   de performance en cas de repli sous le plus-haut, qui est concave.
 
+- **Lot 82** (`lot82/p1.py`, `p2.py`, `p3.py`) : co-investissement choisi au débriefing (`COINVS` 10/25/50/75/100 %,
+  `S.coinvPct`, base `S.coinvBase` fixée à l'ouverture, valorisée en séance dans `mgrNet` : trésorerie = gain net
+  cumulé, un seul chiffre) ; restitution `CLAW`=3 × repli sous le plus-haut des commissions de performance des
+  4 derniers trimestres (`S.perfH`, plafond 100 %, pas de double restitution), concurrents idem (`rv.perfH`).
+  Clôture : `FUNDMIN` 50 M$ (rachats compris) ou repli d'indice ≥ `DDEND` 50 % (`S.over='dd'`, verdict dédié).
+  Rouge : `redDraw2` = deux contraintes distinctes (`S.redC.list`, `redOn`/`redBlock` itèrent). Engagement soldé
+  hors plafonnement de la confiance (il était absorbé par le plafond +22). `S.lastG` cumule les appels de jauge
+  à moins de 250 ms (flèche du panneau = effet total de la dépêche). Panneau `T5/8`. Débriefing : bloc
+  « L'essentiel » (fonds, confiance début → fin et 3 causes, engagement, objectif, comité, gain du trimestre
+  décomposé, trésorerie), alertes, choix du co-investissement ; concurrence, presse/commentaires, confiance,
+  film, attribution repliés. Budgets : `budExpl` chiffre bruit des indicateurs (σ), fiabilité par classe,
+  pré-annonces, lecture des dépêches. Desk : un seul bloc replié à plat (sources, avis du desk, matrice).
+  Campagne 179 parties : survie normal 47–49 %, difficile 23–27 %, toutes par encours < 50 M$ (T3,9 en
+  moyenne) ; glouton ≈ habituel (15,1 / 15,3 ; 13,6 / 12,8). À régler : rachats trop forts pour ce seuil.
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
