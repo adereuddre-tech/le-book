@@ -887,6 +887,17 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   gestion refacture certains frais — le bénéfice redevient comparable au coût ; (c) resserrer
   l'échelle (max 1,5× au lieu de 2×). Décision d'Antoine attendue.
 
+- **Lot 76** (`lot76/patch.py`, `patch2.py`) : quadrillage du ruban en paliers ronds espacés d'au moins H/7
+  (l'ancien repli sur un pas de 10 % empilait des dizaines de lignes au-delà de ×20) ; confiance à zéro =
+  carton jaune immédiat (`midYellow`, `S.midY`), consigné à la clôture — attention, `S.q` y est déjà incrémenté,
+  d'où `S.midY===S.q-1` — et jaune aussi si la confiance est nulle à la clôture ; appels de marge : 5 accidents
+  `mg:1` de plus (+2 anciens marqués), 45 % des tirages (`TAILMG`), perte plafonnée à 45 %, `TAIL.p` 0,50 → 0,60,
+  gravité moyenne `TAILSEV` calculée (0,68) ; objectifs `pre:'loss'|'gain'` filtrés au tirage (rebond, retour en
+  grâce, la série) ; collatéral : `rehyp` (+3,0 %, 25 % de −9 %) et `junk` (+4,5 %, 30 % de −12 %), ligne de
+  résultat (surcroît, défaut, net) et lignes « dont » à la clôture ; alertes du débriefing enveloppées dans un
+  `<span>` (le flex coupait aux `<b>`). Campagne 90 parties appariées : quant −3,8 ± 1,8, fondamental
+  −7,4 ± 3,0, flux 0,0 ; jaunes et rouges ×2 à ×4 (le bot reste souvent à confiance nulle).
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.

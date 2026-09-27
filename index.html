@@ -912,8 +912,8 @@ const QGOALS=[
  {nm:"Trois fois la mise",d:"Livrer au moins le triple de l'objectif trimestriel.",t:c=>c.q>=3*c.goalQ,b:0.16},
  {nm:"Ne rien casser",d:"Terminer au-dessus de −1 %, quoi qu'il arrive.",t:c=>c.q>-0.01,b:0.04},
  {nm:"Le plus haut",d:"Terminer le trimestre sur un nouveau plus haut historique d'encours.",t:c=>c.newHigh,b:0.07},
- {nm:"La ligne droite",d:"Enchaîner un deuxième trimestre positif d'affilée.",t:c=>c.q>0&&c.prevQ>0,b:0.07},
- {nm:"Le rebond",d:"Terminer en positif après un trimestre négatif.",t:c=>c.q>0&&c.prevQ<0,b:0.08},
+ {nm:"La ligne droite",d:"Enchaîner un deuxième trimestre positif d'affilée.",t:c=>c.q>0&&c.prevQ>0,b:0.07,pre:'gain'},
+ {nm:"Le rebond",d:"Terminer en positif après un trimestre négatif.",t:c=>c.q>0&&c.prevQ<0,b:0.08,pre:'loss'},
  {nm:"Le coupon",d:"Faire au moins aussi bien que le taux sans risque du trimestre.",t:c=>c.q>=c.rate/4,b:0.05},
  {nm:"Doublé sur la médiane",d:"Faire au moins deux fois la performance médiane des concurrents, quand elle est positive.",t:c=>c.med>0&&c.q>=2*c.med,b:0.10},
  /* — performance relative — */
@@ -1011,7 +1011,7 @@ const QGOALS=[
  {nm:"La démonstration",d:"Battre les trois concurrents en gardant moins de huit lignes ouvertes.",t:c=>c.beatAll&&c.nPos<8,b:0.15},
  {nm:"Le funambule",d:"Finir positif avec un notionnel brut supérieur à cinq fois l'encours et sans appel de marge.",t:c=>c.q>0&&c.lev>5&&!c.marginCall,b:0.12},
  {nm:"Tenir parole en tempête",d:"Tenir son engagement dans un régime de crise.",t:c=>c.regime==='crise'&&c.commOK,b:0.15},
- {nm:"Le retour en grâce",d:"Regagner de la confiance après un trimestre négatif.",t:c=>c.prevQ<0&&c.dLp>0,b:0.08},
+ {nm:"Le retour en grâce",d:"Regagner de la confiance après un trimestre négatif.",t:c=>c.prevQ<0&&c.dLp>0,b:0.08,pre:'loss'},
  {nm:"Trois sur trois",d:"Trimestre positif, collecte positive et confiance en hausse.",t:c=>c.q>0&&c.flow>0&&c.dLp>0,b:0.11},
  {nm:"Le vrai gérant macro",d:"Finir positif avec des positions dans au moins trois classes d'actifs et aucun facteur dominant.",t:c=>c.q>0&&c.nClasses>=3&&c.fmax<0.55,b:0.13},
  {nm:"L'art de la sobriété",d:"Battre la médiane avec au plus quatre lignes ouvertes.",t:c=>c.nPos<=4&&c.nPos>0&&c.rel>0,b:0.14},
@@ -2148,13 +2148,13 @@ const TAILEV=[
  {t:"Le moteur d'ordres a renvoyé chaque ordre trois fois",who:"Incident technique · critique",sev:[0.40,0.70],
   p:"Une mise à jour a cassé le contrôle des doublons. Votre book réel pèse trois fois ce que vous croyez, sur les marchés les plus serrés.",
   o:["Laisser le surplus se résorber","Vendre en urgence, impact compris","Geler le surplus contre une garantie du prime broker"]},
- {t:"Votre prime broker relève les marges de 40 % dans la nuit",who:"Prime broker · courrier recommandé",sev:[0.45,0.70],
+ {mg:1,t:"Votre prime broker relève les marges de 40 % dans la nuit",who:"Prime broker · courrier recommandé",sev:[0.45,0.70],
   p:"Il invoque la concentration de votre book. Vous avez jusqu'à l'ouverture pour poster le collatéral ou réduire.",
   o:["Ne rien faire et négocier","Réduire de moitié à l'ouverture","Poster le collatéral sur une ligne de crédit hors de prix"]},
  {t:"Squeeze sur votre plus grosse vente à découvert",who:"Desk · exécution",sev:[0.50,0.85],
   p:"Un concurrent a repéré votre position et rachète tout ce qui se présente. Chaque tick vous coûte, et tout le monde le sait.",
   o:["Tenir la position courte","Racheter la moitié, à n'importe quel prix","Couvrir par des options d'achat hors de prix"]},
- {t:"La chambre de compensation exige un dépôt exceptionnel",who:"Chambre de compensation · appel d'urgence",sev:[0.40,0.65],
+ {mg:1,t:"La chambre de compensation exige un dépôt exceptionnel",who:"Chambre de compensation · appel d'urgence",sev:[0.40,0.65],
   p:"Après une journée de volatilité record, la chambre recalcule ses marges initiales. Les fonds les plus levés passent en premier.",
   o:["Laisser courir et payer ce qu'on vous demandera","Réduire de moitié pour rentrer dans les clous","Emprunter le dépôt au taux que la banque choisit"]},
  {t:"Défaut d'une contrepartie sur vos swaps",who:"Juridique · alerte",sev:[0.40,0.70],
@@ -2765,8 +2765,10 @@ function planQuarter(){
 
  /* objectif du trimestre : tiré maintenant, soldé à la clôture */
  S.usedGoals=(S.usedGoals||[]).slice(-16);
- const gav=QGOALS.filter(g=>!S.usedGoals.includes(g.nm));
- S.goal=pick(gav.length?gav:QGOALS);S.usedGoals.push(S.goal.nm);
+ /* lot 76 : « Le rebond » et ses cousins ne sortent qu'après un trimestre du bon signe */
+ const lastQ=(S.rets&&S.rets.length)?S.rets[S.rets.length-1]:0,preOk=g=>!g.pre||(g.pre==='loss'?lastQ<0:lastQ>0);
+ const gav=QGOALS.filter(g=>!S.usedGoals.includes(g.nm)&&preOk(g));
+ S.goal=pick(gav.length?gav:QGOALS.filter(preOk));S.usedGoals.push(S.goal.nm);
  if(S.redNext){S.redC=typeof S.redNext==='object'?S.redNext:{id:'cap',nm:'Plafond de position',t:'±2 unités au plus sur chaque marché'};S.redNext=false;S.redOn=true}
  else if(S.redOn){S.redOn=false;S.redC=null}
  S.maxk=S.capK||5;if(redOn('cap'))S.maxk=Math.min(S.maxk,2);   /* lot 58 : plafond de base ±3, ±4, ±5 */
@@ -3368,6 +3370,8 @@ const COLL=[
  {id:'mmf',nm:'Monétaire prime',ico:'💧',y:0.003,p:0.05,l:0.02,d:"Du papier commercial bien noté. Rarement un problème, jamais zéro."},
  {id:'repo',nm:'Repo contre crédit',ico:'🔁',y:0.008,p:0.10,l:0.04,d:"Vous prêtez contre des obligations d'entreprises : le gage vaut ce que vaut le marché du crédit."},
  {id:'abs',nm:'Titrisations',ico:'🧨',y:0.018,p:0.20,l:0.06,d:"Des tranches de prêts titrisés. Le rendement paie un risque que tout le monde connaît."},
+ {id:'rehyp',nm:'Titres réhypothéqués',ico:'⛓️',y:0.030,p:0.25,l:0.09,d:"Vos titres en gage sont reprêtés, puis reprêtés encore. Chaque maillon paie ; si l'un casse, vous êtes au bout de la chaîne."},
+ {id:'junk',nm:'Junk bonds',ico:'☠️',y:0.045,p:0.30,l:0.12,d:"Des obligations notées sous la catégorie investissement. Le coupon est superbe tant que personne ne fait défaut."},
 ];
 function colOpt(){return COLL[(S&&S.col)||0]||COLL[0]}
 /* surcroît du trimestre : ±35 % autour de la moyenne, tirage pur par trimestre et par placement */
@@ -3547,9 +3551,12 @@ function tapeSvg(p,from,opt){
  const la=Math.log(a),lb=Math.log(b),mg=Math.max(0.002,(lb-la)*0.05),lo=la-mg,hi=lb+mg;
  const x=i=>pad+i*(W-2*pad)/Math.max(1,n-1),y=v=>H-pad-(Math.log(Math.max(1e-6,v))-lo)/(hi-lo)*(H-2*pad);
  const y0=Math.max(pad,Math.min(H-pad,y(100))),id='tp'+(NGID++);
- const va=Math.exp(lo),vb=Math.exp(hi);let stp=10;for(const s of [10,20,50,100,200])if(Math.floor(vb/s)-Math.ceil(va/s)+1<=7){stp=s;break}
- let grid='';for(let L=Math.ceil(va/stp)*stp;L<=vb;L+=stp){if(L<=0||L===100)continue;const yy=y(L);
-  grid+=`<line x1="0" y1="${yy.toFixed(1)}" x2="${W}" y2="${yy.toFixed(1)}" stroke="#2A3A55" stroke-width=".5"/><text x="2" y="${(yy-1.5).toFixed(1)}" font-size="6.5" fill="#5B6E8C" font-family="var(--mono)">${L>100?'+':'−'}${Math.abs(L-100)} %</text>`}
+ const va=Math.exp(lo),vb=Math.exp(hi);
+ /* lot 76 : paliers ronds, les plus proches du zéro d'abord, jamais à moins de H/7 pixels l'un de l'autre */
+ const TG=[5,10,20,30,50,75,100,150,200,300,500,750,1000,1500,2000,3000,5000,10000].flatMap(g=>g<100?[g,-g]:[g]);
+ let grid='';const gys=[y0];for(const g of TG){const L=100+g;if(L<va||L>vb)continue;const yy=y(L);
+  if(gys.some(v=>Math.abs(v-yy)<Math.max(11,H/7)))continue;gys.push(yy);
+  grid+=`<line x1="0" y1="${yy.toFixed(1)}" x2="${W}" y2="${yy.toFixed(1)}" stroke="#2A3A55" stroke-width=".5"/><text x="2" y="${(yy-1.5).toFixed(1)}" font-size="6.5" fill="#5B6E8C" font-family="var(--mono)">${g>0?'+':'−'}${Math.abs(g).toLocaleString('fr-FR')} %</text>`}
  const f=n=>n.toFixed(1);
  let body='';
  tapePieces(p,x,y,100).forEach(s=>{
@@ -3809,12 +3816,17 @@ function redeem(cause,amp){
  (S.qRedeem=S.qRedeem||[]).push({cause,out});
  return out;
 }
+/* lot 76 : confiance à zéro en cours de trimestre = carton jaune sur-le-champ. Il est compté tout de suite
+   (la tuile passe au jaune) et consigné à la clôture ; un deuxième jaune y devient rouge. */
+function midYellow(){const C=S.cards=S.cards||{y:0,r:0,clean:0,log:[]};S.midY=S.q;C.y++;C.clean=0;
+ setTimeout(()=>toast(`🟨 <b>Carton jaune du comité</b> — la confiance des investisseurs est tombée à zéro.${C.y>=2?' Deuxième jaune : le rouge tombera à la clôture.':''}`),900)}
 function gauge(dlp,drc,why){
  refreshGain();
  drc=Math.max(-80,Math.min(15,drc||0));
  const d=cf(dlp,drc);   /* lot 58 : un seul effet, la confiance */
  const lp0=S.lp,rc0=S.rc;
  S.lp=Math.max(0,Math.min(100,S.lp+d));S.rc=Math.max(0,Math.min(100,S.rc+drc));
+ if(lp0>0&&S.lp<=0&&['budget','book','events'].includes(S.phase)&&S.midY!==S.q)midYellow();
  if(d||Math.abs(drc)>=0.05){S.gLog.push({why,lp:d,rc:drc});S.lastG={lp:d,rc:drc,lp0,rc0};
   if(d)toast(`${gz(d,0)}<br><span style="color:var(--dim)">${why}</span>`)}
  refreshStatus();return {lp:d,rc:drc};
@@ -4014,9 +4026,9 @@ function showGauge(id){
    :C.y?`<p><b>🟨 Un carton jaune en cours.</b> Au prochain manquement, c'est le rouge.</p>`
    :`<p><b>Aucun carton.</b> Le comité vous laisse travailler.</p>`;
   openModal('Le comité des risques',`${head}
-   ${tbl([['Plafond de position',`±${S.maxk} unité${S.maxk>1?'s':''}${(S.capK||5)<5?` <span class="dim-g">· ±${(S.capK||5)+1} avec l'accès aux blocs</span>`:''}`],['Accidents de levier',`au-delà de ${dec(TAIL.x0*100,0)} % de risque ex ante`]])}
-   <p style="margin-top:10px">Le comité ne tient pas de jauge : il juge vos résultats à chaque clôture et sort des cartons. Ce qu'il note entre-temps pèse sur la confiance, pas sur les cartons.</p>
-   <ul class="rules2"><li>🟥 <b>Rouge</b> : trimestre à −20 % ou pire, repli de 30 % depuis le plus haut (puis chaque 5 points de plus), appel de marge, ou deuxième jaune.</li><li>🟨 <b>Jaune</b> : trimestre à −10 % ou pire, repli de 18 % (puis chaque 4 points de plus), 20 points sous la médiane des concurrents, book vide.</li><li>Le comité ne juge plus le risque ex ante : il n'y a pas de mandat de volatilité. Le risque se paie autrement, par les accidents de levier.</li><li>Un rouge coûte 5 % de l\'encours, 6 points de confiance, et une contrainte forte pendant le trimestre suivant, tirée au sort : plafond de position, risque plafonné, stop ex post, marchés ou classe fermés, collatéral renforcé, book resserré, contrôle imposé, gel des renforcements.</li><li>Quatre trimestres propres d\'affilée retirent un jaune.</li></ul>
+   ${tbl([['Plafond de position',`±${S.maxk} unité${S.maxk>1?'s':''}${(S.capK||5)<5?` <span class="dim-g">· ±${(S.capK||5)+1} avec l'accès aux blocs</span>`:''}`],['Accidents de levier et appels de marge',`au-delà de ${dec(TAIL.x0*100,0)} % de risque ex ante`]])}
+   <p style="margin-top:10px">Le comité ne tient pas de jauge : il juge vos résultats à chaque clôture et sort des cartons. Ce qu'il note entre-temps pèse sur la confiance ; une seule exception : si la confiance tombe à zéro, le jaune tombe sur-le-champ.</p>
+   <ul class="rules2"><li>🟥 <b>Rouge</b> : trimestre à −20 % ou pire, repli de 30 % depuis le plus haut (puis chaque 5 points de plus), appel de marge, ou deuxième jaune.</li><li>🟨 <b>Jaune</b> : trimestre à −10 % ou pire, repli de 18 % (puis chaque 4 points de plus), 20 points sous la médiane des concurrents, book vide, confiance à zéro (même en cours de trimestre).</li><li>Le comité ne juge plus le risque ex ante : il n'y a pas de mandat de volatilité. Le risque se paie autrement, par les accidents de levier.</li><li>Un rouge coûte 5 % de l\'encours, 6 points de confiance, et une contrainte forte pendant le trimestre suivant, tirée au sort : plafond de position, risque plafonné, stop ex post, marchés ou classe fermés, collatéral renforcé, book resserré, contrôle imposé, gel des renforcements.</li><li>Quatre trimestres propres d\'affilée retirent un jaune.</li></ul>
    ${C.log.length?tbl(C.log.slice(-4).map(l=>[`T${l.q}`,`${l.c==='rouge'?'🟥':'🟨'} ${l.why}${l.cn?` → ${l.cn}`:''}`]),['Derniers cartons','']):''}`);
  } else if(id[0]==='f'){
   const k=+id[1],f=FACT[k];
@@ -4040,7 +4052,7 @@ function showGauge(id){
    <p style="margin:12px 0 4px">D'où vient la majoration</p>
    <p class="note">La majoration de corrélation stresse chaque paire de ${(RS.kap*100).toFixed(0)} % vers le signe qui vous coûte : ρ* = ρ + κ(1−|ρ|)·signe(wᵢwⱼ). Une couverture dont la corrélation négative se relâche cesse de couvrir, et c'est ce cas-là qui est chiffré. κ monte avec la dégradation de liquidité du régime. La part « dépêches » est l'écart-type des impacts du vivier d'actualités appliqué à <em>votre</em> book, pour ${dec(RS.nev,1)} dépêches attendues en moyenne — le vivier entier, pas les dépêches effectivement tirées : ce chiffre ne vous dit rien de ce qui va arriver.</p>
 
-   ${tbl([['Marge utilisée · seuil d\'appel',`${(marginPct(S.k)*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} %`],['Accident de levier ce trimestre',tailP(RS.total)>0?`${dec(tailP(RS.total)*100,0)} % · perte ≈ ${dec(0.62*tailL(RS.total)*100,0)} %`:`aucun sous ${dec(TAIL.x0*100,0)} %`],['Perte à −2 σ trimestriels',`−${moneyB(RS.total*S.nav)}`],['Notionnel brut',`${moneyB(grossBn(S.k))} · ${dec((grossBn(S.k)/S.nav),2)}×`],['Marge utilisée · seuil d\'appel',`${(MGU*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} % de l\'encours`]])}
+   ${tbl([['Marge utilisée · seuil d\'appel',`${(marginPct(S.k)*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} %`],['Accident de levier ce trimestre',tailP(RS.total)>0?`${dec(tailP(RS.total)*100,0)} % · perte ≈ ${dec(TAILSEV*tailL(RS.total)*100,0)} %`:`aucun sous ${dec(TAIL.x0*100,0)} %`],['Perte à −2 σ trimestriels',`−${moneyB(RS.total*S.nav)}`],['Notionnel brut',`${moneyB(grossBn(S.k))} · ${dec((grossBn(S.k)/S.nav),2)}×`],['Marge utilisée · seuil d\'appel',`${(MGU*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} % de l\'encours`]])}
    <p style="margin:12px 0 4px">Part de la variance par facteur</p>
    ${tbl([...FACT.map((f,k)=>[f.nm,(vd.fv[k]/vd.tot*100).toFixed(0)+' %']),['Propre aux marchés',(vd.idio/vd.tot*100).toFixed(0)+' %']])}
    ${top.length?`<p style="margin:12px 0 4px">Contributeurs au risque</p>${tbl(top.map(o=>[INSTR[o.i].sym+' '+INSTR[o.i].nm,(o.v/sp*100).toFixed(0)+' %']))}`:''}`);
@@ -4475,10 +4487,32 @@ function expShort(o){const r=o.s>0?o.m/o.s:0;
 /* lot 66 : plus de mandat de volatilité. Au-delà de TAIL.x0 de risque ex ante, un accident de levier
    (TAILEV) devient possible ; sa probabilité croît jusqu'à TAIL.p à x0 + w, sa gravité avec le risque.
    Le contrôle des risques en réduit la fréquence (TAILM, racine du multiplicateur d'incidents). */
-const TAIL={x0:0.25,w:0.35,p:0.50},TAILM=[1.48,1.41,1.22,1.00,0.69,0.42,0.30];
+/* lot 76 : appels de marge (mg) — 45 % des accidents, gravité plus forte, perte plafonnée à 45 % au lieu de 40 % */
+TAILEV.push(
+ {mg:1,t:"Appel de marge à 7 heures : le cash avant midi",who:"Prime broker · appel de marge",sev:[0.65,0.95],
+  p:"Une nuit de volatilité a gonflé vos marges initiales. Le prime broker veut l'argent avant la cloche de midi ; sinon, il se sert lui-même, au prix qu'il trouvera.",
+  o:["Contester le calcul et tenir le book","Laisser le prime broker liquider la moitié","Payer sur une ligne de crédit à taux punitif"]},
+ {mg:1,t:"La chambre relève les marges en séance, deux fois",who:"Chambre de compensation · avis d'urgence",sev:[0.6,0.9],
+  p:"Première hausse à 10 heures, deuxième à 15 heures. Chaque fonds levé vend ce qu'il peut pour payer, et c'est justement ce que vous détenez.",
+  o:["Tenir et payer ce qui sera demandé","Réduire de moitié au prix du jour","Emprunter le dépôt au prix que la banque fixe"]},
+ {mg:1,t:"Spirale d'appels de marge : les autres vendent ce que vous tenez",who:"Desk · alerte rouge",sev:[0.7,1.0],
+  p:"Un fonds plus gros que vous est liquidé par son prime broker. Ses positions sont les vôtres ; chacune de ses ventes déclenche un nouvel appel chez vous.",
+  o:["Tenir jusqu'à la fin de la liquidation","Vendre avant la prochaine vague","Payer la marge et couvrir le reste, au prix du vendeur"]},
+ {mg:1,t:"Le prime broker change sa méthode de calcul de marge",who:"Prime broker · courrier recommandé",sev:[0.55,0.9],
+  p:"Nouveau modèle de risque, effet immédiat : votre marge requise double. La lettre est polie, le délai est de vingt-quatre heures.",
+  o:["Négocier un délai et tenir","Réduire de moitié pour rentrer dans le modèle","Poster du collatéral emprunté hors de prix"]},
+ {mg:1,t:"Décote relevée sur tout votre collatéral",who:"Trésorerie · alerte",sev:[0.6,0.9],
+  p:"Le prime broker applique une décote de 25 % sur les titres que vous avez déposés. Du jour au lendemain, il manque de quoi couvrir la marge.",
+  o:["Contester la décote et tenir","Vendre la moitié du book pour dégager du cash","Remplacer le collatéral à crédit, au taux de la banque"]}
+);
+const TAILMG=0.45;
+/* gravité moyenne relative à celle d'avant le lot 76 (0,62 calé sur 0,581 de sévérité médiane) */
+const TAILSEV=(()=>{const m=a=>a.reduce((s,e)=>s+(e.sev[0]+e.sev[1])/2,0)/Math.max(1,a.length);
+ return 0.62/0.5806*(TAILMG*m(TAILEV.filter(e=>e.mg))+(1-TAILMG)*m(TAILEV.filter(e=>!e.mg)))})();
+const TAIL={x0:0.25,w:0.35,p:0.60},TAILM=[1.48,1.41,1.22,1.00,0.69,0.42,0.30];
 function tailP(sp,std){return Math.max(0,Math.min(1,(sp-TAIL.x0)/TAIL.w))*TAIL.p*(std?1:(TAILM[(S&&S.bud)?S.bud.risk:3]||1))}
 function tailL(sp){return Math.min(0.62,sp*Math.max(0.3,Math.min(1.2,(sp-0.15)/0.25)))}   /* perte de référence, × gravité de l'accident */
-function tailExp(sp,std){return tailP(sp,std)*0.62*tailL(sp)*0.55}          /* coût moyen, sortie la moins chère */
+function tailExp(sp,std){return tailP(sp,std)*TAILSEV*tailL(sp)*0.55}          /* coût moyen, sortie la moins chère */
 /* Concurrents : chacun choisit son risque du trimestre (vq) selon sa stratégie, sous les mêmes contraintes
    que le joueur — marchés ouverts et plafond de position selon son propre encours. */
 const RIVSTRAT={syst:{nm:'Kelly fractionnaire',d:'vise un quart du levier optimal, coupe de moitié après un repli',base:0.26,conv:0.06,cut:0.5,tail:'cut'},
@@ -4581,7 +4615,7 @@ function riskMap(sp,big){
    +`<text x="${f(px+8)}" y="${f(py-7)}" font-size="10" fill="${me}" font-family="var(--mono)" font-weight="700" ${px>x1-70?'text-anchor="end"':''}>${nm}</text>`;
   const tp=tailP(sp);
   return `<p class="note" style="margin:0 0 4px">Valeurs <b>trimestrielles</b>. Risque : volatilité du book sur un trimestre (la moitié de la volatilité annuelle des lignes de marché), bruit d'estimation compris ; sa jauge passe à l'ambre à la cible de votre mandat et au rouge là où commencent les accidents de levier. Rentabilité : rendement attendu du trimestre — collatéral, impact, drain de volatilité et coût moyen des accidents de levier compris ; sa jauge est rouge sous zéro et verte au niveau du meilleur concurrent. Traits tous les 5 %. Point jaune pâle : votre fonds juste avant votre dernier changement de position, toutes les autres positions comprises. Les concurrents sont placés à leur couple estimé (risque · rentabilité).</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
-   +`<p class="note" style="margin:0 0 10px">${tp>0?`À ${sv} de risque : <b class="neg-g">${dec(tp*100,0)} % de probabilité</b> d'un accident de levier ce trimestre, perte de l'ordre de ${dec(0.62*tailL(sp)*100,0)} % de l'encours si vous le laissez courir.`:`Sous ${dec(TAIL.x0*50,1)} % de risque par trimestre, pas d'accident de levier possible.`}</p>`;
+   +`<p class="note" style="margin:0 0 10px">${tp>0?`À ${sv} de risque : <b class="neg-g">${dec(tp*100,0)} % de probabilité</b> d'un accident de levier ce trimestre, perte de l'ordre de ${dec(TAILSEV*tailL(sp)*100,0)} % de l'encours si vous le laissez courir.`:`Sous ${dec(TAIL.x0*50,1)} % de risque par trimestre, pas d'accident de levier possible.`}</p>`;
  }
  const L=3,Rr=4,T=5,B=3,gid='gz'+(++riskMap.n);
  const X=v=>L+(100-L-Rr)*v/xm,Y=v=>100-B-(100-B-T)*(v-y0)/(y1-y0);
@@ -4798,7 +4832,7 @@ function renderRisk(){
  if(capStress()>0)flags+=`<div class="flag"><span>L'encours a dépassé ${moneyB(capSoftNav())}, la taille au-delà de laquelle ce book ne se déploie plus sans se voir : impact de marché ×${dec(capFactor(),2)} sur chaque ordre. La capacité de la stratégie est atteinte.</span></div>`;
  if(MGU>MGC.thr)flags+=`<div class="flag"><span>Marge utilisée ${(MGU*100).toFixed(0)} % de l'encours, au-dessus du seuil de ${(MGC.thr*100).toFixed(0)} % du prime broker. Un trimestre négatif déclenchera une liquidation d'office.</span></div>`;
  else if(MGU>MGC.warn)flags+=`<div class="flag"><span>Marge utilisée ${(MGU*100).toFixed(0)} % de l'encours. Le seuil d'appel est à ${(MGC.thr*100).toFixed(0)} %.</span></div>`;
- if(tailP(RS.total)>0)flags+=`<div class="flag" style="border-color:var(--short)"><span><b>Zone d'accidents de levier.</b> À ${pct(RS.total)} de risque : ${dec(tailP(RS.total)*100,0)} % de probabilité d'un accident ce trimestre, perte de l'ordre de ${dec(0.62*tailL(RS.total)*100,0)} % de l'encours si vous le laissez courir. Toute sortie coûte cher.</span></div>`;
+ if(tailP(RS.total)>0)flags+=`<div class="flag" style="border-color:var(--short)"><span><b>Zone d'accidents de levier.</b> À ${pct(RS.total)} de risque : ${dec(tailP(RS.total)*100,0)} % de probabilité d'un accident ce trimestre, perte de l'ordre de ${dec(TAILSEV*tailL(RS.total)*100,0)} % de l'encours si vous le laissez courir. Toute sortie coûte cher.</span></div>`;
  if(sp<0.08&&sp>0.001)flags+=`<div class="flag"><span>Vous facturez ${dec((S.budBp*4/100+2),1)} % de frais annuels pour un book à ${pct(sp)} de volatilité.</span></div>`;
  if(sp<=0.001)flags+=`<div class="flag"><span>Aucune position. Le collatéral rapporte le taux au jour le jour, les frais courent, le comité regarde.</span></div>`;
  if(fmax>0.62)flags+=`<div class="flag"><span>${(fmax*100).toFixed(0)} % de votre variance vient du seul facteur « ${FACT[vd.fv.indexOf(Math.max(...vd.fv))].nm.toLowerCase()} ». Douze lignes, un pari.</span></div>`;
@@ -5277,7 +5311,8 @@ function screenMidMark(){
 function tailDraw(){
  const sp=riskShown(weights(S.k)).total,u=prng32(hash32('tail'+S.q,S.seed));
  if(u()>=tailP(sp))return null;
- const i=Math.floor(u()*TAILEV.length),ev=TAILEV[i],L=Math.min(0.40,(ev.sev[0]+(ev.sev[1]-ev.sev[0])*u())*tailL(sp)),good=u()<0.5;
+ const wantMg=u()<TAILMG,pool=TAILEV.map((e,j)=>j).filter(j=>!!TAILEV[j].mg===wantMg),i=pool[Math.floor(u()*pool.length)],ev=TAILEV[i],
+  L=Math.min(ev.mg?0.45:0.40,(ev.sev[0]+(ev.sev[1]-ev.sev[0])*u())*tailL(sp)),good=u()<0.5;
  let imp=0;for(let m=0;m<N;m++){const d=Math.trunc(S.k[m]/2)-S.k[m];if(d)imp+=tcost(d,m).cost*5}
  return {i,sp,L,good,imp:imp/S.nav};
 }
@@ -5295,7 +5330,7 @@ function screenTail(te){
   return `<button class="choice" data-t="${k}"${ko?' disabled':''}><b>${ev.o[k]}</b><span>${body}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`};
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard bad">${evHead(ev.who,'risk')}<h3>${ev.t}</h3><p>${ev.p}</p>
-   <p class="note">Accident de levier : votre book tourne à ${pct(te.sp)} de risque. En dessous de ${dec(TAIL.x0*100,0)} %, il ne serait pas arrivé.</p></div>
+   <p class="note">${ev.mg?'Appel de marge':'Accident de levier'} : votre book tourne à ${pct(te.sp)} de risque. En dessous de ${dec(TAIL.x0*100,0)} %, il ne serait pas arrivé.</p></div>
   <div class="choices" style="margin-top:12px">${O.map((o,k)=>btn(o,k)).join('')}</div></div>`;
  document.querySelectorAll('.choice[data-t]').forEach(b=>b.onclick=()=>{
   const k=+b.dataset.t,o=O[k],loss=o.f*nav;
@@ -5368,7 +5403,9 @@ function resolveQuarter(){
  const cO=colOpt(),cHit=!redOn('collat')&&cO.p>0&&prng32(hash32('coll'+S.q,S.seed))()<cO.p;
  const collTot=(colYield()-(cHit?cO.l:0))*(S.colBaseNav||S.nav);   /* montant du trimestre */
  const collateral=(collTot-(S.qColM||0))/S.nav;   /* reste à verser (négatif si défaut) */
- S.colRes={nm:redOn('collat')?'Collatéral renforcé':cO.nm,x:collTot/(S.colBaseNav||S.nav)-S.rate/4,hit:cHit,l:cO.l,m:collTot-S.rate/4*(S.colBaseNav||S.nav),show:redOn('collat')||cO.id!=='tres'};
+ {const bN=S.colBaseNav||S.nav,loss=cHit?cO.l*bN:0;
+  S.colRes={nm:redOn('collat')?'Collatéral renforcé':cO.nm,lock:redOn('collat'),x:collTot/bN-S.rate/4,hit:cHit,l:cO.l,p:cO.p,m:collTot-S.rate/4*bN,
+   sur:collTot-S.rate/4*bN+loss,loss,show:redOn('collat')||cO.id!=='tres'}}
  const ops=S.budBp*1e-4;
  const tc=S.pendingTC;S.pendingTC=0;      /* à la charge du gérant, plus à celle du fonds */
  const navBefore=S.nav;
@@ -5517,6 +5554,8 @@ function resolveQuarter(){
   if(qTotal<=-0.10*tt)why.push(`trimestre à ${sgnp(qTotal,1)}`);
   if(ddp>=0.18*tt&&ddp>(C.ddY||0)+0.04){why.push(`repli de ${dec(ddp*100,0)} % depuis le plus haut`);C.ddY=ddp}
   if(qTotal-med<=-0.20)why.push(`${dec((med-qTotal)*100,0)} pts sous la médiane des concurrents`);
+  if(S.midY===S.q-1){why.unshift('confiance tombée à zéro en cours de trimestre');C.y=Math.max(0,C.y-1)}
+  else if(S.lp<=0)why.unshift('confiance des investisseurs à zéro');
   S.qCard=null;
   if(!red&&why.length){C.y++;C.clean=0;S.qCard={c:'jaune',why:why[0]};C.log.push({q:S.q,c:'jaune',why:why[0]});
    if(C.y>=2)red='deuxième carton jaune'}
@@ -5847,7 +5886,9 @@ function screenDebrief(o){
    const mb=document.querySelector('#modal .mbox');if(mb)mb.classList.add('redbox')},30)}
  if(S.qCard)warn.push(S.qCard.c==='rouge'?`🟥 <b>Carton rouge du comité</b> — ${S.qCard.why}. Au prochain trimestre : <b>${S.qCard.cn.nm}</b> — ${S.qCard.cn.t}. 5 % de l'encours retiré, confiance −6.`:`🟨 <b>Carton jaune du comité</b> — ${S.qCard.why}. Confiance −2 ; au deuxième, c'est le rouge.`);
  if(capStress()>0&&!S.capWarned){S.capWarned=1;warn.push(`Capacité atteinte : à ${moneyB(S.nav)} d'encours, vos ordres coûtent ${((capFactor()-1)*100).toFixed(0)} % d'impact de plus qu'au premier jour. Collecter davantage ne rapportera bientôt plus ce que ça coûte.`)}
- if(S.colRes&&S.colRes.hit)warn.push(`💥 <b>Le placement du collatéral a fait défaut</b> — ${S.colRes.nm} : −${dec(S.colRes.l*100,1)} % de l'encours, surcroît de rendement compris ${sgn(S.colRes.x,1)} sur le trimestre.`);
+ {const c=S.colRes;if(c&&c.show)warn.push(c.lock?`Collatéral renforcé : rémunéré à 60 % du taux, ${mn(c.m)} par rapport aux bons du Trésor.`
+  :c.hit?`💥 <b>Le placement du collatéral a fait défaut</b> — ${c.nm} : surcroît de rendement ${mn(c.sur)}, défaut <b class="neg-g">−${mm(c.loss)}</b> (−${dec(c.l*100,1)} % de l'encours), soit ${mn(c.m)} au total par rapport aux bons du Trésor.`
+  :`Collatéral — ${c.nm} : pas de défaut (${Math.round(c.p*100)} % de risque), surcroît de rendement ${mn(c.sur)} par rapport aux bons du Trésor.`)}
  if(S.qGoal)warn.push(`Objectif du trimestre « ${S.qGoal.nm.toLowerCase()} » : <b class="${S.qGoal.ok?'pos-g':'neg-g'}">${S.qGoal.ok?'tenu':'manqué'}</b>${S.qGoal.ok?` — ${moneyB(S.qGoal.bonus)} de bonus sur votre score.`:` — ${S.qGoal.d}`}`);
  if(S.marginCall)warn.push(`Appel de marge : la marge utilisée a dépassé ${(MGC.thr*100).toFixed(0)} % de l'encours en cours de trimestre. Le prime broker a liquidé ${(S.marginCall.f*100).toFixed(0)} % du book au plus bas, ${mm(S.marginCall.cost)} de coûts de liquidation, et vous repartez avec les positions réduites d'autant.`);
  if(S.qLog.includes('mandat'))warn.push("Votre mandat est réduit : plus aucune position au-delà de 3 unités.");
@@ -5861,7 +5902,7 @@ function screenDebrief(o){
     <span>LE TRIMESTRE · DEPUIS LE LANCEMENT</span><b class="cnt">—</b></div>
     ${tapeSvg(S.tape.pts,S.tape.q0||0,{h:150,anim:1,draw:3,zero:1,rivals:rivalTapes()})}</div>`
    :navBox(`PERFORMANCE NETTE CUMULÉE · ${S.q} TRIMESTRE${S.q>1?'S':''}`,idxSeries(),{anim:1,trough:1})}
-  <div class="thold">${warn.map(t=>`<div class="flag" style="margin-top:12px">${t}</div>`).join('')}
+  <div class="thold">${warn.map(t=>`<div class="flag" style="margin-top:12px"><span>${t}</span></div>`).join('')}
   <div class="block"><div class="blockhead"><h2>La concurrence</h2><span class="hint">${1+S.rivals.filter(r=>r.cum>S.idx).length}<sup>${(1+S.rivals.filter(r=>r.cum>S.idx).length)===1?'er':'e'}</sup> sur quatre</span></div>
    <table class="qt"><thead><tr><th>Fonds</th><th>Risque</th><th>Trim.</th><th>Cumul</th></tr></thead><tbody>
    ${all.map(a=>{const c=cums.find(z=>z.nm===(a.me?S.fundName:a.nm.split(' · ')[0]));return {a,cv:c?c.v:0}}).sort((x,y)=>y.cv-x.cv).map(({a,cv})=>
@@ -5872,7 +5913,8 @@ function screenDebrief(o){
    <div class="attr"><span class="an">Positions directionnelles</span><span class="av">${inU(o.P.grossM,UQ)}</span></div>
    <div class="attr"><span class="an">Dépêches, incidents, desk et impact de marché</span><span class="av">${inU(o.P.evM+o.P.incM,UQ)}</span></div>
    <div class="attr"><span class="an">Rémunération du collatéral</span><span class="av">${inU(o.P.collM,UQ)}</span></div>${S.colRes&&S.colRes.show?`
-   <div class="attr"><span class="an" style="color:var(--dimmer)">dont ${S.colRes.nm.toLowerCase()}${S.colRes.hit?' · défaut':''}</span><span class="av">${inU(S.colRes.m,UQ)}</span></div>`:''}
+   <div class="attr"><span class="an" style="color:var(--dimmer)">dont ${S.colRes.lock?'collatéral renforcé':'surcroît · '+S.colRes.nm.toLowerCase()}</span><span class="av">${inU(S.colRes.lock?S.colRes.m:S.colRes.sur,UQ)}</span></div>${S.colRes.hit?`
+   <div class="attr"><span class="an" style="color:var(--dimmer)">dont défaut du placement</span><span class="av">${inU(-S.colRes.loss,UQ)}</span></div>`:''}`:''}
    <div class="attr"><span class="an">Frais de gestion et de performance</span><span class="av">${inU(o.P.feeM,UQ)}</span></div>
    <div class="attr"><span class="an" style="color:var(--txt)">Résultat du trimestre</span><span class="av">${inU(o.P.perfM,UQ)}</span></div>
    <div class="attr"><span class="an">Souscriptions et rachats</span><span class="av ${Math.abs(o.P.flowM)>1e-9?cls(o.P.flowM):''}">${Math.abs(o.P.flowM)>1e-9?inU(o.P.flowM,UQ):'aucun mouvement'}</span></div>
