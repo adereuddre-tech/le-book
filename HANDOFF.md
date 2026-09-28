@@ -968,6 +968,20 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   graduations du nuage (positions toujours tracées en trimestriel, libellés ×2), note du nuage réécrite.
   Campagne 180 parties : normal habituel 17,1 (survie 73 %), glouton 17,3 (78 %) ; difficile 16,9 (47 %).
 
+- **Lot 84** (`lot84/p1.py`, `p2.py`) : risque propre des marchés ×1,5 (`IDIOX` dans `normB`) ; prime de risque
+  `PREM` (actions +1,2 %, taux +0,4 % par trimestre) dans `drawReturns` et `expRet`. Accidents : probabilité
+  `(e+0,8e²)·p` plafonnée à 0,97, protection du contrôle qui s'efface de 30 à 40 % (`tailMit`), `tailL` ×1,5,
+  options plus lourdes (tenir 0,5/1,8 L, couper 0,8 L, couvrir 0,5 L + 0,3 L), quatre accidents de plus
+  (short squeeze, corner, gamma squeeze, saut de prix), minuteur sur tous (défaut : couper). Confiance et
+  rachats quadratiques au-delà du confort (`RISKQ`), concurrents compris. Co-investissement 25/50/75/100 %,
+  la part placée entre dans l'encours (`S.coinvIn`, ajusté à l'ouverture). Incident : deux maux (tout réparer,
+  en partie à vos frais / contenir, confiance ×2,2), minuteur. Conviction forte ×3 (±15). Concurrents : risque
+  à mi-chemin de celui qui maximise leur rentabilité attendue. Risque affiché en trimestriel partout (`RQ`),
+  nuage : collatéral compris au point de départ (`colStdQ`). Mi-parcours : trimestre à date sur le ruban.
+  Débriefing : concurrence dans l'essentiel, rachats et collatéral en une ligne (détail replié en bas),
+  engagement « ≥ x · tenu ». Carton rouge : cadre de 340 px, dégradé et halo. Rapport final : durée juste
+  (`ANS`), verdicts plus enlevés. Campagne 135 : normal 13,3 (64 %), glouton 14,1 (67 %), difficile 12,7 (42 %).
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
