@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **94**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **95**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -472,6 +472,14 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
   ×5 (`NOTRD`) après campagne de 180 parties appariées : ×3 −0,3 ± 0,8 M$ face à ×1,5, ×5 −2,6 ± 1,5 ; équipe complète
   − standard −1,2 ± 1,3 à ×3, +1,1 ± 1,6 à ×5. Neuf anecdotes de milieu de trimestre pour Maître Lettrage (bo ≥ 1),
   Josiane Suspens (bo ≥ 2) et Tatillon (bo ≥ 4), filtrées par `persoOk`. Couverture forcée sans anomalie.
+- **Lot 95** (`lot95/p1.py`) : classe sans trader ×4 (`NOTRD`). Bonus d'équipe : au débriefing d'un trimestre à commission de
+  performance positive, 0/10/25 % de celle-ci (`BONUS`, `S.bonI`) et un bénéficiaire (`S.bonWho`) ; versé à l'ouverture
+  suivante par `payBonus()` (après `S.tresQ0`, avant le co-investissement, plafonné à la caisse). Effets sur ce trimestre :
+  débauchage ×1/×0,6/×0,3 (`BONM`, `S.bonMultQ`), bénéficiaire intouchable et coûts de sa classe −10 % (`S.bonWhoQ`).
+  Deux trimestres gagnants sans bonus (pas forcément consécutifs, `S.noBon`) : grogne, débauchage ×1,5. Lignes dans la
+  pop-up (`S.cBonT`) et le tableau de trésorerie (`S.qBonT`). Campagne 90 parties appariées : 10 % −0,7 ± 0,2 M$, 25 %
+  −1,6 ± 0,4 M$, survie 60 → 63 → 67 % : le bonus coûte son montant et ne rapporte presque rien au bot, le débauchage
+  (seulement si rachats > 1 %) étant rare. Score moyen 4,5 M$, survie 60 % (normal).
 
 ## Calibration actuelle (lots 85–86, bot habituel sauf mention)
 
@@ -494,7 +502,8 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 
 ### Équipe : suite
 - Textes des nouveaux venus : trois anecdotes chacun (lot 94), à étoffer.
-- Bonus d'équipe proposé au lot 94 (enveloppe à la clôture, bénéficiaire désigné), en attente de validation.
+- Bonus d'équipe (lot 95) peu rentable : débauchage trop rare pour qu'il protège quelque chose.
+- Scores en baisse depuis le lot 91 (9,7 → 4,5 M$ au bot) et survie ≈ 60 % pour une cible de 70 % : à rééquilibrer.
 - Économiste en chef proposé par Antoine, absent de `FOP` (7 crans pris).
 - Premier trimestre : 500 k$ en caisse contre 600 k$ pour le standard (45 + 15 pb) : le front descend d'un cran.
 - Crans hauts non rentables pour le bot (voir lot 92) : effets à renforcer ou prix à baisser, à remesurer.

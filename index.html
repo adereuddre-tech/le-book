@@ -559,6 +559,7 @@ table.payt th{line-height:1.2;font-size:9.5px}
 body.tmron #app{padding-bottom:150px}
 .bossn{display:block;font-size:.82em;color:var(--dim);font-weight:400}
 .cisel{display:flex;gap:6px;margin-top:6px}.cisel .cip{flex:1;padding:9px 0;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-family:var(--mono);font-size:13px}.cisel .cip.on{border-color:var(--gold);color:var(--gold)}
+.cisel .bnp,.cisel .bnw{flex:1;padding:8px 4px;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-size:12.5px}.cisel .bnp small{color:var(--dim);font-size:10.5px}.cisel .bnw{flex:0 0 auto;padding:6px 9px}.cisel .bnp.on,.cisel .bnw.on{border-color:var(--gold);color:var(--gold)}
 .ess .attr .av{text-align:right}
 </style>
 </head>
@@ -885,7 +886,7 @@ const BOP=[
  {who:"Josiane Suspens",hi:"Aucun ordre ne sort d'ici sans être rapproché.",full:"Josiane Suspens",role:"responsable du back office",ic:"🗂️",bp:30},
  {who:"Mireille",hi:"Je ne dis pas non. Je dis : justifiez.",full:"Mireille Cauchemar",role:"directrice des risques",ic:"⚖️",bp:40},
  {who:"L'inspecteur Tatillon",hi:"Faites comme si je n'étais pas là. Je note tout.",full:"L'inspecteur Firmin Tatillon",role:"conformité et audit interne",ic:"🔎",bp:60}];
-const BOMAP=[0,3,4,5,6],NOTRD=5,TRD={'Actions':1,'Taux':2,'Devises':3,'Matières premières':4,'Exotiques':5};
+const BOMAP=[0,3,4,5,6],NOTRD=4,TRD={'Actions':1,'Taux':2,'Devises':3,'Matières premières':4,'Exotiques':5};
 const BUDGET=[
  {id:'fo',ico:'📈',nm:"Front office",
   d:"Les traders et la recherche. Chaque recrue améliore l'avis du desk sur toutes les classes et sur la macro : coûts d'exécution, bruit des indicateurs, nombre et fiabilité des sources, lecture des dépêches, résistance au débauchage. Un trader couvre en plus sa classe : sans lui, vos ordres y passent par un courtier, commission et impact de marché multipliés.",
@@ -920,6 +921,16 @@ function cast(ev){if(!ev||!S||!S.bud)return ev;const off=CAST.filter(c=>!c.on()&
   ['t','p','after','riskMsg','safeTxt','safe','msg'].forEach(k=>{o[k]=recast(o[k],c)});
   if(Array.isArray(o.ch))o.ch=deepCast(o.ch,c)});
  return o}
+const BONUS=[0,0.10,0.25],BONM=[1,0.6,0.3],GROGNE=1.5;
+function bonCands(){const c=[];for(let p=FOP.length-1;p>=0;p--)if(here(p))c.push(p);return c}
+function bonTxt(){if(S.qBonT>0){const w=S.bonWhoQ!=null?FOP[S.bonWhoQ]:null;return `<br>Bonus d'équipe versé : ${mm(S.qBonT)} · débauchage ×${dec(S.bonMultQ,1)}${w?` · ${w.who} intouchable${w.cls?`, ${w.cls.toLowerCase()} −10 %`:''}`:''}`}
+ return S.bonMultQ>1?`<br><span class="neg-g">Le desk grogne : deux trimestres gagnants sans bonus. Débauchage ×${dec(GROGNE,1)} ce trimestre.</span>`:''}
+function payBonus(){S.qBonT=0;S.bonWhoQ=null;S.bonMultQ=1;if(S.q<1)return;const perf=(S.mgrQ&&S.mgrQ.perf)||0,i=S.bonI||0;
+ if(perf>0)S.noBon=i>0?0:(S.noBon||0)+1;
+ const amt=Math.min(BONUS[i]*Math.max(0,perf),Math.max(0,mgrCash()));
+ if(amt>0){S.mgrCosts+=amt;S.cBonT=(S.cBonT||0)+amt;S.qBonT=amt;S.bonMultQ=BONM[i];const w=S.bonWho;S.bonWhoQ=(w!=null&&here(w))?w:(bonCands()[0]??null)}
+ else if((S.noBon||0)>=2){S.bonMultQ=GROGNE;S.noBon=0}
+ S.bonI=0}
 function covered(g){const p=TRD[g];return p===undefined||here(p)}
 function cntOn(){return S&&S.cntQ===S.q?(S.cntBp||0):0}
 function sevRaw(){const P=S.budPrev;if(!P)return 0;return BUDGET.reduce((a,b)=>a+Math.max(0,b.lv[P[b.id]].bp-b.lv[S.bud[b.id]].bp),0)}
@@ -2726,7 +2737,8 @@ function tcost(dk,i){
  let m=EXECM[S.bud.exec]*desk.mult(x)*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult;
  if(S.leak&&Math.abs(S.k[i])>2)m*=1.45;
  if((S.stars||[]).includes(INSTR[i].grp))m*=0.5;
- if(!covered(x.grp))m*=NOTRD;   /* lot 92 : sans trader, le courtier */   /* lot 70 : recrues gardées jusqu'à la fin, ÷2 sur leur classe (sans cumul) */
+ if(!covered(x.grp))m*=NOTRD;
+ if(S.bonWhoQ!=null&&FOP[S.bonWhoQ]&&FOP[S.bonWhoQ].cls===x.grp)m*=0.9;   /* lot 95 : bénéficiaire du bonus */   /* lot 92 : sans trader, le courtier */   /* lot 70 : recrues gardées jusqu'à la fin, ÷2 sur leur classe (sans cumul) */
  bp*=m;
  const cost=bn*bp*1e-4,spr=Math.min(cost,bn*x.s*TCK*m*1e-4);
  return {cost,bp,bn,spr,imp:cost-spr};
@@ -2882,6 +2894,7 @@ function planQuarter(){
  /* la commission de gestion est prélevée sur le fonds et vous est versée dès l'ouverture ;
     la performance et le bonus d'objectif attendent la clôture */
  S.tresQ0=mgrCash();   /* lot 87 */
+ payBonus();   /* lot 95 */
  S.qMgmtM=VOL().mgmt*S.nav;S.nav-=S.qMgmtM;S.mgrFees+=S.qMgmtM;S.cMgmt=(S.cMgmt||0)+S.qMgmtM;refreshGain();
  {if(S.coinvIn&&!S.coinvLock){S.nav-=S.coinvIn;S.navQ0-=S.coinvIn;S.coinvIn=0}   /* reprise d'une sauvegarde d'avant le lot 90 */
   const tg=S.q>=1?coinvPct()*Math.max(0,mgrCash()):0;   /* lot 94 : rien au premier trimestre */
@@ -4213,7 +4226,7 @@ function showGauge(id){
   const tcNow=S.phase==='book'?liveTC():(S.pendingTC||0)*S.nav,tcAll=S.led?(S.cTC||0)+tcNow:(S.totalTC||0)+(S.phase==='book'?liveTC():0);
   const it=[[`Commissions de gestion`,S.cMgmt||0],[`Commissions de performance`,S.cPerf||0],[`Bonus d'objectif`,S.cBon||0],
    [`Résultat du co-investissement${cLive?' (dont en cours '+(cLive>=0?'+':'−')+mm(Math.abs(cLive))+')':''}`,(S.mgrCoinv||0)+cLive],
-   [`Restitution de commissions`,-(S.mgrClaw||0)],[`Budget d'exploitation`,-(S.cOps||0)],[`Courtage de vos ordres${tcNow?' (dont trimestre en cours −'+mm(tcNow)+')':''}`,-tcAll]];
+   [`Restitution de commissions`,-(S.mgrClaw||0)],[`Budget d'exploitation`,-(S.cOps||0)],[`Bonus d'équipe`,-(S.cBonT||0)],[`Courtage de vos ordres${tcNow?' (dont trimestre en cours −'+mm(tcNow)+')':''}`,-tcAll]];
   const oth=net-it.reduce((a,x)=>a+x[1],0);
   if(Math.abs(oth)>1e-7)it.push([S.led?`Autres : accidents de levier, incidents payés par vous`:`Non ventilé (partie commencée avant la mise à jour)`,oth]);
   const pc=Math.round(coinvPct()*100);
@@ -4514,7 +4527,7 @@ function drawBuds(){
    <div class="team">${b.lv.map((l,i)=>{const gone=b.id==='fo'&&G&&G.p===i,o=ok(b.id,i);
     return `<button class="lvl tm ${i<=cur?'in':''} ${cur===i?'on':''}${gone?' gone':''}" data-b="${b.id}" data-i="${i}"${o?'':' disabled'}><span class="tic">${l.ic}</span><span class="tnm"><b>${l.full}</b><i>${gone?`parti chez ${G.boss}`:l.role}</i></span><span class="tbp">${l.bp} pb<br>${o?mm(l.bp*1e-4*S.nav):'hors caisse'}</span></button>`}).join('')}</div>
    ${b.id==='fo'&&G?`<div class="flag" style="margin:8px 0 0"><span><b>${FOP[G.p].who} est parti chez ${G.boss}.</b> Son siège reste vide ce trimestre${FOP[G.p].cls?` : la classe ${FOP[G.p].cls.toLowerCase()} passe par un courtier`:''}. Contre-offre : un trimestre de son salaire, ${cb} pb (${mm(cb*1e-4*S.nav)}), et il revient tout de suite.</span></div><button class="lvl cntb" id="cnt"${cok?'':' disabled'}>Faire la contre-offre · ${mm(cb*1e-4*S.nav)}</button>`:''}
-   <div class="lvef">${budEf(b.id,cur)}${b.id==='fo'?covTxt():''}</div>
+   <div class="lvef">${budEf(b.id,cur)}${b.id==='fo'?covTxt()+bonTxt():''}</div>
    <details style="margin-top:8px"><summary>À quoi sert ce budget · les ${b.lv.length} crans</summary><p class="note">${b.d}</p>${budExpl(b.id)}<ul class="efl">${b.lv.map((l,i)=>`<li><b>${l.who}</b> · ${l.bp} pb · ${budEf(b.id,i)}</li>`).join('')}</ul></details></div>`}).join('');
  const bp=budgetBp();
  document.getElementById('btot').textContent=`${bp.toFixed(0)} pb · ${mm(bp*1e-4*S.nav)} · ${dec((bp*4/100),1)} % par an${S.qSevM>0?` · bonus versés aux partants ${mm(S.qSevM)}`:''}`;
@@ -5717,7 +5730,7 @@ function resolveQuarter(){
  const amt=tot*S.nav;S.nav+=amt;S.flows+=amt;S.qFlow=(S.qFlow||0)+amt;
  const lines=fl.filter(x=>Math.abs(x.f)>=0.002).map(x=>`${x.rv.nm} ${x.f>0?'+':'−'}${dec(Math.abs(x.f)*100,1)} % (${x.d>0?'battu':'devant vous'} de ${dec(Math.abs(x.d)*100,1)} pt${Math.abs(x.d)>=0.015?'s':''})`);
  S.poachMsg=`${tot>=0?'Collecte':'Rachats'} : ${tot>=0?'+':'−'}${dec(Math.abs(tot)*100,1)} % d'encours (${mm(Math.abs(amt))}).${lines.length?' Clients par concurrent — '+lines.join(' · ')+'.':''}${riskOut>=0.001?` Dont −${dec(riskOut*100,1)} % retirés pour un risque jugé trop élevé.`:''}`;
- if(tot<-0.01&&rng()<(0.5+S.poachBoost)*RETM[S.bud.ret]*(rel<-0.005?1:0.4)){S.execPenalty*=1.14;const boss=(pick(S.rivals.filter(x=>x.poacher))||S.rivals[S.rivals.length-1]).boss,cands=[];for(let p=1;p<=S.bud.fo;p++)if(here(p))cands.push(p);
+ if(tot<-0.01&&rng()<(0.5+S.poachBoost)*RETM[S.bud.ret]*(rel<-0.005?1:0.4)*(S.bonMultQ||1)){S.execPenalty*=1.14;const boss=(pick(S.rivals.filter(x=>x.poacher))||S.rivals[S.rivals.length-1]).boss,cands=[];for(let p=1;p<=S.bud.fo;p++)if(here(p)&&p!==S.bonWhoQ)cands.push(p);
   if(cands.length){const p=pk(cands,92);S.gone={p,n:1,boss};S.poachMsg+=` ${boss} a débauché ${FOP[p].full} : coûts d'exécution +14 % durablement, et son siège reste vide au trimestre prochain${FOP[p].cls?` (${FOP[p].cls.toLowerCase()} par un courtier, ×${dec(NOTRD,1)})`:''}, sauf contre-offre.`}
   else S.poachMsg+=` ${boss} a débauché deux de vos gérants : coûts d'exécution +14 % durablement.`;
   if((S.stars||[]).length){const g=S.stars.pop();S.poachMsg+=` Votre recrue ${g.toLowerCase()} part avec eux : la remise sur cette classe disparaît.`}}
@@ -6136,13 +6149,18 @@ function screenDebrief(o){
   <table class="qt" style="margin-top:12px"><thead><tr><th>Fonds</th><th>Risque</th><th>Trim.</th><th>Cumul</th></tr></thead><tbody>
   ${all.map(a=>({a,cv:a.cv})).sort((x,y)=>y.cv-x.cv).map(({a,cv})=>`<tr class="${a.me?'me':''}"><td>${a.nm}${a.th?`<br><span class="neg-g" style="font-size:11px">accident de levier</span>`:''}</td><td>${a.rk!==undefined?dec(a.rk*50,1)+' %':''}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(cv)}">${sgn(cv,1)}</td></tr>`).join('')}
   </tbody></table>
-  ${(()=>{const T0=S.tresQ0!==undefined?S.tresQ0:0,T1=mgrCash(),it=[['Commission de gestion',Gq.mgmt||0],['Commission de performance',Gq.perf||0],["Bonus d'objectif",bon],[Gq.cb?`Co-investissement (${Math.round((Gq.cp||0)*100)} % · ${mm(Gq.cb)} placés)`:'Co-investissement',Gq.coinv||0],['Restitution',-(Gq.claw||0)],["Budget d'exploitation",-(Gq.ops||0)],["Coûts d'exécution",-(Gq.tc||0)]];
+  ${(()=>{const T0=S.tresQ0!==undefined?S.tresQ0:0,T1=mgrCash(),it=[['Commission de gestion',Gq.mgmt||0],['Commission de performance',Gq.perf||0],["Bonus d'objectif",bon],[Gq.cb?`Co-investissement (${Math.round((Gq.cp||0)*100)} % · ${mm(Gq.cb)} placés)`:'Co-investissement',Gq.coinv||0],['Restitution',-(Gq.claw||0)],["Budget d'exploitation",-(Gq.ops||0)],["Bonus d'équipe versé à l'ouverture",-(S.qBonT||0)],["Coûts d'exécution",-(Gq.tc||0)]];
    const oth=T1-T0-it.reduce((a,x)=>a+x[1],0);if(Math.abs(oth)>1e-7)it.push(['Autres (accidents, incidents, desk payés par vous)',oth]);
    return `<table class="qt" style="margin-top:12px"><thead><tr><th style="text-align:left">Trésorerie</th><th>M$</th></tr></thead><tbody>
     <tr><td style="text-align:left">Début du trimestre</td><td>${mm(T0)}</td></tr>
     ${it.filter(x=>Math.abs(x[1])>1e-9).map(x=>`<tr><td style="text-align:left">${x[0]}</td><td class="${cls(x[1])}">${x[1]>=0?'+':'−'}${mm(Math.abs(x[1]))}</td></tr>`).join('')}
     <tr class="me"><td style="text-align:left"><b>Fin du trimestre</b></td><td><b class="gold-g">${mm(T1)}</b></td></tr></tbody></table>`})()}
  </div>`;
+ const bnSel=(S.over||S.q>=QT()||!((S.mgrQ&&S.mgrQ.perf)>0))?'':(()=>{const pf=S.mgrQ.perf,C=bonCands(),w=(S.bonWho!=null&&C.includes(S.bonWho))?S.bonWho:C[0];S.bonWho=w;
+  return `<div class="block"><div class="blockhead"><h2>Bonus d'équipe</h2><span class="hint">versé à l'ouverture</span></div>
+  <p class="note" style="margin-top:0">Une part de votre commission de performance (${mm(pf)}), versée à l'équipe. Elle calme les chasseurs de têtes au trimestre prochain ; un bénéficiaire désigné est intouchable et fait baisser de 10 % les coûts de sa classe.${(S.noBon||0)>=1?` <b class="neg-g">Le trimestre gagnant précédent s'est passé de bonus : un second sans rien et le desk grogne (débauchage ×${dec(GROGNE,1)}).</b>`:''}</p>
+  <div class="cisel">${BONUS.map((p,i)=>`<button class="bnp${i===(S.bonI||0)?' on':''}" data-i="${i}">${Math.round(p*100)} %<br><small>${mm(p*pf)} · ×${dec(BONM[i],1)}</small></button>`).join('')}</div>
+  <div class="cisel" style="flex-wrap:wrap">${C.map(p=>`<button class="bnw${p===w?' on':''}" data-p="${p}">${FOP[p].ic} ${FOP[p].who}</button>`).join('')}</div></div>`})();
  const coSel=(S.over||S.q>=QT())?'':`<div class="block"><div class="blockhead"><h2>Co-investissement</h2><span class="hint">trimestre prochain</span></div>
   <p class="note" style="margin-top:0">Part de votre trésorerie placée dans le fonds : elle suit son résultat net, gains comme pertes, et reste comptée dans la trésorerie à sa valeur du moment. 25 % au moins.</p>
   <div class="cisel">${COINVS.map(p=>`<button class="cip${Math.abs(p-coinvPct())<1e-9?' on':''}" data-p="${p}">${Math.round(p*100)} %</button>`).join('')}</div>
@@ -6157,7 +6175,7 @@ function screenDebrief(o){
     <span>T${S.q} <b class="${cls(o.qTotal)}">${sgn(o.qTotal,1)}</b> · DEPUIS LE LANCEMENT</span><b class="cnt">—</b></div>
     ${tapeSvg(S.tape.pts,S.tape.q0||0,{h:150,anim:1,draw:3,zero:1,rivals:rivalTapes(),qs:S.tape.q0||0,ql:S.q})}</div>`
    :navBox(`PERFORMANCE NETTE CUMULÉE · ${S.q} TRIMESTRE${S.q>1?'S':''}`,idxSeries(),{anim:1,trough:1})}
-  <div class="thold">${ess}${warn.map(t=>`<div class="flag" style="margin-top:12px"><span>${t}</span></div>`).join('')}${coSel}
+  <div class="thold">${ess}${warn.map(t=>`<div class="flag" style="margin-top:12px"><span>${t}</span></div>`).join('')}${bnSel}${coSel}
 
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Du brut au net · en ${UQ.s.trim()}</summary>
    <div class="attr"><span class="an">Positions directionnelles</span><span class="av">${inU(o.P.grossM,UQ)}</span></div>
@@ -6189,6 +6207,8 @@ function screenDebrief(o){
   ${detl.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Rachats et collatéral · le détail</summary>${detl.map(t=>`<p class="note">${t}</p>`).join('')}</details></div>`:''}
   <button class="cta" id="nx">${S.over?'Voir le rapport final':(S.q>=QT()?`Clôturer les ${DUR().ans} an${DUR().ans>1?'s':''}`:'Trimestre suivant')}</button></div>`;
  theatre(app.querySelector('.pnlhead').parentElement);
+ app.querySelectorAll('.bnp').forEach(b=>b.onclick=()=>{S.bonI=+b.dataset.i;app.querySelectorAll('.bnp').forEach(x=>x.classList.toggle('on',x===b))});
+ app.querySelectorAll('.bnw').forEach(b=>b.onclick=()=>{S.bonWho=+b.dataset.p;app.querySelectorAll('.bnw').forEach(x=>x.classList.toggle('on',x===b))});
  app.querySelectorAll('.cip').forEach(b=>b.onclick=()=>{S.coinvPct=+b.dataset.p;app.querySelectorAll('.cip').forEach(x=>x.classList.toggle('on',x===b));
   const n=document.getElementById('cinote');if(n)n.textContent=`${mm(coinvPct()*Math.max(0,mgrCash()))} placés au prochain trimestre.`});
  goldFlush(3500);
