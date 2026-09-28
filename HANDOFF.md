@@ -1005,6 +1005,17 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
 - **Lot 88** : objectif « Joueur de poker » (annoncer ≥ 9 % et les livrer, bonus 0,10) à la place du « Moine » ;
   haut fait « Le prophète » (palier 3, tenir une prophétie de gourou, `tq`) à la place de « L'invisible ».
 
+- **Lot 89** (`lot89/patch.py` + corrections) : audit des 108 objectifs et 37 hauts faits. Couverture dynamique
+  (`lot89/cov.js` : tous les prédicats évalués à chaque clôture de 36 parties) ; corrigés : risque et volatilité
+  réécrits en trimestriel dans les libellés ; « Le renseignement rentable » comparait à 1 Md$ au lieu de
+  l'encours (`navM`) ; « Le trimestre du comptable » avait le signe inversé ; « Surfer la tendance » visait un
+  régime inexistant (→ reflation) ; « Le trimestre calme » impossible (→ « Sans faux pas ») ; plafonds ±3/±5
+  rendant deux objectifs acquis (`cap`) ; « Rien d'appelé », « La marge tranquille », « Le trimestre propre »,
+  « Aucun facteur dominant » acquis à 89–100 % (durcis, 25–67 %) ; objectifs de marché/classe tirés seulement
+  si ouverts (`sym`, `cls`) ; hauts faits « Le mastodonte »/« L'homme de fer » sans l'univers, qui n'est plus un
+  choix. Bot : l'annonce cliquait le 2ᵉ cran (conviction forte) depuis le lot 87 → 1ᵉʳ. Restent à 0 chez le bot,
+  faute de le jouer : budgets renforcés, conviction forte, prophétie, book mono-classe — atteignables à la main.
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
