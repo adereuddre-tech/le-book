@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **91**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **93**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -140,7 +140,9 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
 - **Concurrents** : `rivSkill` 0,05 / 0,09 / 0,18 ; en difficile, budget choisi par `rivBudget` ; risque à
   mi-chemin de celui qui maximise leur rentabilité (`rivVolQ`) ; points du nuage mis à jour en séance
   (`rivPtLive`, affichage seulement).
-- **Budgets** : trois postes, sept crans ; crans 4–6 coûtent ×4/3, ×5/3, ×2 et leurs effets sont ramenés
+- **Budgets** (lot 92) : deux postes, front office 7 crans (`FOP`) et back office 5 crans (`BOP`), crans cumulatifs
+  nommés ; `syncBud()` recopie `fo` vers `exec/res/ret` et `BOMAP[bo]` vers `risk`, les anciens tableaux restent lus.
+  Avant le lot 92 : trois postes, sept crans ; crans 4–6 coûtent ×4/3, ×5/3, ×2 et leurs effets sont ramenés
   à 70 % de leur écart au standard (lot 79). `budExpl(id)` chiffre chaque effet.
 - **Débriefing** : bloc « L'essentiel » (fonds, rachats, collatéral, confiance début → fin, engagement,
   objectif, comité, gain du trimestre, trésorerie, **tableau des concurrents**, **tableau de la trésorerie**),
@@ -451,6 +453,21 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
   « autres » = accidents et incidents à votre charge, vérifié nul hors accidents sur 5 parties sondées. Débriefing :
   ligne co-investissement avec part et mise. Régression 18 parties : 0 erreur, 0 blocage, 0 écart.
 
+- **Lot 92** (`lot92/p1–p4.py`) : budget en deux postes. Front office : Jean-Kevin 0, Dwight (actions) 10, Ingrid (taux) 25,
+  Boris (devises) 50, Tuco (matières) 75, Winnie (exotiques) 120, Sœur Marie-Alpha 200 pb (prix de l'équipe entière).
+  Back office : loyer 5 (les 5 pb de base), Maître Lettrage 15, Josiane Suspens 30, Mireille 40, l'inspecteur Tatillon 60.
+  Départ : `fo` 3, `bo` 1. Classe sans son trader (`covered`, `TRD`) : commission et impact ×1,5 (`NOTRD`), mention dans
+  l'en-tête de classe du book. Licenciement : indemnités = écart de prix (`sevRaw`), plafonnées à la caisse (`setOps`).
+  Débauchage nominatif : `S.gone={p,n,boss}`, siège vide un trimestre, contre-offre (`S.cntBp`). Concurrents : ancien
+  barème figé `RIVBP`. Reprise des sauvegardes : `fo` = moyenne salle/recherche, `bo` = cran le plus proche via `BOMAP`.
+  Bot : `bud:[fo,bo]`. Campagne 180 parties appariées sur le lot 91 : standard +3,3 ± 3,4 M$ (neutre) ; Tuco + Mireille
+  −7,0 ± 1,6 au premier barème, −5,6 ± 1,6 après baisse des crans hauts (60 parties) : monter coûte plus qu'il ne rapporte.
+- **Lot 93** (`lot93/p1–p2.py`) : l'équipe conditionne les anecdotes. `cast(ev)` réécrit auteur et textes (champs imbriqués
+  compris, `deepCast`) quand la personne est absente : courtier de la classe, back office présent (Josiane ou Lettrage à la
+  place de Mireille). `PERSO` : 5 anecdotes sur une personne précise, retirées en son absence ; anecdotes de Sœur
+  Marie-Alpha retirées sans elle (texte au féminin). `ev.t0` garde le titre d'origine pour `usedExec`/`usedEv`.
+  Répliques d'arrivée (`hi`) dans le toast de recrutement. Régression 18 parties 0/0/0, reprises à froid OK.
+
 ## Calibration actuelle (lots 85–86, bot habituel sauf mention)
 
 | | Score moyen (M$) | Survie | Rang moyen |
@@ -470,29 +487,11 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 
 ## Reste à faire
 
-### En cours : l'équipe de gestion (conception validée à moitié, rien de codé)
-
-Demande d'Antoine : budgets simplifiés en deux postes — **front office** (fusion salle de marché +
-recherche macro) et **back office** (contrôle des risques + les 5 pb de frais de base aujourd'hui cachés) ;
-l'équipe s'étoffe avec le cran de budget ; descriptions et visuels par cran, séparés front / back.
-
-Préalables faits (à valider par Antoine) :
-1. Employés présents dans les textes (nombre d'anecdotes) : Boris Rasoumovsky, devises (22) ; Ingrid
-   Bergström, taux (22) ; Bartolomeo « Tuco » Ossobuco, énergie (22) ; Mireille Cauchemar, contrôle des
-   risques (25) ; Wing-Fat « Winnie » Leung, Asie (20) ; Jean-Kevin Lévêque-Charbonnier, junior (18) ;
-   Dwight Tannenbaum, exécution quantitative (15) ; Sœur Marie-Alpha, exécution systématique (10). Hors
-   équipe : Ken Griffon (patron concurrent), cabinet Marchand & Fils.
-2. Affectation proposée — front : Ingrid (cheffe du desk taux), Boris (devises), Tuco (matières premières),
-   Winnie (actions et Asie), Dwight (exécution et algorithmes), Sœur Marie-Alpha (stratégiste quantitative,
-   recherche), Jean-Kevin (analyste macro junior) ; back : Mireille (directrice des risques). À créer pour les
-   crans hauts : économiste en chef (front), responsable du middle office (back), directrice de la
-   conformité (back).
-
-**Réponse d'Antoine (lot 91)** : oui, l'équipe conditionne les événements ; les anecdotes restent avec les mêmes
-mécaniques, seul le libellé s'adapte. Traders recrutés dans l'ordre des classes (actions, taux, devises, matières,
-exotiques). Architecture budget + recrutement proposée au lot 91, en attente de validation avant de coder.
-Impacts connus de la fusion : `BUDGET` (3 postes → 2), `S.bud.exec/res/risk` lus partout (budEf, budExpl,
-objectifs `budRes`/`budExec`/`budRisk`, hauts faits `omni`, `ascet`, `monk`, bot `bud:[e,r,s]`, sauvegardes).
+### Équipe : suite
+- Textes des nouveaux venus (Maître Lettrage, Josiane Suspens, Tatillon) : aucune anecdote ne les cite encore.
+- Économiste en chef proposé par Antoine, absent de `FOP` (7 crans pris).
+- Premier trimestre : la caisse (≈ 126 k$) ne paie pas le standard, le front tombe à Dwight seul.
+- Crans hauts non rentables pour le bot (voir lot 92) : effets à renforcer ou prix à baisser, à remesurer.
 
 ### Ensuite
 - Campagne de référence (voir Calibration).

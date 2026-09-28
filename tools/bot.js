@@ -23,7 +23,7 @@ function playGame(o){
       w.setInterval=()=>0;w.clearInterval=()=>{};w.setTimeout=f=>{try{f()}catch(e){errs.push('t:'+e.message)}return 0}}});
   const w=dom.window,d=w.document,$=s=>d.querySelector(s),click=el=>{try{el.click()}catch(e){errs.push('click:'+e.message)}};
   const cfg={prof:o.prof,vol:o.vol||'std',size:o.size||'mid',univ:o.univ||'com',dur:o.dur||'normal'};
-  const bud=o.bud||[3,3,3];   /* lot 45 : sept crans, le standard est le cran 3 */const smart=!o.policy||o.policy==='smart',dumb=o.policy==='dumb';   /* dumb : book au hasard, choix au hasard */
+  const budArg=o.bud;   /* lot 92 : [front, back] ; ancien fichier : [salle, contrôle, recherche] */   /* lot 45 : sept crans, le standard est le cran 3 */const smart=!o.policy||o.policy==='smart',dumb=o.policy==='dumb';   /* dumb : book au hasard, choix au hasard */
   w.eval(`refreshStatus=function(){};toast=function(){};window.__plan=null;(function(){const E=evPlans;window.evPlans=function(){const r=E.apply(this,arguments);window.__plan=r;return r}})()`);
   if(o.probe)w.eval(o.probe);          /* sonde injectée dans la page, avant la partie */
   if(o.pre)w.eval(o.pre);   /* sonde injectée avant la partie (tools/expchk.js…) */
@@ -35,7 +35,7 @@ function playGame(o){
     if($('#go')&&$('#picks')){for(const k in cfg){const c=$(`.card[data-key="${k}"][data-id="${cfg[k]}"]`);if(c)click(c);else if(!['vol','univ','arch','desk'].includes(k))errs.push('carte absente '+k)}
       $('#sd').value=String(o.seed);click($('#go'));continue}
     const lv=$('#buds .lvl');
-    if(lv){const ids=['exec','risk','res'];let ch=false;
+    if(lv){const nw=!!$('#buds .lvl[data-b="fo"]'),ids=nw?['fo','bo']:['exec','risk','res'],bud=budArg&&budArg.length===ids.length?budArg:(nw?[3,1]:[3,3,3]);let ch=false;
       /* lot 39 : onze crans, et les plus chers se verrouillent quand la caisse ne suit pas —
          on prend alors le cran le plus haut encore ouvert sous celui demandé */
       ids.forEach((b,i)=>{let e=null;
@@ -92,7 +92,7 @@ function playGame(o){
   const r=JSON.parse(w.eval(`JSON.stringify({score:(S.mgrFees-S.mgrCosts)*1000,fees:S.mgrFees*1000,costs:S.mgrCosts*1000,q:S.q,qtot:S.qtot,over:S.over,ret:S.idx-1,nav:S.nav*1000,bud:S.bud,lp:S.lp,rc:S.rc,feats:Object.keys(S.fl||{}).length,red:(S.cards||{}).r||0,yel:((S.cards||{}).log||[]).filter(x=>x.c==='jaune').length,tails:(S.tails||[]).length,sp:(window.__sps||[]).reduce((a,b)=>a+b,0)/Math.max(1,(window.__sps||[]).length),riv:S.rivals.map(r=>+(r.cum-1).toFixed(3))})`));
   if(o.collect){try{r.probe=JSON.parse(w.eval(o.collect))}catch(e){r.probe={err:e.message}}}
   w.close();
-  return Object.assign(r,{cfg,budIn:bud,done,steps,nerr:errs.length,err:errs[0],st});
+  return Object.assign(r,{cfg,budIn:budArg,done,steps,nerr:errs.length,err:errs[0],st});
 }
 module.exports={playGame,utilText};
 if(require.main===module){
