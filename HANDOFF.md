@@ -1016,6 +1016,12 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   choix. Bot : l'annonce cliquait le 2ᵉ cran (conviction forte) depuis le lot 87 → 1ᵉʳ. Restent à 0 chez le bot,
   faute de le jouer : budgets renforcés, conviction forte, prophétie, book mono-classe — atteignables à la main.
 
+- **Lot 90** (`lot90/patch.py`) : co-investissement bloqué — à l'ouverture, `S.coinvLock` = part × trésorerie sort de
+  la trésorerie disponible (`mgrCash` = `mgrNet` − `coinvLocked()`, valeur en séance comprise) et entre dans
+  l'encours ; à la clôture, rachat automatique du gérant (`S.nav` −= base × (1+résultat)), résultat passé en
+  trésorerie. Crans 25/50/75/90/95/100 %. Reprise des sauvegardes lot 84–89 (co-investissement resté dans
+  l'encours) : retiré à la première ouverture.
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.

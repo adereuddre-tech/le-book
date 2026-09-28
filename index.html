@@ -2811,7 +2811,8 @@ function planQuarter(){
     la performance et le bonus d'objectif attendent la clôture */
  S.tresQ0=mgrCash();   /* lot 87 */
  S.qMgmtM=VOL().mgmt*S.nav;S.nav-=S.qMgmtM;S.mgrFees+=S.qMgmtM;refreshGain();
- {const tg=coinvPct()*Math.max(0,mgrCash()),d=tg-(S.coinvIn||0);S.nav+=d;S.navQ0+=d;S.coinvBase=tg;S.coinvIn=tg}S.lpQ0=S.lp;   /* lot 84 : la part placée entre dans l'encours */   /* lot 81-82 : part co-investie fixée à l'ouverture */
+ {if(S.coinvIn&&!S.coinvLock){S.nav-=S.coinvIn;S.navQ0-=S.coinvIn;S.coinvIn=0}   /* reprise d'une sauvegarde d'avant le lot 90 */
+  const tg=coinvPct()*Math.max(0,mgrCash());S.nav+=tg;S.navQ0+=tg;S.coinvBase=tg;S.coinvIn=tg;S.coinvLock=tg}S.lpQ0=S.lp;   /* lot 84 : la part placée entre dans l'encours */   /* lot 81-82 : part co-investie fixée à l'ouverture */
 }
 function eventFactorVec(ev){
  const v=[0,0,0,0];
@@ -3452,12 +3453,15 @@ function mgrNet(){return S.mgrFees-S.mgrCosts-(S.phase==='book'?liveTC():(S.pend
 const COINV=0.25;
 /* lot 82 : le gérant choisit à chaque clôture la part de sa trésorerie placée dans le fonds (10 % au moins) ;
    la part placée est comptée dans la trésorerie à sa valeur du moment — un seul chiffre, le score */
-const COINVS=[0.25,0.50,0.75,1.00];
+const COINVS=[0.25,0.50,0.75,0.90,0.95,1.00];
 function coinvPct(){return S.coinvPct||COINV}
 /* restitution : sous le plus-haut, le gérant rend CLAW × repli des commissions de performance des quatre
    derniers trimestres (plafonné à 100 %) ; ce qui a été rendu ne l'est pas deux fois */
 const CLAW=3;
-function mgrCash(){return mgrNet()}   /* lot 63 : pas de capital de départ, trésorerie = gains nets */
+/* lot 90 : la part co-investie est bloquée dans le fonds pendant le trimestre — hors de la trésorerie disponible,
+   dans l'encours ; elle revient à la clôture avec son résultat (rachat automatique du gérant) */
+function coinvLocked(){return S&&S.coinvLock?S.coinvLock*(1+((S.phase==='events'&&S.live)?liveNet():0)):0}
+function mgrCash(){return mgrNet()-coinvLocked()}   /* lot 63 : pas de capital de départ, trésorerie = gains nets */
 function liveTC(){let tot=0;const k0=S.k0||S.k;for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}return tot}
 function costsNow(){
  const tc=S.phase==='book'?liveTC()/S.nav:(S.pendingTC||0);
@@ -4077,7 +4081,7 @@ function showGauge(id){
  if(id==='cap'){
   const dd=1-S.nav/S.peak;
   openModal('Capital',`<p>Encours net du fonds, tel que le voient les investisseurs. Il bouge avec la performance nette, les incidents, les frais, et les flux d'encours provoqués par votre position face aux concurrents.</p>
-   ${tbl([['Encours initial',moneyB(S.aum0)],['Encours actuel',moneyB(navNow())],['Plus haut historique (seuil de commission de performance)',moneyB(S.hwm)],['Repli depuis le pic',dd>0.0005?'−'+dec(dd*100,1)+' %':'aucun'],['Perte maximale subie','−'+dec(S.maxdd*100,1)+' %'],['Souscriptions cumulées',S.flowInC?'+'+mm(S.flowInC):'aucune'],['Rachats cumulés',S.flowOutC?'−'+mm(S.flowOutC):'aucun'],['Flux nets d\'encours (collecte − rachats)',bn(S.flows||0)],['Dont votre co-investissement',`${mm(S.coinvIn||0)} · ${Math.round(coinvPct()*100)} % de la trésorerie`],['Part de l\'encours à vous',dec(100*(S.coinvIn||0)/Math.max(1e-9,navNow()),1)+' %'],['Encours sous gestion, hors vous',moneyB(navNow()-(S.coinvIn||0))],['Seuil de fermeture',moneyB(FUNDMIN)],['Classement cumulé sur quatre fonds',(1+S.rivals.filter(r=>r.cum>S.idx).length)+'e']])}
+   ${tbl([['Encours initial',moneyB(S.aum0)],['Encours actuel',moneyB(navNow())],['Plus haut historique (seuil de commission de performance)',moneyB(S.hwm)],['Repli depuis le pic',dd>0.0005?'−'+dec(dd*100,1)+' %':'aucun'],['Perte maximale subie','−'+dec(S.maxdd*100,1)+' %'],['Souscriptions cumulées',S.flowInC?'+'+mm(S.flowInC):'aucune'],['Rachats cumulés',S.flowOutC?'−'+mm(S.flowOutC):'aucun'],['Flux nets d\'encours (collecte − rachats)',bn(S.flows||0)],['Dont votre co-investissement, bloqué ce trimestre',S.coinvLock?`${mm(coinvLocked())} · ${Math.round(coinvPct()*100)} % de la trésorerie`:'aucun (rendu à la clôture)'],['Part de l\'encours à vous',dec(100*coinvLocked()/Math.max(1e-9,navNow()),1)+' %'],['Encours sous gestion, hors vous',moneyB(navNow()-coinvLocked())],['Seuil de fermeture',moneyB(FUNDMIN)],['Classement cumulé sur quatre fonds',(1+S.rivals.filter(r=>r.cum>S.idx).length)+'e']])}
    <p style="margin:12px 0 4px">Performance nette cumulée</p>
    ${tbl([['Depuis le début',`<span class="${cls(S.idx-1)}">${sgn(S.idx-1,1)}</span>`],...S.rets.map((r,i)=>[`T${i+1} · ${REG[S.regimes[i]].nm}`,`<span class="${cls(r)}">${sgn(r,1)}</span>`])])}
    <p class="note">Ce qu'un investisseur entré au premier jour a gagné ou perdu, après frais de gestion et commission de performance. Coûts de transaction et budget sont payés par votre société de gestion.</p>
@@ -5555,7 +5559,7 @@ function resolveQuarter(){
  S.peakIdx=Math.max(S.peakIdx||1,S.idx);S.maxdd=Math.max(S.maxdd,1-S.idx/S.peakIdx);
  S.totalOps+=(S.qOps||0);
  S.mgrFees=(S.mgrFees||0)+perf*navBefore;S.mgrCosts+=tc*navBefore;
- const coinv=(S.coinvBase||0)*qTotal;if(coinv>=0)S.mgrFees+=coinv;else S.mgrCosts-=coinv;S.mgrCoinv=(S.mgrCoinv||0)+coinv;S.coinvIn=(S.coinvBase||0)*(1+qTotal);
+ const coinv=(S.coinvBase||0)*qTotal;if(coinv>=0)S.mgrFees+=coinv;else S.mgrCosts-=coinv;S.mgrCoinv=(S.mgrCoinv||0)+coinv;{const back=(S.coinvBase||0)*(1+qTotal);S.nav-=back;S.coinvIn=0;S.coinvLock=0}   /* rachat automatique du gérant */
  (S.perfH=S.perfH||[]).push(perf*navBefore);let claw=0,clawSh=0;
  if(S.idx<S.hwmIdx-1e-12){clawSh=Math.min(1,CLAW*(1-S.idx/S.hwmIdx));
   for(let q=Math.max(0,S.perfH.length-4);q<S.perfH.length;q++){claw+=clawSh*S.perfH[q];S.perfH[q]*=1-clawSh}
@@ -6048,9 +6052,10 @@ function screenDebrief(o){
     <tr class="me"><td style="text-align:left"><b>Fin du trimestre</b></td><td><b class="gold-g">${mm(T1)}</b></td></tr></tbody></table>`})()}
  </div>`;
  const coSel=(S.over||S.q>=QT())?'':`<div class="block"><div class="blockhead"><h2>Co-investissement</h2><span class="hint">trimestre prochain</span></div>
-  <p class="note" style="margin-top:0">Part de votre trésorerie placée dans le fonds : elle suit son résultat net, gains comme pertes, et reste comptée dans la trésorerie à sa valeur du moment. 25 % au moins ; la somme placée entre dans l'encours du fonds.</p>
+  <p class="note" style="margin-top:0">Part de votre trésorerie placée dans le fonds : elle suit son résultat net, gains comme pertes, et reste comptée dans la trésorerie à sa valeur du moment. 25 % au moins.</p>
   <div class="cisel">${COINVS.map(p=>`<button class="cip${Math.abs(p-coinvPct())<1e-9?' on':''}" data-p="${p}">${Math.round(p*100)} %</button>`).join('')}</div>
-  <p class="note" id="cinote">${mm(coinvPct()*Math.max(0,mgrCash()))} exposés au prochain trimestre.</p></div>`;
+  <p class="note" id="cinote">${mm(coinvPct()*Math.max(0,mgrCash()))} placés au prochain trimestre.</p>
+  <p class="note" style="margin-top:2px">Bloquée dans le fonds tout le trimestre, cette somme sort de votre trésorerie : elle ne paie ni budget, ni ordres, ni imprévus. Elle vous revient à la clôture, avec son résultat.</p></div>`;
  app.innerHTML=statusBar(true)+`<div class="fade">
   <div class="pnlhead"><div class="q">RÉSULTAT DU TRIMESTRE ${S.q} · TOUT COMPRIS</div>
    <div class="big thold ${cls(o.qTotal)}">${sgn(o.qTotal,1)}</div>
@@ -6093,7 +6098,7 @@ function screenDebrief(o){
   <button class="cta" id="nx">${S.over?'Voir le rapport final':(S.q>=QT()?`Clôturer les ${DUR().ans} an${DUR().ans>1?'s':''}`:'Trimestre suivant')}</button></div>`;
  theatre(app.querySelector('.pnlhead').parentElement);
  app.querySelectorAll('.cip').forEach(b=>b.onclick=()=>{S.coinvPct=+b.dataset.p;app.querySelectorAll('.cip').forEach(x=>x.classList.toggle('on',x===b));
-  const n=document.getElementById('cinote');if(n)n.textContent=`${mm(coinvPct()*Math.max(0,mgrCash()))} exposés au prochain trimestre.`});
+  const n=document.getElementById('cinote');if(n)n.textContent=`${mm(coinvPct()*Math.max(0,mgrCash()))} placés au prochain trimestre.`});
  goldFlush(3500);
  if(!S.over&&S.q<QT()){const nx=document.getElementById('nx'),qb=document.createElement('button');
   qb.className='quitb';qb.id='quit';qb.textContent='Abandonner';nx.after(qb);
