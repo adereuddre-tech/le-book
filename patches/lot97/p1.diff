@@ -1,0 +1,171 @@
+diff --git a/index.html b/index.html
+index a984d91..1b56bd9 100644
+--- a/index.html
++++ b/index.html
+@@ -873,20 +873,20 @@ function VOL(){return VOLP.find(v=>v.id===S.vol)}
+ /* lot 92 : deux postes. Front office cran n = anciens tableaux salle + recherche au cran n ;
+    back office cran n = ancien contrôle des risques au cran BOMAP[n]. Les crans sont cumulatifs. */
+ const FOP=[
+- {who:"Jean-Kevin",hi:"J'ai fait un tableur. Il a des couleurs.",full:"Jean-Kevin Brayan Lévêque-Charbonnier",role:"analyste macro junior, à tout faire",ic:"🐣",bp:0},
+- {who:"Dwight",hi:"Un téléphone, vingt minutes, et je vous trouve le prix.",full:"Dwight Elvis Tannenbaum",role:"trader actions, exécution à la voix",ic:"📞",bp:10,cls:'Actions'},
+- {who:"Ingrid",hi:"La courbe ne ment pas. Les gens, si.",full:"Ingrid Solveig Bergström",role:"cheffe du desk taux, la plus senior",ic:"🏦",bp:25,cls:'Taux'},
+- {who:"Boris",hi:"Mon algorithme a déjà réservé votre bureau.",full:"Boris Vladlenovitch Rasoumovsky",role:"trader devises, expert exécution et algorithmes",ic:"🤖",bp:45,cls:'Devises'},
+- {who:"Tuco",hi:"J'apporte mes cigares et mes contacts à Rotterdam.",full:"Bartolomeo Ernesto « Tuco » Ossobuco",role:"trader matières premières",ic:"🛢️",bp:70,cls:'Matières premières'},
+- {who:"Winnie",hi:"Hong Kong ouvre dans six heures. J'y suis déjà.",full:"Wing-Fat Jericho « Winnie » Leung",role:"trader exotiques",ic:"🐉",bp:100,cls:'Exotiques'},
+- {who:"Sœur Marie-Alpha",hi:"Le modèle est juste. Ce sont les hommes qui pèchent.",full:"Sœur Marie-Alpha Bêta",role:"stratégiste quantitative, recherche",ic:"📿",bp:150},
+- {who:"Le professeur Atterrissage",hi:"Je ne prévois pas la récession. Je la commente avant tout le monde.",full:"Pr Onésime Barnabé Atterrissage-en-Douceur",role:"économiste en chef : un coup de pouce par trimestre",ic:"🎓",bp:250}];
++ {who:"Jean-Kevin",hi:"J'ai fait un tableur. Il a des couleurs.",full:"Jean-Kevin « Jay Kay » Lévêque-Charbonnier",role:"analyste macro junior, à tout faire",ic:"🐣",bp:0},
++ {who:"Dwight",hi:"Un téléphone, vingt minutes, et je vous trouve le prix.",full:"Dwight « The Voice » Tannenbaum",role:"trader actions, exécution à la voix",ic:"📞",bp:10,cls:'Actions'},
++ {who:"Ingrid",hi:"La courbe ne ment pas. Les gens, si.",full:"Ingrid « Iceberg » Bergström",role:"cheffe du desk taux, la plus senior",ic:"🏦",bp:25,cls:'Taux'},
++ {who:"Boris",hi:"Mon algorithme a déjà réservé votre bureau.",full:"Boris « Black Box » Rasoumovsky",role:"trader devises, expert exécution et algorithmes",ic:"🤖",bp:45,cls:'Devises'},
++ {who:"Tuco",hi:"J'apporte mes cigares et mes contacts à Rotterdam.",full:"Bartolomeo « Tuco » Ossobuco",role:"trader matières premières",ic:"🛢️",bp:70,cls:'Matières premières'},
++ {who:"Winnie",hi:"Hong Kong ouvre dans six heures. J'y suis déjà.",full:"Wing-Fat « Winnie » Leung",role:"trader exotiques",ic:"🐉",bp:100,cls:'Exotiques'},
++ {who:"Sœur Marie-Alpha",hi:"Le modèle est juste. Ce sont les hommes qui pèchent.",full:"Sœur Marie-Alpha « Sister Sharpe »",role:"stratégiste quantitative, recherche",ic:"📿",bp:150},
++ {who:"Le professeur Atterrissage",hi:"Je ne prévois pas la récession. Je la commente avant tout le monde.",full:"Pr Onésime « The Oracle » Atterrissage-en-Douceur",role:"économiste en chef : un coup de pouce par trimestre",ic:"🎓",bp:250}];
+ const BOP=[
+  {who:"Le loyer",full:"Le loyer",role:"bureaux, écrans, électricité, et rien d'autre",ic:"🏢",bp:5},
+- {who:"Maître Report-à-Nouveau",hi:"Tout finit au report à nouveau, même vos erreurs.",full:"Maître Gontran Hilaire Report-à-Nouveau",role:"expert-comptable",ic:"🧮",bp:10},
+- {who:"Josiane Suspens",hi:"Aucun ordre ne sort d'ici sans être rapproché.",full:"Josiane Ghislaine Suspens",role:"responsable du back office",ic:"🗂️",bp:15},
+- {who:"Mireille",hi:"Je ne dis pas non. Je dis : justifiez.",full:"Mireille Perpétue Cauchemar",role:"directrice des risques",ic:"⚖️",bp:30},
+- {who:"L'inspecteur Tatillon",hi:"Faites comme si je n'étais pas là. Je note tout.",full:"L'inspecteur Firmin Anatole Tatillon",role:"conformité et audit interne",ic:"🔎",bp:45}];
++ {who:"Maître Report-à-Nouveau",hi:"Tout finit au report à nouveau, même vos erreurs.",full:"Maître Gontran Report-à-Nouveau",role:"expert-comptable",ic:"🧮",bp:10},
++ {who:"Josiane Suspens",hi:"Aucun ordre ne sort d'ici sans être rapproché.",full:"Josiane Suspens",role:"responsable du back office",ic:"🗂️",bp:15},
++ {who:"Mireille",hi:"Je ne dis pas non. Je dis : justifiez.",full:"Mireille Cauchemar",role:"directrice des risques",ic:"⚖️",bp:30},
++ {who:"L'inspecteur Tatillon",hi:"Faites comme si je n'étais pas là. Je note tout.",full:"L'inspecteur Firmin Tatillon",role:"conformité et audit interne",ic:"🔎",bp:45}];
+ const BOMAP=[0,2,3,5,6],NOTRD=4,TRD={'Actions':1,'Taux':2,'Devises':3,'Matières premières':4,'Exotiques':5};
+ const BUDGET=[
+  {id:'fo',ico:'📈',nm:"Front office",
+@@ -908,8 +908,8 @@ const CAST=[
+  {re:'Sœur Marie-Alpha',on:()=>here(6),sub:()=>'Jean-Kevin'},
+  {re:'Mireille Cauchemar|Mireille',bo:1,on:()=>S.bud.bo>=3,sub:()=>S.bud.bo>=2?'Josiane Suspens':'Maître Report-à-Nouveau'}];
+ CAST.forEach(c=>{c.rx=new RegExp('(?:'+c.re+')')});
+-const PERSO={"Tuco a gagné le concours de chili du prime broker":4,"Citadelle Nord fait une offre à Ingrid":2,"Pont-Levis Associés cherche un gérant énergie":4,"Votre gérante taux part chez un concurrent":2,"Un concurrent tourne autour de Boris":3};
+-function persoOk(e){const w=e.who||'';if(/Marie-Alpha/.test(w)&&!here(6))return false;if((/Report-à-Nouveau/.test(w)&&S.bud.bo<1)||(/Josiane/.test(w)&&S.bud.bo<2)||(/Tatillon/.test(w)&&S.bud.bo<4))return false;const p=PERSO[e.t];return p===undefined||here(p)}
++const PERSO={"Tuco a gagné le concours de chili du prime broker":4,"Citadelle Nord fait une offre à Ingrid":2,"Pont-Levis Associés cherche un gérant énergie":4,"Votre gérante taux part chez un concurrent":2,"Un concurrent tourne autour de Boris":3,"« Ken Griffon m'a appelé. Pour un conseil. Je crois »":1};
++function persoOk(e){const w=e.who||'';if(/Marie-Alpha/.test(w)&&!here(6))return false;if(/Atterrissage/.test(w)&&!here(7))return false;if((/Report-à-Nouveau/.test(w)&&S.bud.bo<1)||(/Josiane/.test(w)&&S.bud.bo<2)||(/Tatillon/.test(w)&&S.bud.bo<4))return false;const p=PERSO[e.t];return p===undefined||here(p)}
+ function deepCast(x,c){if(typeof x==='string')return recast(x,c);if(Array.isArray(x))return x.map(y=>deepCast(y,c));if(x&&typeof x==='object'){const q={};for(const k in x)q[k]=deepCast(x[k],c);return q}return x}
+ function recast(x,c){if(typeof x!=='string'||!c.rx.test(x))return x;const n=c.sub(),A=c.re,le=n.startsWith('le ');
+  x=x.replace(new RegExp('(^|[^\\wÀ-ÿ])de (?:'+A+')','g'),(m,p)=>p+(le?'du '+n.slice(3):'de '+n));
+@@ -922,7 +922,7 @@ function cast(ev){if(!ev||!S||!S.bud)return ev;const off=CAST.filter(c=>!c.on()&
+   ['t','p','after','riskMsg','safeTxt','safe','msg'].forEach(k=>{o[k]=recast(o[k],c)});
+   if(Array.isArray(o.ch))o.ch=deepCast(o.ch,c)});
+  return o}
+-const BONUS=[0,0.10,0.25],BONM=[1,0.5,0.2],GROGNE=1.5,POACHP=0.5;
++const BONUS=[0,0.05,0.10],BONM=[1,0.5,0.2],GROGNE=1.5,POACHP=0.5;
+ function bonCands(){const c=[];for(let p=FOP.length-1;p>=0;p--)if(here(p))c.push(p);return c}
+ function bonTxt(){if(S.qBonT>0)return `<br>Bonus d'équipe versé : ${mm(S.qBonT)} · risque de débauchage ${Math.round(POACHP*S.bonMultQ*100)} % ce trimestre`;
+  return S.bonMultQ>1?`<br><span class="neg-g">Le desk grogne : deux trimestres gagnants sans bonus. Risque de débauchage ${Math.round(Math.min(0.95,POACHP*GROGNE)*100)} % ce trimestre.</span>`:`<br>Risque de débauchage : ${Math.round(POACHP*100)} % ce trimestre (sans bonus d'équipe).`}
+@@ -1328,6 +1328,30 @@ MACROEV.push(
+  {t:"L'Australie relève ses taux contre toute attente",who:"Reserve Bank of Australia",p:"Le marché attendait une pause. Le dollar australien saute de deux figures.",rum:"Un ancien membre du conseil de la RBA trouve le dernier compte rendu « plus nerveux qu'il n'y paraît ».",hit:{AUD:1.4,HG:0.2}}
+ );
+ const TRADER_EXEC=[
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Donnez-moi le S&P au téléphone. Trois coups de fil et je vous trouve la contrepartie »",need:['ES','NQ'],p:"Dwight a quatre téléphones sur son bureau. Trois sonnent. Il jure que le quatrième est le bon.",
++  ch:[{b:"Laisser Dwight décrocher",s:"Coûts −25 % sur les actions américaines. 30 % de risque qu'il se fasse lire : coûts ×1,3 à la place.",e:{tcMultOn:['ES','NQ'],tcMult:0.75,gamble:[0.3,1.3]}},{b:"Passer par l'écran",s:"Plein tarif.",e:{}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Block de 5 000 Euro Stoxx, clôture moins deux ticks. Dix secondes. Neuf »",need:['ESTX'],p:"« Il me l'offre à moi, pas à vous. Si je dis non, il appelle Ken Griffon. Huit. »",
++  ch:[{b:"Prendre le block",s:"Coûts −40 % sur l'Euro Stoxx. 35 % de chances que le vendeur sache quelque chose : −0,3 %.",e:{tcMultOn:['ESTX'],tcMult:0.6,risk:[0.35,-0.003],riskMsg:"Le vendeur savait quelque chose",safeTxt:"Le block était propre. Dwight fait le tour du desk en levant les bras."}},{b:"Laisser filer chez Ken Griffon",s:"Plein tarif, Dwight boude (débauchage +10 %).",e:{poach:0.1}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Le dernier courtier de corbeille de Chicago me doit une faveur depuis 1998 »",need:['NQ','ES'],p:"Il a gardé la veste. Il l'a sortie du placard. Elle sent la naphtaline et la victoire.",
++  ch:[{b:"Appeler Chicago",s:"Coûts −20 % sur le Nasdaq et le S&P, comité +1 : le comité adore les histoires de corbeille.",e:{tcMultOn:['NQ','ES'],tcMult:0.8,rc:1}},{b:"Rester sur l'écran",s:"Plein tarif.",e:{}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Le TOPIX, je le fais cette nuit. Depuis ma cuisine. En pyjama »",need:['TOPX'],p:"« Tokyo ouvre à une heure du matin. Moi, je ne dors pas de toute façon. » Il a déjà le casque et la cafetière.",
++  ch:[{b:"Accepter",s:"Coûts −30 % sur le TOPIX. 20 % de risque qu'il s'endorme sur le clavier : −0,2 %.",e:{tcMultOn:['TOPX'],tcMult:0.7,risk:[0.2,-0.002],riskMsg:"Dwight s'est endormi, le front sur la touche Entrée",safeTxt:"Exécution parfaite. Photo de la cafetière vide envoyée au desk à 4h12."}},{b:"Laisser l'algorithme de Boris",s:"Coûts −10 % sur le TOPIX.",e:{tcMultOn:['TOPX'],tcMult:0.9}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Boris veut passer mes actions dans son algorithme. Au-dessus de mon cadavre »",need:['NQ','ES','ESTX','TOPX','MXEF'],p:"Guerre froide au desk. Boris a tracé une ligne au scotch sur la moquette. Dwight l'a franchie en roulant sur sa chaise.",
++  ch:[{b:"Donner raison à Dwight",s:"Coûts +10 % sur les actions, mais 40 % de chances qu'il accroche un meilleur prix : +0,2 %.",e:{tcMultOn:['NQ','ES','ESTX','TOPX','MXEF'],tcMult:1.1,risk:[0.4,0.002],riskMsg:"Dwight a accroché un prix que l'algorithme n'aurait pas vu",safeTxt:"Rien de spécial. Dwight fait comme si."}},{b:"Donner raison à Boris",s:"Coûts −15 % sur les actions, Dwight furieux (débauchage +15 %).",e:{tcMultOn:['NQ','ES','ESTX','TOPX','MXEF'],tcMult:0.85,poach:0.15}},{b:"Organiser un duel : moitié chacun",s:"Coûts −5 % sur les actions, comité +1 : le desk a parié, l'ambiance est électrique.",e:{tcMultOn:['NQ','ES','ESTX','TOPX','MXEF'],tcMult:0.95,rc:1}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Un fonds de pension sort des émergents ce soir, quoi qu'il arrive. Il faut juste décrocher »",need:['MXEF'],p:"« C'est un vendeur forcé. Les vendeurs forcés, c'est Noël. Sauf quand ils sont vingt. »",
++  ch:[{b:"Se porter contrepartie",s:"Coûts −35 % sur MXEF. 30 % de risque qu'il soit le premier d'une longue file : −0,3 %.",e:{tcMultOn:['MXEF'],tcMult:0.65,risk:[0.3,-0.003],riskMsg:"Trois autres fonds vendaient derrière lui",safeTxt:"Il était seul. Dwight le raconte encore à la machine à café."}},{b:"Décliner poliment",s:"Plein tarif.",e:{}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« J'ai la voix cassée. Je murmure les ordres, ou le petit crie à ma place ? »",need:['NQ','ES','ESTX','TOPX','MXEF'],p:"Trois jours de conférence à Las Vegas. Dwight parle comme un vinyle rayé. Jean-Kevin s'échauffe déjà la voix.",
++  ch:[{b:"Le laisser murmurer",s:"Coûts +10 % sur les actions : personne ne l'entend.",e:{tcMultOn:['NQ','ES','ESTX','TOPX','MXEF'],tcMult:1.1}},{b:"Faire crier Jay Kay",s:"30 % de risque qu'il crie « achat » au lieu de « vente » : −0,25 %.",e:{risk:[0.3,-0.0025],riskMsg:"Jean-Kevin a crié « achat ». C'était une vente.",safeTxt:"Jay Kay a crié juste, avec sa voix de stade."}},{b:"Tout donner à l'algorithme",s:"Coûts −10 % sur les actions, Dwight vexé (débauchage +10 %).",e:{tcMultOn:['NQ','ES','ESTX','TOPX','MXEF'],tcMult:0.9,poach:0.1}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Le teneur de marché d'en face bluffe. Je l'entends à sa respiration »",need:['ES','NQ','ESTX'],p:"« Il a dit ferme trop vite. Quand on dit ferme trop vite, c'est qu'on ne l'est pas. »",
++  ch:[{b:"Le pousser dans ses retranchements",s:"Coûts +15 % quoi qu'il arrive (il faut rappeler), et 50 % de chances qu'il craque : +0,25 %.",e:{tcMultOn:['ES','NQ','ESTX'],tcMult:1.15,risk:[0.5,0.0025],riskMsg:"Le teneur de marché a craqué",safeTxt:"Il a tenu. Respiration normale, finalement."}},{b:"Prendre son prix",s:"Plein tarif.",e:{}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Clôture du S&P : je veux être le dernier ordre du carnet. 15h59 et 59 secondes »",need:['ES'],p:"Dwight a un chronomètre de sprinteur et le regard d'un homme qui a déjà raté ça une fois.",
++  ch:[{b:"Go à 15h59:59",s:"Coûts −30 % sur le S&P. 25 % de risque de rater la clôture : −0,25 %.",e:{tcMultOn:['ES'],tcMult:0.7,risk:[0.25,-0.0025],riskMsg:"Ordre arrivé à 16h00:00.003",safeTxt:"Rempli à la dernière milliseconde. Le chronomètre a traversé la salle."}},{b:"Exécuter à 15h30 comme tout le monde",s:"Plein tarif.",e:{}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Mon beau-frère est au desk d'en face. On ne parle jamais boulot. Presque jamais »",need:['NQ','ES','ESTX','TOPX','MXEF'],p:"Dwight propose de « prendre un café » avec lui avant d'exécuter. Ça se sait toujours, ces cafés.",
++  ch:[{b:"Pas de café",s:"Plein tarif, comité +1.",e:{rc:1}},{b:"Un café, rien qu'un café",s:"Coûts −20 % sur les actions, comité −2.",e:{tcMultOn:['NQ','ES','ESTX','TOPX','MXEF'],tcMult:0.8,rc:-2}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Ne dites rien à Boris : j'ai battu son algorithme six jours sur sept »",need:['NQ','ES','ESTX','TOPX','MXEF'],p:"Dwight a un tableau. Jean-Kevin l'a vérifié. Les couleurs sont très convaincantes.",
++  ch:[{b:"Lui confier toutes les actions",s:"Coûts −15 % sur les actions. 30 % de risque que le septième jour tombe maintenant : −0,2 %.",e:{tcMultOn:['NQ','ES','ESTX','TOPX','MXEF'],tcMult:0.85,risk:[0.3,-0.002],riskMsg:"C'était le septième jour",safeTxt:"Sept sur huit. Le tableau gagne une couleur."}},{b:"Afficher le tableau au desk",s:"Comité +1, Boris vexé (débauchage +10 %).",e:{rc:1,poach:0.1}},{b:"Ne rien faire",s:"Plein tarif.",e:{}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Un fonds en détresse liquide ses Nasdaq à midi. Je serai là à 11h55 »",need:['NQ'],p:"« Appel de marge à midi. À 11h55, ils vendront à n'importe quel prix. Moi, j'appelle ça rendre service. »",
++  ch:[{b:"Attendre 11h55",s:"Coûts −40 % sur le Nasdaq. 30 % de risque que tout le marché s'effondre avec eux : −0,4 %.",e:{tcMultOn:['NQ'],tcMult:0.6,risk:[0.3,-0.004],riskMsg:"Tout le marché a vendu avec eux",safeTxt:"Ils ont vendu. Vous avez acheté. Service rendu."}},{b:"Ne pas jouer les vautours",s:"Plein tarif, confiance +1.",e:{lp:1}}]},
+  {who:"Ingrid Bergström · taux",t:"« Je travaille les ordres taux sur trois jours au lieu d'une séance »",need:['TN','GBL','JGB'],
+   p:"« Le marché est mince, si je tape tout aujourd'hui les dealers vont me voir venir. Trois jours, je passe à mi-fourchette. Mais si ça bouge entre-temps, ne venez pas pleurer. »",
+   ch:[{b:"Laisser faire Ingrid",s:"Coûts sur les taux −35 %. 35 % de risque que le marché parte sans vous : −0,35 % de l'encours.",e:{tcMultOn:['TN','GBL','JGB'],tcMult:0.65,risk:[0.35,-0.0035],riskMsg:"Les taux ont bougé pendant les trois jours d'exécution"}},
+@@ -1338,10 +1362,10 @@ const TRADER_EXEC=[
+   ch:[{b:"Prendre le bloc",s:"Coûts sur le pétrole −50 %. Comité −4 (contrepartie discrète).",e:{tcMultOn:['CL'],tcMult:0.5,rc:-4}},
+       {b:"Prendre le bloc et en demander le double",s:"Coûts −60 %, comité −7. 30 % de risque que la contrepartie sache quelque chose que vous ignorez : −0,6 %.",e:{tcMultOn:['CL'],tcMult:0.4,rc:-7,risk:[0.30,-0.006],riskMsg:"Le fonds souverain savait pourquoi il vendait",safeTxt:"La contrepartie vendait vraiment pour du cash. Belle affaire."}},
+       {b:"Décliner",s:"« Comme vous voulez, patron. » Plein tarif.",e:{}}]},
+- {who:"Boris Rasoumovsky · devises",t:"« Le fixing de Londres, c'est là qu'il faut être. Vos algorithmes, c'est pour les enfants »",need:['EUR','JPY','AUD'],
+-  p:"Boris exécute à la voix depuis vingt-deux ans, et le fait savoir. Il refuse le moteur d'exécution pour les devises.",
+-  ch:[{b:"Laisser Boris faire à la voix",s:"Coûts sur les devises +15 %. Boris est heureux, et 45 % du temps il sent le fixing : +0,25 %.",e:{tcMultOn:['EUR','JPY','AUD'],tcMult:1.15,risk:[0.45,0.0025],riskMsg:"Boris a senti le fixing",safeTxt:"Le fixing s'est passé sans histoire."}},
+-      {b:"Imposer l'algorithme",s:"Coûts −10 % sur les devises. Boris claque la porte — débauchage +25 % ce trimestre.",e:{tcMultOn:['EUR','JPY','AUD'],tcMult:0.9,poach:0.25}},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Le fixing de Londres, c'est à la voix qu'il se joue. L'algorithme de Boris, c'est pour les enfants »",need:['EUR','JPY','AUD'],
++  p:"Dwight exécute à la voix depuis vingt-deux ans, et le fait savoir. Il veut prendre les devises au téléphone, à la place du moteur de Boris.",
++  ch:[{b:"Laisser Dwight faire à la voix",s:"Coûts sur les devises +15 %. Dwight est heureux, et 45 % du temps il sent le fixing : +0,25 %.",e:{tcMultOn:['EUR','JPY','AUD'],tcMult:1.15,risk:[0.45,0.0025],riskMsg:"Dwight a senti le fixing",safeTxt:"Le fixing s'est passé sans histoire."}},
++      {b:"Garder l'algorithme",s:"Coûts −10 % sur les devises. Dwight claque la porte — débauchage +25 % ce trimestre.",e:{tcMultOn:['EUR','JPY','AUD'],tcMult:0.9,poach:0.25}},
+       {b:"Couper la poire en deux : moitié voix, moitié algo",s:"Coûts +3 %. Personne n'est content, personne n'est vexé.",e:{tcMultOn:['EUR','JPY','AUD'],tcMult:1.03}}]},
+  {who:"Boris Rasoumovsky · exécution quantitative",t:"« L'algo a détecté un iceberg en face. Je peux le laisser nous remplir »",need:['ES','ESTX','MXEF'],
+   p:"« Il y a un gros acheteur caché sur les indices actions. Si on se met devant lui, il nous remplit à ses conditions. Sauf s'il s'en aperçoit. »",
+@@ -1393,7 +1417,7 @@ TRADER_EXEC.push(
+  {who:"Bartolomeo « Tuco » Ossobuco · énergie",t:"« L'or se traite mieux à Shanghai ce mois-ci »",need:['GC'],p:"La prime de Shanghai sur l'or est élevée. Tuco veut exécuter là-bas.",
+   ch:[{b:"Exécuter à Shanghai",s:"Coûts −30 % sur l'or, comité −2 (nouvelle contrepartie).",e:{tcMultOn:['GC'],tcMult:0.7,rc:-2}},{b:"Rester au Comex",s:"Plein tarif.",e:{}},{b:"Arbitrer les deux places",s:"Coûts −50 %, 30 % de risque de blocage des capitaux : −0,3 %, comité −5.",e:{tcMultOn:['GC'],tcMult:0.5,rc:-5,risk:[0.3,-0.003],riskMsg:"Les capitaux sont bloqués à Shanghai"}}]},
+  {who:"Boris Rasoumovsky · devises",t:"« L'euro va se faire taper au fixing de la BCE. On attend 14h15 »",need:['EUR'],p:"Boris a une lecture du flux des entreprises. Elle vaut ce qu'elle vaut.",
+-  ch:[{b:"Attendre 14h15",s:"Coûts −10 %. 50 % de ±0,3 %.",e:{tcMultOn:['EUR'],tcMult:0.9,risk:[0.5,0.003],riskMsg:"Boris avait raison sur le fixing",safeTxt:"Boris avait tort : −0,30 %.",safePnl:-0.003}},{b:"Exécuter maintenant",s:"Plein tarif.",e:{}},{b:"Faire exécuter par un algo à cours moyen",s:"Coûts −20 %, Boris vexé (débauchage +10 %).",e:{tcMultOn:['EUR'],tcMult:0.8,poach:0.1}}]},
++  ch:[{b:"Attendre 14h15",s:"Coûts −10 %. 50 % de ±0,3 %.",e:{tcMultOn:['EUR'],tcMult:0.9,risk:[0.5,0.003],riskMsg:"Boris avait raison sur le fixing",safeTxt:"Boris avait tort : −0,30 %.",safePnl:-0.003}},{b:"Exécuter maintenant",s:"Plein tarif.",e:{}},{b:"Faire exécuter par un algo à cours moyen",s:"Coûts −20 %, Dwight vexé qu'on ne l'appelle pas (débauchage +10 %).",e:{tcMultOn:['EUR'],tcMult:0.8,poach:0.1}}]},
+  {who:"Boris Rasoumovsky · devises",t:"« Le yen, c'est à Tokyo qu'on le traite, et Tokyo dort »",need:['JPY'],p:"Exécuter le yen en séance européenne coûte cher. Attendre l'ouverture de Tokyo prend douze heures.",
+   ch:[{b:"Attendre Tokyo",s:"Coûts −25 %. 35 % de ±0,35 % pendant l'attente.",e:{tcMultOn:['JPY'],tcMult:0.75,risk:[0.35,0.0035],riskMsg:"Tokyo a ouvert dans votre sens",safeTxt:"Tokyo a ouvert contre vous : −0,35 %.",safePnl:-0.0035}},{b:"Exécuter à Londres",s:"Plein tarif.",e:{}},{b:"Confier l'ordre à Winnie à Hong Kong",s:"Coûts −15 %, exécution en séance asiatique.",e:{tcMultOn:['JPY'],tcMult:0.85}}]},
+  {who:"Boris Rasoumovsky · devises",t:"« L'aussie ne se traite pas, il se négocie. Je connais un mineur »",need:['AUD'],p:"Un producteur australien couvre ses ventes. Boris veut être sa contrepartie.",
+@@ -1868,6 +1892,58 @@ TRADER_EXEC.push(
+       {b:"Le laisser parler du book",s:"Investisseurs +3, impact ×1,45 sur les ajustements, comité −4.",e:{lp:3,leakQ:true,rc:-4}}]}
+ );
+ const TRADER_MID=[
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« J'ai été élu meilleur trader à la voix de Paris. Il y avait trois candidats »",p:"Le trophée est en plastique doré. Il l'a posé sur l'écran de Boris.",
++  ch:[{b:"Fêter ça au champagne",s:"−1 pb, débauchage −10 %.",e:{cash:-0.0001,poach:-0.1}},{b:"Rappeler qu'il y avait trois candidats",s:"Comité +1, Dwight vexé (débauchage +10 %).",e:{rc:1,poach:0.1}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« Ken Griffon m'a appelé. Pour un conseil. Je crois »",p:"« Il m'a demandé combien je gagnais. Pour un sondage, il a dit. »",
++  ch:[{b:"Lui verser une prime de fidélité",s:"−2 pb, débauchage −20 %.",e:{cash:-0.0002,poach:-0.2}},{b:"Hausser les épaules",s:"Débauchage +15 %.",e:{poach:0.15}}]},
++ {who:"Dwight Tannenbaum · actions, à la voix",t:"« L'informatique veut remplacer mon téléphone. Il a exécuté le krach de 87 »",p:"« C'est un Bakélite. Il a trente-neuf ans et zéro panne. Il ne partira pas. »",
++  ch:[{b:"Garder le Bakélite",s:"Comité −1, Dwight ému (débauchage −10 %).",e:{rc:-1,poach:-0.1}},{b:"Le remplacer",s:"Comité +1, Dwight inconsolable (débauchage +10 %).",e:{rc:1,poach:0.1}}]},
++ {who:"Jean-Kevin · analyste junior",t:"« J'ai backtesté une stratégie sur 400 ans. Sharpe de 4,2 »",p:"« Bon, les 380 premières années sont des prix du blé reconstitués. Mais le Sharpe est vraiment beau. »",
++  ch:[{b:"Lui confier un bout du book",s:"50 % de ±0,15 %.",e:{risk:[0.5,0.0015],riskMsg:"La stratégie de Jay Kay a marché, à la stupeur générale",safeTxt:"La stratégie a fait ce que font les Sharpe de 4,2 : −0,15 %.",safePnl:-0.0015}},{b:"Lui expliquer le surapprentissage",s:"Comité +1. Il prend des notes, en couleurs.",e:{rc:1}}]},
++ {who:"Jean-Kevin · analyste junior",t:"« J'ai parlé à un journaliste. Enfin, je crois que c'était un journaliste »",p:"Jay Kay a évoqué « de façon générale » vos positions avec un inconnu, au buffet d'un salon de gestion de patrimoine.",
++  ch:[{b:"Appeler le journal",s:"−2 pb d'avocats, confiance +1.",e:{cash:-0.0002,lp:1}},{b:"Laisser courir",s:"35 % de risque que l'article sorte : −0,2 %.",e:{risk:[0.35,-0.002],riskMsg:"L'article est sorti, avec un graphique",safeTxt:"C'était un vendeur de cuisines. Il voulait parler de taux de crédit."}}]},
++ {who:"Jean-Kevin · analyste junior",t:"« J'ai automatisé le rapport du comité. Il part tout seul à 6 heures »",p:"« Plus besoin de le relire ! » Personne ne l'a relu depuis trois semaines, en effet.",
++  ch:[{b:"Le faire relire par le back office",s:"Coûts +2 %, comité +2.",e:{tcMult:1.02,rc:2}},{b:"Féliciter Jay Kay",s:"25 % de risque qu'une coquille parte chez les investisseurs : −0,1 % de rectificatif.",e:{risk:[0.25,-0.001],riskMsg:"Le rapport annonçait une performance de +340 %",safeTxt:"Le rapport est parti, impeccable. Jay Kay est insupportable."}}]},
++ {who:"Jean-Kevin · analyste junior",t:"« Et si on mettait des NFT dans le fonds ? »",p:"Il a préparé onze diapositives. La dernière est un singe en costume trois-pièces.",
++  ch:[{b:"L'écouter jusqu'au bout",s:"Comité −1, mais le desk rit (débauchage −10 %).",e:{rc:-1,poach:-0.1}},{b:"L'arrêter à la diapositive 2",s:"Comité +1.",e:{rc:1}}]},
++ {who:"Jean-Kevin · analyste junior",t:"« J'ai trouvé une erreur de valorisation. Elle est en notre faveur »",p:"« 0,3 % de performance en trop depuis deux mois. Je le dis, ou… je le dis ? »",
++  ch:[{b:"Corriger et prévenir les investisseurs",s:"−10 pb de rectification, confiance +3.",e:{cash:-0.001,lp:3}},{b:"Corriger au prochain calcul",s:"Comité +1.",e:{rc:1}}]},
++ {who:"Le professeur Atterrissage · économiste en chef",t:"« Mon modèle voit un atterrissage en douceur. Comme les onze dernières fois »",p:"Le professeur présente sa prévision au comité avec un pointeur laser et une confiance absolue.",
++  ch:[{b:"Le laisser présenter",s:"Comité +3. 30 % de risque que le marché le contredise dans la semaine : −0,2 %.",e:{rc:3,risk:[0.3,-0.002],riskMsg:"L'atterrissage a été plutôt brutal",safeTxt:"Le marché a atterri. En douceur."}},{b:"Lui demander un scénario noir",s:"−2 pb de travail, comité +1.",e:{cash:-0.0002,rc:1}}]},
++ {who:"Le professeur Atterrissage · économiste en chef",t:"« On m'invite sur un plateau télé. Je peux parler du fonds ? »",p:"Il a déjà choisi sa cravate. Elle est couleur taux directeur.",
++  ch:[{b:"Oui, en restant vague",s:"Confiance +2.",e:{lp:2}},{b:"Oui, avec nos convictions",s:"Confiance +4. 30 % de risque que le marché joue contre vous : −0,25 %.",e:{lp:4,risk:[0.3,-0.0025],riskMsg:"Tout le marché a joué contre vos convictions",safeTxt:"Le marché a trouvé l'intervention passionnante et n'a rien fait."}},{b:"Non",s:"Rien.",e:{}}]},
++ {who:"Le professeur Atterrissage · économiste en chef",t:"« J'ai dîné avec un ancien gouverneur. Il ne m'a rien dit. Mais il l'a très bien dit »",p:"Le professeur a passé trois heures à interpréter un haussement de sourcil au dessert.",
++  ch:[{b:"Ajuster le book sur le sourcil",s:"50 % de ±0,3 %.",e:{risk:[0.5,0.003],riskMsg:"Le sourcil disait vrai",safeTxt:"Le sourcil était une allergie : −0,3 %.",safePnl:-0.003}},{b:"Noter et ne rien faire",s:"Rien.",e:{}}]},
++ {who:"Le professeur Atterrissage · économiste en chef",t:"« Mon livre sort. Le fonds peut en acheter deux mille exemplaires ? »",p:"Titre : « L'Atterrissage, ou l'art de ne pas tomber ». Préface d'un Prix Nobel qui ne se souvient pas l'avoir écrite.",
++  ch:[{b:"Les offrir aux clients",s:"−3 pb, confiance +3.",e:{cash:-0.0003,lp:3}},{b:"Refuser",s:"Le professeur vexé (débauchage +10 %).",e:{poach:0.1}}]},
++ {who:"Le professeur Atterrissage · économiste en chef",t:"« La courbe s'inverse. Je l'avais dit. Enfin, je l'avais pensé très fort »",p:"Il réclame une réunion de crise, un tableau blanc et trois feutres de couleurs différentes.",
++  ch:[{b:"Réunion de crise",s:"−1 pb, comité +2.",e:{cash:-0.0001,rc:2}},{b:"« On sait, professeur. »",s:"Rien. Il boude jusqu'à jeudi.",e:{}}]},
++ {who:"Le professeur Atterrissage · économiste en chef",t:"« Un fonds souverain du Golfe veut m'entendre. Classe affaires, évidemment »",p:"« Ils cherchent un gérant macro. Je leur parlerai de vous. Entre deux digressions sur 1929. »",
++  ch:[{b:"L'envoyer à Abou Dhabi",s:"−4 pb de frais, confiance +4.",e:{cash:-0.0004,lp:4}},{b:"Une visioconférence suffira",s:"Confiance +1.",e:{lp:1}}]},
++ {who:"Maître Report-à-Nouveau · expert-comptable",t:"« Votre bonus d'équipe, c'est une charge, un produit ou un sentiment ? »",p:"Il a trois colonnes et aucune réponse. Il veut une réunion.",
++  ch:[{b:"Une réunion, vite",s:"−1 pb, comité +1.",e:{cash:-0.0001,rc:1}},{b:"Lui dire de trancher seul",s:"20 % de risque qu'il se trompe de colonne : −0,15 %.",e:{risk:[0.2,-0.0015],riskMsg:"Le bonus a été passé en produit exceptionnel",safeTxt:"Il a tranché juste. Il en parle encore."}}]},
++ {who:"Maître Report-à-Nouveau · expert-comptable",t:"« Les auditeurs arrivent lundi. Ils veulent un bureau avec fenêtre »",p:"« Et du café. Du vrai. Ils ont précisé : du vrai. »",
++  ch:[{b:"Leur donner le bureau de Dwight",s:"Comité +2, Dwight furieux (débauchage +10 %).",e:{rc:2,poach:0.1}},{b:"Le placard du deuxième",s:"Comité −2.",e:{rc:-2}}]},
++ {who:"Maître Report-à-Nouveau · expert-comptable",t:"« Il manque un centime dans les comptes. Je ne dormirai pas avant de l'avoir trouvé »",p:"Quatre jours. Les yeux rouges, un surligneur dans chaque main.",
++  ch:[{b:"Le laisser chercher",s:"30 % de chances qu'il trouve une vraie erreur en chemin : +0,1 %.",e:{risk:[0.3,0.001],riskMsg:"En cherchant le centime, il a trouvé une facture payée deux fois",safeTxt:"Il a trouvé le centime. Il l'a fait encadrer."}},{b:"L'envoyer en vacances",s:"Comité −1.",e:{rc:-1}}]},
++ {who:"Maître Report-à-Nouveau · expert-comptable",t:"« La facture du courtier pétrole mentionne une remise en cigares »",p:"« Une ligne, tout en bas : geste commercial, deux boîtes. Je ne sais pas où la mettre. »",
++  ch:[{b:"Exiger une facture propre",s:"Coûts +3 %, comité +2.",e:{tcMult:1.03,rc:2}},{b:"Fermer les yeux",s:"Comité −2, le desk ravi (débauchage −10 %).",e:{rc:-2,poach:-0.1}}]},
++ {who:"Josiane Suspens · back office",t:"« Le courtier a livré 200 lots de café au lieu de 20 »",p:"« Sur le papier. Enfin, j'espère que c'est sur le papier. Il y a un camion devant l'immeuble. »",
++  ch:[{b:"Faire annuler dans l'heure",s:"−2 pb de frais, comité +1.",e:{cash:-0.0002,rc:1}},{b:"Garder et revendre demain",s:"50 % de ±0,15 %.",e:{risk:[0.5,0.0015],riskMsg:"Le café a monté pendant la nuit",safeTxt:"Le café a baissé, et le camion est toujours là : −0,15 %.",safePnl:-0.0015}}]},
++ {who:"Josiane Suspens · back office",t:"« Je pars en vacances. Personne ne sait faire les rapprochements »",p:"« Deux semaines. J'ai laissé une procédure de 43 pages. Personne ne l'a ouverte. »",
++  ch:[{b:"Lui demander de décaler",s:"Comité +1, Josiane agacée (débauchage +10 %).",e:{rc:1,poach:0.1}},{b:"Former Jay Kay en urgence",s:"25 % de risque de suspens oubliés : −0,2 %.",e:{risk:[0.25,-0.002],riskMsg:"Jay Kay a rapproché les opérations par ordre alphabétique",safeTxt:"Jay Kay s'en est sorti. Il réclame une augmentation."}}]},
++ {who:"Josiane Suspens · back office",t:"« Un ordre est parti deux fois. Le second s'appelle un doublon, pas une stratégie »",p:"« Je ne dis pas qui. Il a un algorithme. »",
++  ch:[{b:"Déboucler immédiatement",s:"Coûts +3 %, comité +1.",e:{tcMult:1.03,rc:1}},{b:"Garder le doublon jusqu'au soir",s:"50 % de ±0,2 %.",e:{risk:[0.5,0.002],riskMsg:"Le doublon a gagné",safeTxt:"Le doublon a perdu : −0,2 %.",safePnl:-0.002}}]},
++ {who:"Josiane Suspens · back office",t:"« Appel de marge de la chambre à 7 heures. Il est 6h58 »",p:"Elle a déjà son manteau, son téléphone et le numéro du trésorier.",
++  ch:[{b:"Payer tout de suite",s:"Comité +2.",e:{rc:2}},{b:"Négocier un délai",s:"30 % de risque de pénalité : −0,15 %.",e:{risk:[0.3,-0.0015],riskMsg:"Pénalité de retard, et une lettre salée",safeTxt:"Délai accordé. Josiane a une voix qui obtient des délais."}}]},
++ {who:"L'inspecteur Tatillon · conformité",t:"« Qui a mis un émoji fusée dans un message à un client ? »",p:"L'inspecteur Tatillon a imprimé le message et l'a glissé sous pochette plastique.",
++  ch:[{b:"Formation obligatoire pour tout le desk",s:"−1 pb, comité +2, desk excédé (débauchage +10 %).",e:{cash:-0.0001,rc:2,poach:0.1}},{b:"Un rappel par courriel",s:"Comité +1.",e:{rc:1}}]},
++ {who:"L'inspecteur Tatillon · conformité",t:"« L'enregistreur des lignes téléphoniques est en panne depuis mardi »",p:"« Tout ce qui s'est dit au téléphone depuis mardi n'existe pas. Juridiquement. »",
++  ch:[{b:"Suspendre l'exécution à la voix",s:"Coûts +5 %, comité +3.",e:{tcMult:1.05,rc:3}},{b:"Réparer en silence",s:"20 % de risque que le régulateur le découvre : −0,2 %.",e:{risk:[0.2,-0.002],riskMsg:"Le régulateur l'a découvert",safeTxt:"Réparé jeudi. Personne n'a rien vu."}}]},
++ {who:"L'inspecteur Tatillon · conformité",t:"« Le cadeau de Noël du courtier dépasse le plafond de 50 euros »",p:"« Un jambon entier. Pata negra. Je l'ai estimé à 340 euros. »",
++  ch:[{b:"Renvoyer le jambon",s:"Comité +2, le desk en deuil.",e:{rc:2}},{b:"Le partager au desk",s:"Comité −2, débauchage −10 %.",e:{rc:-2,poach:-0.1}}]},
++ {who:"L'inspecteur Tatillon · conformité",t:"« J'ai trouvé un conflit d'intérêts. C'est vous »",p:"« Votre co-investissement dans le fonds doit figurer dans le rapport aux investisseurs. Il n'y figure pas. »",
++  ch:[{b:"Tout déclarer, avec excuses",s:"Confiance +3.",e:{lp:3}},{b:"Au prochain rapport",s:"Comité −2.",e:{rc:-2}}]},
+  {who:"Maître Report-à-Nouveau · expert-comptable",t:"« Vos frais de taxi de Londres n'ont aucun justificatif »",p:"Maître Report-à-Nouveau a épinglé une note de frais de Boris. Quatorze courses, un seul reçu, en cyrillique.",
+   ch:[{b:"Rembourser quand même",s:"−2 pb, le desk apprécie : débauchage −10 %.",e:{cash:-0.0002,poach:-0.1}},{b:"Refuser le remboursement",s:"Comité +2, débauchage +10 %.",e:{rc:2,poach:0.1}}]},
+  {who:"Maître Report-à-Nouveau · expert-comptable",t:"« La clôture comptable a trois jours de retard »",p:"Les investisseurs attendent leur valeur liquidative. Maître Report-à-Nouveau propose des intérimaires, ou de tout signer lui-même cette nuit.",

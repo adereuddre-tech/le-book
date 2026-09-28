@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **96**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **97**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -491,6 +491,14 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
   comité +4). Maître Lettrage → Maître Gontran Hilaire Report-à-Nouveau. Bot : standard `[3,2]`.
   Campagne 180 parties appariées (standard, sans bonus : 11,2 M$, survie 80 %) : bonus 10 % −2,5 ± 0,8, 25 % −4,5 ± 0,8 ;
   économiste −6,0 ± 2,9 (survie 90 %) ; loyer seul −3,8 ± 2,5 (survie 63 %) ; Tatillon +0,9 ± 2,6 (survie 83 %).
+- **Lot 97** (`lot97/p1.diff`, `p2.py`) : bonus 5/10 % (`BONUS`). Surnoms anglais pour le front (Jean-Kevin « Jay Kay »,
+  Dwight « The Voice », Ingrid « Iceberg », Boris « Black Box », Tuco, Winnie, Sœur Marie-Alpha « Sister Sharpe »,
+  Pr Onésime « The Oracle »), plus de deuxième prénom au back office. Anecdotes nouvelles : Dwight 16 (13 d'exécution à
+  la voix, 3 de desk), Jean-Kevin 5, l'économiste 6, Report-à-Nouveau 4, Josiane 4, Tatillon 4 ; une anecdote de devises
+  « à la voix » passe de Boris à Dwight. Anecdotes de Dwight retirées en son absence (`persoOk`), de l'économiste sans le
+  cran 7. Le p1 est un diff : le script d'origine a été perdu lors d'un redémarrage de la machine.
+  Campagne 90 parties appariées : bonus 5 % +0,1 ± 0,5 M$, 10 % −0,1 ± 0,4 (neutres). Contrôle sur les mêmes graines
+  contre le lot 96 : −2,0 ± 1,0 M$ (nouvelles anecdotes), graines plus dures (3,8 M$, survie 60 %).
 
 ## Calibration actuelle (lots 85–86, bot habituel sauf mention)
 
@@ -513,7 +521,7 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 
 ### Équipe : suite
 - Textes des nouveaux venus : trois anecdotes chacun (lot 94), à étoffer.
-- Bonus d'équipe toujours perdant au lot 96 : le siège vide un trimestre coûte moins que le bonus.
+- Bonus d'équipe à 5/10 % (lot 97) : neutre pour le bot.
 - Scores en baisse depuis le lot 91 (9,7 → 4,5 M$ au bot) et survie ≈ 60 % pour une cible de 70 % : à rééquilibrer.
 - Économiste en chef (lot 96) : −6 M$ au bot pour 250 pb, surtout utile à la survie.
 - Premier trimestre : 500 k$ en caisse contre 600 k$ pour le standard (45 + 15 pb) : le front descend à Ingrid, accepté par Antoine.
