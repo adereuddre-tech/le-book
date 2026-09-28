@@ -35,7 +35,7 @@ function playGame(o){
     if($('#go')&&$('#picks')){for(const k in cfg){const c=$(`.card[data-key="${k}"][data-id="${cfg[k]}"]`);if(c)click(c);else if(!['vol','univ','arch','desk'].includes(k))errs.push('carte absente '+k)}
       $('#sd').value=String(o.seed);click($('#go'));continue}
     const lv=$('#buds .lvl');
-    if(lv){const nw=!!$('#buds .lvl[data-b="fo"]'),ids=nw?['fo','bo']:['exec','risk','res'],bud=budArg&&budArg.length===ids.length?budArg:(nw?[3,1]:[3,3,3]);let ch=false;
+    if(lv){const nw=!!$('#buds .lvl[data-b="fo"]'),ids=nw?['fo','bo']:['exec','risk','res'],bud=budArg&&budArg.length===ids.length?budArg:(nw?[3,2]:[3,3,3]);let ch=false;
       /* lot 39 : onze crans, et les plus chers se verrouillent quand la caisse ne suit pas —
          on prend alors le cran le plus haut encore ouvert sous celui demandé */
       ids.forEach((b,i)=>{let e=null;

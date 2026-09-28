@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **95**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **96**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -480,6 +480,17 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
   pop-up (`S.cBonT`) et le tableau de trésorerie (`S.qBonT`). Campagne 90 parties appariées : 10 % −0,7 ± 0,2 M$, 25 %
   −1,6 ± 0,4 M$, survie 60 → 63 → 67 % : le bonus coûte son montant et ne rapporte presque rien au bot, le débauchage
   (seulement si rachats > 1 %) étant rare. Score moyen 4,5 M$, survie 60 % (normal).
+- **Lot 96** (`lot96/p1.py`) : débauchage de base à chaque clôture, 50 % (`POACHP`), ×0,5 avec 10 % de bonus, ×0,2
+  avec 25 % (`BONM`), grogne ×1,5 ; plus de bénéficiaire ni de +14 % durable : le coût est le siège vide un trimestre.
+  `RETM` n'est plus lu ni affiché. Deuxièmes prénoms (`full`). Dwight à la voix, Boris à l'algorithme (les 15 anecdotes
+  « exécution quantitative » passent à Boris). Économiste en chef, Pr Onésime Barnabé Atterrissage-en-Douceur, cran 7
+  à 250 pb : `ecoBoost()` à chaque trimestre (un rang de marché si `OPENRK`<5, sinon les exotiques, sinon confiance +3
+  à la télévision ou au comité, ou une dépêche lue juste `S.ecoB='ver'`) ; `syncBud` plafonne les anciennes tables au
+  cran 6. Back office : Josiane neutre (défaut `bo:2`), barème 5/10/15/30/45 pb, `BOMAP=[0,2,3,5,6]`, tables réécrites à
+  ces crans (loyer : incidents ×5, gravité ×2, accidents ×2,5, comité −3 par clôture ; Tatillon : incidents ×0,7,
+  comité +4). Maître Lettrage → Maître Gontran Hilaire Report-à-Nouveau. Bot : standard `[3,2]`.
+  Campagne 180 parties appariées (standard, sans bonus : 11,2 M$, survie 80 %) : bonus 10 % −2,5 ± 0,8, 25 % −4,5 ± 0,8 ;
+  économiste −6,0 ± 2,9 (survie 90 %) ; loyer seul −3,8 ± 2,5 (survie 63 %) ; Tatillon +0,9 ± 2,6 (survie 83 %).
 
 ## Calibration actuelle (lots 85–86, bot habituel sauf mention)
 
@@ -502,10 +513,10 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 
 ### Équipe : suite
 - Textes des nouveaux venus : trois anecdotes chacun (lot 94), à étoffer.
-- Bonus d'équipe (lot 95) peu rentable : débauchage trop rare pour qu'il protège quelque chose.
+- Bonus d'équipe toujours perdant au lot 96 : le siège vide un trimestre coûte moins que le bonus.
 - Scores en baisse depuis le lot 91 (9,7 → 4,5 M$ au bot) et survie ≈ 60 % pour une cible de 70 % : à rééquilibrer.
-- Économiste en chef proposé par Antoine, absent de `FOP` (7 crans pris).
-- Premier trimestre : 500 k$ en caisse contre 600 k$ pour le standard (45 + 15 pb) : le front descend d'un cran.
+- Économiste en chef (lot 96) : −6 M$ au bot pour 250 pb, surtout utile à la survie.
+- Premier trimestre : 500 k$ en caisse contre 600 k$ pour le standard (45 + 15 pb) : le front descend à Ingrid, accepté par Antoine.
 - Crans hauts non rentables pour le bot (voir lot 92) : effets à renforcer ou prix à baisser, à remesurer.
 
 ### Ensuite
