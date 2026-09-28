@@ -2711,7 +2711,7 @@ function newGame(seed,prof,arch,desk,vol,size,univ,dur){
    streak:0,streakMax:0,goalsWon:0,sweeps:0,commNone:0,qNeg:0,mguMax:0,resMinQ:0,budBp:0,mgrFees:0,mgrCosts:0,mgrQ:null,
    execPenalty:1,star:-1,leak:DESKS.find(d=>d.id===desk).leak||false,
    stop:A.stop,carry:false,noise:false,flighty:false,
-   totalTC:0,totalOps:0,incidents:[],poaches:[],usedEv:[],usedMacro:[],usedTrader:[],usedExec:[],poachBoost:0,tcMultQ:1,leakQ:false,qLog:[],
+   totalTC:0,totalOps:0,led:1,cTC:0,cMgmt:0,cPerf:0,cBon:0,cOps:0,incidents:[],poaches:[],usedEv:[],usedMacro:[],usedTrader:[],usedExec:[],poachBoost:0,tcMultQ:1,leakQ:false,qLog:[],
    crest:fundCrest,idx:1,hwmIdx:1,peakIdx:1,fl:{},rumBought:0,outBand:0,mgrCap0:0,qMgmtM:0,
    rivals:RIVALS.map(r=>({...r,skill:Math.max(0.5,Math.min(0.88,r.skill+Z.rivSkill)),vol:r.vol*Z.rivVol,cum:1,last:0})),
    over:null,truth:null,f:[],rumor:null,pending:[],shock:new Array(N).fill(0),
@@ -2810,7 +2810,7 @@ function planQuarter(){
  /* la commission de gestion est prélevée sur le fonds et vous est versée dès l'ouverture ;
     la performance et le bonus d'objectif attendent la clôture */
  S.tresQ0=mgrCash();   /* lot 87 */
- S.qMgmtM=VOL().mgmt*S.nav;S.nav-=S.qMgmtM;S.mgrFees+=S.qMgmtM;refreshGain();
+ S.qMgmtM=VOL().mgmt*S.nav;S.nav-=S.qMgmtM;S.mgrFees+=S.qMgmtM;S.cMgmt=(S.cMgmt||0)+S.qMgmtM;refreshGain();
  {if(S.coinvIn&&!S.coinvLock){S.nav-=S.coinvIn;S.navQ0-=S.coinvIn;S.coinvIn=0}   /* reprise d'une sauvegarde d'avant le lot 90 */
   const tg=coinvPct()*Math.max(0,mgrCash());S.nav+=tg;S.navQ0+=tg;S.coinvBase=tg;S.coinvIn=tg;S.coinvLock=tg}S.lpQ0=S.lp;   /* lot 84 : la part placée entre dans l'encours */   /* lot 81-82 : part co-investie fixée à l'ouverture */
 }
@@ -4134,16 +4134,28 @@ function showGauge(id){
    ${tbl([...FACT.map((f,k)=>[f.nm,(vd.fv[k]/vd.tot*100).toFixed(0)+' %']),['Propre aux marchés',(vd.idio/vd.tot*100).toFixed(0)+' %']])}
    ${top.length?`<p style="margin:12px 0 4px">Contributeurs au risque</p>${tbl(top.map(o=>[INSTR[o.i].sym+' '+INSTR[o.i].nm,(o.v/sp*100).toFixed(0)+' %']))}`:''}`);
  } else if(id==='gain'){
-  const q=S.mgrQ;
-  openModal('Vos gains de gérant',`<p>C'est votre score. Ce que la société de gestion — vous — a réellement encaissé depuis le premier jour, une fois payé tout ce que vous avez décidé de dépenser.</p>
-   ${tbl([['Commissions encaissées, bonus d\'objectif compris',`<b class="pos-g">+${mm(S.mgrFees)}</b>`],
-     ['Budget d\'exploitation et coûts d\'exécution',`<b class="neg-g">−${mm(S.mgrCosts)}</b>`],
-     ...(S.totalTC?[['&nbsp;&nbsp;dont exécution depuis le début',`<span class="dim-g">−${mm(S.totalTC)}</span>`]]:[]),
-     ['<b>Gains nets</b>',`<b class="${mgrNet()>=0?'pos-g':'neg-g'}">${score(mgrNet())}</b>`],
-     ['<b>Trésorerie disponible</b>',`<b class="${mgrCash()>=0?'gold-g':'neg-g'}">${mm(mgrCash())}</b>`]])}
-   <p class="note" style="margin-top:10px">Votre société n'a pas de capital : sa trésorerie, ce sont vos gains nets. Tout ce que vous engagez — budget d'exploitation et coûts d'exécution — sort de cette trésorerie : ${mgrCash()>=0?`il vous reste <em>${mm(mgrCash())}</em> à dépenser`:`vous êtes à découvert de <em>${mm(-mgrCash())}</em>, vos dépenses sont bloquées jusqu'à la prochaine commission`}.</p>
-   ${q?`<p style="margin:12px 0 4px">Dernier trimestre</p>${tbl([[`Commission de gestion (${dec(VOL().mgmt*400,1)} % par an)`,`<b class="pos-g">+${mm(q.mgmt)}</b>`],['Commission de performance',`<b class="${q.perf>0?'pos-g':'dim-g'}">+${mm(q.perf)}</b>`],['Budget d\'exploitation',`<b class="neg-g">−${mm(q.ops)}</b>`],['<b>Net du trimestre</b>',`<b class="${(q.fees-q.ops)>=0?'pos-g':'neg-g'}">${mm(q.fees-q.ops)}</b>`]])}`:''}
-   <details><summary>Comment c'est calculé</summary><p class="note">La commission de gestion vous est versée <em>à l'ouverture</em> de chaque trimestre, sur l'encours du moment : c'est votre seul revenu certain. La commission de performance et le bonus d'objectif tombent <em>à la clôture</em>, et la performance ne se déclenche qu'au-dessus du plus haut historique du fonds. En face, le budget d'exploitation et la facture de courtage sont à votre charge — l'impact de marché, lui, est payé par le fonds — et vous ne pouvez engager que ce que vous avez en caisse : à sec, les crans de budget les plus chers se verrouillent et vous ne pouvez plus passer d'ordres coûteux. Un gros encours et une performance régulière font un gros score ; un fonds qui perd ne vous rapporte que la gestion, et un fonds liquidé ne vous rapporte plus rien.</p></details>`);
+  const sg=v=>`<b class="${v>=0?'pos-g':'neg-g'}">${v>=0?'+':'−'}${mm(Math.abs(v))}</b>`;
+  const live=S.phase==='events'&&S.live,cLive=live&&S.coinvBase?S.coinvBase*liveNet():0,lock=coinvLocked(),net=mgrNet();
+  const tcNow=S.phase==='book'?liveTC():(S.pendingTC||0)*S.nav,tcAll=S.led?(S.cTC||0)+tcNow:(S.totalTC||0)+(S.phase==='book'?liveTC():0);
+  const it=[[`Commissions de gestion`,S.cMgmt||0],[`Commissions de performance`,S.cPerf||0],[`Bonus d'objectif`,S.cBon||0],
+   [`Résultat du co-investissement${cLive?' (dont en cours '+(cLive>=0?'+':'−')+mm(Math.abs(cLive))+')':''}`,(S.mgrCoinv||0)+cLive],
+   [`Restitution de commissions`,-(S.mgrClaw||0)],[`Budget d'exploitation`,-(S.cOps||0)],[`Courtage de vos ordres${tcNow?' (dont trimestre en cours −'+mm(tcNow)+')':''}`,-tcAll]];
+  const oth=net-it.reduce((a,x)=>a+x[1],0);
+  if(Math.abs(oth)>1e-7)it.push([S.led?`Autres : accidents de levier, incidents payés par vous`:`Non ventilé (partie commencée avant la mise à jour)`,oth]);
+  const pc=Math.round(coinvPct()*100);
+  const ex=lock?S.coinvBase:coinvPct()*Math.max(0,mgrCash());
+  openModal('Trésorerie de votre société',`<p>Votre société de gestion n'a pas de capital : sa trésorerie, ce sont vos gains nets — votre score — moins la part que vous avez placée dans le fonds, qui est bloquée jusqu'à la clôture.</p>
+   <p style="margin:12px 0 4px">D'où viennent vos gains nets, depuis le premier jour</p>
+   ${tbl([...it.filter(x=>Math.abs(x[1])>1e-9).map(x=>[x[0],sg(x[1])]),[`<b>Gains nets · le score</b>`,`<b class="${net>=0?'pos-g':'neg-g'}">${score(net)}</b>`],
+     ...(lock?[[`Part co-investie, bloquée (valeur du moment)`,`<b class="neg-g">−${mm(lock)}</b>`]]:[]),
+     [`<b>Trésorerie disponible</b>`,`<b class="${mgrCash()>=0?'gold-g':'neg-g'}">${mm(mgrCash())}</b>`]])}
+   <p class="note" style="margin-top:6px">${mgrCash()>=0?`Il vous reste <em>${mm(mgrCash())}</em> pour payer budget et ordres.`:`Vous êtes à découvert de <em>${mm(-mgrCash())}</em> : dépenses bloquées jusqu'à la prochaine commission.`}</p>
+   <p style="margin:12px 0 4px">Le co-investissement</p>
+   ${lock?tbl([[`Part placée à l'ouverture`,`${pc} % · ${mm(S.coinvBase)}`],[`Valeur du moment`,`${mm(lock)}${cLive?' · '+sg(cLive):''}`],[`Rendue à la clôture`,`${mm(S.coinvBase)} × (1 + résultat du fonds)`],[`Part au trimestre prochain`,`${Math.round((S.coinvPct||COINV)*100)} %`]])
+     :tbl([[`Part placée en ce moment`,`aucune, trimestre clos`],[`Part au trimestre prochain`,`${pc} % de la trésorerie d'ouverture`]])}
+   <p class="note" style="margin-top:6px">À l'ouverture de chaque trimestre, après la commission de gestion, ${pc} % de votre trésorerie entre dans le fonds, aux côtés des investisseurs. Cette somme ne paie ni budget ni ordres. À la clôture, la société la rachète automatiquement : elle récupère la mise plus ou moins le résultat du fonds sur le trimestre, qui passe dans vos gains. Avec vos chiffres, ${mm(ex)} placés rapportent ${mm(ex*0.05)} si le fonds fait +5 % et en coûtent autant s'il fait −5 %. Cumul depuis le début : ${sg((S.mgrCoinv||0)+cLive)}.</p>
+   <p class="note">Pourquoi : la commission de performance ne vous fait partager que les gains ; le co-investissement vous fait aussi partager les pertes, en proportion de la part placée. La part se choisit au débriefing, 25 % au moins.</p>
+   <details><summary>Chaque ligne, en détail</summary><p class="note"><em>Gestion</em> : ${dec(VOL().mgmt*400,1)} % par an de l'encours, versée à l'ouverture, votre seul revenu certain. <em>Performance</em> : versée à la clôture, seulement au-dessus du plus haut historique du fonds. <em>Bonus</em> : objectif du trimestre tenu. <em>Restitution</em> : si le fonds finit sous son plus haut, vous rendez une part des commissions de performance des quatre derniers trimestres (trois fois le repli, 100 % au plus). <em>Budget</em> : les postes choisis en début de trimestre. <em>Courtage</em> : la facture de vos ordres, dépêches comprises ; l'impact de marché, lui, est payé par le fonds. <em>Autres</em> : ce que les accidents de levier et les incidents opérationnels ont mis à votre charge.</p></details>`);
  } else if(id==='cost'){
   const c=costsNow();const k0=S.k0||S.k;
   const rows=[];for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9&&S.phase==='book'){const t=tcost(d,i);rows.push([`${INSTR[i].sym} ${k0[i]>0?'+':''}${k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,`${dec(t.bp,1)} pb`,`−${mm(t.cost)}`])}}
@@ -4378,12 +4390,12 @@ function screenBudget(){
  tuto(0,1);
  S.phase='budget';
  save('screenBudget');S.hotFactor=null;
- S.mgrCosts-=S.qOps||0;S.qOps=0;
+ S.mgrCosts-=S.qOps||0;S.cOps=(S.cOps||0)-(S.qOps||0);S.qOps=0;
  {const purse=mgrCash(),fits=()=>budgetBp()*1e-4*S.nav<=purse+1e-12;
   if(redOn('budget')&&S.bud.risk<5){for(let l=5;l>S.bud.risk;l--){const o=S.bud.risk;S.bud.risk=l;if(fits())break;S.bud.risk=o}}
   for(let g=0;g<40&&!fits();g++){let bi=null,bv=0;BUDGET.forEach(b=>{const l=S.bud[b.id];if(l>(redOn('budget')&&b.id==='risk'?5:0)&&b.lv[l].bp>bv){bv=b.lv[l].bp;bi=b.id}});
    if(!bi)break;S.bud[bi]--;if(bi==='exec')S.bud.ret=S.bud.exec}}
- S.qOps=budgetBp()*1e-4*S.nav;S.mgrCosts+=S.qOps;
+ S.qOps=budgetBp()*1e-4*S.nav;S.mgrCosts+=S.qOps;S.cOps=(S.cOps||0)+S.qOps;
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Budget d'exploitation du trimestre</h2><span class="hint">à votre charge</span></div>
    ${redNote()}
@@ -4431,8 +4443,8 @@ function drawBuds(){
  document.getElementById('btot').textContent=`${bp.toFixed(0)} pb · ${mm(bp*1e-4*S.nav)} · ${dec((bp*4/100),1)} % par an`;
  {const t=document.getElementById('btre');if(t){const v=mgrCash()+(S.qOps||0)-bp*1e-4*S.nav;t.textContent=mm(v);t.className=v>=0?'':'neg-g'}}
  app.querySelectorAll('.lvl').forEach(x=>x.onclick=()=>{
-  const b0=budgetBp();S.mgrCosts-=S.qOps||0;S.bud[x.dataset.b]=+x.dataset.i;if(x.dataset.b==='exec')S.bud.ret=S.bud.exec;
-  S.qOps=budgetBp()*1e-4*S.nav;S.mgrCosts+=S.qOps;drawBuds();refreshStatus();
+  const b0=budgetBp();S.mgrCosts-=S.qOps||0;S.cOps=(S.cOps||0)-(S.qOps||0);S.bud[x.dataset.b]=+x.dataset.i;if(x.dataset.b==='exec')S.bud.ret=S.bud.exec;
+  S.qOps=budgetBp()*1e-4*S.nav;S.mgrCosts+=S.qOps;S.cOps=(S.cOps||0)+S.qOps;drawBuds();refreshStatus();
   const b1=budgetBp(),bb=BUDGET.find(q=>q.id===x.dataset.b),lv=bb.lv[+x.dataset.i];
   toast(`${bb.nm} → <b>${lv.nm}</b> · ${budEf(bb.id,+x.dataset.i)} · budget ${b0.toFixed(0)} → <b>${b1.toFixed(0)} pb</b> (${(b1-b0)>=0?'+':'−'}${mm(Math.abs((b1-b0)*1e-4*S.nav))})`);
  });
@@ -5558,7 +5570,7 @@ function resolveQuarter(){
  if(S.commRes&&S.commRes.ok&&S.comm.id==='fort')S.fl.parole=1;
  S.peakIdx=Math.max(S.peakIdx||1,S.idx);S.maxdd=Math.max(S.maxdd,1-S.idx/S.peakIdx);
  S.totalOps+=(S.qOps||0);
- S.mgrFees=(S.mgrFees||0)+perf*navBefore;S.mgrCosts+=tc*navBefore;
+ S.mgrFees=(S.mgrFees||0)+perf*navBefore;S.cPerf=(S.cPerf||0)+perf*navBefore;S.mgrCosts+=tc*navBefore;S.cTC=(S.cTC||0)+tc*navBefore;
  const coinv=(S.coinvBase||0)*qTotal;if(coinv>=0)S.mgrFees+=coinv;else S.mgrCosts-=coinv;S.mgrCoinv=(S.mgrCoinv||0)+coinv;{const back=(S.coinvBase||0)*(1+qTotal);S.nav-=back;S.coinvIn=0;S.coinvLock=0}   /* rachat automatique du gérant */
  (S.perfH=S.perfH||[]).push(perf*navBefore);let claw=0,clawSh=0;
  if(S.idx<S.hwmIdx-1e-12){clawSh=Math.min(1,CLAW*(1-S.idx/S.hwmIdx));
@@ -5639,7 +5651,7 @@ function resolveQuarter(){
  if(S.goal&&typeof S.goal.t==='function'){
   const ok=!!S.goal.t(goalCtx({qTotal,med,rank:rivalRank(),dd,navBefore:S.navQ0}));
   const bon=ok?goalBon(S.goal):0;
-  if(ok)S.mgrFees+=bon;
+  if(ok){S.mgrFees+=bon;S.cBon=(S.cBon||0)+bon}
   S.qGoal={nm:S.goal.nm,d:S.goal.d,ok,bonus:bon};
   if(ok)goldLater({v:'trophy',tier:(S.goal.b||0)>=0.09?'or':(S.goal.b||0)>=0.06?'argent':'bronze',k:'OBJECTIF DU TRIMESTRE',t:S.goal.nm,d:S.goal.d,g:`${mm(bon)} de bonus sur vos gains`});
   if(ok)S.goalsWon=(S.goalsWon||0)+1;
@@ -6044,7 +6056,7 @@ function screenDebrief(o){
   <table class="qt" style="margin-top:12px"><thead><tr><th>Fonds</th><th>Risque</th><th>Trim.</th><th>Cumul</th></tr></thead><tbody>
   ${all.map(a=>({a,cv:a.cv})).sort((x,y)=>y.cv-x.cv).map(({a,cv})=>`<tr class="${a.me?'me':''}"><td>${a.nm}${a.th?`<br><span class="neg-g" style="font-size:11px">accident de levier</span>`:''}</td><td>${a.rk!==undefined?dec(a.rk*50,1)+' %':''}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(cv)}">${sgn(cv,1)}</td></tr>`).join('')}
   </tbody></table>
-  ${(()=>{const T0=S.tresQ0!==undefined?S.tresQ0:0,T1=mgrCash(),it=[['Commission de gestion',Gq.mgmt||0],['Commission de performance',Gq.perf||0],["Bonus d'objectif",bon],['Co-investissement',Gq.coinv||0],['Restitution',-(Gq.claw||0)],["Budget d'exploitation",-(Gq.ops||0)],["Coûts d'exécution",-(Gq.tc||0)]];
+  ${(()=>{const T0=S.tresQ0!==undefined?S.tresQ0:0,T1=mgrCash(),it=[['Commission de gestion',Gq.mgmt||0],['Commission de performance',Gq.perf||0],["Bonus d'objectif",bon],[Gq.cb?`Co-investissement (${Math.round((Gq.cp||0)*100)} % · ${mm(Gq.cb)} placés)`:'Co-investissement',Gq.coinv||0],['Restitution',-(Gq.claw||0)],["Budget d'exploitation",-(Gq.ops||0)],["Coûts d'exécution",-(Gq.tc||0)]];
    const oth=T1-T0-it.reduce((a,x)=>a+x[1],0);if(Math.abs(oth)>1e-7)it.push(['Autres (accidents, incidents, desk payés par vous)',oth]);
    return `<table class="qt" style="margin-top:12px"><thead><tr><th style="text-align:left">Trésorerie</th><th>M$</th></tr></thead><tbody>
     <tr><td style="text-align:left">Début du trimestre</td><td>${mm(T0)}</td></tr>

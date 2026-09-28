@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **90**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **91**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -443,6 +443,14 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
   l'encours) : retiré à la première ouverture.
 
 
+- **Lot 91** (`lot91/p1.py`, `p2.py`, affichage, pas de campagne) : pop-up « Trésorerie » réécrite — gains nets cumulés
+  ventilés (gestion, performance, bonus, co-investissement dont latent, restitution, budget, courtage, autres) jusqu'à la
+  trésorerie disponible (part co-investie bloquée déduite) ; bloc co-investissement (part, valeur du moment, rachat,
+  exemple chiffré à ±5 %, cumul). Nouveaux cumuls `S.cMgmt`, `S.cPerf`, `S.cBon`, `S.cOps`, `S.cTC` (courtage au NAV de
+  facturation, comme `mgrNet`) ; `S.led` marque les parties qui les tiennent, sinon ligne « non ventilé ». Résidu
+  « autres » = accidents et incidents à votre charge, vérifié nul hors accidents sur 5 parties sondées. Débriefing :
+  ligne co-investissement avec part et mise. Régression 18 parties : 0 erreur, 0 blocage, 0 écart.
+
 ## Calibration actuelle (lots 85–86, bot habituel sauf mention)
 
 | | Score moyen (M$) | Survie | Rang moyen |
@@ -480,8 +488,9 @@ Préalables faits (à valider par Antoine) :
    crans hauts : économiste en chef (front), responsable du middle office (back), directrice de la
    conformité (back).
 
-**Question posée, sans réponse** : la composition de l'équipe conditionne-t-elle les événements (pas
-d'anecdote de Tuco avant son recrutement) ou reste-t-elle décorative ? Attendre la réponse avant de coder.
+**Réponse d'Antoine (lot 91)** : oui, l'équipe conditionne les événements ; les anecdotes restent avec les mêmes
+mécaniques, seul le libellé s'adapte. Traders recrutés dans l'ordre des classes (actions, taux, devises, matières,
+exotiques). Architecture budget + recrutement proposée au lot 91, en attente de validation avant de coder.
 Impacts connus de la fusion : `BUDGET` (3 postes → 2), `S.bud.exec/res/risk` lus partout (budEf, budExpl,
 objectifs `budRes`/`budExec`/`budRisk`, hauts faits `omni`, `ascet`, `monk`, bot `bud:[e,r,s]`, sauvegardes).
 
