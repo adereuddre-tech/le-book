@@ -886,14 +886,15 @@ const BOP=[
  {who:"Maître Report-à-Nouveau",hi:"Tout finit au report à nouveau, même vos erreurs.",full:"Maître Gontran Report-à-Nouveau",role:"expert-comptable",ic:"🧮",bp:10},
  {who:"Josiane Suspens",hi:"Aucun ordre ne sort d'ici sans être rapproché.",full:"Josiane Suspens",role:"responsable du back office",ic:"🗂️",bp:15},
  {who:"Mireille",hi:"Je ne dis pas non. Je dis : justifiez.",full:"Mireille Cauchemar",role:"directrice des risques",ic:"⚖️",bp:30},
- {who:"L'inspecteur Tatillon",hi:"Faites comme si je n'étais pas là. Je note tout.",full:"L'inspecteur Firmin Tatillon",role:"conformité et audit interne",ic:"🔎",bp:45}];
-const BOMAP=[0,2,3,5,6],NOTRD=4,TRD={'Actions':1,'Taux':2,'Devises':3,'Matières premières':4,'Exotiques':5};
+ {who:"L'inspecteur Tatillon",hi:"Faites comme si je n'étais pas là. Je note tout.",full:"L'inspecteur Firmin Tatillon",role:"conformité et audit interne",ic:"🔎",bp:45},
+ {who:"La commandante Pare-Feu",hi:"Personne n'entre. Surtout pas vos erreurs.",full:"La commandante Solange Pare-Feu",role:"sécurité, continuité d'activité, cyber",ic:"🛡️",bp:60}];
+const BOMAP=[0,1,3,4,5,6],NOTRD=4,TRD={'Actions':1,'Taux':2,'Devises':3,'Matières premières':4,'Exotiques':5};
 const BUDGET=[
  {id:'fo',ico:'📈',nm:"Front office",
   d:"Les traders et la recherche. Chaque recrue améliore l'avis du desk sur toutes les classes et sur la macro : coûts d'exécution, bruit des indicateurs, nombre et fiabilité des sources, lecture des dépêches. L'économiste en chef, au dernier cran, apporte un coup de pouce par trimestre. Un trader couvre en plus sa classe : sans lui, vos ordres y passent par un courtier, commission et impact de marché multipliés.",
   lv:FOP.map(p=>Object.assign({nm:p.who},p))},
  {id:'bo',ico:'⚖️',nm:"Back office",
-  d:"Le loyer, la comptabilité, les opérations, le contrôle des risques et la conformité. Josiane Suspens est le point neutre. Le loyer seul, c'est la catastrophe : incidents en série, accidents de levier. Au-dessus, le back office rassure surtout le comité.",
+  d:"Le loyer, la comptabilité, les opérations, le contrôle des risques et la conformité. Josiane Suspens est le point neutre. Le loyer seul, c'est la catastrophe : incidents en série, accidents de levier. Au-dessus, chaque poste réduit nettement la fréquence et la gravité des incidents et les accidents de levier, jusqu'à les diviser par deux au dernier cran, et rassure le comité.",
   lv:BOP.map(p=>Object.assign({nm:p.who},p))}
 ];
 function syncBud(){if(!S||!S.bud)return;S.bud.exec=S.bud.res=S.bud.ret=Math.min(S.bud.fo,6);S.bud.risk=BOMAP[S.bud.bo]}
@@ -909,14 +910,17 @@ const CAST=[
  {re:'Mireille Cauchemar|Mireille',bo:1,on:()=>S.bud.bo>=3,sub:()=>S.bud.bo>=2?'Josiane Suspens':'Maître Report-à-Nouveau'}];
 CAST.forEach(c=>{c.rx=new RegExp('(?:'+c.re+')')});
 const PERSO={"Tuco a gagné le concours de chili du prime broker":4,"Citadelle Nord fait une offre à Ingrid":2,"Pont-Levis Associés cherche un gérant énergie":4,"Votre gérante taux part chez un concurrent":2,"Un concurrent tourne autour de Boris":3,"« Ken Griffon m'a appelé. Pour un conseil. Je crois »":1};
-function persoOk(e){const w=e.who||'';if(/Marie-Alpha/.test(w)&&!here(6))return false;if(/^Dwight/.test(w)&&!here(1))return false;if(/Atterrissage/.test(w)&&!here(7))return false;if((/Report-à-Nouveau/.test(w)&&S.bud.bo<1)||(/Josiane/.test(w)&&S.bud.bo<2)||(/Tatillon/.test(w)&&S.bud.bo<4))return false;const p=PERSO[e.t];return p===undefined||here(p)}
+function persoOk(e){const w=e.who||'';if(e.hunt&&!huntCands().length)return false;if(/Marie-Alpha/.test(w)&&!here(6))return false;if(/^Dwight/.test(w)&&!here(1))return false;if(/Atterrissage/.test(w)&&!here(7))return false;if((/Report-à-Nouveau/.test(w)&&S.bud.bo<1)||(/Josiane/.test(w)&&S.bud.bo<2)||(/Tatillon/.test(w)&&S.bud.bo<4)||(/Pare-Feu/.test(w)&&S.bud.bo<5))return false;const p=PERSO[e.t];return p===undefined||here(p)}
 function deepCast(x,c){if(typeof x==='string')return recast(x,c);if(Array.isArray(x))return x.map(y=>deepCast(y,c));if(x&&typeof x==='object'){const q={};for(const k in x)q[k]=deepCast(x[k],c);return q}return x}
 function recast(x,c){if(typeof x!=='string'||!c.rx.test(x))return x;const n=c.sub(),A=c.re,le=n.startsWith('le ');
  x=x.replace(new RegExp('(^|[^\\wÀ-ÿ])de (?:'+A+')','g'),(m,p)=>p+(le?'du '+n.slice(3):'de '+n));
  x=x.replace(new RegExp('(^|[^\\wÀ-ÿ])à (?:'+A+')','g'),(m,p)=>p+(le?'au '+n.slice(3):'à '+n));
  x=x.replace(new RegExp('(^|[.!?:]\\s+|«\\s*)(?:'+A+')','g'),(m,p)=>p+n[0].toUpperCase()+n.slice(1));
  return x.replace(new RegExp('(?:'+A+')','g'),n)}
-function cast(ev){if(!ev||!S||!S.bud)return ev;const off=CAST.filter(c=>!c.on()&&JSON.stringify(ev).match(c.rx));if(!off.length)return ev;
+function huntCands(){const c=[];for(let p=1;p<FOP.length;p++)if(FOP[p].cls&&here(p))c.push(p);return c}
+function huntX(x,n){if(typeof x==='string')return x.split('{X}').join(n);if(Array.isArray(x))return x.map(y=>huntX(y,n));if(x&&typeof x==='object'){const q={};for(const k in x)q[k]=huntX(x[k],n);return q}return x}
+function cast(ev){if(ev&&ev.hunt&&S&&S.bud){const c=huntCands();if(c.length){const p=c[Math.floor(rng()*c.length)];S.huntP=p;ev=Object.assign(huntX(ev,FOP[p].who),{t0:ev.t0||ev.t})}}
+ if(!ev||!S||!S.bud)return ev;const off=CAST.filter(c=>!c.on()&&JSON.stringify(ev).match(c.rx));if(!off.length)return ev;
  const o=Object.assign({},ev,{t0:ev.t0||ev.t});
  off.forEach(c=>{if(typeof o.who==='string'&&c.rx.test(o.who)){const pa=o.who.split(' · ');o.who=c.rx.test(pa[0])?(n=>n[0].toUpperCase()+n.slice(1))(c.sub())+(pa[1]&&c.bo?' · '+pa[1]:''):pa[0]}
   ['t','p','after','riskMsg','safeTxt','safe','msg'].forEach(k=>{o[k]=recast(o[k],c)});
@@ -941,8 +945,8 @@ function setOps(){S.mgrCosts-=S.qOps||0;S.cOps=(S.cOps||0)-(S.qOps||0);const pur
 function covTxt(){const op=GRP.filter(g=>g!=='Exotiques'||S.exoOpen),c=op.filter(covered),u=op.filter(g=>!covered(g));
  return `<br>Classes couvertes : ${c.map(g=>g.toLowerCase()).join(', ')||'aucune'}${u.length?` · <span class="neg-g">sans trader, courtier ×${dec(NOTRD,1)}</span> : ${u.map(g=>g.toLowerCase()).join(', ')}`:''}`}
 const EXECM=[1.35,1.3,1.04,0.75,0.666,0.575,0.498],   /* lot 38 : trois quarts de l'ancienne facture, le reste se paie en impact de marché */
-RISKM=[5.0,2.00,2.0,1.00,0.636,0.8,0.7],   /* lot 96 : aux crans 0,2,3,5,6 seulement (BOMAP) */
-RISKS=[3.00,1.93,1.95,1.5,1.22,1.3,1.2],
+RISKM=[5.0,2.0,2.0,1.00,0.8,0.65,0.5],   /* lot 96 : aux crans 0,2,3,5,6 seulement (BOMAP) */
+RISKS=[3.00,1.95,1.95,1.5,1.2,0.975,0.75],
 RETM =[2.00,1.93,1.51,1.00,0.741,0.503,0.398];
 const RESN=[6,6,7,9,10,11,12],
 RESREL=[-0.08,-0.07,-0.06,0.00,0.028,0.049,0.084],
@@ -951,9 +955,9 @@ RESR  =[0.3,0.32,0.39,0.6,0.726,0.831,0.866],
 RESPH =[0.16,0.156,0.141,0.1,0.084,0.068,0.05];
 /* la finesse des indicateurs vient du desk, la tolérance du comité du contrôle des risques */
 const TCVQ=[0.9,0.88,0.76,0.6,0.509,0.425,0.355],
-BANDB=[0.12,0.18,0.19,0.25,0.292,0.33,0.40];
+BANDB=[0.12,0.19,0.19,0.25,0.30,0.36,0.42];
 /* avis du comité à chaque clôture, et chance de recruter une recrue du trimestre */
-const RISKRC=[-3.0,-0.9,-1.5,0.00,0.7,2.5,4.0],
+const RISKRC=[-3.0,-1.5,-1.5,0.00,2.5,4.0,5.0],
 STARP=[0.00,0.00,0.00,0.00,0.105,0.217,0.329];
 /* lot 79 : crans hauts deux fois plus chers au plus (×4/3, ×5/3, ×2) ; leurs effets ramenés à 70 % de leur
    écart au standard */
@@ -1004,8 +1008,8 @@ const QGOALS=[
  {nm:"Ne pas être dernier",d:"Ne pas terminer le trimestre en dernière position sur la performance.",t:c=>!c.worst,b:0.04},
  {nm:"Podium",d:"Terminer dans les deux premiers au classement cumulé.",t:c=>c.rank<=2,b:0.06},
  {nm:"La première place",d:"Être premier au classement cumulé à la fin du trimestre.",t:c=>c.rank===1,b:0.13},
- {nm:"Gagner une place",d:"Progresser d'au moins une place au classement cumulé.",t:c=>c.rankUp>=1,b:0.07},
- {nm:"Deux places d'un coup",d:"Progresser d'au moins deux places au classement cumulé.",t:c=>c.rankUp>=2,b:0.13},
+ {nm:"Gagner une place",d:"Progresser d'au moins une place au classement cumulé.",t:c=>c.rankUp>=1,b:0.07,pre:'rank2'},
+ {nm:"Deux places d'un coup",d:"Progresser d'au moins deux places au classement cumulé.",t:c=>c.rankUp>=2,b:0.13,pre:'rank3'},
  {nm:"L'écart net",d:"Battre la médiane des concurrents de plus de deux points.",t:c=>c.rel>0.02,b:0.10},
  {nm:"Pont-Levis dans le rétroviseur",d:"Faire mieux que Pont-Levis Associés ce trimestre.",t:c=>c.beat('Pont-Levis Associés'),b:0.05},
  {nm:"Plus malin que Médaillon",d:"Faire mieux que Médaillon d'Or ce trimestre.",t:c=>c.beat("Médaillon d'Or"),b:0.08},
@@ -1892,6 +1896,10 @@ TRADER_EXEC.push(
       {b:"Le laisser parler du book",s:"Investisseurs +3, impact ×1,45 sur les ajustements, comité −4.",e:{lp:3,leakQ:true,rc:-4}}]}
 );
 const TRADER_MID=[
+ {"who": "La commandante Pare-Feu · sécurité", "t": "« Quelqu'un a branché une clé USB trouvée sur le parking »", "p": "« Elle s'appelait BONUS_2026.xlsx. Évidemment qu'il l'a branchée. »", "ch": [{"b": "Tout isoler et tout réinstaller", "s": "−3 pb, comité +3.", "e": {"cash": -0.0003, "rc": 3}}, {"b": "Nettoyer le seul poste concerné", "s": "20 % de risque d'intrusion : −0,3 %.", "e": {"risk": [0.2, -0.003], "riskMsg": "La clé était pleine de surprises"}}]},
+ {"who": "La commandante Pare-Feu · sécurité", "t": "« Exercice d'évacuation. Tout le monde dehors, desk compris »", "p": "« Le plan de continuité prévoit une salle de secours à Créteil. Elle n'a jamais servi. Aujourd'hui, elle sert. »", "ch": [{"b": "Jouer le jeu jusqu'au bout", "s": "Coûts +5 % ce trimestre, comité +3.", "e": {"tcMult": 1.05, "rc": 3}}, {"b": "Dispenser le desk", "s": "Comité −2.", "e": {"rc": -2}}]},
+ {"who": "La commandante Pare-Feu · sécurité", "t": "« Un faux Ken Griffon a appelé Josiane pour un virement urgent »", "p": "« La voix était bonne. Le compte était à Chypre. Elle a raccroché. »", "ch": [{"b": "Former toute l'équipe à la fraude au président", "s": "−2 pb, comité +2.", "e": {"cash": -0.0002, "rc": 2}}, {"b": "Féliciter Josiane", "s": "Débauchage −5 %, comité +1.", "e": {"poach": -0.05, "rc": 1}}]},
+ {"who": "La commandante Pare-Feu · sécurité", "t": "« Vos mots de passe sont collés sur l'écran de Boris »", "p": "« Sur un Post-it. Jean-Kevin l'a plastifié pour qu'il tienne mieux. »", "ch": [{"b": "Des clés physiques pour tout le monde", "s": "−2 pb, coûts +2 % (tout le monde râle), comité +3.", "e": {"cash": -0.0002, "tcMult": 1.02, "rc": 3}}, {"b": "Un rappel par courriel", "s": "Comité +1.", "e": {"rc": 1}}]},
  {who:"Dwight Tannenbaum · actions, à la voix",t:"« J'ai été élu meilleur trader à la voix de Paris. Il y avait trois candidats »",p:"Le trophée est en plastique doré. Il l'a posé sur l'écran de Boris.",
   ch:[{b:"Fêter ça au champagne",s:"−1 pb, débauchage −10 %.",e:{cash:-0.0001,poach:-0.1}},{b:"Rappeler qu'il y avait trois candidats",s:"Comité +1, Dwight vexé (débauchage +10 %).",e:{rc:1,poach:0.1}}]},
  {who:"Dwight Tannenbaum · actions, à la voix",t:"« Ken Griffon m'a appelé. Pour un conseil. Je crois »",p:"« Il m'a demandé combien je gagnais. Pour un sondage, il a dit. »",
@@ -1998,10 +2006,10 @@ const TRADER_MID=[
   p:"Le signal est fort, elle vous le présente sans commentaire, comme le règlement l'exige.",
   ch:[{b:"Suivre le modèle",s:"GC +1 unité dans le sens actuel (ou long si plat). 58 % de chances de +0,36 %, sinon −0,36 %.",e:{kAdd:['GC',1],gamble2:[0.58,0.0036,-0.0036]}},
       {b:"Ignorer le signal",s:"Elle consigne votre refus. Le comité lira le registre (−2).",e:{rc:-2}}]},
- {who:"Un chasseur de têtes",t:"Citadelle Nord veut vous recruter, vous",
-  p:"Ken Griffon propose le double. La rumeur fait le tour du desk avant même que vous ayez raccroché.",
-  ch:[{b:"Refuser et le faire savoir",s:"Le desk est rassuré, les investisseurs aussi (+3).",e:{lp:3}},
-      {b:"« Je réfléchis »",s:"Le desk s'inquiète, deux gérants prennent des appels. Débauchage +30 % ce trimestre, investisseurs −2.",e:{poach:0.3,lp:-2}}]}
+ {who:"Un chasseur de têtes",hunt:1,t:"Citadelle Nord veut recruter {X}",
+  p:"Ken Griffon propose le double à {X}. La rumeur fait le tour du desk avant même que vous l'ayez apprise.",
+  ch:[{b:"Surenchérir tout de suite",s:"−3 pb, {X} reste et le fait savoir : débauchage −30 % ce trimestre, investisseurs +1.",e:{cash:-0.0003,poach:-0.3,lp:1}},
+      {b:"Laisser {X} réfléchir",s:"Débauchage +30 % ce trimestre, et c'est {X} que Griffon vise. Investisseurs −2.",e:{poach:0.3,lp:-2}}]}
 ];
 TRADER_MID.push(
  {who:"Ingrid Bergström · taux",t:"« Le comité de la Fed est divisé. Je veux aplatir la courbe »",p:"Ingrid propose un pari relatif : long 10 ans US, court Bund.",
@@ -2920,7 +2928,7 @@ function planQuarter(){
  if(rng()<0.45){const sav=STAKE.filter(e=>!S.usedStake.includes(e.t)&&!STAKE_POS.has(e.t));if(sav.length){const se=pick(sav);S.usedStake.push(se.t);S.preDesk={trader:true,stake:true,...se}}}
  S.stopQ=false;S.noAddQ=false;
  (S.rivals||[]).forEach(rv=>{rv.vq=rivVolQ(rv);rivBudget(rv)});   /* lot 66 : risque du trimestre, sans tirage */
- S.tailEv=null;S.tailDone=false;S.tailQ=null;S._kLast=null;S._kGhost=null;
+ S.tailEv=null;S.tailDone=false;S.tailQ=null;S._kLast=null;S._kGhost=null;S.huntP=null;
  /* incident opérationnel */
  const desk=DESKS.find(d=>d.id===S.desk);
  let pInc=0.09*ARCH().incMult*RISKM[S.bud.risk]*PROF().incMult+(desk.algo?0.03:0);
@@ -2954,7 +2962,7 @@ function planQuarter(){
  /* objectif du trimestre : tiré maintenant, soldé à la clôture */
  S.usedGoals=(S.usedGoals||[]).slice(-16);
  /* lot 76 : « Le rebond » et ses cousins ne sortent qu'après un trimestre du bon signe */
- const lastQ=(S.rets&&S.rets.length)?S.rets[S.rets.length-1]:0,preOk=g=>(!g.sym||IDX[g.sym]!==undefined)&&(!g.cls||INSTR.some(x=>x.grp===g.cls))&&(!g.pre||(g.pre==='never'?false:g.pre==='loss'?lastQ<0:lastQ>0));   /* lot 89 : marchés et classes ouverts */
+ const lastQ=(S.rets&&S.rets.length)?S.rets[S.rets.length-1]:0,preOk=g=>(!g.sym||IDX[g.sym]!==undefined)&&(!g.cls||INSTR.some(x=>x.grp===g.cls))&&(!g.pre||(g.pre==='never'?false:g.pre==='rank2'?S.q>=1&&rivalRank()>=2:g.pre==='rank3'?S.q>=1&&rivalRank()>=3:g.pre==='loss'?lastQ<0:lastQ>0));   /* lot 89 : marchés et classes ouverts */
  const gav=QGOALS.filter(g=>!S.usedGoals.includes(g.nm)&&preOk(g));
  S.goal=pick(gav.length?gav:QGOALS.filter(preOk));S.usedGoals.push(S.goal.nm);
  if(S.redNext){S.redC=typeof S.redNext==='object'?S.redNext:{id:'cap',nm:'Plafond de position',t:'±2 unités au plus sur chaque marché'};S.redNext=false;S.redOn=true}
@@ -4793,7 +4801,7 @@ const TAILMG=0.40;
 /* gravité moyenne relative à celle d'avant le lot 76 (0,62 calé sur 0,581 de sévérité médiane) */
 const TAILSEV=(()=>{const m=a=>a.reduce((s,e)=>s+(e.sev[0]+e.sev[1])/2,0)/Math.max(1,a.length);
  return 0.62/0.5806*(TAILMG*m(TAILEV.filter(e=>e.mg))+(1-TAILMG)*m(TAILEV.filter(e=>!e.mg)))})();
-const TAIL={x0:0.20,w:0.30,p:0.60},TAILM=[2.5,1.41,1.4,1.00,0.783,0.88,0.8];
+const TAIL={x0:0.20,w:0.30,p:0.60},TAILM=[2.5,1.4,1.4,1.00,0.8,0.65,0.5];
 /* lot 84 : la probabilité accélère avec le risque (e + 0,8 e²), et la protection du contrôle des risques
    s'efface entre 30 et 40 % : au-delà, aucun budget ne vous couvre */
 function tailMit(sp){const m=TAILM[(S&&S.bud)?S.bud.risk:3]||1;if(m>=1)return m;const fd=Math.max(0,Math.min(1,(sp-0.30)/0.10));return m+(1-m)*fd}
@@ -5354,6 +5362,7 @@ function screenMacroEvent(ev){
  const chips=Object.keys(ev.hit).map(sy=>{const m=ev.hit[sy]*INSTR[IDX[sy]].sigQ;return `<span style="color:${m>0?'var(--long)':'var(--short)'}">${sy} ${sgn(m,1)}</span>`}).join('');
  const shutL=(ev.shut||[]).filter(sy=>IDX[sy]!==undefined&&mktOpen(IDX[sy]));
  if(shutL.length){S.shut=S.shut||{};shutL.forEach(sy=>S.shut[sy]=S.q+1)}
+ S.evImm=imm;   /* lot 99 */
  const plan=evPlans(ev,touched);
  const UM=pickU(plan.flatMap(o=>o.pay.map(v=>v*S.nav)));
  const unitLab=UM.s.trim();
@@ -5402,7 +5411,7 @@ function evPlans(ev,touched){
   if(syst)fixRc.push([-3,'Dérogation au modèle']);
   if(S.noAddQ)fixRc.push([-6,"Renforcement malgré l'interdiction du comité"]);
  }
- const gzF=payF.map(p=>{const a=pnlGz(p);let lp=a.lp,rc=a.rc;
+ const gzF=payF.map(p=>{const a=pnlD(p);let lp=a.lp,rc=a.rc;
   let c=cf(a.lp,a.rc);   /* lot 58 : la somme exacte de ce que gauge() appliquera, appel par appel */
   if(trades.length){const r=reactGz(p);lp+=r.lp;rc+=r.rc;c+=cf(r.lp,r.rc);fixRc.forEach(x=>{rc+=x[0];c+=cf(0,x[0])})}
   return {lp:c,rc,pnl:a}});
@@ -5414,12 +5423,13 @@ function evPlans(ev,touched){
  const payN=SC.m.map(m=>{const we=weights(S.k);let v=0;touched.forEach(i=>v+=we[i]*m*ev.hit[INSTR[i].sym]*INSTR[i].sigQ);return v});
  pieces.push({a:'none',b:syst?'Laisser le modèle':'Ne pas réagir',
   s:syst?'Le modèle rééquilibrera au prochain signal. Aucun ordre, aucun coût.':'Aucun ordre, aucun coût : le book reste tel quel.',
-  t:[...S.k],kE:[...S.k],trades:[],cost:0,costRaw:0,free:false,pay:payN,gz:payN.map(p=>{const a=pnlGz(p);return {lp:cf(a.lp,a.rc),rc:a.rc,pnl:a}}),fixRc:[]});
+  t:[...S.k],kE:[...S.k],trades:[],cost:0,costRaw:0,free:false,pay:payN,gz:payN.map(p=>{const a=pnlD(p);return {lp:cf(a.lp,a.rc),rc:a.rc,pnl:a}}),fixRc:[]});
  return pieces;
 }
 const nb=t=>String(t).replace(/ /g,'\u00a0');
 const pctc=x=>(x*100).toFixed(1).replace('.',',')+'\u00a0%';
 const uNum=(x,u)=>`${x<0?'−':x>0?'+':''}${(Math.abs(x)*u.k).toFixed(u.d).replace('.',',')}`;
+function pnlD(p){const i=S.evImm||0,a=pnlGz(i+p),b=pnlGz(i);return {lp:cf(a.lp,a.rc)-cf(b.lp,b.rc),rc:0}}   /* lot 99 */
 function reactGz(p){return p>0.004?{lp:3,rc:1}:p>=0?{lp:1,rc:0}:{lp:-2,rc:-3}}
 function resolveEvent(ev,touched,o,imm,navB){
  const prof=PROF(),syst=!!prof.noAdj;S.kBefore=[...S.k];
@@ -5820,9 +5830,9 @@ function resolveQuarter(){
  const amt=tot*S.nav;S.nav+=amt;S.flows+=amt;S.qFlow=(S.qFlow||0)+amt;
  const lines=fl.filter(x=>Math.abs(x.f)>=0.002).map(x=>`${x.rv.nm} ${x.f>0?'+':'−'}${dec(Math.abs(x.f)*100,1)} % (${x.d>0?'battu':'devant vous'} de ${dec(Math.abs(x.d)*100,1)} pt${Math.abs(x.d)>=0.015?'s':''})`);
  S.poachMsg=`${tot>=0?'Collecte':'Rachats'} : ${tot>=0?'+':'−'}${dec(Math.abs(tot)*100,1)} % d'encours (${mm(Math.abs(amt))}).${lines.length?' Clients par concurrent — '+lines.join(' · ')+'.':''}${riskOut>=0.001?` Dont −${dec(riskOut*100,1)} % retirés pour un risque jugé trop élevé.`:''}`;
- {const pP=Math.min(0.95,Math.max(0,(POACHP+0.5*(S.poachBoost||0))*(S.bonMultQ||1))),cands=[];for(let p=1;p<=S.bud.fo;p++)if(here(p))cands.push(p);   /* lot 96 : débauchage de base */
+ {const pP=Math.min(0.95,Math.max(0,(POACHP+0.5*(S.poachBoost||0))*(S.bonMultQ||1))),cands=[];for(let p=1;p<=S.bud.fo;p++)if(here(p)&&FOP[p].cls)cands.push(p);   /* lot 96 : débauchage de base ; lot 99 : traders seulement */
  if(!S.over&&cands.length&&rng()<pP){const boss=(pick(S.rivals.filter(x=>x.poacher))||S.rivals[S.rivals.length-1]).boss;
-  {const p=cands[Math.floor(rng()*cands.length)];S.gone={p,n:1,boss};S.poachMsg+=` ${boss} a débauché ${FOP[p].full} : son siège reste vide au trimestre prochain${FOP[p].cls?` (${FOP[p].cls.toLowerCase()} par un courtier, ×${dec(NOTRD,1)})`:''}, sauf contre-offre.`}
+  {const p=(S.huntP!=null&&cands.includes(S.huntP))?S.huntP:cands[Math.floor(rng()*cands.length)];S.huntP=null;S.gone={p,n:1,boss};S.poachMsg+=` ${boss} a débauché ${FOP[p].full} : son siège reste vide au trimestre prochain${FOP[p].cls?` (${FOP[p].cls.toLowerCase()} par un courtier, ×${dec(NOTRD,1)})`:''}, sauf contre-offre.`}
   if((S.stars||[]).length){const g=S.stars.pop();S.poachMsg+=` Votre recrue ${g.toLowerCase()} part avec eux : la remise sur cette classe disparaît.`}}}
  if(tot>0.01&&S.bud.ret>=BUDMAX&&rng()<0.4){S.execPenalty=Math.max(0.7,S.execPenalty*0.92);S.poachMsg+=" Vous avez recruté un trader chez un concurrent : coûts d'exécution −8 %."}
  /* objectif du trimestre */

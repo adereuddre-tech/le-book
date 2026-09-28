@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **98**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **99**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -507,6 +507,15 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
   s'affiche que si une sauvegarde en porte). Budget : « descendre, c'est licencier » et coût des départs sous chaque cran
   inférieur à celui du trimestre précédent (`S.budPrev`). Campagne 90 parties appariées contre le lot 97 : +3,8 ± 1,0 M$,
   survie 69 → 78 %.
+- **Lot 99** (`lot99/p1.py`) : « Gagner une place » (`pre:'rank2'`) et « Deux places d'un coup » (`rank3`) seulement
+  à partir du 2e trimestre et si le rang le permet. Dépêches : la confiance suit le résultat net de la dépêche,
+  `pnlD(p)` = `cf(pnlGz(imm+p))` − `cf(pnlGz(imm))` (`S.evImm`), dans les boutons comme à l'application (0 écart) ;
+  seule la nervosité reste à part. Débauchage : traders seulement (`FOP[p].cls`). Chasseur de têtes : l'anecdote
+  « Citadelle Nord veut recruter {X} » (`hunt:1`) vise un trader présent (`huntCands`, `S.huntP`, qui est aussi la
+  cible du débauchage suivant). Back office à six crans : la commandante Solange Pare-Feu (60 pb), `BOMAP=[0,1,3,4,5,6]`,
+  incidents ×5/×2/×1/×0,8/×0,65/×0,5, gravité ×2/×1,3/×1/×0,8/×0,65/×0,5, accidents de levier ×2,5/×1,4/×1/×0,8/×0,65/×0,5,
+  comité −3/−1,5/0/+2,5/+4/+5 ; quatre anecdotes pour elle (bo ≥ 5). Campagne 120 parties appariées : nouveau
+  standard −0,5 ± 0,5 M$ contre le lot 98 (confiance moyenne 42 → 46), Tatillon −1,3 ± 1,3, Pare-Feu −2,0 ± 1,1.
 
 ## Calibration actuelle (lots 85–86, bot habituel sauf mention)
 
