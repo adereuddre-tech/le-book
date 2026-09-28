@@ -833,7 +833,7 @@ const SIZES=[
  {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.25,nm:"Difficile — 25 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
   p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 25 % de la performance, et les souscriptions arrivent aussi vite que les rachats.",
   ef:[["g","commission de performance : 25 %"],["g","flux violents dans les deux sens : un bon trimestre attire gros"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
-  rivSkill:0.150,rivVol:1.10,rivBud:1,lpNeg:1.60,rcNeg:1.35,lp0:-8,flowMult:1.15,flowIn:1.60,goalMult:1}
+  rivSkill:0.150,rivVol:1.10,rivBud:1,lpNeg:1.40,rcNeg:1.35,lp0:-8,flowMult:1.15,flowIn:1.60,goalMult:1}
 ];
 const UNIVS=[
  {id:'fin',edge:0.75,lpMult:0.90,lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
@@ -4613,7 +4613,7 @@ function rivVolQ(rv){const st=RIVSTRAT[rv.style]||RIVSTRAT.fonda;let cv=0;(S.f||
  const dd=1-(rv.cum||1)/Math.max(rv.peak||1,rv.cum||1);if(dd>0.12)v*=st.cut;
  const cap=0.95*rivCapVol(rv);v=Math.max(0.06,Math.min(cap,v*((SIZE()&&SIZE().rivVol)||1)));
  /* lot 84 : la moitié du chemin vers le risque qui maximise leur rentabilité attendue */
- let bv=v,by=-1e9;for(let t=0.06;t<=cap+1e-9;t+=0.02){const y=rivPt(rv,t).y;if(y>by){by=y;bv=t}}
+ let bv=v,by=-1e9;for(let t=0.06;t<=cap+1e-9;t+=0.02){const y=rivPt(rv,t,1).y;if(y>by){by=y;bv=t}}
  return Math.max(0.06,Math.min(cap,0.5*v+0.5*bv))}
 function rivV(rv){return rv.vq||rv.vol}
 /* lot 80 : le prime broker finance le levier à un coût qui croît comme le carré du risque — même barème pour tous */
@@ -4623,12 +4623,13 @@ function finDrag(k){const v=riskShown(weights(k||S.k)).total;return FINK*(v/0.2)
 function rivTail(rv,j,v,q){const u=prng32(hash32('rtail'+j+'_'+q,S.seed));if(u()>=tailP(v,1))return 0;
  const L=Math.min(0.40,(0.45+0.35*u())*tailL(v)),m=(RIVSTRAT[rv.style]||RIVSTRAT.fonda).tail;
  return m==='cut'?0.5*L:m==='hedge'?0.55*L:(u()<0.5?0.3*L:1.5*L)}
-function rivPt(rv,vv){
+/* lot 85 : full = avec drain et coût moyen des accidents (pour leurs décisions) ; sans = même lecture que la vôtre */
+function rivPt(rv,vv,full){
  const s=rv.skill,K4=4,v=vv||rivV(rv);let E;
  if(rv.style==='syst')E=0.9*(2*s-1)*K4*0.8+0.8;
  else if(rv.style==='flux'){const p=Math.min(1,0.5+0.5*Math.max(0,(s-0.5)*1.8));E=1.1*(2*p-1)*K4*0.8}
  else E=(2*s-1)*1.6*1.8;
- return {x:v,y:S.rate/4+(v/2)*(RIVKS[rv.style]||RIVK)*E-0.008-rivDrag(v)+(rv.bRet||0)-0.5*v*v/4-tailExp(v,1),l:(rv.nm||'?').replace(/^(Le |La |L')/,'')[0]};
+ return {x:v,y:S.rate/4+(v/2)*(RIVKS[rv.style]||RIVK)*E-0.008-rivDrag(v)+(rv.bRet||0)-(full?0.5*v*v/4+tailExp(v,1):0),l:(rv.nm||'?').replace(/^(Le |La |L')/,'')[0]};
 }
 /* lot 79 : en séance, chaque concurrent ajuste son book à chaque nouvelle : il charge quand il gagne, allège
    quand il perd, et son attendu intègre ce que le trimestre a déjà montré. Affichage seulement. */
@@ -4717,7 +4718,7 @@ function riskMap(sp,big){
    +`<circle cx="${f(px)}" cy="${f(py)}" r="5.5" fill="${me}" stroke="${hot?'#D2463C':'var(--bg,#0b1020)'}" stroke-width="${hot?1.6:.8}"/>`
    +`<text x="${f(px+8)}" y="${f(py-7)}" font-size="10" fill="${me}" font-family="var(--mono)" font-weight="700" ${px>x1-70?'text-anchor="end"':''}>${nm}</text>`;
   const tp=tailP(sp);
-  return `<p class="note" style="margin:0 0 4px">Valeurs <b>trimestrielles</b>, comme partout dans le jeu. Risque : écart-type du trimestre, book et collatéral compris, bruit d'estimation compris ; sa jauge passe à l'ambre à la cible de votre mandat et au rouge là où commencent les accidents de levier. Rentabilité : rendement attendu du trimestre — collatéral, impact, drain de volatilité et coût moyen des accidents de levier compris ; sa jauge est rouge sous zéro et verte au niveau du meilleur concurrent. Traits tous les 5 points. Point jaune pâle : votre fonds juste avant votre dernier changement de position, toutes les autres positions comprises. Les concurrents sont placés à leur couple estimé (risque · rentabilité).</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
+  return `<p class="note" style="margin:0 0 4px">Valeurs <b>trimestrielles</b>, comme partout dans le jeu. Risque : écart-type du trimestre, book et collatéral compris, bruit d'estimation compris ; sa jauge passe à l'ambre à la cible de votre mandat et au rouge là où commencent les accidents de levier. Rentabilité : rendement attendu du trimestre — collatéral, impact, financement du levier compris ; ni le drain de volatilité ni les accidents de levier, qui dépendent du risque et se lisent sur l'axe horizontal ; sa jauge est rouge sous zéro et verte au niveau du meilleur concurrent. Traits tous les 5 points. Point jaune pâle : votre fonds juste avant votre dernier changement de position, toutes les autres positions comprises. Les concurrents sont placés à leur couple estimé (risque · rentabilité).</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
    +`<p class="note" style="margin:0 0 10px">${tp>0?`À ${sv} de risque : <b class="neg-g">${dec(tp*100,0)} % de probabilité</b> d'un accident de levier ce trimestre, perte de l'ordre de ${dec(TAILSEV*tailL(sp)*100,0)} % de l'encours si vous le laissez courir.`:`Sous ${dec(TAIL.x0*50,1)} % de risque par trimestre, pas d'accident de levier possible.`}</p>`;
  }
  const L=3,Rr=4,T=5,B=3,gid='gz'+(++riskMap.n);
@@ -4745,7 +4746,7 @@ function colExp(){const o=colOpt();return redOn('collat')?S.rate/4*0.6:S.rate/4+
 function profitBook(k){
  k=k||S.k;const w=weights(k),k0=S.k0||S.k;let m=colExp();
  for(let i=0;i<N;i++){if(w[i])m+=w[i]*expRet(i).m;const d=k[i]-k0[i];if(d)m-=tcost(d,i).imp/S.nav}
- const sg=riskShown(w).total;return m-0.5*sg*sg/4-tailExp(sg)-FINK*(sg/0.2)*(sg/0.2);
+ const sg=riskShown(w).total;return m-FINK*(sg/0.2)*(sg/0.2);   /* lot 85 : lecture des marchés, moins le financement facturé ; ni accidents ni drain */
 }
 const pc2=x=>`<b class="${Math.abs(x)<5e-5?'dim-g':cls(x)}">${x>=0?'+':'−'}${dec(Math.abs(x*100),2)} %</b>`;
 function expBook(k){

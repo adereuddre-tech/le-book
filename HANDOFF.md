@@ -982,6 +982,12 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   engagement « ≥ x · tenu ». Carton rouge : cadre de 340 px, dégradé et halo. Rapport final : durée juste
   (`ANS`), verdicts plus enlevés. Campagne 135 : normal 13,3 (64 %), glouton 14,1 (67 %), difficile 12,7 (42 %).
 
+- **Lot 85** (`lot85/patch.py`) : la rentabilité affichée (`profitBook`) n'est plus que la lecture des marchés moins
+  le financement facturé — ni drain de volatilité ni coût moyen des accidents, qui se lisent sur l'axe du risque ;
+  `rivPt(rv,v,full)` : même lecture pour le nuage, version complète pour leur choix de risque ; bot : l'habituel
+  retranche lui-même drain et accidents, le glouton (`av` 0) maximise l'affichage. Difficile `lpNeg` 1,60 → 1,40.
+  Campagne 135 : habituel 13,3 (64 %), glouton 3,8 (29 %, risque 0,40), apparié −9,5 ± 2,7 ; difficile 13,9 (47 %).
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
