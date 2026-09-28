@@ -988,7 +988,7 @@ const QGOALS=[
  {nm:"Remonter la pente",d:"Regagner au moins huit points de confiance sur le trimestre.",t:c=>c.dLp>=8,b:0.09},
  {nm:"La parole tenue",d:"Tenir un engagement de conviction forte.",t:c=>c.comm==='fort'&&c.commOK,b:0.12},
  {nm:"La promesse modeste",d:"Tenir un engagement de communication standard.",t:c=>c.comm==='prud'&&c.commOK,b:0.05},
- {nm:"Le moine",d:"Choisir le silence radio et terminer quand même le trimestre positif.",t:c=>c.comm==='none'&&c.q>0,b:0.07},
+ {nm:"Le moine",d:"Choisir le silence radio et terminer quand même le trimestre positif.",t:c=>c.comm==='none'&&c.q>0,b:0.07,pre:'never'},
  {nm:"La collecte",d:"Terminer le trimestre avec une collecte nette positive.",t:c=>c.flow>0,b:0.06},
  {nm:"La grosse collecte",d:"Attirer au moins 3 % d'encours supplémentaire sur le trimestre.",t:c=>c.flow>0.03,b:0.10},
  {nm:"Aucun rachat",d:"Traverser le trimestre sans le moindre rachat.",t:c=>c.flow>=0,b:0.05},
@@ -2794,7 +2794,7 @@ function planQuarter(){
  /* objectif du trimestre : tiré maintenant, soldé à la clôture */
  S.usedGoals=(S.usedGoals||[]).slice(-16);
  /* lot 76 : « Le rebond » et ses cousins ne sortent qu'après un trimestre du bon signe */
- const lastQ=(S.rets&&S.rets.length)?S.rets[S.rets.length-1]:0,preOk=g=>!g.pre||(g.pre==='loss'?lastQ<0:lastQ>0);
+ const lastQ=(S.rets&&S.rets.length)?S.rets[S.rets.length-1]:0,preOk=g=>!g.pre||(g.pre==='never'?false:g.pre==='loss'?lastQ<0:lastQ>0);
  const gav=QGOALS.filter(g=>!S.usedGoals.includes(g.nm)&&preOk(g));
  S.goal=pick(gav.length?gav:QGOALS.filter(preOk));S.usedGoals.push(S.goal.nm);
  if(S.redNext){S.redC=typeof S.redNext==='object'?S.redNext:{id:'cap',nm:'Plafond de position',t:'±2 unités au plus sur chaque marché'};S.redNext=false;S.redOn=true}
@@ -2804,10 +2804,12 @@ function planQuarter(){
  S.qGoal=null;S.qName=null;S.lastG=null;
  /* ce sont des futures : le book repart à plat, on le reconstruit chaque trimestre */
  S.k=new Array(N).fill(0);S.k0=new Array(N).fill(0);
+ S.flowInC=(S.flowInC||0)+Math.max(0,S.qFlow||0);S.flowOutC=(S.flowOutC||0)+Math.max(0,-(S.qFlow||0));   /* lot 87 : flux cumulés */
  S.qColM=0;S.colBaseNav=0;S.rumors=[];S.evVerified=false;S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
  S.pendingTC=0;S.freeAdjUsed=false;S.live=false;S.execSlipQ=0;
  /* la commission de gestion est prélevée sur le fonds et vous est versée dès l'ouverture ;
     la performance et le bonus d'objectif attendent la clôture */
+ S.tresQ0=mgrCash();   /* lot 87 */
  S.qMgmtM=VOL().mgmt*S.nav;S.nav-=S.qMgmtM;S.mgrFees+=S.qMgmtM;refreshGain();
  {const tg=coinvPct()*Math.max(0,mgrCash()),d=tg-(S.coinvIn||0);S.nav+=d;S.navQ0+=d;S.coinvBase=tg;S.coinvIn=tg}S.lpQ0=S.lp;   /* lot 84 : la part placée entre dans l'encours */   /* lot 81-82 : part co-investie fixée à l'ouverture */
 }
@@ -4075,7 +4077,7 @@ function showGauge(id){
  if(id==='cap'){
   const dd=1-S.nav/S.peak;
   openModal('Capital',`<p>Encours net du fonds, tel que le voient les investisseurs. Il bouge avec la performance nette, les incidents, les frais, et les flux d'encours provoqués par votre position face aux concurrents.</p>
-   ${tbl([['Encours initial',moneyB(S.aum0)],['Encours actuel',moneyB(navNow())],['Plus haut historique (seuil de commission de performance)',moneyB(S.hwm)],['Repli depuis le pic',dd>0.0005?'−'+dec(dd*100,1)+' %':'aucun'],['Perte maximale subie','−'+dec(S.maxdd*100,1)+' %'],['Flux nets d\'encours (collecte − rachats)',bn(S.flows||0)],['Classement cumulé sur quatre fonds',(1+S.rivals.filter(r=>r.cum>S.idx).length)+'e']])}
+   ${tbl([['Encours initial',moneyB(S.aum0)],['Encours actuel',moneyB(navNow())],['Plus haut historique (seuil de commission de performance)',moneyB(S.hwm)],['Repli depuis le pic',dd>0.0005?'−'+dec(dd*100,1)+' %':'aucun'],['Perte maximale subie','−'+dec(S.maxdd*100,1)+' %'],['Souscriptions cumulées',S.flowInC?'+'+mm(S.flowInC):'aucune'],['Rachats cumulés',S.flowOutC?'−'+mm(S.flowOutC):'aucun'],['Flux nets d\'encours (collecte − rachats)',bn(S.flows||0)],['Dont votre co-investissement',`${mm(S.coinvIn||0)} · ${Math.round(coinvPct()*100)} % de la trésorerie`],['Part de l\'encours à vous',dec(100*(S.coinvIn||0)/Math.max(1e-9,navNow()),1)+' %'],['Encours sous gestion, hors vous',moneyB(navNow()-(S.coinvIn||0))],['Seuil de fermeture',moneyB(FUNDMIN)],['Classement cumulé sur quatre fonds',(1+S.rivals.filter(r=>r.cum>S.idx).length)+'e']])}
    <p style="margin:12px 0 4px">Performance nette cumulée</p>
    ${tbl([['Depuis le début',`<span class="${cls(S.idx-1)}">${sgn(S.idx-1,1)}</span>`],...S.rets.map((r,i)=>[`T${i+1} · ${REG[S.regimes[i]].nm}`,`<span class="${cls(r)}">${sgn(r,1)}</span>`])])}
    <p class="note">Ce qu'un investisseur entré au premier jour a gagné ou perdu, après frais de gestion et commission de performance. Coûts de transaction et budget sont payés par votre société de gestion.</p>
@@ -4440,12 +4442,12 @@ function screenPlay(){
   <div class="block"><div class="blockhead"><h2>Bruits de salle et rumeurs</h2><span class="hint">T${S.q+1} · ${S.rumors.length} sources</span></div>
    ${S.rupture?`<div class="flag" style="margin:0 0 10px"><span><b>Rupture factorielle sur ${INSTR[S.rupture.i].sym}</b> — sa sensibilité au facteur « ${FACT[S.rupture.k].nm.toLowerCase()} » passe de ${S.rupture.old>=0?'+':'−'}${dec(Math.abs(S.rupture.old),2)} à ${S.rupture.nw>=0?'+':'−'}${dec(Math.abs(S.rupture.nw),2)} : ${S.rupture.why}.</span></div>`:''}
    <div class="wire" id="news"></div>
+   ${PROF().numeric?`<div class="wire" style="margin:10px 0 8px"><div class="kv" style="padding-bottom:6px"><span><b>Le book que le modèle construirait</b></span></div><div id="factest"></div></div>`:''}
    <details style="margin-top:8px"><summary>Sous le capot · sources, avis du desk, matrice</summary>
     <div class="kicker" style="margin:10px 0 4px">LIRE LES SOURCES</div>
     <p class="note">Chaque source prétend un effet sur les quatre facteurs — croissance, inflation, dollar, appétit pour le risque — de ▼▼ à ▲▲. La <em>fiabilité</em> est la probabilité que la source dise vrai : faible ≈ ${Math.round((RELP.faible+RESREL[S.bud.res])*100)} %, moyenne ≈ ${Math.round((RELP.moyenne+RESREL[S.bud.res])*100)} %, forte ≈ ${Math.round((RELP.forte+RESREL[S.bud.res])*100)} % au niveau de recherche choisi. Une pré-annonce concerne un événement qui peut survenir en cours de trimestre — ou pas.</p>
     <p class="note">Leur nombre et leur fiabilité dépendent du budget de recherche macro et de votre style. Les quatre tuiles de la barre du haut en donnent la lecture consolidée ; le rendement attendu de chaque marché en tient compte.</p>
     <div class="kicker" style="margin:12px 0 4px">CE QUE PENSE LE DESK</div>
-   ${PROF().numeric?`<div class="wire" style="margin-bottom:8px"><div class="kv" style="padding-bottom:6px"><span><b>Le book que le modèle construirait</b></span></div><div id="factest"></div></div>`:''}
     <p class="note">${STYLEW[S.prof].txt} Il agrège les impacts prétendus de vos sources, pondérés par leur fiabilité (2p−1) et par la famille de la source, puis traduit le tout en positions via la matrice factorielle, en y ajoutant les signaux de tendance, de portage et de valeur selon les poids de votre style. La lecture consolidée ci-dessus dit <em>ce que pensent les sources</em> ; ce book dit <em>ce qu'il faudrait acheter ou vendre</em> si vous suiviez votre desk. À vous de suivre, de nuancer ou d'ignorer.</p>
     <div class="wire" id="rsum"></div>
     <div class="kicker" style="margin:12px 0 4px">MATRICE D'EXPOSITION FACTORIELLE${S.rupture?' <b style="color:var(--warn)">· rupture</b>':''}</div>
@@ -4885,7 +4887,7 @@ function rowInfo(i){
   const ex1=pc2(profitBook(kp)-profitBook(S.k));
   const k0=S.k0?S.k0[i]:S.k[i],d=S.k[i]-k0,t=tcost(d,i);
   const od=d>0?`<b class="pos-g">achat ${d}</b>`:d<0?`<b class="neg-g">vente ${-d}</b>`:'<b class="dim-g">aucun</b>';
-  const pM=pc2(profitBook(km)-profitBook(S.k)),pct1=v=>`<b class="${v>0.05?'neg-g':v<-0.05?'pos-g':'dim-g'}">${v>=0?'+':'−'}${dec(Math.abs(v),1)} %</b>`;
+  const pM=pc2(profitBook(km)-profitBook(S.k)),pct1=v=>`<b class="${v>0.005?'neg-g':v<-0.005?'pos-g':'dim-g'}">${v>=0?'+':'−'}${dec(Math.abs(v),2)} %</b>`;
   gl=`<div class="rgrid2"><div><span class="k">+1</span> rentabilité ${ex1} · risque ${pct1(rP)}</div><div><span class="k">−1</span> rentabilité ${pM} · risque ${pct1(rM)}</div></div>`}
  el.innerHTML=`<div class="fxe2">${ex}</div>${gl}`;
 }
@@ -5000,12 +5002,12 @@ function screenComm(){
  const w=weights(S.k),sp=pvol(w),g=VOL().goal/4;
  const spD=Math.max(sp,0.04);
  const opts=[
-  {id:'none',ico:'🤐',nm:"Silence radio",who:"« On verra à la fin du trimestre »",p:"Pas de lettre, pas de réunion, aucun chiffre avancé. Vous ne risquez rien et vous ne gagnez rien : personne ne pourra vous reprocher une promesse manquée, personne ne vous créditera d'un bon trimestre annoncé d'avance.",
-   ret:null,win:{lp:0,rc:0},lose:{lp:0,rc:0},neutre:true},
-  {id:'prud',ico:'📄',nm:"Communication standard",who:"« Nous visons l'objectif du mandat »",p:`Vous annoncez l'objectif trimestriel de votre mandat, soit ${pctc(g)}. C'est ce que les investisseurs attendent de toute façon : le tenir rassure, le manquer se remarque.`,
-   ret:g,win:{lp:4,rc:4},lose:{lp:-4,rc:-4}},
-  {id:'fort',ico:'📣',nm:"Conviction forte",who:"« C'est le trimestre de l'année »",p:`Vous annoncez trois fois l'objectif de votre mandat, soit ${pctc(3*g)}. Si vous y arrivez, on vous croira sur parole pendant deux ans. Sinon, on s'en souviendra aussi longtemps.`,
-   ret:3*g,win:{lp:15,rc:15},lose:{lp:-15,rc:-15}}
+  {id:'prud',ico:'📄',nm:"Communication standard",who:"« Nous visons un trimestre solide »",p:`Vous annoncez ${pctc(0.03)} sur le trimestre. C'est ce que les investisseurs attendent d'un fonds macro : le tenir rassure, le manquer se remarque.`,
+   ret:0.03,win:{lp:4,rc:4},lose:{lp:-4,rc:-4}},
+  {id:'fort',ico:'📣',nm:"Conviction forte",who:"« C'est le trimestre de l'année »",p:`Vous annoncez ${pctc(0.09)}. Si vous y arrivez, on vous croira sur parole pendant longtemps. Sinon, on s'en souviendra aussi longtemps.`,
+   ret:0.09,win:{lp:12,rc:12},lose:{lp:-12,rc:-12}},
+  {id:'gourou',ico:'🔮',nm:"Prophétie de gourou",who:"« Nous allons écraser le marché »",p:`Vous annoncez ${pctc(0.15)} en un trimestre, devant les caméras. Tenu, vous entrez dans la légende des dîners en ville ; manqué, dans les mèmes des salles de marché.`,
+   ret:0.15,win:{lp:22,rc:22},lose:{lp:-25,rc:-25}}
  ];
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Ce que vous annoncez</h2><span class="hint">aux investisseurs</span></div>
@@ -6038,6 +6040,12 @@ function screenDebrief(o){
   <table class="qt" style="margin-top:12px"><thead><tr><th>Fonds</th><th>Risque</th><th>Trim.</th><th>Cumul</th></tr></thead><tbody>
   ${all.map(a=>({a,cv:a.cv})).sort((x,y)=>y.cv-x.cv).map(({a,cv})=>`<tr class="${a.me?'me':''}"><td>${a.nm}${a.th?`<br><span class="neg-g" style="font-size:11px">accident de levier</span>`:''}</td><td>${a.rk!==undefined?dec(a.rk*50,1)+' %':''}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(cv)}">${sgn(cv,1)}</td></tr>`).join('')}
   </tbody></table>
+  ${(()=>{const T0=S.tresQ0!==undefined?S.tresQ0:0,T1=mgrCash(),it=[['Commission de gestion',Gq.mgmt||0],['Commission de performance',Gq.perf||0],["Bonus d'objectif",bon],['Co-investissement',Gq.coinv||0],['Restitution',-(Gq.claw||0)],["Budget d'exploitation",-(Gq.ops||0)],["Coûts d'exécution",-(Gq.tc||0)]];
+   const oth=T1-T0-it.reduce((a,x)=>a+x[1],0);if(Math.abs(oth)>1e-7)it.push(['Autres (accidents, incidents, desk payés par vous)',oth]);
+   return `<table class="qt" style="margin-top:12px"><thead><tr><th style="text-align:left">Trésorerie</th><th>M$</th></tr></thead><tbody>
+    <tr><td style="text-align:left">Début du trimestre</td><td>${mm(T0)}</td></tr>
+    ${it.filter(x=>Math.abs(x[1])>1e-9).map(x=>`<tr><td style="text-align:left">${x[0]}</td><td class="${cls(x[1])}">${x[1]>=0?'+':'−'}${mm(Math.abs(x[1]))}</td></tr>`).join('')}
+    <tr class="me"><td style="text-align:left"><b>Fin du trimestre</b></td><td><b class="gold-g">${mm(T1)}</b></td></tr></tbody></table>`})()}
  </div>`;
  const coSel=(S.over||S.q>=QT())?'':`<div class="block"><div class="blockhead"><h2>Co-investissement</h2><span class="hint">trimestre prochain</span></div>
   <p class="note" style="margin-top:0">Part de votre trésorerie placée dans le fonds : elle suit son résultat net, gains comme pertes, et reste comptée dans la trésorerie à sa valeur du moment. 25 % au moins ; la somme placée entre dans l'encours du fonds.</p>

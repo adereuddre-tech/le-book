@@ -994,6 +994,14 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   La rentabilité affichée compte l'impact de marché des ordres depuis le book de départ (`tcost().imp`),
   pas la commission, payée par le gérant.
 
+- **Lot 87** (`lot87/patch.py`, affichage et annonce, pas de campagne) : annonce à trois crans fixes — standard 3 %
+  (±4), conviction forte 9 % (±12), « Prophétie de gourou » 15 % (+22/−25) ; « silence radio » retiré, objectif
+  « Le moine » exclu (`pre:'never'`), haut fait « L'invisible » devenu inaccessible. Risque des marchés à deux
+  décimales. Systématique : le book du modèle affiché hors du bloc replié. Pop-up d'encours : souscriptions et
+  rachats cumulés (`S.flowInC`, `S.flowOutC`, cumulés à l'ouverture), co-investissement et sa part, encours hors
+  vous, seuil de fermeture. Débriefing : tableau de la trésorerie (début `S.tresQ0`, commissions, bonus,
+  co-investissement, restitution, budget, exécution, autres par différence, fin).
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
