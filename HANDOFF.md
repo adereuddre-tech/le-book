@@ -1002,6 +1002,9 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   vous, seuil de fermeture. Débriefing : tableau de la trésorerie (début `S.tresQ0`, commissions, bonus,
   co-investissement, restitution, budget, exécution, autres par différence, fin).
 
+- **Lot 88** : objectif « Joueur de poker » (annoncer ≥ 9 % et les livrer, bonus 0,10) à la place du « Moine » ;
+  haut fait « Le prophète » (palier 3, tenir une prophétie de gourou, `tq`) à la place de « L'invisible ».
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.
