@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **93**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **94**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -467,6 +467,11 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
   place de Mireille). `PERSO` : 5 anecdotes sur une personne précise, retirées en son absence ; anecdotes de Sœur
   Marie-Alpha retirées sans elle (texte au féminin). `ev.t0` garde le titre d'origine pour `usedExec`/`usedEv`.
   Répliques d'arrivée (`hi`) dans le toast de recrutement. Régression 18 parties 0/0/0, reprises à froid OK.
+- **Lot 94** (`lot94/p1–p4.py`) : pas de co-investissement au premier trimestre (trésorerie de départ = commission de
+  gestion, 500 k$) ; front office 0/10/25/45/70/100/150 pb ; « indemnités » → « versement du bonus » ; classe sans trader
+  ×5 (`NOTRD`) après campagne de 180 parties appariées : ×3 −0,3 ± 0,8 M$ face à ×1,5, ×5 −2,6 ± 1,5 ; équipe complète
+  − standard −1,2 ± 1,3 à ×3, +1,1 ± 1,6 à ×5. Neuf anecdotes de milieu de trimestre pour Maître Lettrage (bo ≥ 1),
+  Josiane Suspens (bo ≥ 2) et Tatillon (bo ≥ 4), filtrées par `persoOk`. Couverture forcée sans anomalie.
 
 ## Calibration actuelle (lots 85–86, bot habituel sauf mention)
 
@@ -488,9 +493,10 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 ## Reste à faire
 
 ### Équipe : suite
-- Textes des nouveaux venus (Maître Lettrage, Josiane Suspens, Tatillon) : aucune anecdote ne les cite encore.
+- Textes des nouveaux venus : trois anecdotes chacun (lot 94), à étoffer.
+- Bonus d'équipe proposé au lot 94 (enveloppe à la clôture, bénéficiaire désigné), en attente de validation.
 - Économiste en chef proposé par Antoine, absent de `FOP` (7 crans pris).
-- Premier trimestre : la caisse (≈ 126 k$) ne paie pas le standard, le front tombe à Dwight seul.
+- Premier trimestre : 500 k$ en caisse contre 600 k$ pour le standard (45 + 15 pb) : le front descend d'un cran.
 - Crans hauts non rentables pour le bot (voir lot 92) : effets à renforcer ou prix à baisser, à remesurer.
 
 ### Ensuite
