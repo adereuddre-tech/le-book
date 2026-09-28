@@ -988,6 +988,12 @@ pression graduelle et jouable, pas la liquidation, qui est une falaise.
   retranche lui-même drain et accidents, le glouton (`av` 0) maximise l'affichage. Difficile `lpNeg` 1,60 → 1,40.
   Campagne 135 : habituel 13,3 (64 %), glouton 3,8 (29 %, risque 0,40), apparié −9,5 ± 2,7 ; difficile 13,9 (47 %).
 
+- **Lot 86** : concurrents plus forts (`rivSkill` facile 0,02 → 0,05, normal 0,05 → 0,09, difficile 0,15 → 0,18) ;
+  rachats adoucis `RDM={lp0:0.015,lpk:0.002,dd0:0.04,ddk:0.20,low:0.01}`. Campagne (variante J2 sur J1) : normal
+  14,5 M$, survie 73 %, rang moyen 2,6 (≈ 1,9 au lot 79) ; difficile 14,3 M$, survie 64 %, rang 3,0.
+  La rentabilité affichée compte l'impact de marché des ordres depuis le book de départ (`tcost().imp`),
+  pas la commission, payée par le gérant.
+
 ### Campagne générale après le lot 75 (720 parties, copie figée = `index.html` de `d49a409`, 0 erreur)
 
 Bot intelligent, 30 graines × 3 styles au standard ; options sur les graines 1–15, écart apparié.

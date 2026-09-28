@@ -825,15 +825,15 @@ const SIZES=[
  {id:'small',lvl:'Débutant',nav:0.1,capX:1,perf:0.15,nm:"Facile — 15 % de performance",who:"« Des concurrents à votre portée »",
   p:"Des concurrents solides mais battables, un comité qui vous laisse respirer, des investisseurs qui pardonnent un mauvais trimestre. Vous touchez 15 % de la performance au-dessus du plus haut historique.",
   ef:[["g","concurrents moins adroits"],["g","investisseurs patients, flux plus calmes"],["g","comité indulgent"],["b","commission de performance : 15 %"]],
-  rivSkill:0.020,rivVol:0.95,lpNeg:0.60,rcNeg:0.75,lp0:8,flowMult:0.75,flowIn:0.60,goalMult:1},
+  rivSkill:0.050,rivVol:0.95,lpNeg:0.60,rcNeg:0.75,lp0:8,flowMult:0.75,flowIn:0.60,goalMult:1},
  {id:'mid',lvl:'Normal',nav:0.1,capX:1,perf:0.20,nm:"Moyen — 20 % de performance",who:"« La place telle qu'elle est »",
   p:"Trois très bons concurrents, un comité vigilant, des investisseurs qui comparent. La commission de performance habituelle du métier : 20 %.",
   ef:[["g","commission de performance : 20 %"],["b","concurrents très bons, chacun dans son style"],["b","investisseurs exigeants, comité vigilant"]],
-  rivSkill:0.050,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1},
+  rivSkill:0.090,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1},
  {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.25,nm:"Difficile — 25 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
   p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 25 % de la performance, et les souscriptions arrivent aussi vite que les rachats.",
   ef:[["g","commission de performance : 25 %"],["g","flux violents dans les deux sens : un bon trimestre attire gros"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
-  rivSkill:0.150,rivVol:1.10,rivBud:1,lpNeg:1.40,rcNeg:1.35,lp0:-8,flowMult:1.15,flowIn:1.60,goalMult:1}
+  rivSkill:0.180,rivVol:1.10,rivBud:1,lpNeg:1.40,rcNeg:1.35,lp0:-8,flowMult:1.15,flowIn:1.60,goalMult:1}
 ];
 const UNIVS=[
  {id:'fin',edge:0.75,lpMult:0.90,lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
@@ -2554,7 +2554,7 @@ function grossBn(k){let g=0;for(let i=0;i<N;i++)g+=Math.abs(notionalBn(k[i],i));
    confiance basse 4 %, risque 0,30 %/pt) */
 /* lot 84 : terme quadratique — le risque élevé devient brutal */
 const RISKQ={lp:1.2,fl:2.5};
-const RDM={lp0:0.03,lpk:0.003,dd0:0.06,ddk:0.25,low:0.02},RDMFK=0.15;
+const RDM={lp0:0.015,lpk:0.002,dd0:0.04,ddk:0.20,low:0.01},RDMFK=0.15;
 const RISKCAP={y:0.30,r:0.45};
 /* lot 80 : les investisseurs lisent le risque ex ante à chaque clôture — confiance −k par tranche de 5 pts
    au-delà de x0, et retraits au-delà de fl (fraction de l'encours par point de risque), vous comme les concurrents */
