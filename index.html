@@ -2971,9 +2971,10 @@ function planQuarter(){
     la performance et le bonus d'objectif attendent la clôture */
  S.tresQ0=mgrCash();   /* lot 87 */
  payBonus();   /* lot 95 */
+ const cashCo=Math.max(0,mgrCash());   /* lot 98 : co-investissement en % de la trésorerie après bonus */
  S.qMgmtM=VOL().mgmt*S.nav;S.nav-=S.qMgmtM;S.mgrFees+=S.qMgmtM;S.cMgmt=(S.cMgmt||0)+S.qMgmtM;refreshGain();
  {if(S.coinvIn&&!S.coinvLock){S.nav-=S.coinvIn;S.navQ0-=S.coinvIn;S.coinvIn=0}   /* reprise d'une sauvegarde d'avant le lot 90 */
-  const tg=S.q>=1?coinvPct()*Math.max(0,mgrCash()):0;   /* lot 94 : rien au premier trimestre */
+  const tg=S.q>=1?coinvPct()*cashCo:0;   /* lot 94 : rien au premier trimestre */
  S.nav+=tg;S.navQ0+=tg;S.coinvBase=tg;S.coinvIn=tg;S.coinvLock=tg}S.lpQ0=S.lp;   /* lot 84 : la part placée entre dans l'encours */   /* lot 81-82 : part co-investie fixée à l'ouverture */
 }
 function eventFactorVec(ev){
@@ -3620,11 +3621,15 @@ const COINVS=[0.25,0.50,0.75,0.90,0.95,1.00];
 function coinvPct(){return S.coinvPct||COINV}
 /* restitution : sous le plus-haut, le gérant rend CLAW × repli des commissions de performance des quatre
    derniers trimestres (plafonné à 100 %) ; ce qui a été rendu ne l'est pas deux fois */
-const CLAW=3;
+const CLAW=0;   /* lot 98 : restitution supprimée, le co-investissement fait déjà partager les pertes */
 /* lot 90 : la part co-investie est bloquée dans le fonds pendant le trimestre — hors de la trésorerie disponible,
    dans l'encours ; elle revient à la clôture avec son résultat (rachat automatique du gérant) */
 function coinvLocked(){return S&&S.coinvLock?S.coinvLock*(1+((S.phase==='events'&&S.live)?liveNet():0)):0}
-function mgrCash(){return mgrNet()-coinvLocked()}   /* lot 63 : pas de capital de départ, trésorerie = gains nets */
+function mgrCash(){return mgrNet()-coinvLocked()}
+/* lot 98 : au débriefing, la trésorerie affichée déduit déjà le bonus d'équipe choisi puis la part co-investie */
+function bonPend(){if(!S||S.phase!=='debrief'||S.over||S.q>=QT())return 0;const pf=(S.mgrQ&&S.mgrQ.perf)||0;return pf>0?Math.min(BONUS[S.bonI||0]*pf,Math.max(0,mgrCash())):0}
+function coPend(){if(!S||S.phase!=='debrief'||S.over||S.q>=QT())return 0;return coinvPct()*Math.max(0,mgrCash()-bonPend())}
+function cashView(){return mgrCash()-bonPend()-coPend()}   /* lot 63 : pas de capital de départ, trésorerie = gains nets */
 function liveTC(){let tot=0;const k0=S.k0||S.k;for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}return tot}
 function costsNow(){
  const tc=S.phase==='book'?liveTC()/S.nav:(S.pendingTC||0);
@@ -3937,7 +3942,7 @@ function statusBar(done){
   </div>
   <div class="srow">
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
-   <button class="tile gold" data-gauge="gain"><span>Trésorerie</span><b id="gaintile" class="${mgrCash()>=0?'':'neg-g'}">${treso(mgrCash())}</b></button>
+   <button class="tile gold" data-gauge="gain"><span>Trésorerie</span><b id="gaintile" class="${cashView()>=0?'':'neg-g'}">${treso(cashView())}</b></button>
    <button class="tile gauge${(mvL||mvR)?' moved':''}" data-gauge="lp" style="flex:2.1${mvSty(mvL||mvR)}"><span><i>Confiance</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,conf()):Math.round(conf())}${S.phase==='book'&&S._pv?(()=>{const nl=Math.max(0,Math.min(100,S.lp+cf(S._pv.lp,S._pv.rc))),nc=nl,d=nc-conf();return Math.abs(d)>=0.05?`<span class="${cls(d)}">→${Math.round(nc)}</span>`:''})():''}</b></span><span class="track"><i style="width:${conf()}%;background:${gc(conf())}"></i></span></button>
    ${cardTile()}
   </div>
@@ -4160,7 +4165,7 @@ function resultCard(kick,title,paras,rows,btn,next,extra){
  if(hold)theatre(app.querySelector('.evwrap'));   /* racine propre à l'écran : ses écouteurs meurent avec lui */
 }
 function refreshGain(){const e=document.getElementById('gaintile');if(!e||!S)return;
- const v=mgrCash();e.textContent=treso(v);e.className=v>=0?'':'neg-g'}
+ const v=cashView();e.textContent=treso(v);e.className=v>=0?'':'neg-g'}
 function refreshStatus(){const el=app.querySelector('.status');if(el)el.outerHTML=statusBar(S.statusDone)}
 function openModal(title,html){
  let m=document.getElementById('modal');
@@ -4302,7 +4307,7 @@ function showGauge(id){
   const tcNow=S.phase==='book'?liveTC():(S.pendingTC||0)*S.nav,tcAll=S.led?(S.cTC||0)+tcNow:(S.totalTC||0)+(S.phase==='book'?liveTC():0);
   const it=[[`Commissions de gestion`,S.cMgmt||0],[`Commissions de performance`,S.cPerf||0],[`Bonus d'objectif`,S.cBon||0],
    [`Résultat du co-investissement${cLive?' (dont en cours '+(cLive>=0?'+':'−')+mm(Math.abs(cLive))+')':''}`,(S.mgrCoinv||0)+cLive],
-   [`Restitution de commissions`,-(S.mgrClaw||0)],[`Budget d'exploitation`,-(S.cOps||0)],[`Bonus d'équipe`,-(S.cBonT||0)],[`Courtage de vos ordres${tcNow?' (dont trimestre en cours −'+mm(tcNow)+')':''}`,-tcAll]];
+   ...((S.mgrClaw||0)>0?[[`Restitution (avant le lot 98)`,-(S.mgrClaw||0)]]:[]),[`Budget d'exploitation`,-(S.cOps||0)],[`Bonus d'équipe`,-(S.cBonT||0)],[`Courtage de vos ordres${tcNow?' (dont trimestre en cours −'+mm(tcNow)+')':''}`,-tcAll]];
   const oth=net-it.reduce((a,x)=>a+x[1],0);
   if(Math.abs(oth)>1e-7)it.push([S.led?`Autres : accidents de levier, incidents payés par vous`:`Non ventilé (partie commencée avant la mise à jour)`,oth]);
   const pc=Math.round(coinvPct()*100);
@@ -4311,14 +4316,14 @@ function showGauge(id){
    <p style="margin:12px 0 4px">D'où viennent vos gains nets, depuis le premier jour</p>
    ${tbl([...it.filter(x=>Math.abs(x[1])>1e-9).map(x=>[x[0],sg(x[1])]),[`<b>Gains nets · le score</b>`,`<b class="${net>=0?'pos-g':'neg-g'}">${score(net)}</b>`],
      ...(lock?[[`Part co-investie, bloquée (valeur du moment)`,`<b class="neg-g">−${mm(lock)}</b>`]]:[]),
-     [`<b>Trésorerie disponible</b>`,`<b class="${mgrCash()>=0?'gold-g':'neg-g'}">${mm(mgrCash())}</b>`]])}
+     [`<b>Trésorerie disponible</b>`,`<b class="${mgrCash()>=0?'gold-g':'neg-g'}">${mm(mgrCash())}</b>`],...(bonPend()+coPend()>0?[[`Bonus d'équipe choisi`,`<b class="neg-g">−${mm(bonPend())}</b>`],[`Co-investissement du prochain trimestre`,`<b class="neg-g">−${mm(coPend())}</b>`],[`<b>Après vos choix</b>`,`<b class="${cashView()>=0?'gold-g':'neg-g'}">${mm(cashView())}</b>`]]:[])])}
    <p class="note" style="margin-top:6px">${mgrCash()>=0?`Il vous reste <em>${mm(mgrCash())}</em> pour payer budget et ordres.`:`Vous êtes à découvert de <em>${mm(-mgrCash())}</em> : dépenses bloquées jusqu'à la prochaine commission.`}</p>
    <p style="margin:12px 0 4px">Le co-investissement</p>
    ${lock?tbl([[`Part placée à l'ouverture`,`${pc} % · ${mm(S.coinvBase)}`],[`Valeur du moment`,`${mm(lock)}${cLive?' · '+sg(cLive):''}`],[`Rendue à la clôture`,`${mm(S.coinvBase)} × (1 + résultat du fonds)`],[`Part au trimestre prochain`,`${Math.round((S.coinvPct||COINV)*100)} %`]])
      :tbl([[`Part placée en ce moment`,S.q===0?`aucune au premier trimestre`:`aucune, trimestre clos`],[`Part au trimestre prochain`,`${pc} % de la trésorerie d'ouverture`]])}
    <p class="note" style="margin-top:6px">À l'ouverture de chaque trimestre, après la commission de gestion, ${pc} % de votre trésorerie entre dans le fonds, aux côtés des investisseurs. Cette somme ne paie ni budget ni ordres. À la clôture, la société la rachète automatiquement : elle récupère la mise plus ou moins le résultat du fonds sur le trimestre, qui passe dans vos gains. Avec vos chiffres, ${mm(ex)} placés rapportent ${mm(ex*0.05)} si le fonds fait +5 % et en coûtent autant s'il fait −5 %. Cumul depuis le début : ${sg((S.mgrCoinv||0)+cLive)}.</p>
    <p class="note">Pourquoi : la commission de performance ne vous fait partager que les gains ; le co-investissement vous fait aussi partager les pertes, en proportion de la part placée. La part se choisit au débriefing, 25 % au moins.</p>
-   <details><summary>Chaque ligne, en détail</summary><p class="note"><em>Gestion</em> : ${dec(VOL().mgmt*400,1)} % par an de l'encours, versée à l'ouverture, votre seul revenu certain. <em>Performance</em> : versée à la clôture, seulement au-dessus du plus haut historique du fonds. <em>Bonus</em> : objectif du trimestre tenu. <em>Restitution</em> : si le fonds finit sous son plus haut, vous rendez une part des commissions de performance des quatre derniers trimestres (trois fois le repli, 100 % au plus). <em>Budget</em> : les salaires du front et du back office, choisis en début de trimestre, et le bonus versé à ceux qui partent quand vous baissez d'un cran. <em>Courtage</em> : la facture de vos ordres, dépêches comprises ; l'impact de marché, lui, est payé par le fonds. <em>Autres</em> : ce que les accidents de levier et les incidents opérationnels ont mis à votre charge.</p></details>`);
+   <details><summary>Chaque ligne, en détail</summary><p class="note"><em>Gestion</em> : ${dec(VOL().mgmt*400,1)} % par an de l'encours, versée à l'ouverture, votre seul revenu certain. <em>Performance</em> : versée à la clôture, seulement au-dessus du plus haut historique du fonds. <em>Bonus</em> : objectif du trimestre tenu. <em>Budget</em> : les salaires du front et du back office, choisis en début de trimestre, et le bonus versé à ceux qui partent quand vous baissez d'un cran. <em>Courtage</em> : la facture de vos ordres, dépêches comprises ; l'impact de marché, lui, est payé par le fonds. <em>Autres</em> : ce que les accidents de levier et les incidents opérationnels ont mis à votre charge.</p></details>`);
  } else if(id==='cost'){
   const c=costsNow();const k0=S.k0||S.k;
   const rows=[];for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9&&S.phase==='book'){const t=tcost(d,i);rows.push([`${INSTR[i].sym} ${k0[i]>0?'+':''}${k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,`${dec(t.bp,1)} pb`,`−${mm(t.cost)}`])}}
@@ -4608,9 +4613,9 @@ function drawBuds(){
  const G=S.gone&&S.gone.n===0&&S.bud.fo>=S.gone.p?S.gone:null,cb=G?FOP[G.p].bp-FOP[G.p-1].bp:0,cok=G&&(budgetBp()+cb)*1e-4*S.nav<=purse;
  document.getElementById('buds').innerHTML=BUDGET.map(b=>{const cur=S.bud[b.id];return `<div class="brow">
    <div class="bh"><b><span class="bico">${b.ico}</span>${b.nm}</b><span>${b.lv[cur].bp} pb · ${mm(b.lv[cur].bp*1e-4*S.nav)}</span></div>
-   <p class="note" style="margin:2px 0 6px">${b.id==='fo'?`Touchez une personne : l'équipe va jusqu'à elle. Le prix est celui de toute l'équipe.`:`Touchez un poste : le back office va jusqu'à lui.`}</p>
+   <p class="note" style="margin:2px 0 6px">${b.id==='fo'?`Touchez une personne : l'équipe va jusqu'à elle. Le prix est celui de toute l'équipe.`:`Touchez un poste : le back office va jusqu'à lui.`} <b class="neg-g">Descendre, c'est licencier : chaque partant touche son bonus de départ, un trimestre de salaire.</b></p>
    <div class="team">${b.lv.map((l,i)=>{const gone=b.id==='fo'&&G&&G.p===i,o=ok(b.id,i);
-    return `<button class="lvl tm ${i<=cur?'in':''} ${cur===i?'on':''}${gone?' gone':''}" data-b="${b.id}" data-i="${i}"${o?'':' disabled'}><span class="tic">${l.ic}</span><span class="tnm"><b>${l.full}</b><i>${gone?`parti chez ${G.boss}`:l.role}</i></span><span class="tbp">${l.bp} pb<br>${o?mm(l.bp*1e-4*S.nav):'hors caisse'}</span></button>`}).join('')}</div>
+    return `<button class="lvl tm ${i<=cur?'in':''} ${cur===i?'on':''}${gone?' gone':''}" data-b="${b.id}" data-i="${i}"${o?'':' disabled'}><span class="tic">${l.ic}</span><span class="tnm"><b>${l.full}</b><i>${gone?`parti chez ${G.boss}`:l.role}</i></span><span class="tbp">${l.bp} pb<br>${o?mm(l.bp*1e-4*S.nav):'hors caisse'}${S.budPrev&&i<S.budPrev[b.id]?`<br><span class="neg-g">départs −${mm((b.lv[S.budPrev[b.id]].bp-l.bp)*1e-4*S.nav)}</span>`:''}</span></button>`}).join('')}</div>
    ${b.id==='fo'&&G?`<div class="flag" style="margin:8px 0 0"><span><b>${FOP[G.p].who} est parti chez ${G.boss}.</b> Son siège reste vide ce trimestre${FOP[G.p].cls?` : la classe ${FOP[G.p].cls.toLowerCase()} passe par un courtier`:''}. Contre-offre : un trimestre de son salaire, ${cb} pb (${mm(cb*1e-4*S.nav)}), et il revient tout de suite.</span></div><button class="lvl cntb" id="cnt"${cok?'':' disabled'}>Faire la contre-offre · ${mm(cb*1e-4*S.nav)}</button>`:''}
    <div class="lvef">${budEf(b.id,cur)}${b.id==='fo'?covTxt()+bonTxt():''}</div>
    <details style="margin-top:8px"><summary>À quoi sert ce budget · les ${b.lv.length} crans</summary><p class="note">${b.d}</p>${budExpl(b.id)}<ul class="efl">${b.lv.map((l,i)=>`<li><b>${l.who}</b> · ${l.bp} pb · ${budEf(b.id,i)}</li>`).join('')}</ul></details></div>`}).join('');
@@ -4870,7 +4875,7 @@ function riskMap(sp,big){
  const cs=colStdQ(),sq=Math.sqrt((sp/2)**2+cs*cs);   /* lot 84 : sans position, le risque est celui du collatéral */
  if(!S._kLast||S._kLast.length!==S.k.length){S._kLast=[...S.k];S._kGhost=null}
  else if(S._kLast.some((v,i)=>v!==S.k[i])){S._kGhost=S._kLast;S._kLast=[...S.k]}
- const kB=S._kGhost,gh=kB&&kB.length===S.k.length&&kB.some((v,i)=>v!==S.k[i])?{x:riskShown(weights(kB)).total/2,y:profitBook(kB)}:null;
+ const kB=S._kGhost,gh=kB&&kB.length===S.k.length&&kB.some((v,i)=>v!==S.k[i])?{x:Math.sqrt((riskShown(weights(kB)).total/2)**2+cs*cs),y:profitBook(kB)}:null;
  const xm=Math.max(0.05,sq,...R.map(r=>r.x),...(gh?[gh.x]:[]))*1.10;
  const ys=[pr,...R.map(r=>r.y),...(gh?[gh.y]:[])],ya=Math.min(0,...ys),yz=Math.max(0,...ys),ypad=Math.max(0.01,(yz-ya)*0.14);
  const y0=ya<0?ya-ypad:0,y1=yz+ypad;
@@ -6234,7 +6239,7 @@ function screenDebrief(o){
   <table class="qt" style="margin-top:12px"><thead><tr><th>Fonds</th><th>Risque</th><th>Trim.</th><th>Cumul</th></tr></thead><tbody>
   ${all.map(a=>({a,cv:a.cv})).sort((x,y)=>y.cv-x.cv).map(({a,cv})=>`<tr class="${a.me?'me':''}"><td>${a.nm}${a.th?`<br><span class="neg-g" style="font-size:11px">accident de levier</span>`:''}</td><td>${a.rk!==undefined?dec(a.rk*50,1)+' %':''}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(cv)}">${sgn(cv,1)}</td></tr>`).join('')}
   </tbody></table>
-  ${(()=>{const T0=S.tresQ0!==undefined?S.tresQ0:0,T1=mgrCash(),it=[['Commission de gestion',Gq.mgmt||0],['Commission de performance',Gq.perf||0],["Bonus d'objectif",bon],[Gq.cb?`Co-investissement (${Math.round((Gq.cp||0)*100)} % · ${mm(Gq.cb)} placés)`:'Co-investissement',Gq.coinv||0],['Restitution',-(Gq.claw||0)],["Budget d'exploitation",-(Gq.ops||0)],["Bonus d'équipe versé à l'ouverture",-(S.qBonT||0)],["Coûts d'exécution",-(Gq.tc||0)]];
+  ${(()=>{const T0=S.tresQ0!==undefined?S.tresQ0:0,T1=mgrCash(),it=[['Commission de gestion',Gq.mgmt||0],['Commission de performance',Gq.perf||0],["Bonus d'objectif",bon],[Gq.cb?`Co-investissement (${Math.round((Gq.cp||0)*100)} % · ${mm(Gq.cb)} placés)`:'Co-investissement',Gq.coinv||0],["Budget d'exploitation",-(Gq.ops||0)],["Bonus d'équipe versé à l'ouverture",-(S.qBonT||0)],["Coûts d'exécution",-(Gq.tc||0)]];
    const oth=T1-T0-it.reduce((a,x)=>a+x[1],0);if(Math.abs(oth)>1e-7)it.push(['Autres (accidents, incidents, desk payés par vous)',oth]);
    return `<table class="qt" style="margin-top:12px"><thead><tr><th style="text-align:left">Trésorerie</th><th>M$</th></tr></thead><tbody>
     <tr><td style="text-align:left">Début du trimestre</td><td>${mm(T0)}</td></tr>
@@ -6248,7 +6253,7 @@ function screenDebrief(o){
  const coSel=(S.over||S.q>=QT())?'':`<div class="block"><div class="blockhead"><h2>Co-investissement</h2><span class="hint">trimestre prochain</span></div>
   <p class="note" style="margin-top:0">Part de votre trésorerie placée dans le fonds : elle suit son résultat net, gains comme pertes, et reste comptée dans la trésorerie à sa valeur du moment. 25 % au moins.</p>
   <div class="cisel">${COINVS.map(p=>`<button class="cip${Math.abs(p-coinvPct())<1e-9?' on':''}" data-p="${p}">${Math.round(p*100)} %</button>`).join('')}</div>
-  <p class="note" id="cinote">${mm(coinvPct()*Math.max(0,mgrCash()))} placés au prochain trimestre.</p>
+  <p class="note" id="cinote">${mm(coPend())} placés au prochain trimestre, calculés après le bonus d'équipe.</p>
   <p class="note" style="margin-top:2px">Bloquée dans le fonds tout le trimestre, cette somme sort de votre trésorerie : elle ne paie ni budget, ni ordres, ni imprévus. Elle vous revient à la clôture, avec son résultat.</p></div>`;
  app.innerHTML=statusBar(true)+`<div class="fade">
   <div class="pnlhead"><div class="q">RÉSULTAT DU TRIMESTRE ${S.q} · TOUT COMPRIS</div>
@@ -6291,9 +6296,10 @@ function screenDebrief(o){
   ${detl.length?`<div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Rachats et collatéral · le détail</summary>${detl.map(t=>`<p class="note">${t}</p>`).join('')}</details></div>`:''}
   <button class="cta" id="nx">${S.over?'Voir le rapport final':(S.q>=QT()?`Clôturer les ${DUR().ans} an${DUR().ans>1?'s':''}`:'Trimestre suivant')}</button></div>`;
  theatre(app.querySelector('.pnlhead').parentElement);
- app.querySelectorAll('.bnp').forEach(b=>b.onclick=()=>{S.bonI=+b.dataset.i;app.querySelectorAll('.bnp').forEach(x=>x.classList.toggle('on',x===b))});
+ app.querySelectorAll('.bnp').forEach(b=>b.onclick=()=>{S.bonI=+b.dataset.i;app.querySelectorAll('.bnp').forEach(x=>x.classList.toggle('on',x===b));
+  const n=document.getElementById('cinote');if(n)n.textContent=`${mm(coPend())} placés au prochain trimestre, calculés après le bonus d'équipe.`;refreshGain()});
  app.querySelectorAll('.cip').forEach(b=>b.onclick=()=>{S.coinvPct=+b.dataset.p;app.querySelectorAll('.cip').forEach(x=>x.classList.toggle('on',x===b));
-  const n=document.getElementById('cinote');if(n)n.textContent=`${mm(coinvPct()*Math.max(0,mgrCash()))} placés au prochain trimestre.`});
+  const n=document.getElementById('cinote');if(n)n.textContent=`${mm(coPend())} placés au prochain trimestre, calculés après le bonus d'équipe.`;refreshGain()});
  goldFlush(3500);
  if(!S.over&&S.q<QT()){const nx=document.getElementById('nx'),qb=document.createElement('button');
   qb.className='quitb';qb.id='quit';qb.textContent='Abandonner';nx.after(qb);

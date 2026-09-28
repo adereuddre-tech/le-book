@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **97**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **98**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -499,6 +499,14 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
   cran 7. Le p1 est un diff : le script d'origine a été perdu lors d'un redémarrage de la machine.
   Campagne 90 parties appariées : bonus 5 % +0,1 ± 0,5 M$, 10 % −0,1 ± 0,4 (neutres). Contrôle sur les mêmes graines
   contre le lot 96 : −2,0 ± 1,0 M$ (nouvelles anecdotes), graines plus dures (3,8 M$, survie 60 %).
+- **Lot 98** (`lot98/p1–p2.py`) : ouverture du trimestre dans l'ordre bonus d'équipe → co-investissement en % de la
+  trésorerie restante (`cashCo`, avant la commission de gestion, qui reste hors co-investissement) → gestion. Au
+  débriefing, `cashView()` = `mgrCash()` − `bonPend()` − `coPend()` alimente la tuile, la note du co-investissement et
+  la pop-up ; vérifié égal aux montants réellement prélevés. Point fantôme du graphique rentabilité / risque : risque avec
+  le collatéral, comme le point courant. Restitution supprimée (`CLAW=0`, joueur et concurrents ; l'ancienne ligne ne
+  s'affiche que si une sauvegarde en porte). Budget : « descendre, c'est licencier » et coût des départs sous chaque cran
+  inférieur à celui du trimestre précédent (`S.budPrev`). Campagne 90 parties appariées contre le lot 97 : +3,8 ± 1,0 M$,
+  survie 69 → 78 %.
 
 ## Calibration actuelle (lots 85–86, bot habituel sauf mention)
 
