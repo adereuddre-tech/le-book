@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **99**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **101**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -516,6 +516,31 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
   incidents ×5/×2/×1/×0,8/×0,65/×0,5, gravité ×2/×1,3/×1/×0,8/×0,65/×0,5, accidents de levier ×2,5/×1,4/×1/×0,8/×0,65/×0,5,
   comité −3/−1,5/0/+2,5/+4/+5 ; quatre anecdotes pour elle (bo ≥ 5). Campagne 120 parties appariées : nouveau
   standard −0,5 ± 0,5 M$ contre le lot 98 (confiance moyenne 42 → 46), Tatillon −1,3 ± 1,3, Pare-Feu −2,0 ± 1,1.
+
+### Refonte « la totale » (A à E), validée par Antoine
+- **Lot 100, A · prime broker** (`lot100/p1–p2.py`) : ordre ouverture → desk → budget → book (rumeurs après le budget).
+  Type de produit `x.pt` (devises, fret, pluie = gré à gré, marge ×1,3 ; `PTYPE`), `mgRate(i)` = taux × type ×
+  `S.mgMult` (1 + 0,3·(liq − 1) à l'ouverture, ×(1 + 0,04·choc) après une grosse dépêche, plafond 1,5 ; ×`mg` d'un
+  scénario, plafond 2). Contrôle dans `stepEvents()` après chaque événement : au-delà de `MGC.thr` 50 %,
+  `screenMarginCall()` : apport de la société (juste sous le seuil, bloqué avec le co-investissement), coupe choisie
+  (×1,3, jusqu'à `MGC.back` 45 %), liquidation par le prime broker (×1,8, confiance −5, choix du minuteur). La marge
+  déposée rapporte T-bills −10 pb (`mgShare`, `colYield`, `colExp`, `colStdQ`). `TAILMG` 0 ; plus de pénalité de marge à
+  la validation. Liquidation automatique de clôture conservée. Mesuré seul : +0,6 ± 0,7 M$.
+- **Lot 101, B · scénarios de stress** (`lot101/p1–p10.py`) : 24 scénarios `STRESS` (10 sévères, 14 extrêmes 3 fois
+  moins probables) : chocs de facteurs `sh`, chocs de marchés `x`, cibles sur le book `tgt` (short, rogue, otc, crowd),
+  `liq`, `mg`, `shut`. Probabilité `stressP()` 10 à 32 % selon la liquidité affichée. Tirés à `planQuarter`
+  (`S.stressQ`), insérés dans la file comme une dépêche (tag `stress`), recalculés à l'affichage sur le book réel
+  (`stressEv`, `stressHit`). Immédiat × back office (0,5 + 0,5·`TAILM`), pertes × `crowd(sp)` = 1 + 2,5·max(0, sp − 0,20)/0,10,
+  coût de liquidité toujours perdant `stressGap` (`STRGAP` 0,28, ×2 si extrême). Plus d'accident de levier pour le
+  joueur (`tailP(sp)` = 0 sans `std` ; `tailExp` du joueur = coût attendu des scénarios). Panneau du book : les six pires
+  scénarios pour votre book, les autres repliés. Campagne 45 parties appariées contre le lot 99 : +2,8 ± 2,1 M$,
+  survie 59 % (62 % au lot 99 sur ces graines), vol du bot 20,4 % ; 1,3 scénario et 0,8 appel de marge par partie.
+  Réglages traversés : sans frein +24 ± 8,5 ; amplification seule +13 ; coût de liquidité 0,12 +9,6.
+- **À faire** : C (investisseurs nommés : caisse de retraite, fonds souverain, family office, fonds de fonds ; satisfaction,
+  rachats sur préavis d'un trimestre, souscriptions, gate ; remplacent les sept sources de rachats), D (comité à limites
+  affichées : vol ex ante, stop trimestriel contrôlé dans `stepEvents`, concentration ; limite négociable ; plus de
+  pénalités en double ni de jaune à confiance nulle), E (fin sur trésorerie négative à deux clôtures, à la place de
+  `FUNDMIN` et du repli de 50 %), puis recalibration complète.
 
 ## Calibration actuelle (lots 85–86, bot habituel sauf mention)
 
