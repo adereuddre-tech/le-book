@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **101**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **104**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -39,6 +39,8 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
   lancer détaché : `(setsid nohup bash tools/loop.sh plan.json res.jsonl > /dev/null 2>&1 < /dev/null &)`.
   Une partie ≈ 5–8 s sur un cœur ; 90 parties ≈ 8 min. Les processus meurent si le conteneur est recyclé :
   relancer `loop.sh`, il reprend au bon endroit.
+- `play.js … --clicks` : active la gate et négocie une limite à chaque débriefing où c'est possible.
+- `bot.js` : option `lim` (défaut vrai) — le bot ne dépasse pas 97 % de `limVol()`.
 - `reg.sh <fichier> <sortie>` puis `python3 tools/summ.py <sortie>` : régression de 18 parties.
 - `patches/lots76-90/lot89_cov.js` : couverture dynamique — évalue **tous** les prédicats d'objectif et de
   haut fait à chaque clôture de 36 parties ; repère les prédicats jamais / toujours vrais.
@@ -536,7 +538,42 @@ Outils ajoutés depuis le lot 75 (dans `tools/`, jsdom local : `npm i jsdom`) :
   scénarios pour votre book, les autres repliés. Campagne 45 parties appariées contre le lot 99 : +2,8 ± 2,1 M$,
   survie 59 % (62 % au lot 99 sur ces graines), vol du bot 20,4 % ; 1,3 scénario et 0,8 appel de marge par partie.
   Réglages traversés : sans frein +24 ± 8,5 ; amplification seule +13 ; coût de liquidité 0,12 +9,6.
-- **À faire** : C (investisseurs nommés : caisse de retraite, fonds souverain, family office, fonds de fonds ; satisfaction,
+- **Lot 102, C · investisseurs nommés** (`lot102/p1.py`) : `INVR` (caisse de retraite des Cheminots 35 %, fonds souverain
+  de Nordhavn 30 %, family office Vandermeer 15 %, fonds de fonds Albatros 20 %), état `S.inv=[{id,w,off,ntc}]` créé
+  paresseusement (`invs()`, les vieilles sauvegardes passent). Satisfaction = `S.lp` + `off` (humeur propre : poids par
+  cause de confiance `wt`, via `invCat` sur les libellés de `S.lpD`, ramenée vers `off0` ×0,85, bornée ±25). Sous `thr`
+  (25/20/35/30) : avis de rachat `ntc` = 30 % + 70 % × écart relatif × `flowMult`, payé à la clôture suivante, retiré à
+  `thr`+8 ; clause de repli de la caisse (½ de sa part au-delà de `ddMax()`). Souscriptions au-dessus de 65 (6/10/15/12 %
+  de la part × `flowIn` × capacité) ; retour d'un investisseur parti à 70 (5 % de l'encours initial). Gate (`gateOk`,
+  `S.gateNext`) choisie au débriefing si les avis dépassent 15 % de l'encours : paiement à 15 % au prorata, reste reporté,
+  confiance −6, pas deux trimestres de suite. `invFlow(v,amt)` tient les parts ; les flux d'anecdotes restent au prorata.
+  Supprimés : flux par concurrent, `RDM.low`, retrait pour risque, les deux `redeem()`, 5 % du rouge, `midFlows`.
+  Affichage : `invTable()` dans « L'essentiel » et la pop-up d'encours, alerte « avis de rachat ».
+- **Lot 103, D · comité à limites** (`lot103/p1–p2.py`) : `LIM` ; `limVol()` 0,30 annuel (15 % trimestriel, rouge ×1,5),
+  `limStop()` −10 %, `limConc()` 70 % du risque (`riskContrib`) dans une classe (`clsConc`) ; vol et stop × √(bande du back
+  office) × `bandTight`. Affichées par `limRows()` (book, pop-up du comité). Stop vérifié dans `stepEvents` (`screenStopQ`) :
+  couper de moitié (×1,3, aucun carton même si la perte continue, `S.stopCut`) ou passer outre (jaune, `S.stopY`) ; puis
+  `noAddQ`. Clôture : rouge si risque ≥ 1,5 × limite ou trimestre ≤ 2 × stop sans avoir coupé ; jaune si risque > limite,
+  stop franchi sans couper, concentration > limite. Négociation au débriefing (`S.limNeg={id,q}`) : risque ×1,25, stop +3
+  pts ou concentration +15 pts un trimestre, confiance −3 à l'ouverture, sans carton et pas deux fois de suite. Retirés :
+  cartons repli/médiane/book vide/appel de marge/confiance nulle, `midYellow`, pénalité de risque dans la confiance,
+  −7/−12 de clôture sur appel de marge, coût en confiance des cartons (−2/−6).
+- **Lot 104, E · fin économique** (`lot104/p1–p3.py`) : budget facturé sur `budNav()` = max(encours, encours initial) ;
+  garder son équipe n'est jamais verrouillé (seul monter exige la caisse, plus de rétrogradation automatique). Fin :
+  `S.cashNeg` ≥ 2 clôtures de suite en trésorerie négative (`S.over='cash'`, « Dépôt de bilan »), ou fonds vidé
+  (`extNav()` < 1 % de l'encours initial). `FUNDMIN`/`DDEND` ne sont plus lus. p2 : appel de marge en boucle sur un fonds
+  presque vide → book soldé si la coupe ne suffit pas.
+- **Recalibration** (bot avec `lim` : il respecte la limite de risque ; normal 90 parties appariées, difficile 45) :
+
+  | | Score moyen | Médiane | Survie | Fins (faillite / vidé) | Rang |
+  |---|---|---|---|---|---|
+  | Lot 101, normal | 22,8 | 11,0 | 64 % | — / 32 (encours) | 2,67 |
+  | Lot 104, normal | 21,9 | 10,3 | 76 % | 13 / 9 | 2,67 |
+  | Lot 104, difficile | 23,3 | 8,1 | 58 % | 10 / 9 | 2,96 |
+
+  Apparié lot 104 − lot 101 (normal) : −0,6 ± 1,9 M$ avant p3, p3 −0,7 ± 0,3. Rachats cumulés 23 M$ (70 au lot 101),
+  souscriptions 45. Quant faible : survie 63 % en normal, 33 % en difficile.
+- **À faire** (ancienne liste, fait aux lots 102–104) : C (investisseurs nommés : caisse de retraite, fonds souverain, family office, fonds de fonds ; satisfaction,
   rachats sur préavis d'un trimestre, souscriptions, gate ; remplacent les sept sources de rachats), D (comité à limites
   affichées : vol ex ante, stop trimestriel contrôlé dans `stepEvents`, concentration ; limite négociable ; plus de
   pénalités en double ni de jaune à confiance nulle), E (fin sur trésorerie négative à deux clôtures, à la place de
@@ -568,6 +605,12 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 - Économiste en chef (lot 96) : −6 M$ au bot pour 250 pb, surtout utile à la survie.
 - Premier trimestre : 500 k$ en caisse contre 600 k$ pour le standard (45 + 15 pb) : le front descend à Ingrid, accepté par Antoine.
 - Crans hauts non rentables pour le bot (voir lot 92) : effets à renforcer ou prix à baisser, à remesurer.
+
+### Après les lots 102–104
+- Survie du quant (63 % normal, 33 % difficile) contre 80–90 % pour les deux autres styles.
+- Normal à 76 % de survie pour une cible de 70 % (±4,5 pts à 90 parties) : à confirmer sur plus de parties.
+- Le bot ne négocie jamais de limite ni n'active la gate : leur valeur n'est pas mesurée.
+- « Risque du book » (`pct(RS.total)`) et la limite du comité (`pvol`) ne sont pas la même mesure : à harmoniser.
 
 ### Ensuite
 - Campagne de référence (voir Calibration).

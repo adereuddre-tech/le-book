@@ -944,8 +944,8 @@ function covered(g){const p=TRD[g];return p===undefined||here(p)}
 function cntOn(){return S&&S.cntQ===S.q?(S.cntBp||0):0}
 function sevRaw(){const P=S.budPrev;if(!P)return 0;return BUDGET.reduce((a,b)=>a+Math.max(0,b.lv[P[b.id]].bp-b.lv[S.bud[b.id]].bp),0)}
 /* budget du trimestre + bonus versés aux partants, plafonnées à ce qui reste en caisse : baisser un cran ne bloque jamais */
-function setOps(){S.mgrCosts-=S.qOps||0;S.cOps=(S.cOps||0)-(S.qOps||0);const purse=mgrCash(),b=budgetBp()*1e-4*S.nav;
- S.qSevM=Math.min(sevRaw()*1e-4*S.nav,Math.max(0,purse-b));S.qOps=b+S.qSevM;S.mgrCosts+=S.qOps;S.cOps+=S.qOps}
+function setOps(){S.mgrCosts-=S.qOps||0;S.cOps=(S.cOps||0)-(S.qOps||0);const purse=mgrCash(),b=budgetBp()*1e-4*budNav();
+ S.qSevM=Math.min(sevRaw()*1e-4*budNav(),Math.max(0,purse-b));S.qOps=b+S.qSevM;S.mgrCosts+=S.qOps;S.cOps+=S.qOps}
 function covTxt(){const op=GRP.filter(g=>g!=='Exotiques'||S.exoOpen),c=op.filter(covered),u=op.filter(g=>!covered(g));
  return `<br>Classes couvertes : ${c.map(g=>g.toLowerCase()).join(', ')||'aucune'}${u.length?` · <span class="neg-g">sans trader, courtier ×${dec(NOTRD,1)}</span> : ${u.map(g=>g.toLowerCase()).join(', ')}`:''}`}
 const EXECM=[1.35,1.3,1.04,0.75,0.666,0.575,0.498],   /* lot 38 : trois quarts de l'ancienne facture, le reste se paie en impact de marché */
@@ -2834,7 +2834,9 @@ function tcost(dk,i){
 /* Fin de partie : l'encours sous 5 % de son niveau de départ (−95 %). */
 const NAVEND=0.05;
 /* lot 82-83 : le fonds ferme sous 40 M$ d'encours (rachats compris) ou à 50 % de perte depuis le plus haut (hors rachats) */
-const FUNDMIN=0.04,DDEND=0.50;   /* lot 83 : 40 M$ */
+const FUNDMIN=0.04,DDEND=0.50;   /* lot 83 : 40 M$ ; lot 104 : plus lus pour la fin de partie */
+const FUNDEMPTY=0.01;   /* lot 104 : fonds vidé */
+function budNav(){return Math.max(S.nav,S.aum0||S.nav)}   /* lot 104 : salaires et loyer ne suivent pas l'encours à la baisse */
 function ddMax(){return (S&&PROF().ddMax)||0.28}
 /* Profondeur de chaque carnet, en Md$ de notionnel : ce qu'un ordre peut peser avant que le
    marché ne le fasse payer. Au-delà, l'impact croît en racine carrée du rapport. */
@@ -2934,6 +2936,7 @@ function planQuarter(){
  S.preDesk=null;
  if(rng()<0.45){const sav=STAKE.filter(e=>!S.usedStake.includes(e.t)&&!STAKE_POS.has(e.t));if(sav.length){const se=pick(sav);S.usedStake.push(se.t);S.preDesk={trader:true,stake:true,...se}}}
  S.stopQ=false;S.noAddQ=false;
+ if(S.limNeg&&S.limNeg.q===S.q&&!S.limNeg.paid){S.limNeg.paid=1;S.lp=Math.max(0,S.lp+LIM.negLp)}   /* lot 103 */
  (S.rivals||[]).forEach(rv=>{rv.vq=rivVolQ(rv);rivBudget(rv)});   /* lot 66 : risque du trimestre, sans tirage */
  S.tailEv=null;S.tailDone=false;S.tailQ=null;S._kLast=null;S._kGhost=null;S.huntP=null;
  /* incident opérationnel */
@@ -3484,6 +3487,73 @@ function goldFlush(delay){
 function bonusDraw(tag){return prng32(hash32('bonus'+tag+'_'+S.q,S.seed))()}
 function hasBonus(id){return !!(S.bonus&&S.bonus[id])}
 function markBonus(id){(S.bonus=S.bonus||{})[id]=S.q+1}
+/* ══════════ lot 103 : limites du comité ══════════ */
+const LIM={vol:0.30,red:1.5,stop:0.10,conc:0.70,negLp:-3,neg:{vol:1.25,stop:0.03,conc:0.15}};
+function limBO(){return Math.sqrt(BANDB[(S&&S.bud)?S.bud.risk:3]/BANDB[3])}
+function limNegOn(id,raw){return !raw&&!!(S&&S.limNeg&&S.limNeg.q===S.q&&S.limNeg.id===id)}
+function limVol(raw){return LIM.vol*limBO()*((S&&S.bandTight)||1)*(limNegOn('vol',raw)?LIM.neg.vol:1)}
+function limStop(raw){return (LIM.stop*limBO()+(limNegOn('stop',raw)?LIM.neg.stop:0))*((S&&S.bandTight)||1)}
+function limConc(raw){return Math.min(1,LIM.conc+(limNegOn('conc',raw)?LIM.neg.conc:0))}
+function clsConc(w){const sp=pvol(w);if(sp<1e-6)return {v:0,g:''};const rc=riskContrib(w),m={};INSTR.forEach((x,i)=>m[x.grp]=(m[x.grp]||0)+rc[i]);
+ let g='',v=0;for(const k in m){const f=m[k]/sp;if(f>v){v=f;g=k}}return {v,g}}
+function limRows(k){const w=weights(k),sp=pvol(w),cc=clsConc(w),lv=limVol(),lc=limConc(),ng=S.limNeg&&S.limNeg.q===S.q?S.limNeg.id:'';
+ return `<div class="kv"><span>Limite du comité · risque ex ante${ng==='vol'?' (négociée)':''}</span><b class="${sp>lv*LIM.red?'neg-g':sp>lv?'gold-g':''}">${dec(sp*50,1)} % / ${dec(lv*50,1)} %</b></div>
+  <div class="kv"><span>Limite · concentration${cc.g?' ('+cc.g.toLowerCase()+')':''}${ng==='conc'?' (négociée)':''}</span><b class="${cc.v>lc?'gold-g':''}">${Math.round(cc.v*100)} % / ${Math.round(lc*100)} %</b></div>
+  <div class="kv"><span>Limite · stop trimestriel${ng==='stop'?' (négocié)':''}</span><b>−${dec(limStop()*100,1)} %</b></div>`}
+/* ══════════ lot 102 : investisseurs nommés ══════════ */
+const INVR=[
+ {id:'cr',nm:'Caisse de retraite des Cheminots',ic:'🚂',w0:0.35,off0:3,thr:25,sub:0.06,wt:{perf:0.7,dd:1.8,risk:1.6,med:0.3,mg:1.5},
+  d:"Patiente, mais tenue par une clause de repli : au-delà du repli maximal de votre style, elle demande la moitié de sa part."},
+ {id:'fs',nm:'Fonds souverain de Nordhavn',ic:'🏛️',w0:0.30,off0:6,thr:20,sub:0.10,wt:{perf:1,med:0.7,comm:1.6,leak:1.8},
+  d:"Le plus gros ticket et le plus lent à bouger ; il tient à la parole donnée et déteste lire vos positions dans la presse."},
+ {id:'fam',nm:'Family office Vandermeer',ic:'🎩',w0:0.15,off0:-8,thr:35,sub:0.15,wt:{perf:1.6,neg:1.5,dd:1.2,risk:0.5,med:0.7},
+  d:"Nerveux : un trimestre négatif lui pèse double, un bon trimestre le rend généreux."},
+ {id:'ff',nm:'Fonds de fonds Albatros',ic:'🐦',w0:0.20,off0:-4,thr:30,sub:0.12,wt:{perf:0.8,med:2.2,risk:1.1},
+  d:"Il vous compare aux trois concurrents, trimestre après trimestre."}];
+const INVP={n0:0.30,nk:0.70,subAt:65,back:0.05,gate:0.15,gateLp:-6,cancel:8,offMax:25,offK:0.85,dStep:8};
+function invs(){if(!S.inv)S.inv=INVR.map(d=>({id:d.id,w:d.w0,off:d.off0,ntc:0}));return S.inv}
+function invD(id){return INVR.find(d=>d.id===id)}
+function invSat(v){return Math.max(0,Math.min(100,Math.round(S.lp+(v.off||0))))}
+function extNav(){return Math.max(0,S.nav-(S.coinvLock?coinvLocked():0))}
+function invFlow(v,amt){const I=invs(),E=extNav(),h=I.map(x=>x.w*E),j=I.indexOf(v);amt=Math.max(-h[j],amt);h[j]+=amt;const E2=E+amt;
+ I.forEach((x,q)=>x.w=E2>1e-12?Math.max(0,h[q])/E2:0);S.nav+=amt;S.flows=(S.flows||0)+amt;S.qFlow=(S.qFlow||0)+amt;return amt}
+function invDue(){const E=extNav();return invs().reduce((a,v)=>a+(v.ntc>0?v.ntc*v.w*E:0),0)}
+function gateOk(){return S.gateUsed!==S.q-1&&invDue()>INVP.gate*extNav()}
+function invCat(l){return /^Performance|^Objectif|plus haut/.test(l)?'perf':/négatif/.test(l)?'neg':/communication|^Engagement/.test(l)?'comm':/^Repli/.test(l)?'dd':/médiane/.test(l)?'med':/^Risque ex ante/.test(l)?'risk':/circulé/.test(l)?'leak':/marge/.test(l)?'mg':''}
+/* clôture : écarts propres, avis échus (gate), nouveaux avis, souscriptions. Rend le flux net en fraction d'encours. */
+function invClose(o){const I=invs(),E0=Math.max(1e-9,extNav());
+ const lines=(S.lpD||[]).filter(x=>!/^Multiplicateur|^Plafonnement/.test(x[0]));
+ I.forEach(v=>{const D=invD(v.id);let d=0;lines.forEach(x=>{const c=invCat(x[0]);if(c&&D.wt[c]!==undefined)d+=(D.wt[c]-1)*x[1]});
+  d*=o.lpMult*(d<0?SIZE().lpNeg:1);v.off=Math.max(-INVP.offMax,Math.min(INVP.offMax,D.off0+(v.off+Math.max(-INVP.dStep,Math.min(INVP.dStep,d))-D.off0)*INVP.offK))});
+ let due=0;const R=I.map(v=>{const D=invD(v.id),r={id:v.id,sat:invSat(v),h0:v.w*E0,pay:0,ntc:0,sub:0,cancel:false,gated:0};
+  if(v.ntc>0){if(r.sat>=D.thr+INVP.cancel){r.cancel=true;v.ntc=0}else{r.pay=v.ntc*v.w*E0;due+=r.pay}}return r});
+ let gf=1;S.qGate=false;
+ if(S.gateNext&&due>INVP.gate*E0){gf=INVP.gate*E0/due;S.gateUsed=S.q;S.qGate=true;S.gates=(S.gates||0)+1;S.lp=Math.max(0,S.lp+INVP.gateLp);S.lpD.push(['Gate activée : rachats limités à '+Math.round(INVP.gate*100)+' % de l\'encours',INVP.gateLp])}
+ S.gateNext=false;
+ R.forEach((r,j)=>{const v=I[j];if(r.pay>0){const p=r.pay*gf;r.gated=r.pay-p;r.pay=-invFlow(v,-p);
+  v.ntc=r.gated>1e-12&&v.w*extNav()>1e-12?Math.min(1,r.gated/(v.w*extNav())):0}});
+ R.forEach((r,j)=>{const v=I[j],D=invD(v.id);if(v.ntc>0||v.w<1e-6)return;const sat=invSat(v);let f=0;
+  if(sat<D.thr)f=Math.min(1,(INVP.n0+INVP.nk*(D.thr-sat)/D.thr)*(SIZE().flowMult||1));
+  if(v.id==='cr'&&o.ddp>=ddMax()){f=Math.max(f,0.5);r.clause=true}
+  if(f>0){v.ntc=f;v.ntcQ=S.q;r.ntc=f*v.w*extNav()}});
+ R.forEach((r,j)=>{const v=I[j],D=invD(v.id);if(v.ntc>0)return;const sat=invSat(v);
+  if(v.w<0.01){if(sat>=70&&!r.pay){r.sub=invFlow(v,INVP.back*S.aum0);r.back=true}return}
+  if(sat>INVP.subAt){const f=D.sub*(sat-INVP.subAt)/(100-INVP.subAt)*(SIZE().flowIn||1)*Math.max(0,1-capStress());if(f>0.002)r.sub=invFlow(v,f*v.w*extNav())}});
+ R.forEach((r,j)=>{r.h1=I[j].w*extNav();r.sat=invSat(I[j])});
+ S.invQ=R;const net=R.reduce((a,r)=>a+r.sub-r.pay,0);
+ const nm=r=>invD(r.id).nm,P=R.filter(r=>r.pay>0),N=R.filter(r=>r.ntc>0),U=R.filter(r=>r.sub>0),C=R.filter(r=>r.cancel);
+ S.poachMsg=[P.length?`Rachats payés : ${P.map(r=>`${nm(r)} −${mm(r.pay)}${r.gated>0?` (gate : ${mm(r.gated)} reportés)`:''}`).join(' · ')}.`:'',
+  C.length?`Avis retirés : ${C.map(nm).join(', ')}.`:'',
+  N.length?`Avis de rachat déposés, payables à la prochaine clôture : ${N.map(r=>`${nm(r)} ${mm(r.ntc)}${r.clause?' (clause de repli)':''}`).join(' · ')}.`:'',
+  U.length?`Souscriptions : ${U.map(r=>`${nm(r)} +${mm(r.sub)}${r.back?' (retour)':''}`).join(' · ')}.`:''].filter(Boolean).join(' ')||'Aucun mouvement d\'investisseur.';
+ return net/E0}
+/* tableau des investisseurs (débriefing, pop-up d'encours) */
+function invTable(){const I=invs(),E=extNav(),R=S.invQ||[];
+ return `<table class="qt" style="margin-top:12px"><thead><tr><th style="text-align:left">Investisseur</th><th>Part</th><th>Satisf.</th><th>Mouvement</th></tr></thead><tbody>
+ ${I.map(v=>{const D=invD(v.id),r=R.find(x=>x.id===v.id)||{},sat=invSat(v),h=v.w*E;
+  const mv=[r.pay>0?`<span class="neg-g">−${mm(r.pay)}</span>`:'',r.sub>0?`<span class="pos-g">+${mm(r.sub)}</span>`:'',r.cancel?'avis retiré':'',v.ntc>0?`<span class="neg-g">avis ${mm(v.ntc*h)}</span>`:''].filter(Boolean).join(' · ')||'—';
+  return `<tr><td style="text-align:left">${D.ic} ${D.nm}</td><td>${h>1e-9?mm(h)+' · '+Math.round(v.w*100)+' %':'parti'}</td><td class="${sat<D.thr?'neg-g':sat>INVP.subAt?'pos-g':''}">${sat}<small style="color:var(--dimmer)"> / ${D.thr}</small></td><td>${mv}</td></tr>`}).join('')}</tbody></table>
+ <p class="note" style="margin-top:6px">Satisfaction = confiance ± l'humeur propre de chacun. Sous son seuil, un investisseur dépose un avis de rachat, payé à la clôture suivante ; l'avis tombe s'il remonte à son seuil + ${INVP.cancel}. Au-dessus de ${INVP.subAt}, il souscrit.</p>`}
 function flowInB(frac){const inn=frac*S.nav;S.nav+=inn;S.flows+=inn;return inn}
 /* Bonus de clôture : appelés une fois le trimestre soldé, avant le débriefing. */
 function bonusClose(o){
@@ -3522,7 +3592,7 @@ function bonusClose(o){
   B(yid,best&&base>0.10,()=>{const m=flowInB(0.05);gauge(8,4,"Fonds macro de l'année");
    return {v:'crown',k:`TROPHÉE · ANNÉE ${y}`,tier:'or',t:"Fonds macro de l'année",d:"Le jury vous décerne le prix, devant les trois maisons que vous affrontez.",g:`souscription ${mm(m)} (+5 %) · confiance +10`}})}
  /* institutionnel et rares */
- B('souv',g>=1.6&&conf0>=78,()=>{const m=flowInB(0.20);S.bandTight=0.8;
+ B('souv',g>=1.6&&conf0>=78,()=>{const v=invs().find(x=>x.id==='fs'),m=invFlow(v,0.20*extNav());S.bandTight=0.8;
   return {v:'hand',k:'INSTITUTIONNEL',tier:'or',t:'Le fonds souverain frappe à la porte',d:"Un mandat de taille, avec ses conditions : le comité sortira ses cartons plus tôt.",g:`souscription ${mm(m)} (+20 % d'encours) · seuils des cartons −20 %`}});
  B('carte',(S.inBand||0)>=4,()=>{gauge(0,3,'Carte blanche du comité');S.freeAdjB=Math.max(S.freeAdjB||0,1);
   return {v:'key',k:'INSTITUTIONNEL · QUATRE TRIMESTRES SANS CARTON',tier:'argent',t:'Carte blanche du comité',d:"Le comité vous fait confiance : il ne vous demandera pas de comptes sur le prochain ajustement.",g:'confiance +2 · un ajustement gratuit au prochain trimestre'}});
@@ -3623,7 +3693,7 @@ function drawColl(){
  el.querySelectorAll('.coll').forEach(b=>b.onclick=()=>{S.col=+b.dataset.c;drawColl();refreshStatus();const o=colOpt();
   toast(`Collatéral → <b>${o.nm}</b> · ${dec((S.rate/4+colY(o))*100,1)} % ce trimestre${o.p?`, ${Math.round(o.p*100)} % de risque de −${dec(o.l*100,1)} %`:''}`)});
 }
-function budRest(){const e=document.getElementById('brest');if(!e)return;const r=mgrCash()+(S.qOps||0)-budgetBp()*1e-4*S.nav;e.textContent=mm(r);e.className=r>=0?'gold-g':'neg-g'}
+function budRest(){const e=document.getElementById('brest');if(!e)return;const r=mgrCash()+(S.qOps||0)-budgetBp()*1e-4*budNav();e.textContent=mm(r);e.className=r>=0?'gold-g':'neg-g'}
 function budgetBpIf(id,lv){return BUDGET.reduce((a,b)=>a+b.lv[b.id===id?lv:S.bud[b.id]].bp,0)+DESK().fixed*1e4+cntOn()}
 /* Le score : commissions encaissées moins tout ce que le gérant a payé, coûts d'exécution
    du trimestre en cours compris — ils bougent pendant qu'on construit le book. */
@@ -4083,7 +4153,7 @@ function gauge(dlp,drc,why){
  const d=cf(dlp,drc);   /* lot 58 : un seul effet, la confiance */
  const lp0=S.lp,rc0=S.rc;
  S.lp=Math.max(0,Math.min(100,S.lp+d));S.rc=Math.max(0,Math.min(100,S.rc+drc));
- if(lp0>0&&S.lp<=0&&['budget','book','events'].includes(S.phase)&&S.midY!==S.q)midYellow();
+ /* lot 103 : plus de jaune à confiance nulle */
  if(d||Math.abs(drc)>=0.05){S.gLog.push({why,lp:d,rc:drc});{const now=Date.now(),mg=S.lastG&&S.lastG.at&&now-S.lastG.at<250;   /* lot 82 */
    S.lastG=mg?{lp:S.lastG.lp+d,rc:S.lastG.rc+drc,lp0:S.lastG.lp0,rc0:S.lastG.rc0,at:now}:{lp:d,rc:drc,lp0,rc0,at:now}}
   if(d)toast(`${gz(d,0)}<br><span style="color:var(--dim)">${why}</span>`)}
@@ -4135,7 +4205,7 @@ function execGz(m,leak){let lp=0,rc=0;
 function riskRc(k){   /* lot 66 : plus de mandat de volatilité ; seul le book vide est noté */
  return riskShown(weights(k)).total<0.02?-4:0;
 }
-function midFlows(total,lines){
+function midFlows(total,lines){return;   /* lot 102 : plus de retrait anonyme après dépêche */
  if(total<-0.008&&rng()<0.45){const out=uni(0.01,0.04)*(1+Math.max(0,-total)*20);S.flows-=out*S.nav;S.qFlow=(S.qFlow||0)-out*S.nav;S.nav*=(1-out);lines.push(`Un allocataire a retiré ${dec((out*100),1)} % de l'encours dans la foulée.`);gauge(-1,0,"Retrait après une mauvaise dépêche")}
  else if(total>0.008&&rng()<0.25){const inn=uni(0.005,0.02);S.flows+=inn*S.nav;S.qFlow=(S.qFlow||0)+inn*S.nav;S.nav*=(1+inn);lines.push(`Un allocataire a ajouté ${dec((inn*100),1)} % d'encours après la dépêche.`)}
 }
@@ -4263,11 +4333,12 @@ function showGauge(id){
  if(id==='cap'){
   const dd=1-S.nav/S.peak;
   openModal('Capital',`<p>Encours net du fonds, tel que le voient les investisseurs. Il bouge avec la performance nette, les incidents, les frais, et les flux d'encours provoqués par votre position face aux concurrents.</p>
-   ${tbl([['Encours initial',moneyB(S.aum0)],['Encours actuel',moneyB(navNow())],['Plus haut historique (seuil de commission de performance)',moneyB(S.hwm)],['Repli depuis le pic',dd>0.0005?'−'+dec(dd*100,1)+' %':'aucun'],['Perte maximale subie','−'+dec(S.maxdd*100,1)+' %'],['Souscriptions cumulées',S.flowInC?'+'+mm(S.flowInC):'aucune'],['Rachats cumulés',S.flowOutC?'−'+mm(S.flowOutC):'aucun'],['Flux nets d\'encours (collecte − rachats)',bn(S.flows||0)],['Dont votre co-investissement, bloqué ce trimestre',S.coinvLock?`${mm(coinvLocked())} · ${Math.round(coinvPct()*100)} % de la trésorerie`:'aucun (rendu à la clôture)'],['Part de l\'encours à vous',dec(100*coinvLocked()/Math.max(1e-9,navNow()),1)+' %'],['Encours sous gestion, hors vous',moneyB(navNow()-coinvLocked())],['Seuil de fermeture',moneyB(FUNDMIN)],['Classement cumulé sur quatre fonds',(1+S.rivals.filter(r=>r.cum>S.idx).length)+'e']])}
+   ${tbl([['Encours initial',moneyB(S.aum0)],['Encours actuel',moneyB(navNow())],['Plus haut historique (seuil de commission de performance)',moneyB(S.hwm)],['Repli depuis le pic',dd>0.0005?'−'+dec(dd*100,1)+' %':'aucun'],['Perte maximale subie','−'+dec(S.maxdd*100,1)+' %'],['Souscriptions cumulées',S.flowInC?'+'+mm(S.flowInC):'aucune'],['Rachats cumulés',S.flowOutC?'−'+mm(S.flowOutC):'aucun'],['Flux nets d\'encours (collecte − rachats)',bn(S.flows||0)],['Dont votre co-investissement, bloqué ce trimestre',S.coinvLock?`${mm(coinvLocked())} · ${Math.round(coinvPct()*100)} % de la trésorerie`:'aucun (rendu à la clôture)'],['Part de l\'encours à vous',dec(100*coinvLocked()/Math.max(1e-9,navNow()),1)+' %'],['Encours sous gestion, hors vous',moneyB(navNow()-coinvLocked())],['Fin de partie','deux clôtures de suite en trésorerie négative'],['Classement cumulé sur quatre fonds',(1+S.rivals.filter(r=>r.cum>S.idx).length)+'e']])}
    <p style="margin:12px 0 4px">Performance nette cumulée</p>
    ${tbl([['Depuis le début',`<span class="${cls(S.idx-1)}">${sgn(S.idx-1,1)}</span>`],...S.rets.map((r,i)=>[`T${i+1} · ${REG[S.regimes[i]].nm}`,`<span class="${cls(r)}">${sgn(r,1)}</span>`])])}
    <p class="note">Ce qu'un investisseur entré au premier jour a gagné ou perdu, après frais de gestion et commission de performance. Coûts de transaction et budget sont payés par votre société de gestion.</p>
-   <p style="margin-top:10px">Au-delà de <em>${Math.round(ddMax()*100)} % de repli</em> depuis le pic, des investisseurs demandent leur sortie. Le fonds ferme sous <em>${moneyB(FUNDMIN)}</em> d'encours (rachats compris), ou dès que la perte depuis le plus haut atteint <em>${Math.round(DDEND*100)} %</em>.</p>`);
+   <p style="margin:12px 0 4px">Vos investisseurs</p>${invTable()}
+   <p style="margin-top:10px">Au-delà de <em>${Math.round(ddMax()*100)} % de repli</em> depuis le pic, la caisse de retraite demande la moitié de sa part. Le fonds ne ferme plus sur un seuil d'encours : c'est votre société de gestion qui tient ou non. Deux clôtures de suite en trésorerie négative, et c'est le dépôt de bilan.</p>`);
  } else if(id==='perf'){
   const rows=S.rets.map((r,i)=>[`T${i+1} · ${REG[S.regimes[i]].nm}`,`<span class="${cls(r)}">${sgn(r,1)}</span>`,`<span class="${cls(r)}">${M$(r*S.navs[i])}</span>`]);
   openModal('Performance cumulée nette',`<p>Ce qu'un investisseur entré au premier jour a gagné ou perdu, <em>après tout</em> : frais de gestion (${dec((VOL().mgmt*400),1)} % par an), commission de performance (${(perfFee()*100).toFixed(0)} % au-dessus du plus haut historique) et incidents. Les coûts de transaction et le budget d'exploitation sont payés par votre société de gestion : ils ne pèsent pas sur cette courbe. Le collatéral rapporte le taux au jour le jour (${dec((S.rate*100),1)} % actuellement), inclus.</p>
@@ -4275,7 +4346,7 @@ function showGauge(id){
    <p style="margin-top:10px">L'objectif de votre mandat est <em>${(VOL().goal*100).toFixed(0)} % net annualisés</em> sur deux ans, soit environ +${((Math.pow(1+VOL().goal,2)-1)*100).toFixed(0)} % cumulés.</p>`);
  } else if(id==='lp'){
   const dl=S.lpD,row=x=>[x[0],`<span class="${cls(x[1])}">${x[1]>=0?'+':'−'}${Math.abs(x[1]).toFixed(1)}</span>`];
-  openModal('Confiance des investisseurs',`<p>La confiance, ce sont vos investisseurs : ils suivent la performance nette, les plus hauts historiques, la comparaison avec les trois concurrents, et se détournent avec les pertes, les replis, les incidents. Ce que le comité des risques reproche à votre book s'y ajoute pour moitié, et chaque carton coûte à la clôture (jaune −2, rouge −6). Sous <em>20</em>, des rachats partent à chaque clôture.</p>
+  openModal('Confiance des investisseurs',`<p>La confiance, ce sont vos investisseurs : ils suivent la performance nette, les plus hauts historiques, la comparaison avec les trois concurrents, et se détournent avec les pertes, les replis, les incidents. Chaque investisseur y ajoute son humeur propre ; sous son seuil, il dépose un avis de rachat payé à la clôture suivante. Les cartons du comité ne coûtent pas de confiance : ils imposent des contraintes.</p>
    ${tbl([['Confiance',`<b>${Math.round(conf())}</b>`]])}
    ${dl?tbl(dl.map(row),['Investisseurs · dernier trimestre','Δ']):''}`);
  } else if(id==='card'){
@@ -4285,9 +4356,9 @@ function showGauge(id){
    :C.y?`<p><b>🟨 Un carton jaune en cours.</b> Au prochain manquement, c'est le rouge.</p>`
    :`<p><b>Aucun carton.</b> Le comité vous laisse travailler.</p>`;
   openModal('Le comité des risques',`${head}
-   ${tbl([['Plafond de position',`±${S.maxk} unité${S.maxk>1?'s':''}${(S.capK||5)<5?` <span class="dim-g">· ±${(S.capK||5)+1} avec l'accès aux blocs</span>`:''}`],['Appel de marge',`au-delà de ${Math.round(MGC.thr*100)} % de marge utilisée, vérifiée après chaque événement`]])}
-   <p style="margin-top:10px">Le comité ne tient pas de jauge : il juge vos résultats à chaque clôture et sort des cartons. Ce qu'il note entre-temps pèse sur la confiance ; une seule exception : si la confiance tombe à zéro, le jaune tombe sur-le-champ.</p>
-   <ul class="rules2"><li>🟥 <b>Rouge</b> : trimestre à −20 % ou pire, repli de 30 % depuis le plus haut (puis chaque 5 points de plus), appel de marge, ou deuxième jaune.</li><li>🟨 <b>Jaune</b> : trimestre à −10 % ou pire, repli de 18 % (puis chaque 4 points de plus), 20 points sous la médiane des concurrents, book vide, confiance à zéro (même en cours de trimestre).</li><li>Le comité ne juge plus le risque ex ante : il n'y a pas de mandat de volatilité. Le risque se paie autrement : appels de marge et scénarios de stress.</li><li>Un rouge coûte 5 % de l\'encours, 6 points de confiance, et une contrainte forte pendant le trimestre suivant, tirée au sort : plafond de position, risque plafonné, stop ex post, marchés ou classe fermés, collatéral renforcé, book resserré, contrôle imposé, gel des renforcements.</li><li>Quatre trimestres propres d\'affilée retirent un jaune.</li></ul>
+   ${limRows(S.k)}${tbl([['Plafond de position',`±${S.maxk} unité${S.maxk>1?'s':''}${(S.capK||5)<5?` <span class="dim-g">· ±${(S.capK||5)+1} avec l'accès aux blocs</span>`:''}`],['Appel de marge',`au-delà de ${Math.round(MGC.thr*100)} % de marge utilisée, vérifiée après chaque événement`]])}
+   <p style="margin-top:10px">Le comité ne juge que trois limites, affichées sur la page du book. Le risque ex ante et la concentration se lisent sur le book de clôture ; le stop est vérifié après chaque événement du trimestre.</p>
+   <ul class="rules2"><li>🟥 <b>Rouge</b> : risque ex ante à ${dec(LIM.red,1)} fois la limite, trimestre à deux fois le stop, ou deuxième jaune.</li><li>🟨 <b>Jaune</b> : risque ex ante au-dessus de la limite, stop franchi sans couper, concentration au-dessus de la limite.</li><li>Limites du trimestre : risque ${dec(limVol()*50,1)} %, stop −${dec(limStop()*100,1)} %, concentration ${Math.round(limConc()*100)} % du risque dans une classe. Le back office les élargit ou les resserre ; une limite se négocie au débriefing.</li><li>Un rouge impose deux contraintes fortes pendant le trimestre suivant, tirée au sort : plafond de position, risque plafonné, stop ex post, marchés ou classe fermés, collatéral renforcé, book resserré, contrôle imposé, gel des renforcements.</li><li>Quatre trimestres propres d\'affilée retirent un jaune.</li></ul>
    ${C.log.length?tbl(C.log.slice(-4).map(l=>[`T${l.q}`,`${l.c==='rouge'?'🟥':'🟨'} ${l.why}${l.cn?` → ${l.cn}`:''}`]),['Derniers cartons','']):''}`);
  } else if(id[0]==='f'){
   const k=+id[1],f=FACT[k];
@@ -4576,9 +4647,9 @@ function screenBudget(){
  S.phase='budget';
  save('screenBudget');S.hotFactor=null;
  S.mgrCosts-=S.qOps||0;S.cOps=(S.cOps||0)-(S.qOps||0);S.qOps=0;
- {const purse=mgrCash(),fits=()=>budgetBp()*1e-4*S.nav<=purse+1e-12;
+ {const purse=mgrCash(),fits=()=>budgetBp()*1e-4*budNav()<=purse+1e-12;
   if(redOn('budget')&&S.bud.bo<3){for(let l=3;l>S.bud.bo;l--){const o=S.bud.bo;S.bud.bo=l;if(fits())break;S.bud.bo=o}}
-  for(let g=0;g<40&&!fits();g++){let bi=null,bv=0;BUDGET.forEach(b=>{const l=S.bud[b.id];if(l>(redOn('budget')&&b.id==='bo'?3:0)&&b.lv[l].bp>bv){bv=b.lv[l].bp;bi=b.id}});
+  for(let g=0;g<40&&!fits()&&!S.budPrev;g++){let bi=null,bv=0;BUDGET.forEach(b=>{const l=S.bud[b.id];if(l>(redOn('budget')&&b.id==='bo'?3:0)&&b.lv[l].bp>bv){bv=b.lv[l].bp;bi=b.id}});
    if(!bi)break;S.bud[bi]--}syncBud()}
  setOps();
  app.innerHTML=statusBar()+`<div class="fade">
@@ -4626,20 +4697,20 @@ function drawBuds(){
  /* caisse avant le budget de ce trimestre : un niveau qui la dépasse est verrouillé */
  const purse=mgrCash()+(S.qOps||0);
  setTimeout(budRest,0);
- const ok=(id,i)=>(i===0||budgetBpIf(id,i)*1e-4*S.nav<=purse)&&!(id==='bo'&&redOn('budget')&&i<3&&i<S.bud.bo);
- const G=S.gone&&S.gone.n===0&&S.bud.fo>=S.gone.p?S.gone:null,cb=G?FOP[G.p].bp-FOP[G.p-1].bp:0,cok=G&&(budgetBp()+cb)*1e-4*S.nav<=purse;
+ const ok=(id,i)=>(i===0||(S.budPrev&&i<=S.budPrev[id])||budgetBpIf(id,i)*1e-4*budNav()<=purse)&&!(id==='bo'&&redOn('budget')&&i<3&&i<S.bud.bo);
+ const G=S.gone&&S.gone.n===0&&S.bud.fo>=S.gone.p?S.gone:null,cb=G?FOP[G.p].bp-FOP[G.p-1].bp:0,cok=G&&(budgetBp()+cb)*1e-4*budNav()<=purse;
  document.getElementById('buds').innerHTML=BUDGET.map(b=>{const cur=S.bud[b.id];return `<div class="brow">
-   <div class="bh"><b><span class="bico">${b.ico}</span>${b.nm}</b><span>${b.lv[cur].bp} pb · ${mm(b.lv[cur].bp*1e-4*S.nav)}</span></div>
+   <div class="bh"><b><span class="bico">${b.ico}</span>${b.nm}</b><span>${b.lv[cur].bp} pb · ${mm(b.lv[cur].bp*1e-4*budNav())}</span></div>
    <p class="note" style="margin:2px 0 6px">${b.id==='fo'?`Touchez une personne : l'équipe va jusqu'à elle. Le prix est celui de toute l'équipe.`:`Touchez un poste : le back office va jusqu'à lui.`} <b class="neg-g">Descendre, c'est licencier : chaque partant touche son bonus de départ, un trimestre de salaire.</b></p>
    <div class="team">${b.lv.map((l,i)=>{const gone=b.id==='fo'&&G&&G.p===i,o=ok(b.id,i);
-    return `<button class="lvl tm ${i<=cur?'in':''} ${cur===i?'on':''}${gone?' gone':''}" data-b="${b.id}" data-i="${i}"${o?'':' disabled'}><span class="tic">${l.ic}</span><span class="tnm"><b>${l.full}</b><i>${gone?`parti chez ${G.boss}`:l.role}</i></span><span class="tbp">${l.bp} pb<br>${o?mm(l.bp*1e-4*S.nav):'hors caisse'}${S.budPrev&&i<S.budPrev[b.id]?`<br><span class="neg-g">départs −${mm((b.lv[S.budPrev[b.id]].bp-l.bp)*1e-4*S.nav)}</span>`:''}</span></button>`}).join('')}</div>
-   ${b.id==='fo'&&G?`<div class="flag" style="margin:8px 0 0"><span><b>${FOP[G.p].who} est parti chez ${G.boss}.</b> Son siège reste vide ce trimestre${FOP[G.p].cls?` : la classe ${FOP[G.p].cls.toLowerCase()} passe par un courtier`:''}. Contre-offre : un trimestre de son salaire, ${cb} pb (${mm(cb*1e-4*S.nav)}), et il revient tout de suite.</span></div><button class="lvl cntb" id="cnt"${cok?'':' disabled'}>Faire la contre-offre · ${mm(cb*1e-4*S.nav)}</button>`:''}
+    return `<button class="lvl tm ${i<=cur?'in':''} ${cur===i?'on':''}${gone?' gone':''}" data-b="${b.id}" data-i="${i}"${o?'':' disabled'}><span class="tic">${l.ic}</span><span class="tnm"><b>${l.full}</b><i>${gone?`parti chez ${G.boss}`:l.role}</i></span><span class="tbp">${l.bp} pb<br>${o?mm(l.bp*1e-4*budNav()):'hors caisse'}${S.budPrev&&i<S.budPrev[b.id]?`<br><span class="neg-g">départs −${mm((b.lv[S.budPrev[b.id]].bp-l.bp)*1e-4*budNav())}</span>`:''}</span></button>`}).join('')}</div>
+   ${b.id==='fo'&&G?`<div class="flag" style="margin:8px 0 0"><span><b>${FOP[G.p].who} est parti chez ${G.boss}.</b> Son siège reste vide ce trimestre${FOP[G.p].cls?` : la classe ${FOP[G.p].cls.toLowerCase()} passe par un courtier`:''}. Contre-offre : un trimestre de son salaire, ${cb} pb (${mm(cb*1e-4*budNav())}), et il revient tout de suite.</span></div><button class="lvl cntb" id="cnt"${cok?'':' disabled'}>Faire la contre-offre · ${mm(cb*1e-4*budNav())}</button>`:''}
    <div class="lvef">${budEf(b.id,cur)}${b.id==='fo'?covTxt()+bonTxt():''}</div>
    <details style="margin-top:8px"><summary>À quoi sert ce budget · les ${b.lv.length} crans</summary><p class="note">${b.d}</p>${budExpl(b.id)}<ul class="efl">${b.lv.map((l,i)=>`<li><b>${l.who}</b> · ${l.bp} pb · ${budEf(b.id,i)}</li>`).join('')}</ul></details></div>`}).join('');
  const bp=budgetBp();
- document.getElementById('btot').textContent=`${bp.toFixed(0)} pb · ${mm(bp*1e-4*S.nav)} · ${dec((bp*4/100),1)} % par an${S.qSevM>0?` · bonus versés aux partants ${mm(S.qSevM)}`:''}`;
+ document.getElementById('btot').textContent=`${bp.toFixed(0)} pb · ${mm(bp*1e-4*budNav())} · ${dec((bp*4/100),1)} % par an${S.qSevM>0?` · bonus versés aux partants ${mm(S.qSevM)}`:''}`;
  {const t=document.getElementById('btre');if(t){const v=mgrCash();t.textContent=mm(v);t.className=v>=0?'':'neg-g'}}
- const cn=document.getElementById('cnt');if(cn)cn.onclick=()=>{S.cntBp=cb;S.cntQ=S.q;const w=FOP[G.p].who;S.gone=null;setOps();drawBuds();refreshStatus();toast(`Contre-offre acceptée : <b>${w}</b> reste chez vous (${mm(cb*1e-4*S.nav)}).`)};
+ const cn=document.getElementById('cnt');if(cn)cn.onclick=()=>{S.cntBp=cb;S.cntQ=S.q;const w=FOP[G.p].who;S.gone=null;setOps();drawBuds();refreshStatus();toast(`Contre-offre acceptée : <b>${w}</b> reste chez vous (${mm(cb*1e-4*budNav())}).`)};
  app.querySelectorAll('.lvl.tm').forEach(x=>x.onclick=()=>{
   const id=x.dataset.b,i1=+x.dataset.i,i0=S.bud[id],bb=BUDGET.find(q=>q.id===id);if(i1===i0)return;
   const b0=budgetBp();S.bud[id]=i1;syncBud();setOps();drawBuds();refreshStatus();
@@ -5199,6 +5270,7 @@ function renderRisk(){
   <div class="kv"><span>Notionnel brut / net</span><b>${moneyB(gr)} / ${net>=0?'+':'−'}${moneyB(Math.abs(net))}</b></div>
   <div class="kv"><span>Levier brut sur encours</span><b>${dec((gr/S.nav),2)}×</b></div>
   <div class="kv"><span>Marge utilisée · seuil d'appel</span><b class="${MGU>MGC.thr?'neg-g':''}">${(MGU*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} %</b></div>
+  ${limRows(S.k)}
   <div class="kv"><span>Perte à −2 σ trimestriels</span><b class="neg-g">${sgn(-sp)} · ${moneyB(sp*S.nav)}</b></div>
   <div style="margin-top:8px"><div class="kv"><span><b>Tests de résistance</b> · un scénario frappe ce trimestre avec une probabilité de ${Math.round(stressP()*100)} %</span><b></b></div>${(()=>{const L=STRESS.map(sc=>({sc,v:stressLoss(S.k,sc)})).sort((a,b)=>a.v-b.v),row=o=>[o.sc.nm+(o.sc.ext?' <span class="dim-g">· extrême</span>':''),`<b class="${o.v>=0?'pos-g':'neg-g'}">${sgn(o.v,1)} · ${moneyB(Math.abs(o.v)*S.nav)}</b>`];return tbl(L.slice(0,6).map(row),['Les six pires pour votre book','Mouvement complet'])+`<details><summary>Les ${L.length-6} autres scénarios</summary>${tbl(L.slice(6).map(row))}</details>`})()}<p class="note" style="margin-top:4px">Au-delà de 20 % de risque annuel, les pertes sont amplifiées : un gros book se vend mal quand tout le monde réduit (×${dec(crowd(RS.total),1)} pour le vôtre). La moitié du choc tombe tout de suite ; la suite dépend de votre réaction, comme pour une dépêche. Le prime broker relève ensuite ses marges.</p></div>
   ${fb}
@@ -5370,6 +5442,7 @@ function screenExec(){
 function stepEvents(){
  S.bigTape=false;
  if(S.live&&marginPct(S.k)>MGC.thr+1e-9){screenMarginCall();window.scrollTo(0,0);return}   /* lot 100 */
+ if(S.live&&S.stopQn!==S.q&&S.k.some(v=>v)&&liveRet()<=-limStop()){screenStopQ();window.scrollTo(0,0);return}   /* lot 103 */
  save('stepEvents');
  if(!S.midShown&&S.evIdx>=Math.ceil(S.evQueue.length/2)&&S.evQueue.length>1){S.midShown=true;screenMidMark();window.scrollTo(0,0);return}
  if(S.evIdx<S.evQueue.length){const e=S.evQueue[S.evIdx++];
@@ -5724,6 +5797,17 @@ function mgPlan(){const nav=S.nav,mgu=marginPct(S.k),req=mgu*nav,tg=MGC.back;
   if(bi<0)break;const d=-Math.sign(k[bi]);c1+=tcost(d,bi).cost*1.3;k[bi]+=d}
  const f=Math.max(0.05,Math.min(0.9,1-tg/mgu)),k2=S.k.map(v=>Math.trunc(v*(1-f)));let c2=0;for(let i=0;i<N;i++){const d=k2[i]-S.k[i];if(d)c2+=tcost(d,i).cost*MGC.crisis}
  return {mgu,inj,k1:k,c1,k2,c2,f}}
+function screenStopQ(){S.stopQn=S.q;const r=liveRet(),ls=limStop(),k1=S.k.map(v=>Math.trunc(v/2));let c=0;for(let i=0;i<N;i++){const d=k1[i]-S.k[i];if(d)c+=tcost(d,i).cost*1.3}
+ const O=[{id:'cut',b:"Couper le book de moitié",s:`Ordres au tarif d'urgence : ${mm(c)} à votre charge. Pas de carton.`},
+  {id:'keep',b:"Passer outre",s:"Le book reste en place ; le comité consigne un carton jaune à la clôture."}];
+ app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard bad">${evHead('Comité des risques · stop trimestriel','risk')}<h3>Trimestre à ${sgnp(r,1)} : le stop de −${dec(ls*100,1)} % est franchi</h3>
+  <p>La limite est écrite dans votre mandat. Le comité demande de réduire le book de moitié avant la prochaine séance ; dans les deux cas, plus aucun renforcement sur les dépêches ce trimestre.</p>${evTimerHTML}</div>
+  <div class="choices" style="margin-top:12px">${O.map((o,i)=>`<button class="choice" data-m="${i}"><b>${o.b}</b><span>${o.s}${i===0?bkD(k1,0,false):''}</span></button>`).join('')}</div></div>`;
+ const go=i=>{clearTimer();const o=O[i];
+  if(o.id==='cut'){const r0=liveRet();S.k=k1;const r1=liveRet();S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0;S.pendingTC+=c/S.nav;S.totalTC+=c;S.stopCut=S.q}else S.stopY=S.q;
+  S.noAddQ=true;S.stops=(S.stops||0)+1;S.evLog.push({t:'Stop trimestriel du comité',pnl:0,m:0,lp:0,rc:0});refreshGain();stepEvents()};
+ app.querySelectorAll('.choice[data-m]').forEach(b=>b.onclick=()=>go(+b.dataset.m));
+ armTimer(()=>go(0),'sans réponse : le desk coupe la moitié')}
 function screenMarginCall(){const P=mgPlan(),cash=mgrCash(),nav=S.nav;
  const O=[{id:'inj',b:"Apporter des fonds propres",s:`La société de gestion verse ${mm(P.inj)} dans le fonds, bloqués avec votre co-investissement jusqu'à la clôture. Le book ne bouge pas.`,c:-1,ko:P.inj>cash},
   {id:'cut',b:"Couper vous-même",s:`Vous retirez les lignes les plus gourmandes en marge, au tarif d'urgence : ${mm(P.c1)} à votre charge.`,c:-2,k:P.k1,tc:P.c1},
@@ -5734,6 +5818,7 @@ function screenMarginCall(){const P=mgPlan(),cash=mgrCash(),nav=S.nav;
  const go=i=>{clearTimer();const o=O[i];
   if(o.id==='inj'){const x=P.inj;S.nav+=x;S.navQ0+=x;S.coinvBase=(S.coinvBase||0)+x;S.coinvIn=(S.coinvIn||0)+x;S.coinvLock=(S.coinvLock||0)+x;S.mgInj=(S.mgInj||0)+x}
   else{const r0=liveRet();S.k=o.k;const r1=liveRet();S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0;S.pendingTC+=o.tc/S.nav;S.totalTC+=o.tc}
+  if(marginPct(S.k)>MGC.thr){const r0=liveRet();S.k=S.k.map(()=>0);const r1=liveRet();S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0;toast('Marge toujours au-delà du seuil : le prime broker solde le book.')}   /* lot 104 */
   S.marginCalls=(S.marginCalls||0)+1;S.everMarginCall=1;
   const g=gauge(o.c,0,`Appel de marge : ${o.b.toLowerCase()}`);S.evLog.push({t:'Appel de marge',pnl:0,m:0,lp:g.lp,rc:g.rc});
   refreshGain();stepEvents()};
@@ -5865,8 +5950,7 @@ function resolveQuarter(){
  if(S.budBp>70)lpD.push(['Facture d\'exploitation jugée lourde',-1.5]);
  if(S.leakQ)lpD.push(['Vos positions ont circulé sur le marché',-2.5]);
  if(S.execSlipQ<-0.0035*S.navQ0)lpD.push(['Impact de marché lourd sur les ordres',-2]);
- if(S.marginCall)lpD.push(['Liquidation forcée sur appel de marge',-7]);
- if(sp>RISKLP.x0+0.005)lpD.push([`Risque ex ante de ${dec(sp*50,1)} % : jugé trop élevé`,-Math.round(RISKLP.k*(sp-RISKLP.x0)/0.05+RISKQ.lp*((sp-RISKLP.x0)/0.05)**2)]);
+ if(false)lpD.push([`Risque ex ante de ${dec(sp*50,1)} % : jugé trop élevé`,-Math.round(RISKLP.k*(sp-RISKLP.x0)/0.05+RISKQ.lp*((sp-RISKLP.x0)/0.05)**2)]);
  const lpMult=(S.flighty?1.25:1)*PROF().lpMult*VOL().lpMult*(UNIV().lpMult||1);
  let dlp=lpD.reduce((a,x)=>a+x[1],0)*lpMult;
  if(lpMult!==1)lpD.push([`Multiplicateur (profil${S.flighty?', passif fragile':''}) ×${dec(lpMult,2)}`,dlp-dlp/lpMult]);
@@ -5883,7 +5967,6 @@ function resolveQuarter(){
  else if(S.comm&&S.comm.id==='none'&&S.comm.lose.rc)rcD.push(['Aucune communication ce trimestre',S.comm.lose.rc]);
  if(S.leakQ)rcD.push(['Positions connues de contreparties',-2]);
  if(S.tcMultQ&&Math.abs(S.tcMultQ-1)>0.35)rcD.push(['Exécution éloignée du tarif standard',-2]);
- if(S.marginCall)rcD.push([`Appel de marge : ${(S.marginCall.f*100).toFixed(0)} % du book liquidé d'office`,-12]);
  rcD.push([net>0?'La performance achète de la patience':'La perte use la patience',(net>0?Math.min(12,220*net):Math.max(-9,140*net))*VOL().rcPerf]);
  S.rcD=rcD;
  S.rc=Math.max(0,Math.min(100,S.rc+rcD.reduce((a,x)=>a+x[1],0)));
@@ -5895,17 +5978,7 @@ function resolveQuarter(){
  /* Lot 49 : chaque concurrent a sa clientèle, plus ou moins nerveuse. Battre un concurrent
     attire une part de ses clients ; perdre contre lui en envoie chez lui. La somme des trois
     fait le flux net ; la voracité (difficulté) grossit les sorties, une confiance basse aussi. */
- const CLI={syst:0.6,fonda:1.0,flux:1.6};
- const fl=S.rivals.map(rv=>{const d=qTotal-(rv.last||0),s=CLI[rv.style]||1;
-   let f=Math.max(-0.06,Math.min(0.06,0.5*s*d));if(f<0)f*=SIZE().flowMult;else f*=(SIZE().flowIn||1);return {rv,d,f}});
- let tot=fl.reduce((a,x)=>a+x.f,0);
- if(S.lp<40)tot-=RDM.low*(40-S.lp)/40*SIZE().flowMult;
- const riskOut=(RISKLP.fk*Math.max(0,sp-RISKLP.fl)+RISKQ.fl*Math.max(0,sp-RISKLP.fl)**2)*SIZE().flowMult;tot-=riskOut;
- tot=Math.max(-0.25,Math.min(0.20,tot+(rng()-0.5)*0.01));
- S.qFlowBy=fl.map(x=>({nm:x.rv.nm,d:x.d,f:x.f}));
- const amt=tot*S.nav;S.nav+=amt;S.flows+=amt;S.qFlow=(S.qFlow||0)+amt;
- const lines=fl.filter(x=>Math.abs(x.f)>=0.002).map(x=>`${x.rv.nm} ${x.f>0?'+':'−'}${dec(Math.abs(x.f)*100,1)} % (${x.d>0?'battu':'devant vous'} de ${dec(Math.abs(x.d)*100,1)} pt${Math.abs(x.d)>=0.015?'s':''})`);
- S.poachMsg=`${tot>=0?'Collecte':'Rachats'} : ${tot>=0?'+':'−'}${dec(Math.abs(tot)*100,1)} % d'encours (${mm(Math.abs(amt))}).${lines.length?' Clients par concurrent — '+lines.join(' · ')+'.':''}${riskOut>=0.001?` Dont −${dec(riskOut*100,1)} % retirés pour un risque jugé trop élevé.`:''}`;
+ const tot=invClose({lpMult,ddp:Math.max(0,1-S.idx/Math.max(S.hwmIdx||1,S.idx))});   /* lot 102 : investisseurs nommés */
  {const pP=Math.min(0.95,Math.max(0,(POACHP+0.5*(S.poachBoost||0))*(S.bonMultQ||1))),cands=[];for(let p=1;p<=S.bud.fo;p++)if(here(p)&&FOP[p].cls)cands.push(p);   /* lot 96 : débauchage de base ; lot 99 : traders seulement */
  if(!S.over&&cands.length&&rng()<pP){const boss=(pick(S.rivals.filter(x=>x.poacher))||S.rivals[S.rivals.length-1]).boss;
   {const p=(S.huntP!=null&&cands.includes(S.huntP))?S.huntP:cands[Math.floor(rng()*cands.length)];S.huntP=null;S.gone={p,n:1,boss};S.poachMsg+=` ${boss} a débauché ${FOP[p].full} : son siège reste vide au trimestre prochain${FOP[p].cls?` (${FOP[p].cls.toLowerCase()} par un courtier, ×${dec(NOTRD,1)})`:''}, sauf contre-offre.`}
@@ -5949,34 +6022,26 @@ function resolveQuarter(){
  S.qRedeem=[];
  {const ddp=Math.max(0,1-S.idx/Math.max(S.hwmIdx||1,S.idx));
   if(ddp<ddMax()/2)S.ddHit=0;
-  if(ddp>=ddMax()&&ddp>(S.ddHit||0)+0.02){S.ddHit=ddp;redeem('repli',RDM.dd0+RDM.ddk*(ddp-ddMax()))}}
- if(S.lp<=20)redeem('investisseurs',RDM.lp0+RDM.lpk*(20-S.lp));
- if(S.nav<FUNDMIN)S.over='nav';else if(1-S.idx/Math.max(S.idx,S.peakIdx||1)>=DDEND-1e-9)S.over='dd';
+  }   /* lot 102 : repli et confiance passent par les investisseurs nommés */
+ S.cashNeg=mgrCash()<-1e-9?(S.cashNeg||0)+1:0;if(S.cashNeg>=2)S.over='cash';else if(extNav()<FUNDEMPTY*S.aum0)S.over='nav';   /* lot 104 */
  /* ── le comité des risques : cartons ── */
  {const C=S.cards=S.cards||{y:0,r:0,clean:0,log:[]},why=[];let red=null;
   /* lot 66 : le comité juge les pertes et les replis, plus le risque ex ante. Un repli ne vaut un carton
      qu'à chaque nouveau palier (+5 pts pour le rouge, +4 pour le jaune), réarmé sous 8 %. */
-  const tt=S.bandTight||1,ddp=Math.max(0,1-S.idx/Math.max(S.hwmIdx||1,S.idx));
-  if(ddp<0.10){C.ddR=0;C.ddY=0}
-  if(qTotal<=-0.20*tt)red=`trimestre à ${sgnp(qTotal,1)}`;
-  else if(ddp>=0.30*tt&&ddp>(C.ddR||0)+0.05){red=`repli de ${dec(ddp*100,0)} % depuis le plus haut`;C.ddR=ddp}
-  else if(S.marginCall)red='appel de marge';
-   else if(sp>=RISKCAP.r)red=`risque ex ante de ${dec(sp*50,0)} %`;
-  if(sp<0.02&&!(S.tails||[]).some(x=>x.q===S.q))why.push('book vide');
-   if(sp>=RISKCAP.y&&sp<RISKCAP.r)why.push(`risque ex ante de ${dec(sp*50,0)} %`);
-  if(qTotal<=-0.10*tt)why.push(`trimestre à ${sgnp(qTotal,1)}`);
-  if(ddp>=0.18*tt&&ddp>(C.ddY||0)+0.04){why.push(`repli de ${dec(ddp*100,0)} % depuis le plus haut`);C.ddY=ddp}
-  if(qTotal-med<=-0.20)why.push(`${dec((med-qTotal)*100,0)} pts sous la médiane des concurrents`);
-  if(S.midY===S.q-1){why.unshift('confiance tombée à zéro en cours de trimestre');C.y=Math.max(0,C.y-1)}
-  else if(S.lp<=0&&!(S.lpClose<=0))why.unshift('confiance des investisseurs tombée à zéro');
-  S.lpClose=S.lp;
+  /* lot 103 : le comité ne juge que ses limites affichées (celles du trimestre qui se clôt : S.q est déjà incrémenté) */
+  S.q--;const lv=limVol(),ls=limStop(),lc=limConc();S.q++;const cc=clsConc(wFin);
+  if(sp>=lv*LIM.red)red=`risque ex ante de ${dec(sp*50,1)} %, limite ${dec(lv*50,1)} %`;
+  else if(S.stopCut!==S.q-1&&qTotal<=-2*ls)red=`trimestre à ${sgnp(qTotal,1)}, deux fois le stop`;
+  if(sp>lv+1e-9&&sp<lv*LIM.red)why.push(`risque ex ante de ${dec(sp*50,1)} % au-dessus de la limite de ${dec(lv*50,1)} %`);
+  if(S.stopY===S.q-1)why.push(`stop trimestriel de −${dec(ls*100,1)} % franchi, book maintenu`);
+  else if(S.stopQn!==S.q-1&&qTotal<=-ls&&qTotal>-2*ls)why.push(`stop trimestriel de −${dec(ls*100,1)} % franchi à la clôture`);
+  if(Math.round(cc.v*100)>Math.round(lc*100))why.push(`${Math.round(cc.v*100)} % du risque en ${cc.g.toLowerCase()}, limite ${Math.round(lc*100)} %`);
   S.qCard=null;
   if(!red&&why.length){C.y++;C.clean=0;S.qCard={c:'jaune',why:why[0]};C.log.push({q:S.q,c:'jaune',why:why[0]});
    if(C.y>=2)red='deuxième carton jaune'}
   else if(!red){C.clean++;if(C.clean>=4&&C.y>0){C.y--;C.clean=0}}
   if(red){C.r++;C.y=0;C.clean=0;const rn=redDraw2(wFin);S.qCard={c:'rouge',why:red,cn:rn};C.log.push({q:S.q,c:'rouge',why:red,cn:rn.nm});
-   S.redNext=rn;const out=0.05*S.nav;S.nav-=out;S.flows-=out;S.qFlow=(S.qFlow||0)-out;S.lp=Math.max(0,S.lp-6);S.rc=Math.max(S.rc,60)}
-  else if(S.qCard)S.lp=Math.max(0,S.lp-2);
+   S.redNext=rn;S.rc=Math.max(S.rc,60)}
  }
  S.kEff=null;
  if(S.nav>=S.hwm-1e-9&&qTotal>0&&perf>0&&!S.hwmShown){S.hwmShown=S.idx;
@@ -6292,13 +6357,15 @@ function screenDebrief(o){
  const cums=[{nm:S.fundName,v:S.idx-1,me:1},...S.rivals.map(r=>({nm:r.nm,v:r.cum-1}))].sort((a,b)=>b.v-a.v);
  const warn=[];
  const detl=[];if(S.poachMsg)detl.push(S.poachMsg);   /* lot 55 : les flux clients par concurrent, en tête */
- if(S.lp<24&&!S.over)warn.push("Le principal investisseur a demandé un point mensuel. C'est le signe qui précède les rachats.");
+ if(!S.over&&mgrCash()<-1e-9)warn.push(`🧾 <b>Trésorerie négative : −${mm(-mgrCash())}.</b> Encore une clôture dans le rouge et la société de gestion dépose le bilan. Les salaires sont facturés sur ${moneyB(budNav())} tant que l'encours reste sous son niveau de départ : alléger l'équipe coûte le versement du bonus aux partants.`);
+ {const I=invs().filter(v=>v.ntc>0);if(I.length&&!S.over){const E=extNav(),t=I.reduce((a,v)=>a+v.ntc*v.w*E,0);
+  warn.push(`📨 <b>Avis de rachat pour la prochaine clôture</b> : ${I.map(v=>`${invD(v.id).nm} ${mm(v.ntc*v.w*E)}`).join(' · ')}, soit ${dec(t/Math.max(1e-9,E)*100,1)} % de l'encours. Un avis tombe si l'investisseur remonte à son seuil + ${INVP.cancel}.`)}}
  if(S.qCard&&S.qCard.c==='rouge'&&S.qCardPop!==S.q){S.qCardPop=S.q;const qc=S.qCard;setTimeout(()=>{
    openModal('Carton rouge',`<div class="redpop"><svg viewBox="0 0 18 24" width="54" height="72"><rect x="1.5" y="1.5" width="15" height="21" rx="2.5" fill="#D2463C"/></svg>
     <p><b>Le comité des risques vous sort le rouge.</b><br>${qc.why}.</p>
-    <ul class="rules2">${qc.cn&&qc.cn.list?qc.cn.list.map(c=>`<li>Au prochain trimestre : <b>${c.nm}</b> — ${c.t}.</li>`).join(''):`<li>Au prochain trimestre : <b>${qc.cn?qc.cn.nm:'contrainte'}</b> — ${qc.cn?qc.cn.t:''}.</li>`}<li>5 % de l'encours retiré par les investisseurs.</li><li>Confiance −6.</li></ul></div>`);
+    <ul class="rules2">${qc.cn&&qc.cn.list?qc.cn.list.map(c=>`<li>Au prochain trimestre : <b>${c.nm}</b> — ${c.t}.</li>`).join(''):`<li>Au prochain trimestre : <b>${qc.cn?qc.cn.nm:'contrainte'}</b> — ${qc.cn?qc.cn.t:''}.</li>`}</ul></div>`);
    const mb=document.querySelector('#modal .mbox');if(mb)mb.classList.add('redbox')},30)}
- if(S.qCard)warn.push(S.qCard.c==='rouge'?`🟥 <b>Carton rouge du comité</b> — ${S.qCard.why}. Au prochain trimestre : <b>${S.qCard.cn.nm}</b> — ${S.qCard.cn.t}. 5 % de l'encours retiré, confiance −6.`:`🟨 <b>Carton jaune du comité</b> — ${S.qCard.why}. Confiance −2 ; au deuxième, c'est le rouge.`);
+ if(S.qCard)warn.push(S.qCard.c==='rouge'?`🟥 <b>Carton rouge du comité</b> — ${S.qCard.why}. Au prochain trimestre : <b>${S.qCard.cn.nm}</b> — ${S.qCard.cn.t}.`:`🟨 <b>Carton jaune du comité</b> — ${S.qCard.why}. Au deuxième, c'est le rouge.`);
  if(capStress()>0&&!S.capWarned){S.capWarned=1;warn.push(`Capacité atteinte : à ${moneyB(S.nav)} d'encours, vos ordres coûtent ${((capFactor()-1)*100).toFixed(0)} % d'impact de plus qu'au premier jour. Collecter davantage ne rapportera bientôt plus ce que ça coûte.`)}
  {const c=S.colRes;if(c&&c.show)detl.push(c.lock?`Collatéral renforcé : rémunéré à 60 % du taux, ${mn(c.m)} par rapport aux bons du Trésor.`
   :c.hit?`💥 <b>Le placement du collatéral a fait défaut</b> — ${c.nm} : surcroît de rendement ${mn(c.sur)}, défaut <b class="neg-g">−${mm(c.loss)}</b> (−${dec(c.l*100,1)} % de l'encours), soit ${mn(c.m)} au total par rapport aux bons du Trésor.`
@@ -6325,6 +6392,7 @@ function screenDebrief(o){
   <table class="qt" style="margin-top:12px"><thead><tr><th>Fonds</th><th>Risque</th><th>Trim.</th><th>Cumul</th></tr></thead><tbody>
   ${all.map(a=>({a,cv:a.cv})).sort((x,y)=>y.cv-x.cv).map(({a,cv})=>`<tr class="${a.me?'me':''}"><td>${a.nm}${a.th?`<br><span class="neg-g" style="font-size:11px">accident de levier</span>`:''}</td><td>${a.rk!==undefined?dec(a.rk*50,1)+' %':''}</td><td class="${cls(a.v)}">${sgn(a.v,1)}</td><td class="${cls(cv)}">${sgn(cv,1)}</td></tr>`).join('')}
   </tbody></table>
+  ${invTable()}
   ${(()=>{const T0=S.tresQ0!==undefined?S.tresQ0:0,T1=mgrCash(),it=[['Commission de gestion',Gq.mgmt||0],['Commission de performance',Gq.perf||0],["Bonus d'objectif",bon],[Gq.cb?`Co-investissement (${Math.round((Gq.cp||0)*100)} % · ${mm(Gq.cb)} placés)`:'Co-investissement',Gq.coinv||0],["Budget d'exploitation",-(Gq.ops||0)],["Bonus d'équipe versé à l'ouverture",-(S.qBonT||0)],["Coûts d'exécution",-(Gq.tc||0)]];
    const oth=T1-T0-it.reduce((a,x)=>a+x[1],0);if(Math.abs(oth)>1e-7)it.push(['Autres (accidents, incidents, desk payés par vous)',oth]);
    return `<table class="qt" style="margin-top:12px"><thead><tr><th style="text-align:left">Trésorerie</th><th>M$</th></tr></thead><tbody>
@@ -6336,6 +6404,14 @@ function screenDebrief(o){
   return `<div class="block"><div class="blockhead"><h2>Bonus d'équipe</h2><span class="hint">versé à l'ouverture</span></div>
   <p class="note" style="margin-top:0">Une part de votre commission de performance (${mm(pf)}), versée à l'équipe. Sans bonus, un concurrent débauche l'un de vos gérants une fois sur deux à la clôture ; son siège reste vide un trimestre.${(S.noBon||0)>=1?` <b class="neg-g">Le trimestre gagnant précédent s'est passé de bonus : un second sans rien et le desk grogne (risque ${Math.round(Math.min(0.95,POACHP*GROGNE)*100)} %).</b>`:''}</p>
   <div class="cisel">${BONUS.map((p,i)=>`<button class="bnp${i===(S.bonI||0)?' on':''}" data-i="${i}">${Math.round(p*100)} %<br><small>${mm(p*pf)} · risque ${Math.round(POACHP*BONM[i]*100)} %</small></button>`).join('')}</div></div>`})();
+ const gtSel=(S.over||S.q>=QT()||!gateOk())?'':`<div class="block"><div class="blockhead"><h2>Gate</h2><span class="hint">prochaine clôture</span></div>
+  <p class="note" style="margin-top:0">${mm(invDue())} d'avis de rachat tombent à la prochaine clôture, ${dec(invDue()/Math.max(1e-9,extNav())*100,1)} % de l'encours. La gate limite les paiements à ${Math.round(INVP.gate*100)} % de l'encours, au prorata ; le reste est reporté d'un trimestre. Prix : confiance ${INVP.gateLp}, et pas deux trimestres de suite.</p>
+  <div class="cisel"><button class="gtp${S.gateNext?'':' on'}" data-g="0">Payer à l'échéance</button><button class="gtp${S.gateNext?' on':''}" data-g="1">Activer la gate</button></div></div>`;
+ const lmSel=(S.over||S.q>=QT()||S.qCard||(S.limNeg&&S.limNeg.q===S.q-1))?'':(()=>{const cur=S.limNeg&&S.limNeg.q===S.q?S.limNeg.id:'';
+  const O=[['','Aucune'],['vol',`Risque ${dec(limVol(1)*50,1)} → ${dec(limVol(1)*LIM.neg.vol*50,1)} %`],['stop',`Stop −${dec(limStop(1)*100,1)} → −${dec((limStop(1)/((S.bandTight)||1)+LIM.neg.stop)*((S.bandTight)||1)*100,1)} %`],['conc',`Concentration ${Math.round(limConc(1)*100)} → ${Math.round(Math.min(1,limConc(1)+LIM.neg.conc)*100)} %`]];
+  return `<div class="block"><div class="blockhead"><h2>Négocier une limite</h2><span class="hint">trimestre prochain</span></div>
+  <p class="note" style="margin-top:0">Sans carton ce trimestre, le comité accepte de relever une limite pendant un trimestre. Les investisseurs l'apprennent : confiance ${LIM.negLp} à l'ouverture. Pas deux trimestres de suite.</p>
+  <div class="cisel">${O.map(([id,t])=>`<button class="lmp${cur===id?' on':''}" data-l="${id}">${t}</button>`).join('')}</div></div>`})();
  const coSel=(S.over||S.q>=QT())?'':`<div class="block"><div class="blockhead"><h2>Co-investissement</h2><span class="hint">trimestre prochain</span></div>
   <p class="note" style="margin-top:0">Part de votre trésorerie placée dans le fonds : elle suit son résultat net, gains comme pertes, et reste comptée dans la trésorerie à sa valeur du moment. 25 % au moins.</p>
   <div class="cisel">${COINVS.map(p=>`<button class="cip${Math.abs(p-coinvPct())<1e-9?' on':''}" data-p="${p}">${Math.round(p*100)} %</button>`).join('')}</div>
@@ -6350,7 +6426,7 @@ function screenDebrief(o){
     <span>T${S.q} <b class="${cls(o.qTotal)}">${sgn(o.qTotal,1)}</b> · DEPUIS LE LANCEMENT</span><b class="cnt">—</b></div>
     ${tapeSvg(S.tape.pts,S.tape.q0||0,{h:150,anim:1,draw:3,zero:1,rivals:rivalTapes(),qs:S.tape.q0||0,ql:S.q})}</div>`
    :navBox(`PERFORMANCE NETTE CUMULÉE · ${S.q} TRIMESTRE${S.q>1?'S':''}`,idxSeries(),{anim:1,trough:1})}
-  <div class="thold">${ess}${warn.map(t=>`<div class="flag" style="margin-top:12px"><span>${t}</span></div>`).join('')}${bnSel}${coSel}
+  <div class="thold">${ess}${warn.map(t=>`<div class="flag" style="margin-top:12px"><span>${t}</span></div>`).join('')}${bnSel}${gtSel}${lmSel}${coSel}
 
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Du brut au net · en ${UQ.s.trim()}</summary>
    <div class="attr"><span class="an">Positions directionnelles</span><span class="av">${inU(o.P.grossM,UQ)}</span></div>
@@ -6384,6 +6460,8 @@ function screenDebrief(o){
  theatre(app.querySelector('.pnlhead').parentElement);
  app.querySelectorAll('.bnp').forEach(b=>b.onclick=()=>{S.bonI=+b.dataset.i;app.querySelectorAll('.bnp').forEach(x=>x.classList.toggle('on',x===b));
   const n=document.getElementById('cinote');if(n)n.textContent=`${mm(coPend())} placés au prochain trimestre, calculés après le bonus d'équipe.`;refreshGain()});
+ app.querySelectorAll('.lmp').forEach(b=>b.onclick=()=>{const id=b.dataset.l;S.limNeg=id?{id,q:S.q}:null;app.querySelectorAll('.lmp').forEach(x=>x.classList.toggle('on',x===b))});
+ app.querySelectorAll('.gtp').forEach(b=>b.onclick=()=>{S.gateNext=b.dataset.g==='1';app.querySelectorAll('.gtp').forEach(x=>x.classList.toggle('on',x===b))});
  app.querySelectorAll('.cip').forEach(b=>b.onclick=()=>{S.coinvPct=+b.dataset.p;app.querySelectorAll('.cip').forEach(x=>x.classList.toggle('on',x===b));
   const n=document.getElementById('cinote');if(n)n.textContent=`${mm(coPend())} placés au prochain trimestre, calculés après le bonus d'équipe.`;refreshGain()});
  goldFlush(3500);
@@ -6463,7 +6541,7 @@ function screenFinal(){
  let verdict,vtxt;const ANS=`${DUR().ans} an${DUR().ans>1?'s':''}`,ANSC=ANS.charAt(0).toUpperCase()+ANS.slice(1);
  if(S.over==='quit'){verdict="Vous avez rendu les clés";vtxt=`Au trimestre ${S.q}, vous avez préféré arrêter. Le conseil prend acte ; les commissions encaissées jusque-là restent les vôtres.`}
  else if(S.over){   /* encours sous NAVEND ; couvre aussi les sauvegardes 'dd'/'lp'/'rc' */
-  verdict=S.over==='dd'?"Moitié perdue":"L'encours n'y est plus";vtxt=S.over==='dd'?`Au trimestre ${S.q}, le fonds a perdu la moitié de sa valeur depuis son plus haut : les investisseurs et le conseil ferment le mandat.`:`Le fonds est tombé sous ${moneyB(FUNDMIN)} d'encours au trimestre ${S.q} : les commissions ne couvrent plus la structure, le mandat s'arrête. Les rachats se sont enchaînés — perte de confiance, replis, appels de marge — jusqu'à ce qu'il ne reste plus assez à gérer.`}
+  verdict=S.over==='cash'?"Dépôt de bilan":S.over==='dd'?"Moitié perdue":"L'encours n'y est plus";vtxt=S.over==='cash'?`Deuxième clôture de suite en trésorerie négative, au trimestre ${S.q} : les commissions ne paient plus l'équipe, le loyer et les ordres. La société de gestion dépose le bilan ; le conseil confie le fonds à une autre maison.`:S.over==='nav'?`Au trimestre ${S.q}, vos investisseurs sont partis : il ne reste presque plus rien à gérer.`:S.over==='dd'?`Au trimestre ${S.q}, le fonds a perdu la moitié de sa valeur depuis son plus haut : les investisseurs et le conseil ferment le mandat.`:`Le fonds est tombé sous ${moneyB(FUNDMIN)} d'encours au trimestre ${S.q} : les commissions ne couvrent plus la structure, le mandat s'arrête. Les rachats se sont enchaînés — perte de confiance, replis, appels de marge — jusqu'à ce qu'il ne reste plus assez à gérer.`}
  else if(cagr>0.25&&rank===1){verdict="Une signature sur la place";vtxt=`${ANS} de mandat, et vous finissez devant les trois. Les allocataires font la queue, le fonds ferme aux souscriptions : désormais, c'est vous qui choisissez vos clients.`}
  else if(cagr>0.18&&S.maxdd<0.20){verdict=`${ANSC} de référence`;vtxt="Performance et discipline de risque : le genre de courbe qu'on imprime dans les présentations. Le conseil vous propose d'ouvrir un second fonds."}
  else if(cagr>0.12){verdict="Mandat renouvelé, avec les honneurs";vtxt=`Vous tenez l'objectif, et plus. Les investisseurs resignent pour ${ANS} de plus et augmentent leurs tickets.`}

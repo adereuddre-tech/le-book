@@ -50,6 +50,8 @@ const SIG=[];while(steps++<3000&&!done){
  const cc=d.querySelectorAll('.card.commgo');
  if(cc.length){click(cc[sage?1:Math.floor(rnd()*cc.length)]);continue}   /* annonce : un clic vaut validation */
  {const co=[...d.querySelectorAll('.coll:not([disabled])')],qk='c'+w.eval('S.q');if(co.length&&!sage&&w.__colq!==qk){w.__colq=qk;click(co[Math.floor(rnd()*co.length)])}}
+ if(a.includes('--clicks')&&$('#nx')&&!w.__ck){w.__ck=1;const g=$('.gtp[data-g="1"]');if(g){click(g);stats.gate=(stats.gate||0)+1}const l=d.querySelectorAll('.lmp');if(l.length>1){click(l[1+(steps%(l.length-1))]);stats.lim=(stats.lim||0)+1}}
+ if(!$('#nx'))w.__ck=0;
  let hit=false;for(const id of ['#ok','#go2','#rgo','#pgo','#nx','#go']){const b=$(id);if(b&&!b.disabled){click(b);hit=true;break}}
  if(hit)continue;
  const any=[...d.querySelectorAll('button.cta,button.buy')].filter(b=>!b.disabled);
