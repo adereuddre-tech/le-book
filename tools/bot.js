@@ -39,7 +39,8 @@ function playGame(o){
       /* lot 39 : onze crans, et les plus chers se verrouillent quand la caisse ne suit pas —
          on prend alors le cran le plus haut encore ouvert sous celui demandé */
       ids.forEach((b,i)=>{let e=null;
-        for(let j=bud[i];j>=0;j--){const c=$(`#buds .lvl[data-b="${b}"][data-i="${j}"]`);if(c&&!c.disabled){e=c;break}}
+        const res=o.reserve==null?0.35:o.reserve,okR=j=>j===0||w.eval(`(S.budPrev&&${j}<=S.budPrev['${b}'])||budgetBpIf('${b}',${j})*1e-4*budNav()<=${1-res}*(mgrCash()+(S.qOps||0))`);   /* garde une réserve pour les ordres */
+        for(let j=bud[i];j>=0;j--){const c=$(`#buds .lvl[data-b="${b}"][data-i="${j}"]`);if(c&&!c.disabled&&okR(j)){e=c;break}}
         if(e&&!e.classList.contains('on')){click(e);ch=true}});
       if(ch)continue}
     if($('#send')){

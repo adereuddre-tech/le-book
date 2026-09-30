@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **112**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **113**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -642,8 +642,18 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   en trésorerie négative (`S.cashNeg>=1`). Apparié (bot, bonus 10 %) : normal 70 % de survie (quant 75, fondamental 75,
   flux 60), score −2,1 ± 0,8 M$ ; difficile 71 %, inchangé. Faillites surtout au premier trimestre (9 sur 18 en normal).
 
+- **113 · Progression styles × difficultés** : capital de départ de la société de gestion `SIZES.seed` (facile 0,6 M$,
+  moyen 0,3 M$, difficile 0 ; `S.mgrSeed` ajouté à `mgrFees` à la création), coût de l'équipe `SIZES.costM`
+  (0,85 / 1 / 1,20, dans `budNav()`), coûts d'exécution du quant ×0,80 et du fondamental ×1,12. Cause : au premier
+  trimestre, commission 0,5 M$ ≈ budget 0,3 M$ + ordres 0,2 à 0,5 M$ : la faillite du premier trimestre ne dépendait
+  pas de la difficulté. Bot : `reserve` (défaut 35 %) — il garde une réserve de trésorerie hors budget.
+  Mesure (bot prudent, 25 parties par case, écart type ≈ 9 pts par case) : survie facile 75 %, moyen 69 %, difficile 63 %
+  (cibles 80 / 70 / 60) ; par style, toutes difficultés : quant ≈ 71 %, fondamental 76 %, flux 63 % (cibles 80 / 70 / 60 :
+  quant et fondamental encore inversés, dans le bruit). Score moyen 15,6 / 19,7 / 17,9 M$ : le difficile ne rapporte pas
+  plus que le moyen.
+
 ### Après les lots 102–110
-- Survie : normal à la cible (70 %) depuis le lot 112 ; difficile à 71 % pour une cible de 60 %.
+- Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
 - Pertes immédiates jusqu'à 60 % sur certains événements extrêmes pour le bot (sécheresse, short squeeze) : héritage du
   lot 101 (amplification de foule), à vérifier.
 - Qualificatifs de trimestre : parlent encore du « dollar » (exact, mais pas du vocabulaire « liquidité »).

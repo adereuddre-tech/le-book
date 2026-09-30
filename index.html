@@ -823,12 +823,12 @@ const SIG=[
 const PROFILES=[
  {id:'syst',lvl:'Débutant',who:"« Le modèle ne lit pas les journaux, et il dort très bien »",nm:"Gérant quantitatif systématique",
   p:"Vous ne formez pas d'opinion, vous estimez des paramètres. Les sources deviennent un vecteur de vraisemblance, les signaux une matrice de covariance, et la décision tombe d'un programme d'optimisation que personne dans la salle ne relit plus depuis trois ans. Vous ne savez pas pourquoi le book est long du yen. Le modèle, lui, le sait.",
-  ef:[['g',"<b>Pouvoir propre — le book du modèle</b> : un portefeuille optimisé sur toutes les sources et tous les signaux, pondérés par leur vraisemblance, appliqué d'un bouton"],['g',"rapports réguliers : jauge investisseurs 10 % moins nerveuse"],['g',"des investisseurs qui connaissent la stratégie : rachats pour repli à partir de 40 % de perte au lieu de 28 %"],['b',"le modèle ne vise que 16 % de vol : régulier, mais il laisse du rendement"],['g',"incidents opérationnels −40 % : tout est automatisé, journalisé, horodaté"],['g',"le modèle recale vite : 50 % du mouvement capté après un ajustement"],['b',"le modèle aime la tendance : il surestime de 4 pts la probabilité qu'une dépêche se prolonge"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"],['b',"aucune intuition : ce que le modèle n'a pas mesuré n'existe pas"]],
-  sigBonus:0,capture:0.50,tcMult:1.0,rumBonus:0.05,lpMult:0.90,modelScale:0.80,ddMax:0.40,incMult:0.60,numeric:true,noAdj:true},
+  ef:[['g',"<b>Pouvoir propre — le book du modèle</b> : un portefeuille optimisé sur toutes les sources et tous les signaux, pondérés par leur vraisemblance, appliqué d'un bouton"],['g',"rapports réguliers : jauge investisseurs 10 % moins nerveuse"],['g',"des investisseurs qui connaissent la stratégie : rachats pour repli à partir de 40 % de perte au lieu de 28 %"],['b',"le modèle ne vise que 16 % de vol : régulier, mais il laisse du rendement"],['g',"incidents opérationnels −40 % : tout est automatisé, journalisé, horodaté"],['g',"le modèle recale vite : 50 % du mouvement capté après un ajustement"],['b',"le modèle aime la tendance : il surestime de 4 pts la probabilité qu'une dépêche se prolonge"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"],['g',"coûts de transaction −20 % : le modèle exécute sans état d'âme"],['b',"aucune intuition : ce que le modèle n'a pas mesuré n'existe pas"]],
+  sigBonus:0,capture:0.50,tcMult:0.80,rumBonus:0.05,lpMult:0.90,modelScale:0.80,ddMax:0.40,incMult:0.60,numeric:true,noAdj:true},
  {id:'fonda',lvl:'Normal',who:"« Je peux avoir raison plus longtemps que le marché ne peut rester solvable »",nm:"Gérant fondamental discrétionnaire",
   p:"Vous construisez une vue du monde, ligne par ligne, et vous la défendez contre le marché, contre le comité, contre vos propres analystes. Vous avez passé trois nuits sur la balance courante d'un pays que personne ne regarde. Vous aurez raison. La seule question est de savoir si votre mandat vous survivra jusque-là.",
-  ef:[['g',"<b>Pouvoir propre — la source vérifiée</b> : chaque trimestre, deux rumeurs sont recoupées par votre réseau et vous sont données pour certaines"],['g',"+5 sources par trimestre : on vous rappelle, on vous parle"],['g',"les pré-annonces d'événements vous parviennent 13 pts plus souvent"],['g',"une fois par trimestre, la probabilité de suite d'une dépêche vous est donnée exacte"],['b',"réaction mesurée : vous ne captez que 60 % d'un mouvement en cours de trimestre"],['g',"trois catalyseurs par trimestre, que vous seul connaissez : la valeur y compte triple"],['b',"votre desk vise 22 % de vol : des convictions, et le risque qui va avec"],['b',"coûts de transaction +8 % : vous arbitrez tard, et cher"]],
-  sigBonus:5,capture:0.60,tcMult:1.08,rumBonus:0.18,lpMult:1.0,incMult:1.0,modelScale:1.10,numeric:false,verified:true},
+  ef:[['g',"<b>Pouvoir propre — la source vérifiée</b> : chaque trimestre, deux rumeurs sont recoupées par votre réseau et vous sont données pour certaines"],['g',"+5 sources par trimestre : on vous rappelle, on vous parle"],['g',"les pré-annonces d'événements vous parviennent 13 pts plus souvent"],['g',"une fois par trimestre, la probabilité de suite d'une dépêche vous est donnée exacte"],['b',"réaction mesurée : vous ne captez que 60 % d'un mouvement en cours de trimestre"],['g',"trois catalyseurs par trimestre, que vous seul connaissez : la valeur y compte triple"],['b',"votre desk vise 22 % de vol : des convictions, et le risque qui va avec"],['b',"coûts de transaction +12 % : vous arbitrez tard, et cher"]],
+  sigBonus:5,capture:0.60,tcMult:1.12,rumBonus:0.18,lpMult:1.0,incMult:1.0,modelScale:1.10,numeric:false,verified:true},
  {id:'flux',lvl:'Expert',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez rien. Vous écoutez. Le marché parle en permanence et la plupart des gens sont trop occupés à avoir des opinions pour l'entendre. Vous regardez un carnet d'ordres comme d'autres regardent la mer. Vos analystes ont renoncé à vous demander vos raisons ; votre comité a renoncé à les consigner. Il vous arrive d'avoir raison avant d'avoir compris pourquoi.",
   ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, un facteur macro vous souffle le sens de sa réalisation avant tout le monde, et elle ne se trompe qu'environ une fois sur cinq. Ne demandez pas comment"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"coûts de transaction −10 %, un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"de l'argent rapide : rachats pour repli dès 22 % de perte au lieu de 28 %"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"]],
@@ -840,16 +840,16 @@ const DESKS=[{id:'inhouse',nm:"Desk d'exécution intégré",mult:()=>1.00,fixed:
 const SIZES=[
  {id:'small',lvl:'Débutant',nav:0.1,capX:1,perf:0.15,nm:"Facile — 15 % de performance",who:"« Des concurrents à votre portée »",
   p:"Des concurrents solides mais battables, un comité qui vous laisse respirer, des investisseurs qui pardonnent un mauvais trimestre. Vous touchez 15 % de la performance au-dessus du plus haut historique.",
-  ef:[["g","concurrents moins adroits"],["g","investisseurs patients, flux plus calmes"],["g","comité indulgent"],["b","commission de performance : 15 %"]],
-  rivSkill:0.050,rivVol:0.95,lpNeg:0.60,rcNeg:0.75,lp0:8,flowMult:0.75,flowIn:0.60,goalMult:1},
+  ef:[["g","capital de départ de la société de gestion : 0,6 M$ ; équipe 15 % moins chère"],["g","concurrents moins adroits"],["g","investisseurs patients, flux plus calmes"],["g","comité indulgent"],["b","commission de performance : 15 %"]],
+  rivSkill:0.050,rivVol:0.95,lpNeg:0.60,rcNeg:0.75,lp0:8,flowMult:0.75,flowIn:0.60,goalMult:1,costM:0.85,seed:0.0006},
  {id:'mid',lvl:'Normal',nav:0.1,capX:1,perf:0.20,nm:"Moyen — 20 % de performance",who:"« La place telle qu'elle est »",
   p:"Trois très bons concurrents, un comité vigilant, des investisseurs qui comparent. La commission de performance habituelle du métier : 20 %.",
-  ef:[["g","commission de performance : 20 %"],["b","concurrents très bons, chacun dans son style"],["b","investisseurs exigeants, comité vigilant"]],
-  rivSkill:0.090,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1},
+  ef:[["g","commission de performance : 20 %"],["g","capital de départ de la société de gestion : 0,3 M$"],["b","concurrents très bons, chacun dans son style"],["b","investisseurs exigeants, comité vigilant"]],
+  rivSkill:0.090,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1,costM:1,seed:0.0003},
  {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.25,nm:"Difficile — 25 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
   p:"Des concurrents au sommet de leur art, un comité sur votre dos, des investisseurs voraces dont l'argent part aussi vite qu'il arrive. En échange, vous touchez 25 % de la performance, et les souscriptions arrivent aussi vite que les rachats.",
-  ef:[["g","commission de performance : 25 %"],["g","flux violents dans les deux sens : un bon trimestre attire gros"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
-  rivSkill:0.180,rivVol:1.10,rivBud:1,lpNeg:1.40,rcNeg:1.35,lp0:-8,flowMult:1.15,flowIn:1.60,goalMult:1}
+  ef:[["g","commission de performance : 25 %"],["b","aucun capital de départ ; équipe 20 % plus chère"],["g","flux violents dans les deux sens : un bon trimestre attire gros"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces, flux violents"],["b","comité impitoyable"]],
+  rivSkill:0.180,rivVol:1.10,rivBud:1,lpNeg:1.40,rcNeg:1.35,lp0:-8,flowMult:1.15,flowIn:1.60,goalMult:1,costM:1.20,seed:0}
 ];
 const UNIVS=[
  {id:'fin',edge:0.75,lpMult:0.90,lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
@@ -2846,7 +2846,7 @@ const NAVEND=0.05;
 /* lot 82-83 : le fonds ferme sous 40 M$ d'encours (rachats compris) ou à 50 % de perte depuis le plus haut (hors rachats) */
 const FUNDMIN=0.04,DDEND=0.50;   /* lot 83 : 40 M$ ; lot 104 : plus lus pour la fin de partie */
 const FUNDEMPTY=0.01;   /* lot 104 : fonds vidé */
-function budNav(){return Math.max(S.nav,S.aum0||S.nav)}   /* lot 104 : salaires et loyer ne suivent pas l'encours à la baisse */
+function budNav(){return Math.max(S.nav,S.aum0||S.nav)*((SIZE()&&SIZE().costM)||1)}   /* lot 104 : salaires et loyer ne suivent pas l'encours à la baisse */
 function ddMax(){return (S&&PROF().ddMax)||0.28}
 /* Profondeur de chaque carnet, en Md$ de notionnel : ce qu'un ordre peut peser avant que le
    marché ne le fasse payer. Au-delà, l'impact croît en racine carrée du rapport. */
@@ -2900,6 +2900,7 @@ function newGame(seed,prof,arch,desk,vol,size,univ,dur){
    rivals:RIVALS.map(r=>({...r,skill:Math.max(0.5,Math.min(0.88,r.skill+Z.rivSkill)),vol:r.vol*Z.rivVol,cum:1,last:0})),
    over:null,truth:null,f:[],rumor:null,pending:[],shock:new Array(N).fill(0),
    evQueue:[],log:[],flows:0,press:[],lastPress:null,rankPrev:1,phase:'budget',hotFactor:null,lpD:null,rcD:null,fLast:null,gLog:[],navQ0:100,qEvM:0,qIncM:0,qRumor:0,evLog:[]};
+ S.mgrSeed=SIZE().seed||0;S.mgrFees+=S.mgrSeed;   /* lot 113 : capital de départ de la société de gestion */
  planQuarter();
 }
 function planQuarter(){
