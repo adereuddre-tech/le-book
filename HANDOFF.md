@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **111**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **112**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -638,9 +638,12 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   Apparié : +4,1 ± 1,9 M$ en normal, −0,1 ± 0,7 en difficile ; survie inchangée (87 % / 73 %). Resserrer les
   déclencheurs des investisseurs ne change pas la survie : les fins sont des faillites de la société de gestion.
 
+- **112** : bonus d'équipe minimal 5 % (crans 5 / 7,5 / 10 / 15 / 20 %, défaut 10 %) ; faillite dès la première clôture
+  en trésorerie négative (`S.cashNeg>=1`). Apparié (bot, bonus 10 %) : normal 70 % de survie (quant 75, fondamental 75,
+  flux 60), score −2,1 ± 0,8 M$ ; difficile 71 %, inchangé. Faillites surtout au premier trimestre (9 sur 18 en normal).
+
 ### Après les lots 102–110
-- Survie trop haute en normal (87 % pour 70 %) : relever les rachats (×1,4) n'a presque rien changé ; pistes : coût de
-  l'équipe (`budNav`), seuil de faillite.
+- Survie : normal à la cible (70 %) depuis le lot 112 ; difficile à 71 % pour une cible de 60 %.
 - Pertes immédiates jusqu'à 60 % sur certains événements extrêmes pour le bot (sécheresse, short squeeze) : héritage du
   lot 101 (amplification de foule), à vérifier.
 - Qualificatifs de trimestre : parlent encore du « dollar » (exact, mais pas du vocabulaire « liquidité »).
