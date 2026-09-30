@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **110**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **111**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -633,6 +633,10 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   inchangés) ; code mort retiré (`redeem`, `midFlows`, `midYellow`, `RDM`, `RISKCAP`).
 - Calibration (bot, taux de bonus 10 %) : normal 87 % de survie (quant 85, fondamental 95, flux 80), difficile 67 %.
   Faillites : 8 sur 60 en normal, 11 sur 45 en difficile.
+
+- **111** : amplification de foule plafonnée à ×2,5 (`crowd`) — pertes immédiates jusqu'à 44 % du fonds auparavant.
+  Apparié : +4,1 ± 1,9 M$ en normal, −0,1 ± 0,7 en difficile ; survie inchangée (87 % / 73 %). Resserrer les
+  déclencheurs des investisseurs ne change pas la survie : les fins sont des faillites de la société de gestion.
 
 ### Après les lots 102–110
 - Survie trop haute en normal (87 % pour 70 %) : relever les rachats (×1,4) n'a presque rien changé ; pistes : coût de

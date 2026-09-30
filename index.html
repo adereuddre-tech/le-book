@@ -4941,7 +4941,7 @@ function xHintTxt(k){const h=S&&S.xHint;if(!h)return '';const sc=h.id?STRESS.fin
  if(h.src==='flux')return `🔴 <b>Votre intuition</b> : un choc extrême se prépare ce trimestre. Vous ne sauriez pas dire lequel.`;
  return `🔴 <b>Rumeur</b> : on parle d'un événement extrême — ${nm}. Rien de vérifié.`}
 function stressP(){return Math.min(0.32,0.10+0.20*Math.max(0,((S&&S.liq)||1)-0.9)/0.6)}   /* lue sur la liquidité affichée au desk */
-function crowd(sp){return 1+2.5*Math.max(0,sp-0.20)/0.10}
+function crowd(sp){return Math.min(2.5,1+2.5*Math.max(0,sp-0.20)/0.10)}
 function stressLoss(k,sc){const w=weights(k),h=stressHit(sc,k);let v=0;INSTR.forEach((x,i)=>{if(h[x.sym])v+=w[i]*h[x.sym]*x.sigQ});return (v<0?v*crowd(riskShown(w).total):v)-2*stressGap(k,sc)}   /* mouvement complet */
 const TAILMG=0;   /* lot 100 : les appels de marge viennent de la marge réelle */
 /* gravité moyenne relative à celle d'avant le lot 76 (0,62 calé sur 0,581 de sévérité médiane) */
