@@ -72,6 +72,8 @@ function playGame(o){
       if(!evOk[i])i=ev.length-1;
       if(w.eval('S.sc&&S.sc.ver'))st.verified++;
       if(i===0)st.follow++;click(ev[i]);continue}
+    /* tuyau du prime broker (espérance positive) : le bot le prend */
+    if($('.choice[data-tip="1"]')){st.tip=(st.tip||0)+1;click($('.choice[data-tip="1"]'));continue}
     /* accident de levier : le bot intelligent minimise perte du fonds + 2 × ce que paie sa trésorerie */
     if(smart&&$('.choice[data-t]')){const bs=[...d.querySelectorAll('.choice[data-t]')];
       const c=JSON.parse(w.eval(`JSON.stringify(tailOpts(S.tailEv).map(o=>(o.id==='hold'?0.9*S.tailEv.L:o.f)+2*o.m))`));
@@ -83,6 +85,7 @@ function playGame(o){
       click(chs[bi]);continue}
     const cc=d.querySelectorAll('.card.commgo');
     if(cc.length){click(cc[0]);continue}   /* annonce standard (lot 89 : premier cran) : un clic vaut validation */
+    if(o.bon!=null&&$('#nx')){const b=$('.bnp[data-i="'+o.bon+'"]');if(b&&!b.classList.contains('on'))click(b)}
     let hit=false;for(const id of ['#ok','#go2','#rgo','#pgo','#nx','#go']){const b=$(id);if(b&&!b.disabled){click(b);hit=true;break}}
     if(hit)continue;
     const any=[...d.querySelectorAll('button.cta,button.buy')].filter(b=>!b.disabled);

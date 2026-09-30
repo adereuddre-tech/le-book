@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **104**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **110**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -606,7 +606,44 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 - Premier trimestre : 500 k$ en caisse contre 600 k$ pour le standard (45 + 15 pb) : le front descend à Ingrid, accepté par Antoine.
 - Crans hauts non rentables pour le bot (voir lot 92) : effets à renforcer ou prix à baisser, à remesurer.
 
-### Après les lots 102–104
+### Lots 105–110 (détail)
+- **105 · Investisseurs sur la confiance** (remplace la satisfaction du lot 102). `INVR` : déclencheur propre
+  (`invVerdict`) — caisse de retraite : régularité (rachat si 3 des 4 derniers trimestres < 0, souscription après 4 > 0) ;
+  fonds souverain : objectif (annonce, sinon mandat) manqué / tenu deux fois de suite ; family office : absolu (< −3 % /
+  > +4 %) ; fonds de fonds : écart à la **moyenne** des concurrents (±3 pts, lot 110). Montant : rachat = `out` × 2 ×
+  (1 − confiance/100) × `flowMult` (`out` 0,45/0,35/0,55/0,50 depuis lot 110 p4), souscription = `inn` × confiance/50.
+  Préavis d'un trimestre, avis retiré si le verdict repasse positif ; gate et clause de repli inchangées. Historique `S.invH`.
+- **106 · Événements extrêmes** (ex-scénarios de stress) : vocabulaire, `ev.x` (cadre rouge clignotant `xblink`).
+  Annonces `xHintDraw()`/`xHintTxt()` : rumeur `XH.rum[res]` (5 à 65 %), fausse alerte 6 % ; fondamental : source vérifiée
+  1 fois sur 2 ; quant : modèle de risque 6 fois sur 10 (nomme + perte du book) ; flux : intuition toujours, sans nom.
+  Affichées dans les sources, à l'écran du desk et sur le book.
+- **107 · Budget** : cran 0 partout au premier trimestre ; cran choisi surligné (`.lvl.tm.on`) ; « hors trésorerie »
+  en rouge (`.hx`) ; boutons d'événements désactivés plus lisibles.
+- **108/110 · Bonus et motivation** : `BONUS` 0/5/10/15/20 %, réglage permanent `S.bonI` (10 % par défaut). Motivation
+  `S.mot` : vise √(taux/20 %) (`motTg`), 70 % du chemin par trimestre, +0,10 par cran de hausse, −0,18 par cran de baisse.
+  `execMot()` = gain du budget salle de marché × (0,5 + 0,5 m) × (1,15 − 0,30 m) ; remplace `EXECM[S.bud.exec]` partout.
+  Débauchage `poachNow()` = 50 % × (1 − 0,8 m), ×1,6 le trimestre d'une baisse. Mesure appariée (60 parties par taux) :
+  10 % − 0 % = +2,7 ± 1,4 M$, 20 % − 10 % = −0,8 ± 0,6 M$ : optimum intérieur à 10 %.
+- **109 · Tuyaux du prime broker** (`TIPS`, 7 affaires, espérance positive, 35 % des trimestres, écran `screenTip` avant
+  l'exécution, boutons `data-tip`) : pris, le fonds paie et encaisse tout de suite ; refusé, un concurrent le prend
+  (`S.xRiv`). Le bot les prend.
+- **110** : objectif du trimestre sur le book (`objRows`) ; concurrents exposés aux événements extrêmes par un book
+  implicite (`rivFx` rejoue les tirages de `rivalE`, `rivBookW` à 60 % de leur vol plafonnée à 20 %, `XRIVR` 0,75 du
+  mouvement complet) ; facteur 2 affiché « Liquidité » = −dollar (`FSG=[1,1,-1,1]`, affichage seul : charges et tirages
+  inchangés) ; code mort retiré (`redeem`, `midFlows`, `midYellow`, `RDM`, `RISKCAP`).
+- Calibration (bot, taux de bonus 10 %) : normal 87 % de survie (quant 85, fondamental 95, flux 80), difficile 67 %.
+  Faillites : 8 sur 60 en normal, 11 sur 45 en difficile.
+
+### Après les lots 102–110
+- Survie trop haute en normal (87 % pour 70 %) : relever les rachats (×1,4) n'a presque rien changé ; pistes : coût de
+  l'équipe (`budNav`), seuil de faillite.
+- Pertes immédiates jusqu'à 60 % sur certains événements extrêmes pour le bot (sécheresse, short squeeze) : héritage du
+  lot 101 (amplification de foule), à vérifier.
+- Qualificatifs de trimestre : parlent encore du « dollar » (exact, mais pas du vocabulaire « liquidité »).
+- Une autre session a travaillé dans le même conteneur (lot 105 concurrent, fichiers `eq*`, `v*`) : toujours vérifier
+  `git fetch` et reconstruire depuis `origin/main` avant de pousser.
+
+### Anciennes notes (lots 102–104)
 - Survie du quant (63 % normal, 33 % difficile) contre 80–90 % pour les deux autres styles.
 - Normal à 76 % de survie pour une cible de 70 % (±4,5 pts à 90 parties) : à confirmer sur plus de parties.
 - Le bot ne négocie jamais de limite ni n'active la gate : leur valeur n'est pas mesurée.
