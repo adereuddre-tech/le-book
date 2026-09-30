@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **113**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **115**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -651,6 +651,16 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   (cibles 80 / 70 / 60) ; par style, toutes difficultés : quant ≈ 71 %, fondamental 76 %, flux 63 % (cibles 80 / 70 / 60 :
   quant et fondamental encore inversés, dans le bruit). Score moyen 15,6 / 19,7 / 17,9 M$ : le difficile ne rapporte pas
   plus que le moyen.
+
+- **114** : difficile à 30 % de commission de performance ; coûts d'exécution du quant ×0,72.
+- **115** : trader de chaque classe dans l'en-tête du book ; budget : le licenciement (bonus de départ) n'est mentionné
+  que sous le cran du trimestre précédent ; caisse de retraite sur 2 trimestres d'affilée ; fonds souverain chaque
+  trimestre sur l'objectif annoncé (annonce standard par défaut) ; bonus à effet direct `BONFX` (part de la baisse des
+  coûts livrée 50/65/80/95/110 %, débauchage 50/40/30/20/12 %, ×1,5 le trimestre d'une baisse, cran minimal sans
+  commission de performance) — motivation supprimée ; négociation de limite stylée et facultative (`.lmp`, `.gtp`) ;
+  flux coûts ×1,00, quant investisseurs ×0,75, difficile équipe ×1,35.
+  Mesure (60 parties par case) : survie facile 77 %, moyen 68 %, difficile 60 % ; survivants 15,6 / 18,5 / 32,5 M$ ;
+  styles : quant 66 %, fondamental 65 %, flux 73 % — coûts et patience ne classent pas les styles.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
