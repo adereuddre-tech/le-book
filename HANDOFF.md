@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **115**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **120**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -661,6 +661,22 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   flux coûts ×1,00, quant investisseurs ×0,75, difficile équipe ×1,35.
   Mesure (60 parties par case) : survie facile 77 %, moyen 68 %, difficile 60 % ; survivants 15,6 / 18,5 / 32,5 M$ ;
   styles : quant 66 %, fondamental 65 %, flux 73 % — coûts et patience ne classent pas les styles.
+
+- **116** : impacts d'une unité au book en colonnes vente | achat (`.rgrid3`) ; book du modèle du quant à 90 % de la vol cible.
+- **117** : Jean-Kevin stagiaire ; « Maître » retiré de Gontran ; Tatillon cran 3, Mireille cran 4 (crans inchangés) ;
+  « CUMUL » sur le graphique ; annonces +5/−10, +15/−12, +30/−15 ; confiance des lignes de détail = texte (`gcf`) ;
+  mi-parcours au chiffre du ruban ; écran du desk réécrit ; licenciement à un demi-trimestre (`sevRaw`×0,5) ; débauchage
+  définitif, liste `S.gones`, un bouton « Faire revenir » par trader (`cntCost` = 1,5 trimestre de salaire) ; anecdotes
+  de fidélisation à 15 pb minimum ; cadre flottant `cardWarn()` dès qu'un carton se prépare ; textes de fin de trimestre par
+  investisseur (`invSay`). Bogue trouvé par la campagne : `G` resté dans la tuile « parti chez » → parties bloquées.
+- **118** : intuition du flux juste 80 % du temps (bot : poids 1,03) ; le quant lit les trois signaux à ×0,6.
+- **119** : gain brut des positions dans « l'essentiel » ; événement extrême des concurrents dans leur tableau ; tableau des
+  investisseurs sans % ni critère, critères en clair, montants repliés ; holding royale « Couronne du Liquidistan » (`roy`,
+  entre par le trophée, verdict = le plus sévère des quatre, rachat 55 %, souscription 5 %) ; dépêches : plancher `z.fl`
+  si l'effet net sur le fonds est ≥ 0.
+- **120** : capital de départ = difficulté (0,45 / 0,15 / 0 M$) + style (quant +0,40, fondamental +0,15, flux 0).
+  Mesure lot 119 (270 parties) : survie facile 73 %, moyen 72 %, difficile 56 % ; styles 66 / 67 / 68 % ; scores 10,0 / 12,0 /
+  14,3 M$. Lot 120 non remesuré.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.

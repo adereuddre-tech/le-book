@@ -54,7 +54,7 @@ function playGame(o){
         if(!smart){const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));return}
         if(S.prof==='syst'){const R=recoBook();const mx=Math.max(1e-9,...R.k.map(Math.abs));S.k=best(R.k.map(v=>v/mx));return}
         const {W,f:f0}=styleEst();const f=[...f0];
-        if(S.hunch)f[S.hunch.k]+=(S.hunch.up?1:-1)*1.2;
+        if(S.hunch)f[S.hunch.k]+=(S.hunch.up?1:-1)*1.03;   /* lot 118 : intuition juste 80 % du temps (1,2 à 85 %) */
         const sc=INSTR.map((x,i)=>{let v=0;for(let k=0;k<K;k++)v+=x.b[k]*f[k]*Math.max(W.F,0.5);
           if(S.tcvEst)v+=0.24*W.T*S.tcvEst.t[i]+0.20*W.C*S.tcvEst.c[i]+0.18*W.V*S.tcvEst.v[i]*((S.prof==='fonda'&&S.cat&&S.cat.includes(i))?(typeof CATM!=='undefined'?CATM:2):1);
           v+=W.X*0.30*S.crowd[i];return v});
