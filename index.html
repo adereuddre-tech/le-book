@@ -841,7 +841,7 @@ const PROFILES=[
   sigBonus:5,capture:0.60,tcMult:1.12,rumBonus:0.18,lpMult:1.0,incMult:1.0,modelScale:1.10,numeric:false,verified:true},
  {id:'flux',lvl:'Expert',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez rien : vous écoutez le marché. Votre avantage se joue sur les dépêches : vous lisez mieux que les autres la probabilité qu'un mouvement continue ou se retourne, vous en captez 85 % quand vous le suivez, et un ajustement par trimestre est gratuit. Le revers : un book plus chargé, des investisseurs qui suivent votre courbe au jour le jour, une équipe plus chère. Si vous suivez quand il fallait laisser passer, vous payez deux fois — les ordres et le retournement.",
-  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, le sens d'un facteur macro avant tout le monde, juste quatre fois sur cinq ; et vous sentez toujours venir un événement extrême, sans savoir lequel"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"],['b',"aucun capital de départ supplémentaire ; équipe 15 % plus chère"]],
+  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, le sens d'un facteur macro avant tout le monde, juste quatre fois sur cinq ; et vous sentez toujours venir un événement extrême, sans savoir lequel"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"],['b',"aucun capital de départ supplémentaire ; équipe 30 % plus chère"]],
   sigBonus:0,capture:0.85,tcMult:1.00,rumBonus:0.05,lpMult:1.20,ddMax:0.22,modelScale:1.20,incMult:1.25,numeric:false,freeAdj:true,hunch:true}
 ];
 /* figés depuis le retrait de ces deux choix de l'écran d'accueil */
@@ -858,8 +858,8 @@ const SIZES=[
   rivSkill:0.090,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1,costM:1,seed:0.00015},
  {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.30,nm:"Difficile — 30 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
   p:"Des concurrents au sommet de leur art, des investisseurs voraces, une équipe hors de prix. En échange : 30 % de la performance, et l'argent arrive aussi vite qu'il part.",
-  ef:[["g","commission de performance : 30 %"],["g","souscriptions 60 % plus grosses : un bon trimestre attire gros"],["b","aucun capital de départ, sauf celui de votre style"],["b","équipe 35 % plus chère"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces : confiance de départ −8, pertes 40 % plus mal vécues, rachats 15 % plus gros"]],
-  rivSkill:0.180,rivVol:1.10,rivBud:1,lpNeg:1.40,rcNeg:1.35,lp0:-8,flowMult:1.15,flowIn:1.60,goalMult:1,costM:1.35,seed:0}
+  ef:[["g","commission de performance : 30 %"],["g","souscriptions 60 % plus grosses : un bon trimestre attire gros"],["b","aucun capital de départ, sauf celui de votre style"],["b","équipe 50 % plus chère"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces : confiance de départ −8, pertes 40 % plus mal vécues, rachats 15 % plus gros"]],
+  rivSkill:0.180,rivVol:1.10,rivBud:1,lpNeg:1.40,rcNeg:1.35,lp0:-8,flowMult:1.15,flowIn:1.60,goalMult:1,costM:1.50,seed:0}
 ];
 const UNIVS=[
  {id:'fin',edge:0.75,lpMult:0.90,lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
@@ -897,10 +897,10 @@ function VOL(){return VOLP.find(v=>v.id===S.vol)}
 const FOP=[
  {who:"Jean-Kevin",hi:"J'ai fait un tableur. Il a des couleurs.",full:"Jean-Kevin « Jay Kay » Lévêque-Charbonnier",role:"stagiaire en analyse macro, à tout faire",ic:"🐣",bp:0},
  {who:"Dwight",hi:"Un téléphone, vingt minutes, et je vous trouve le prix.",full:"Dwight « The Voice » Tannenbaum",role:"trader actions, exécution à la voix",ic:"📞",bp:10,cls:'Actions'},
- {who:"Ingrid",hi:"La courbe ne ment pas. Les gens, si.",full:"Ingrid « Iceberg » Bergström",role:"cheffe du desk taux, la plus senior",ic:"🏦",bp:25,cls:'Taux'},
+ {who:"Ingrid",hi:"La courbe ne ment pas. Les gens, si.",g:'f',full:"Ingrid « Iceberg » Bergström",role:"cheffe du desk taux, la plus senior",ic:"🏦",bp:25,cls:'Taux'},
  {who:"Boris",hi:"Mon algorithme a déjà réservé votre bureau.",full:"Boris « Black Box » Rasoumovsky",role:"trader devises, expert exécution et algorithmes",ic:"🤖",bp:45,cls:'Devises'},
  {who:"Tuco",hi:"J'apporte mes cigares et mes contacts à Rotterdam.",full:"Bartolomeo « Tuco » Ossobuco",role:"trader matières premières",ic:"🛢️",bp:70,cls:'Matières premières'},
- {who:"Winnie",hi:"Hong Kong ouvre dans six heures. J'y suis déjà.",full:"Wing-Fat « Winnie » Leung",role:"trader exotiques",ic:"🐉",bp:100,cls:'Exotiques'},
+ {who:"Winnie",hi:"Hong Kong ouvre dans six heures. J'y suis déjà.",full:"Wing-Fat « Winnie » Leung",role:"trader exotiques",ic:"🐉",bp:100,cls:'Exotiques',g:'f'},
  {who:"Sœur Marie-Alpha",hi:"Le modèle est juste. Ce sont les hommes qui pèchent.",full:"Sœur Marie-Alpha « Sister Sharpe »",role:"stratégiste quantitative, recherche",ic:"📿",bp:150},
  {who:"Le professeur Atterrissage",hi:"Je ne prévois pas la récession. Je la commente avant tout le monde.",full:"Pr Onésime « The Oracle » Atterrissage-en-Douceur",role:"économiste en chef : un coup de pouce par trimestre",ic:"🎓",bp:250}];
 const BOP=[
@@ -920,6 +920,7 @@ const BUDGET=[
   lv:BOP.map(p=>Object.assign({nm:p.who},p))}
 ];
 function syncBud(){if(!S||!S.bud)return;S.bud.exec=S.bud.res=S.bud.ret=Math.min(S.bud.fo,6);S.bud.risk=BOMAP[S.bud.bo]}
+function eF(p){return FOP[p]&&FOP[p].g==='f'?'e':''}
 function gonesL(){if(!S.gones){S.gones=[];if(S.gone){S.gones.push({p:S.gone.p,n:S.gone.n,boss:S.gone.boss});S.gone=null}}return S.gones}
 const CNTK=1.5;   /* lot 117 : un trader parti ne revient que contre 1,5 trimestre de son salaire */
 function cntCost(p){return Math.round(CNTK*(FOP[p].bp-FOP[p-1].bp))}
@@ -1469,7 +1470,7 @@ TRADER_EXEC.push(
  {who:"Wing-Fat « Winnie » Leung · Asie",t:"« Les indices actions asiatiques ouvrent en trombe. On suit ou on attend Londres ? »",need:['ESTX','MXEF'],p:"Tokyo et Hong Kong sont en hausse de 2 %. Winnie sent que ça va continuer.",
   ch:[{b:"Exécuter en Asie tout de suite",s:"Coûts +10 %, 50 % de ±0,3 %.",e:{tcMultOn:['ESTX','MXEF'],tcMult:1.1,risk:[0.5,0.003],riskMsg:"L'Asie a tiré l'Europe",safeTxt:"L'Europe a effacé le rebond asiatique : −0,30 %.",safePnl:-0.003}},{b:"Attendre Londres",s:"Plein tarif.",e:{}},{b:"Moitié maintenant, moitié à Londres",s:"Coûts +5 %, risque divisé par deux.",e:{tcMultOn:['ESTX','MXEF'],tcMult:1.05,risk:[0.5,0.0015],riskMsg:"La moitié asiatique a payé",safeTxt:"La moitié asiatique a coûté −0,15 %.",safePnl:-0.0015}}]},
  {who:"Wing-Fat « Winnie » Leung · Asie",t:"« Mon contact à la bourse de Hong Kong dit que les stops sont à 5 % en dessous »",need:['MXEF'],p:"Une information sur le carnet d'ordres. Précieuse, et pas très propre.",
-  ch:[{b:"Utiliser l'information",s:"Coûts −30 % sur MXEF, comité −6.",e:{tcMultOn:['MXEF'],tcMult:0.7,rc:-6}},{b:"L'ignorer",s:"Plein tarif, conscience tranquille.",e:{}},{b:"La signaler à la conformité",s:"Plein tarif, comité +4, Winnie furieux (débauchage +20 %).",e:{rc:4,poach:0.2}}]},
+  ch:[{b:"Utiliser l'information",s:"Coûts −30 % sur MXEF, comité −6.",e:{tcMultOn:['MXEF'],tcMult:0.7,rc:-6}},{b:"L'ignorer",s:"Plein tarif, conscience tranquille.",e:{}},{b:"La signaler à la conformité",s:"Plein tarif, comité +4, Winnie furieuse (débauchage +20 %).",e:{rc:4,poach:0.2}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« Vous concentrez 40 % du risque sur un seul facteur. Je veux une note écrite »",p:"Le rapport pré-trade a sonné. Mireille veut une justification signée.",
   ch:[{b:"Écrire la note",s:"Comité +2, exécution retardée : coûts +5 %.",e:{rc:2,tcMult:1.05}},{b:"Réduire la concentration d'une unité sur le plus gros contributeur",s:"Comité +5, coûts de la réduction remboursés.",e:{cutTop1:true,rc:5}},{b:"Envoyer un mail de deux lignes",s:"Comité −3.",e:{rc:-3}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« Le prime broker relève les marges sur les matières premières demain »",p:"Une information utile, un jour à l'avance.",
@@ -2861,8 +2862,9 @@ const NAVEND=0.05;
 /* lot 82-83 : le fonds ferme sous 40 M$ d'encours (rachats compris) ou à 50 % de perte depuis le plus haut (hors rachats) */
 const FUNDMIN=0.04,DDEND=0.50;   /* lot 83 : 40 M$ ; lot 104 : plus lus pour la fin de partie */
 const FUNDEMPTY=0.01;   /* lot 104 : fonds vidé */
-const STYCOST={syst:0.85,fonda:1,flux:1.15};   /* lot 122 */
-function budNav(){return Math.max(S.nav,S.aum0||S.nav)*((SIZE()&&SIZE().costM)||1)*(STYCOST[S.prof]||1)}   /* lot 104 : salaires et loyer ne suivent pas l'encours à la baisse */
+const STYCOST={syst:0.85,fonda:1,flux:1.30};   /* lot 122 */
+const BUDK=0.80;   /* lot 123 : toutes les équipes 20 % moins chères */
+function budNav(){return Math.max(S.nav,S.aum0||S.nav)*((SIZE()&&SIZE().costM)||1)*(STYCOST[S.prof]||1)*BUDK}   /* lot 104 : salaires et loyer ne suivent pas l'encours à la baisse */
 function ddMax(){return (S&&PROF().ddMax)||0.28}
 /* Profondeur de chaque carnet, en Md$ de notionnel : ce qu'un ordre peut peser avant que le
    marché ne le fasse payer. Au-delà, l'impact croît en racine carrée du rapport. */
@@ -4770,8 +4772,8 @@ function drawBuds(){
    <div class="bh"><b><span class="bico">${b.ico}</span>${b.nm}</b><span>${b.lv[cur].bp} pb · ${mm(b.lv[cur].bp*1e-4*budNav())}</span></div>
    <p class="note" style="margin:2px 0 6px">${b.id==='fo'?`Touchez une personne : l'équipe va jusqu'à elle. Le prix est celui de toute l'équipe.`:`Touchez un poste : le back office va jusqu'à lui.`} ${S.budPrev&&S.budPrev[b.id]>0?`<b class="neg-g">Ne pas sélectionner, c'est licencier : chaque partant touche son bonus de départ, un demi-trimestre de salaire.</b>`:''}</p>
    <div class="team">${b.lv.map((l,i)=>{const gone=b.id==='fo'&&GL.some(g=>g.p===i),o=ok(b.id,i);
-    return `<button class="lvl tm ${i<=cur?'in':''} ${cur===i?'on':''}${gone?' gone':''}" data-b="${b.id}" data-i="${i}"${o?'':' disabled'}><span class="tic">${l.ic}</span><span class="tnm"><b>${l.full}</b><i>${gone?`parti chez ${GL.find(g=>g.p===i).boss}`:l.role}</i></span><span class="tbp">${l.bp} pb<br>${o?mm(l.bp*1e-4*budNav()):'<span class="hx">hors trésorerie</span>'}${S.budPrev&&i<S.budPrev[b.id]?`<br><span class="neg-g">départs −${mm((b.lv[S.budPrev[b.id]].bp-l.bp)*1e-4*budNav())}</span>`:''}</span></button>`}).join('')}</div>
-   ${b.id==='fo'?GL.map(G=>`<div class="flag" style="margin:8px 0 0"><span><b>${FOP[G.p].who} est parti chez ${G.boss}.</b> Il ne reviendra pas de lui-même${FOP[G.p].cls?` : la classe ${FOP[G.p].cls.toLowerCase()} passe par un courtier`:''}. Contre-offre : son salaire plus une prime de retour, ${cntCost(G.p)} pb au total (${mm(cntCost(G.p)*1e-4*budNav())}), et il revient tout de suite.</span></div><button class="lvl cntb" data-cnt="${G.p}"${cok(G)?'':' disabled'}>Faire revenir ${FOP[G.p].who} · ${mm(cntCost(G.p)*1e-4*budNav())}${cok(G)?'':' · <span class="hx">hors trésorerie</span>'}</button>`).join(''):''}
+    return `<button class="lvl tm ${i<=cur?'in':''} ${cur===i?'on':''}${gone?' gone':''}" data-b="${b.id}" data-i="${i}"${o?'':' disabled'}><span class="tic">${l.ic}</span><span class="tnm"><b>${l.full}</b><i>${gone?`parti${eF(i)} chez ${GL.find(g=>g.p===i).boss}`:l.role}</i></span><span class="tbp">${l.bp} pb<br>${o?mm(l.bp*1e-4*budNav()):'<span class="hx">hors trésorerie</span>'}${S.budPrev&&i<S.budPrev[b.id]?`<br><span class="neg-g">départs −${mm((b.lv[S.budPrev[b.id]].bp-l.bp)*1e-4*budNav())}</span>`:''}</span></button>`}).join('')}</div>
+   ${b.id==='fo'?GL.map(G=>`<div class="flag" style="margin:8px 0 0"><span><b>${FOP[G.p].who} est parti${eF(G.p)} chez ${G.boss}.</b> ${eF(G.p)?'Elle':'Il'} ne reviendra pas d'${eF(G.p)?'elle':'lui'}-même${FOP[G.p].cls?` : la classe ${FOP[G.p].cls.toLowerCase()} passe par un courtier`:''}. Contre-offre : son salaire plus une prime de retour, ${cntCost(G.p)} pb au total (${mm(cntCost(G.p)*1e-4*budNav())}), et ${eF(G.p)?'elle':'il'} revient tout de suite.</span></div><button class="lvl cntb" data-cnt="${G.p}"${cok(G)?'':' disabled'}>Faire revenir ${FOP[G.p].who} · ${mm(cntCost(G.p)*1e-4*budNav())}${cok(G)?'':' · <span class="hx">hors trésorerie</span>'}</button>`).join(''):''}
    <div class="lvef">${budEf(b.id,cur)}${b.id==='fo'?covTxt()+bonTxt():''}</div>
    <details style="margin-top:8px"><summary>À quoi sert ce budget · les ${b.lv.length} crans</summary><p class="note">${b.d}</p>${budExpl(b.id)}<ul class="efl">${b.lv.map((l,i)=>`<li><b>${l.who}</b> · ${l.bp} pb · ${budEf(b.id,i)}</li>`).join('')}</ul></details></div>`}).join('');
  const bp=budgetBp();
@@ -6103,7 +6105,7 @@ function resolveQuarter(){
  const tot=invClose({r:qTotal,med:avgR,ddp:Math.max(0,1-S.idx/Math.max(S.hwmIdx||1,S.idx))});   /* lot 102 : investisseurs nommés */
  {const pP=Math.min(0.95,Math.max(0,poachNow()+0.5*(S.poachBoost||0))),cands=[];for(let p=1;p<=S.bud.fo;p++)if(here(p)&&FOP[p].cls)cands.push(p);   /* lot 96 : débauchage de base ; lot 99 : traders seulement */
  if(!S.over&&cands.length&&rng()<pP){const boss=(pick(S.rivals.filter(x=>x.poacher))||S.rivals[S.rivals.length-1]).boss;
-  {const p=(S.huntP!=null&&cands.includes(S.huntP))?S.huntP:cands[Math.floor(rng()*cands.length)];S.huntP=null;gonesL().push({p,n:1,boss});S.poachMsg+=` ${boss} a débauché ${FOP[p].full} : il ne reviendra pas sans contre-offre${FOP[p].cls?` (${FOP[p].cls.toLowerCase()} par un courtier, ×${dec(NOTRD,1)}, en attendant)`:''}.`}
+  {const p=(S.huntP!=null&&cands.includes(S.huntP))?S.huntP:cands[Math.floor(rng()*cands.length)];S.huntP=null;gonesL().push({p,n:1,boss});S.poachMsg+=` ${boss} a débauché ${FOP[p].full} : ${eF(p)?'elle':'il'} ne reviendra pas sans contre-offre${FOP[p].cls?` (${FOP[p].cls.toLowerCase()} par un courtier, ×${dec(NOTRD,1)}, en attendant)`:''}.`}
   if((S.stars||[]).length){const g=S.stars.pop();S.poachMsg+=` Votre recrue ${g.toLowerCase()} part avec eux : la remise sur cette classe disparaît.`}}}
  if(tot>0.01&&S.bud.ret>=BUDMAX&&rng()<0.4){S.execPenalty=Math.max(0.7,S.execPenalty*0.92);S.poachMsg+=" Vous avez recruté un trader chez un concurrent : coûts d'exécution −8 %."}
  /* objectif du trimestre */
@@ -6222,7 +6224,7 @@ function avatar(name,kind,gen){
   ${hair}${glass}${acc}</g>
   <ellipse cx="32" cy="32" rx="30" ry="31" fill="none" stroke="var(--gold)" stroke-width="2"/></svg>`;
 }
-const PGEN={'Ingrid':'f','Josiane':'f','Mireille':'f','Pare-Feu':'f','Solange':'f','Marie-Alpha':'f','Jean-Kevin':'m','Dwight':'m','Boris':'m','Tuco':'m','Winnie':'m','Gontran':'m','Report-à-Nouveau':'m','Tatillon':'m'};
+const PGEN={'Ingrid':'f','Josiane':'f','Mireille':'f','Pare-Feu':'f','Solange':'f','Marie-Alpha':'f','Jean-Kevin':'m','Dwight':'m','Boris':'m','Tuco':'m','Winnie':'f','Gontran':'m','Report-à-Nouveau':'m','Tatillon':'m'};
 function personOf(who){const L=[...FOP,...BOP].filter(p=>p.ic&&p.who!=='Le loyer');for(const p of L){const keys=[p.full,p.who,...p.full.split(/[ «»]+/).filter(w=>w.length>3&&/^[A-ZÀ-Ý]/.test(w))];if(keys.some(k=>k&&who.includes(k)))return p}return null}
 function personGen(who){for(const k in PGEN)if(who.includes(k))return PGEN[k];return null}
 function evHead(who,kind){const P=personOf(who||'');return `<div class="evhead">${avatar(who,kind,personGen(who||''))}${P?`<span class="pic">${P.ic}</span>`:''}<div class="who">${who.toUpperCase()}</div></div>`}

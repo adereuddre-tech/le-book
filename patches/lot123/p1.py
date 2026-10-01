@@ -1,0 +1,18 @@
+# Lot 123 : Winnie est une femme (portrait, accords) ; coût de l'équipe flux ×1,30 et difficile ×1,50.
+s=open('index.html',encoding='utf-8').read()
+def rep(o,n,k=1):
+    global s; c=s.count(o); assert c==k,(c,o[:90]); s=s.replace(o,n)
+rep("'Winnie':'m',","'Winnie':'f',")
+rep("Winnie furieux (débauchage +20 %).","Winnie furieuse (débauchage +20 %).")
+rep(",full:\"Wing-Fat « Winnie » Leung\",role:\"trader exotiques\",ic:\"🐉\",bp:100,cls:'Exotiques'},",",full:\"Wing-Fat « Winnie » Leung\",role:\"trader exotiques\",ic:\"🐉\",bp:100,cls:'Exotiques',g:'f'},")
+rep("full:\"Ingrid « Iceberg » Bergström\",","g:'f',full:\"Ingrid « Iceberg » Bergström\",")
+rep("function gonesL(){","function eF(p){return FOP[p]&&FOP[p].g==='f'?'e':''}\nfunction gonesL(){")
+rep("il ne reviendra pas sans contre-offre","${eF(p)?'elle':'il'} ne reviendra pas sans contre-offre")
+rep("<b>${FOP[G.p].who} est parti chez ${G.boss}.</b> Il ne reviendra pas de lui-même","<b>${FOP[G.p].who} est parti${eF(G.p)} chez ${G.boss}.</b> ${eF(G.p)?'Elle':'Il'} ne reviendra pas d'${eF(G.p)?'elle':'lui'}-même")
+rep("et il revient tout de suite.</span>","et ${eF(G.p)?'elle':'il'} revient tout de suite.</span>")
+rep("<i>${gone?`parti chez ${GL.find(g=>g.p===i).boss}`:l.role}</i>","<i>${gone?`parti${eF(i)} chez ${GL.find(g=>g.p===i).boss}`:l.role}</i>")
+rep("const STYCOST={syst:0.85,fonda:1,flux:1.15};","const STYCOST={syst:0.85,fonda:1,flux:1.30};")
+rep("['b',\"aucun capital de départ supplémentaire ; équipe 15 % plus chère\"]","['b',\"aucun capital de départ supplémentaire ; équipe 30 % plus chère\"]")
+rep("goalMult:1,costM:1.35,seed:0}","goalMult:1,costM:1.50,seed:0}")
+rep("équipe 35 % plus chère","équipe 50 % plus chère")
+open('index.html','w',encoding='utf-8').write(s);print('lot123 p1 ok')

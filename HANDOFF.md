@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **122**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **123**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -693,6 +693,11 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   portraits : icône de la personne citée et genre (`PGEN`, `personOf`).
   Mesure (357 parties, 40 par case) : survie facile 72 %, moyen 62 %, difficile 61 % ; styles quant 71 % · 12,7 M$,
   fondamental 61 % · 10,9 M$, flux 62 % · 10,5 M$.
+
+- **123** : Winnie est une femme (`PGEN`, `g:'f'` sur Winnie et Ingrid, accords via `eF(p)`) ; coût de l'équipe flux ×1,30,
+  difficile ×1,50 ; toutes les équipes ×0,80 (`BUDK`) pour qu'embaucher reste rentable en flux difficile (apparié, 30 parties :
+  équipe standard − aucune équipe = +14,5 ± 7,7 M$, médiane 6,7 contre 5,4 M$, survie 63 % des deux côtés ; sans la baisse :
+  médiane 4,5 contre 6,8 M$ et survie 53 % contre 63 %). Campagne générale non refaite après ce lot.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
