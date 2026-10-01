@@ -3028,7 +3028,8 @@ function planQuarter(){
  S.nav+=tg;S.navQ0+=tg;S.coinvBase=tg;S.coinvIn=tg;S.coinvLock=tg}S.lpQ0=S.lp;   /* lot 84 : la part placée entre dans l'encours */   /* lot 81-82 : part co-investie fixée à l'ouverture */
 }
 const EVFV=[[/programme d'achats|assouplissement|achats illimités|anti-fragmentation|injecte|baisse (surprise )?(de )?ses taux|baisse ses taux|baisse des taux|coupe ses taux|relance budgétaire/i,[1,1,-2,2]],
- [/relève (ses|les) taux|hausse (surprise )?(de )?ses taux|resserrement monétaire|plus faucon|resserre/i,[-1,-1,2,-2]]];
+ [/relève (ses|les) taux|hausse (surprise )?(de )?ses taux|resserrement monétaire|plus faucon|resserre/i,[-1,-1,2,-2]],
+ [/^(?!.*arraché).*(défaut|faillite|panique bancaire)/i,[-1,-0.5,1.5,-2]]];   /* lot 131 */
 function eventFactorVec(ev){
  if(ev.fv)return ev.fv;{const tx=(ev.t||'')+' '+(ev.p||'');for(const [rx,v] of EVFV)if(rx.test(tx))return v}
  const v=[0,0,0,0];
