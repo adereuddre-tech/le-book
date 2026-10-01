@@ -841,7 +841,7 @@ const PROFILES=[
   sigBonus:5,capture:0.60,tcMult:1.12,rumBonus:0.18,lpMult:1.0,incMult:1.0,modelScale:1.10,numeric:false,verified:true},
  {id:'flux',lvl:'Expert',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez rien : vous écoutez le marché. Votre avantage se joue sur les dépêches : vous lisez mieux que les autres la probabilité qu'un mouvement continue ou se retourne, vous en captez 85 % quand vous le suivez, et un ajustement par trimestre est gratuit. Le revers : un book plus chargé, des investisseurs qui suivent votre courbe au jour le jour, une équipe plus chère. Si vous suivez quand il fallait laisser passer, vous payez deux fois — les ordres et le retournement.",
-  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, le sens d'un facteur macro avant tout le monde, juste quatre fois sur cinq ; et vous sentez toujours venir un événement extrême, sans savoir lequel"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"],['g',"commission de performance +5 pts"],['b',"aucun capital de départ supplémentaire ; équipe 30 % plus chère"]],
+  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, le sens d'un facteur macro avant tout le monde, juste quatre fois sur cinq ; et vous sentez toujours venir un événement extrême, sans savoir lequel"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"],['g',"commission de performance +5 pts : l'aura du prophète — vos investisseurs paient plus cher pour être du bon côté de celui qui « sent » le marché, et aucun ne veut être celui qui est parti juste avant le grand coup"],['b',"aucun capital de départ supplémentaire ; équipe 30 % plus chère"]],
   sigBonus:0,capture:0.85,tcMult:1.00,rumBonus:0.05,lpMult:1.20,ddMax:0.22,modelScale:1.20,incMult:1.25,numeric:false,freeAdj:true,hunch:true}
 ];
 /* figés depuis le retrait de ces deux choix de l'écran d'accueil */
@@ -977,7 +977,7 @@ function setOps(){S.mgrCosts-=S.qOps||0;S.cOps=(S.cOps||0)-(S.qOps||0);const pur
  S.qSevM=Math.min(sevRaw()*1e-4*budNav(),Math.max(0,purse-b));S.qOps=b+S.qSevM;S.mgrCosts+=S.qOps;S.cOps+=S.qOps}
 function covTxt(){const op=GRP.filter(g=>g!=='Exotiques'||S.exoOpen),c=op.filter(covered),u=op.filter(g=>!covered(g));
  return `<br>Classes couvertes : ${c.map(g=>g.toLowerCase()).join(', ')||'aucune'}${u.length?` · <span class="neg-g">sans trader, courtier ×${dec(NOTRD,1)}</span> : ${u.map(g=>g.toLowerCase()).join(', ')}`:''}`}
-const EXECM=[1.35,1.3,1.04,0.75,0.666,0.575,0.498],   /* lot 38 : trois quarts de l'ancienne facture, le reste se paie en impact de marché */
+const EXECM=[1.35,1.15,1.00,0.75,0.666,0.575,0.498],   /* lot 38 : trois quarts de l'ancienne facture, le reste se paie en impact de marché */
 RISKM=[5.0,2.0,2.0,1.00,0.8,0.65,0.5],   /* lot 96 : aux crans 0,2,3,5,6 seulement (BOMAP) */
 RISKS=[3.00,1.95,1.95,1.5,1.2,0.975,0.75],
 RETM =[2.00,1.93,1.51,1.00,0.741,0.503,0.398];
@@ -3757,6 +3757,9 @@ const COLL=[
  {id:'abs',nm:'Titrisations',ico:'🧨',y:0.018,p:0.20,l:0.06,d:"Des tranches de prêts titrisés. Le rendement paie un risque que tout le monde connaît."},
  {id:'rehyp',nm:'Titres réhypothéqués',ico:'⛓️',y:0.030,p:0.25,l:0.09,d:"Vos titres en gage sont reprêtés, puis reprêtés encore. Chaque maillon paie ; si l'un casse, vous êtes au bout de la chaîne."},
  {id:'junk',nm:'Junk bonds',ico:'☠️',y:0.045,p:0.30,l:0.12,d:"Des obligations notées sous la catégorie investissement. Le coupon est superbe tant que personne ne fait défaut."},
+ {id:'lev',nm:'Prêts à effet de levier',ico:'🏗️',y:0.055,p:0.30,l:0.14,d:"Des prêts syndiqués aux rachats d'entreprises, sans clauses de protection. Taux variable, liquidité de week-end."},
+ {id:'stab',nm:'Stablecoins synthétiques',ico:'🪙',y:0.070,p:0.25,l:0.22,d:"Un dollar numérique tenu par une position de base sur les dérivés crypto. Stable, sauf le jour où il ne l'est pas."},
+ {id:'cdo2',nm:'CDO au carré',ico:'🎲',y:0.090,p:0.35,l:0.22,d:"Des tranches de CDO elles-mêmes adossées à des tranches de CDO. Personne ne sait exactement ce qu'il y a dedans — c'est même l'idée."},
 ];
 function colOpt(){return COLL[(S&&S.col)||0]||COLL[0]}
 /* surcroît du trimestre : ±35 % autour de la moyenne, tirage pur par trimestre et par placement */
