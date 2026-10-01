@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **127**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **128**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -716,6 +716,12 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 - **127** : difficile, équipe ×1,60. Tests croisés en flux difficile (25 graines appariées) : aucune équipe 17,6 M$
   (médiane 12,8, survie 68 %) ; légère +11,8 ± 7,6 M$ ; standard +14,9 ± 5,7 M$ (médiane +6,7, survie 72 %) ; maximale
   +19,0 ± 11,7 M$ mais médiane +1,0 et survie 56 %. Embaucher reste rentable.
+
+- **128** : collatéral « Tokens liquides de NFT » (rendement 12 %, p 0,40, perte 0,35), en bas de liste.
+  Testé et non retenu : nervosité des investisseurs du flux ×1,30 (au lieu de ×1,20) — 90 parties de flux sur les graines de la
+  campagne du lot 127 : survie 70,0 % contre 70,1 %, score 14,6 contre 14,5 M$, aucun effet (les fins sont des faillites de
+  trésorerie, que la confiance touche peu). Campagne générale du lot 127 (262 parties) : survie facile 76 %, moyen 72 %,
+  difficile 62 % ; quant 73 % · 12,7 M$, fondamental 68 % · 11,6 M$, flux 70 % · 14,5 M$.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
