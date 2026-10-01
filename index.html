@@ -841,8 +841,8 @@ const PROFILES=[
   sigBonus:5,capture:0.60,tcMult:1.12,rumBonus:0.18,lpMult:1.0,incMult:1.0,modelScale:1.10,numeric:false,verified:true},
  {id:'flux',lvl:'Expert',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez rien : vous écoutez le marché. Votre avantage se joue sur les dépêches : vous lisez mieux que les autres la probabilité qu'un mouvement continue ou se retourne, vous en captez 85 % quand vous le suivez, et un ajustement par trimestre est gratuit. Le revers : un book plus chargé, des investisseurs qui suivent votre courbe au jour le jour, une équipe plus chère. Si vous suivez quand il fallait laisser passer, vous payez deux fois — les ordres et le retournement.",
-  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, le sens d'un facteur macro avant tout le monde, juste quatre fois sur cinq ; et vous sentez toujours venir un événement extrême, sans savoir lequel"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"],['g',"commission de performance +5 pts : l'aura du prophète — vos investisseurs paient plus cher pour être du bon côté de celui qui « sent » le marché, et aucun ne veut être celui qui est parti juste avant le grand coup"],['b',"aucun capital de départ supplémentaire ; équipe 30 % plus chère"]],
-  sigBonus:0,capture:0.85,tcMult:1.00,rumBonus:0.05,lpMult:1.20,ddMax:0.22,modelScale:1.20,incMult:1.25,numeric:false,freeAdj:true,hunch:true}
+  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, le sens d'un facteur macro avant tout le monde, juste quatre fois sur cinq ; et vous sentez toujours venir un événement extrême, sans savoir lequel"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"],['b',"incidents plus fréquents (×1,75) et deux fois plus chers : un desk qui va vite casse plus de vaisselle"],['g',"commission de performance +5 pts : l'aura du prophète — vos investisseurs paient plus cher pour être du bon côté de celui qui « sent » le marché, et aucun ne veut être celui qui est parti juste avant le grand coup"],['b',"aucun capital de départ supplémentaire ; équipe 30 % plus chère"]],
+  sigBonus:0,capture:0.85,tcMult:1.00,rumBonus:0.05,lpMult:1.20,ddMax:0.22,modelScale:1.20,incMult:1.75,incSev:2.2,numeric:false,freeAdj:true,hunch:true}
 ];
 /* figés depuis le retrait de ces deux choix de l'écran d'accueil */
 const RISKARCH=[{id:'std',nm:"Contrôle des risques standard",band:0.30,incMult:1.0,sev:1.0,stop:false,lp0:0}];
@@ -3382,7 +3382,7 @@ function feeLine(){
 }
 function styTable(){const P=PROFILES,f=(x,d=2)=>'×'+dec(x,d),pw={syst:"book du modèle, en un bouton ; signaux lus plus nettement",fonda:"sources vérifiées : une probabilité sûre par trimestre",flux:"intuition : le sens d'un facteur, juste 4 fois sur 5"};
  const R=[["Pouvoir",p=>pw[p.id]],["Capital de départ",p=>STYSEED[p.id]?'+'+dec(STYSEED[p.id]*1000,2)+' M$':'—'],["Commission de performance",p=>STYPERF[p.id]?'+'+Math.round(STYPERF[p.id]*100)+' pts':'—'],
-  ["Coût de l'équipe",p=>f(STYCOST[p.id])],["Coûts d'exécution",p=>f(p.tcMult)],["Book visé",p=>f(p.modelScale)+' la vol cible'],["Nervosité des investisseurs",p=>f(p.lpMult)],["Incidents",p=>f(p.incMult)],["Mouvement capté sur les dépêches",p=>Math.round(p.capture*100)+' %']];
+  ["Coût de l'équipe",p=>f(STYCOST[p.id])],["Coûts d'exécution",p=>f(p.tcMult)],["Book visé",p=>f(p.modelScale)+' la vol cible'],["Nervosité des investisseurs",p=>f(p.lpMult)],["Incidents : fréquence · coût",p=>f(p.incMult)+' · '+f(p.incSev||1,1)],["Mouvement capté sur les dépêches",p=>Math.round(p.capture*100)+' %']];
  return `<details class="wire" style="margin-top:10px"><summary>Les trois styles en un tableau</summary><div style="overflow-x:auto"><table class="qt" style="margin-top:8px;font-size:12px"><thead><tr><th style="text-align:left"></th>${P.map(p=>`<th>${({syst:'Quant',fonda:'Fondamental',flux:'Flux'})[p.id]}</th>`).join('')}</tr></thead><tbody>${R.map(([l,fn])=>`<tr><td style="text-align:left">${l}</td>${P.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`}
 function screenSetup(){
  app.innerHTML=`<div class="hero fade" style="padding-top:34px">
@@ -5963,7 +5963,7 @@ function screenIncident(){
  const desk=DESK();
  let pool=INCIDENTS.filter(x=>!x.algoOnly||desk.algo);
  const inc=pick(pool);
- const sev=ARCH().sev*RISKS[S.bud.risk];
+ const sev=ARCH().sev*RISKS[S.bud.risk]*(PROF().incSev||1);
  const loss=uni(inc.loss[0],inc.loss[1])*sev,navB=S.nav;
  /* lot 84 : deux maux — réparer tout et payer de sa poche, ou contenir et le payer en confiance */
  const O=[{b:"Tout réparer, tout de suite",s:"Le fonds paie la facture entière, vous indemnisez les clients sur votre trésorerie ; la transparence rassure.",f:loss,m:0.6*loss,lp:inc.lp*sev*0.3,rc:inc.rc*sev*0.3},
