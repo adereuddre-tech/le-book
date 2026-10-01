@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **123**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **124**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -698,6 +698,11 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   difficile ×1,50 ; toutes les équipes ×0,80 (`BUDK`) pour qu'embaucher reste rentable en flux difficile (apparié, 30 parties :
   équipe standard − aucune équipe = +14,5 ± 7,7 M$, médiane 6,7 contre 5,4 M$, survie 63 % des deux côtés ; sans la baisse :
   médiane 4,5 contre 6,8 M$ et survie 53 % contre 63 %). Campagne générale non refaite après ce lot.
+
+- **124** : les Cheminots retirent leur avis dès un trimestre positif (leur verdict ne pouvait passer que de rouge à neutre,
+  l'avis était donc toujours payé) ; phrase de fin de trimestre quand un investisseur retire son avis.
+  Mesure (335 parties, ≈ 37 par case, lots 123–124) : survie facile 76 %, moyen 69 %, difficile 65 % ; scores 9,8 / 11,6 /
+  17,1 M$ ; styles quant 76 % · 14,5 M$ (médiane 8,6), fondamental 70 % · 14,2 M$ (7,1), flux 65 % · 9,9 M$ (3,8).
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
