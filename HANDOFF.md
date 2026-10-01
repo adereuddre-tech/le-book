@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **135**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **136**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -750,6 +750,10 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   79 % · 26,2 M$ (méd 14,9), +1,8 ± 0,4 M$ vs lot 134 ; score entre quant (25,6) et flux (30,1), survie encore au-dessus du
   quant (76 %). Variante incidents ×1,5 / coût ×2,0 : 79 % · 25,7 — les incidents ne font pas baisser sa survie.
   Express (lot 134, 180 parties) : survie 92 / 82 / 82 %, scores 12,1 / 13,5 / 18,0 M$ ; quant 82 %, fondamental 90 %, flux 83 %.
+
+- **136** : fondamental sans bonus de capital de départ, coûts ×1,08, commission +4 pts. 180 parties normales : capital à 0
+  seul 78 % · 26,7 M$ ; avec coûts ×1,08 et +4 pts 76 % · 27,8 M$ (méd 14,2). Score entre quant et flux, survie au niveau
+  du quant.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
