@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **121**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **122**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -682,6 +682,17 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   « Créez votre fonds » : trois choix, tutoriel « Comment on joue » en trois paragraphes, règles en sept lignes à jour
   (trésorerie, investisseurs, comité, chocs, liquidité), points d'interrogation dorés pleins (`.hintq`), aides, styles et
   difficultés réécrits sur les paramètres réels ; tutoriels des jauges, du budget et des facteurs à jour.
+
+- **122** : coût de l'équipe selon le style (`STYCOST` quant 0,85 / fondamental 1 / flux 1,15, dans `budNav`) ; pré-annonces
+  de banques centrales au sens économique (`EVFV` : assouplissement = liquidité, inflation, appétit en hausse ; le vecteur
+  projeté lisait un rally obligataire comme croissance et liquidité en baisse ; `ev.fv` prioritaire) ; facteurs abrégés sur
+  les lignes de marché ; Couronne du Liquidistan en dernier, souscription d'office 10 à 25 % de sa ligne selon la confiance,
+  entrée aussi par l'événement du conseil (`royIn`) ; clause de repli de la caisse supprimée ; annonces +5/−5, +15/−8, +30/−10 ;
+  description du flux détaillée ; écran de résultat du tuyau du prime broker (confiance +2 gagné, −1 perdu) ; concurrents :
+  montant des accidents de levier, et événements extrêmes / accidents du joueur ; objectif du trimestre sur l'écran du desk ;
+  portraits : icône de la personne citée et genre (`PGEN`, `personOf`).
+  Mesure (357 parties, 40 par case) : survie facile 72 %, moyen 62 %, difficile 61 % ; styles quant 71 % · 12,7 M$,
+  fondamental 61 % · 10,9 M$, flux 62 % · 10,5 M$.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
