@@ -755,6 +755,9 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   seul 78 % · 26,7 M$ ; avec coûts ×1,08 et +4 pts 76 % · 27,8 M$ (méd 14,2). Score entre quant et flux, survie au niveau
   du quant.
 
+- **136** : fondamental sans bonus de capital de départ (`STYSEED`). Mesure (180 parties normales) : 78 % · 28,1 M$
+  (méd 15,3), +1,9 ± 2,0 M$ vs lot 135. Sa survie reste ≈ celle du quant (76 %) : ni incidents ni capital ne la font baisser.
+
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
 - Pertes immédiates jusqu'à 60 % sur certains événements extrêmes pour le bot (sécheresse, short squeeze) : héritage du
