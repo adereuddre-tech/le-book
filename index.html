@@ -841,7 +841,7 @@ const PROFILES=[
   sigBonus:5,capture:0.60,tcMult:1.12,rumBonus:0.18,lpMult:1.0,incMult:1.0,modelScale:1.10,numeric:false,verified:true},
  {id:'flux',lvl:'Expert',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez rien : vous écoutez le marché. Votre avantage se joue sur les dépêches : vous lisez mieux que les autres la probabilité qu'un mouvement continue ou se retourne, vous en captez 85 % quand vous le suivez, et un ajustement par trimestre est gratuit. Le revers : un book plus chargé, des investisseurs qui suivent votre courbe au jour le jour, une équipe plus chère. Si vous suivez quand il fallait laisser passer, vous payez deux fois — les ordres et le retournement.",
-  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, le sens d'un facteur macro avant tout le monde, juste quatre fois sur cinq ; et vous sentez toujours venir un événement extrême, sans savoir lequel"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"],['b',"aucun capital de départ supplémentaire ; équipe 30 % plus chère"]],
+  ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, le sens d'un facteur macro avant tout le monde, juste quatre fois sur cinq ; et vous sentez toujours venir un événement extrême, sans savoir lequel"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"incidents opérationnels +25 % : on va vite, on vérifie peu"],['b',"aucune source supplémentaire : vous n'en demandez pas"],['g',"commission de performance +5 pts"],['b',"aucun capital de départ supplémentaire ; équipe 30 % plus chère"]],
   sigBonus:0,capture:0.85,tcMult:1.00,rumBonus:0.05,lpMult:1.20,ddMax:0.22,modelScale:1.20,incMult:1.25,numeric:false,freeAdj:true,hunch:true}
 ];
 /* figés depuis le retrait de ces deux choix de l'écran d'accueil */
@@ -875,7 +875,9 @@ const UNIVS=[
 const RECO={prof:'flux',arch:'std',desk:'inhouse',size:'mid',univ:'com',vol:'std',dur:'normal'};
 function SIZE(){return SIZES.find(x=>x.id===S.size)||SIZES[1]}
 /* commission de performance : fixée par la difficulté (15 / 20 / 25 %) */
-function perfFee(){return (S&&SIZE().perf)||0.20}
+const STYPERF={syst:0,fonda:0,flux:0.05};   /* lot 125 : le style expert touche 5 pts de commission de plus */
+const STYSEED={syst:0.0004,fonda:0.00015,flux:0};
+function perfFee(){return ((S&&SIZE().perf)||0.20)+((S&&STYPERF[S.prof])||0)}
 function UNIV(){return UNIVS.find(x=>x.id===(S&&S.univ))||UNIVS[1]}
 const VOLP=[
  {id:'prud',lvl:'Débutant',nm:"Mandat prudent — vol cible 15 %",who:"« L'assureur zurichois »",
@@ -2918,7 +2920,7 @@ function newGame(seed,prof,arch,desk,vol,size,univ,dur){
    rivals:RIVALS.map(r=>({...r,skill:Math.max(0.5,Math.min(0.88,r.skill+Z.rivSkill)),vol:r.vol*Z.rivVol,cum:1,last:0})),
    over:null,truth:null,f:[],rumor:null,pending:[],shock:new Array(N).fill(0),
    evQueue:[],log:[],flows:0,press:[],lastPress:null,rankPrev:1,phase:'budget',hotFactor:null,lpD:null,rcD:null,fLast:null,gLog:[],navQ0:100,qEvM:0,qIncM:0,qRumor:0,evLog:[]};
- S.mgrSeed=(SIZE().seed||0)+({syst:0.0004,fonda:0.00015,flux:0}[S.prof]||0);   /* lot 120 : difficulté + style */S.mgrFees+=S.mgrSeed;   /* lot 113 : capital de départ de la société de gestion */
+ S.mgrSeed=(SIZE().seed||0)+(STYSEED[S.prof]||0);   /* lot 120 : difficulté + style */S.mgrFees+=S.mgrSeed;   /* lot 113 : capital de départ de la société de gestion */
  planQuarter();
 }
 function planQuarter(){
@@ -3378,6 +3380,10 @@ function feeLine(){
  const z=SIZES.find(x=>x.id===setup.size)||SIZES[1];
  return `Le fonds vous verse <strong>2 % de gestion</strong> par an et <strong>${(z.perf*100).toFixed(0)} % de sa performance</strong> au-dessus de son plus haut historique. Votre société paie l'équipe, les ordres et les bonus.`;
 }
+function styTable(){const P=PROFILES,f=(x,d=2)=>'×'+dec(x,d),pw={syst:"book du modèle, en un bouton ; signaux lus plus nettement",fonda:"sources vérifiées : une probabilité sûre par trimestre",flux:"intuition : le sens d'un facteur, juste 4 fois sur 5"};
+ const R=[["Pouvoir",p=>pw[p.id]],["Capital de départ",p=>STYSEED[p.id]?'+'+dec(STYSEED[p.id]*1000,2)+' M$':'—'],["Commission de performance",p=>STYPERF[p.id]?'+'+Math.round(STYPERF[p.id]*100)+' pts':'—'],
+  ["Coût de l'équipe",p=>f(STYCOST[p.id])],["Coûts d'exécution",p=>f(p.tcMult)],["Book visé",p=>f(p.modelScale)+' la vol cible'],["Nervosité des investisseurs",p=>f(p.lpMult)],["Incidents",p=>f(p.incMult)],["Mouvement capté sur les dépêches",p=>Math.round(p.capture*100)+' %']];
+ return `<details class="wire" style="margin-top:10px"><summary>Les trois styles en un tableau</summary><div style="overflow-x:auto"><table class="qt" style="margin-top:8px;font-size:12px"><thead><tr><th style="text-align:left"></th>${P.map(p=>`<th>${({syst:'Quant',fonda:'Fondamental',flux:'Flux'})[p.id]}</th>`).join('')}</tr></thead><tbody>${R.map(([l,fn])=>`<tr><td style="text-align:left">${l}</td>${P.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`}
 function screenSetup(){
  app.innerHTML=`<div class="hero fade" style="padding-top:34px">
   <div class="kicker">${fundName.toUpperCase()}${setup.size?' · '+SIZES.find(x=>x.id===setup.size).nm.split('—')[1].trim().toUpperCase():''}</div>
@@ -3432,7 +3438,7 @@ function renderPicks(){
    </div>`).join('')}
   </div>`;
  document.getElementById('picks').innerHTML=
-   grp("Votre style de gestion","1 sur 3",PROFILES,'prof')+
+   grp("Votre style de gestion","1 sur 3",PROFILES,'prof')+styTable()+
    grp("La difficulté","1 sur 3 · la place, le comité, les investisseurs",SIZES,'size')+
    grp("La durée du mandat","1 sur 3 · le nombre de trimestres",DUREES,'dur');
  app.querySelectorAll('[data-hintq]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();

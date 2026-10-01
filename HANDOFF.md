@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **124**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **125**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -703,6 +703,11 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   l'avis était donc toujours payé) ; phrase de fin de trimestre quand un investisseur retire son avis.
   Mesure (335 parties, ≈ 37 par case, lots 123–124) : survie facile 76 %, moyen 69 %, difficile 65 % ; scores 9,8 / 11,6 /
   17,1 M$ ; styles quant 76 % · 14,5 M$ (médiane 8,6), fondamental 70 % · 14,2 M$ (7,1), flux 65 % · 9,9 M$ (3,8).
+
+- **125** : commission de performance du flux +5 pts (`STYPERF`, dans `perfFee()`). Variantes, 60 parties de flux appariées
+  (20 graines × 3 difficultés) : +2 pts +1,2 ± 1,4 M$ ; +5 pts +6,3 ± 2,2 ; +10 pts +16,5 ± 4,7 ; ×1,1 +1,7 ± 1,3 ;
+  ×1,2 +2,2 ± 2,1. Retenu +5 pts : ramène le flux un peu au-dessus du quant et du fondamental en score moyen (9,9 → ≈ 16 M$
+  contre 14,5 et 14,2 au lot 124). Tableau récapitulatif des styles (`styTable`, `STYSEED`) sous leurs cartes.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
