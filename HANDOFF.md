@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **126**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **127**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -712,6 +712,10 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 - **126** : texte « l'aura du prophète » pour la commission +5 pts du flux ; coûts d'exécution Dwight ×1,15 et Ingrid ×1,00
   (`EXECM` crans 1 et 2, avant ×1,30 et ×1,04) ; collatéraux prêts à effet de levier, stablecoins synthétiques, CDO au carré
   (le « pink sheet » écarté : aucun prime broker ne le prend en gage).
+
+- **127** : difficile, équipe ×1,60. Tests croisés en flux difficile (25 graines appariées) : aucune équipe 17,6 M$
+  (médiane 12,8, survie 68 %) ; légère +11,8 ± 7,6 M$ ; standard +14,9 ± 5,7 M$ (médiane +6,7, survie 72 %) ; maximale
+  +19,0 ± 11,7 M$ mais médiane +1,0 et survie 56 %. Embaucher reste rentable.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
