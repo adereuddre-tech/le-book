@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **149**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **151**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -783,6 +783,9 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 
 - **149** : « L'inspecteur » et « La commandante » retirés (Firmin Tatillon, Solange Pare-Feu) ; prêts à effet de levier :
   20 % de risque de perdre 21 %.
+
+- **150** : écran des annonces — objectif et promesses × `goalK()` (l'objectif ajusté au marché du lot 145).
+- **151** : mi-parcours et résultat — la performance du trimestre défile avec le tracé (`.cntq`, `data-q0`, `theatre`).
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
