@@ -3057,7 +3057,7 @@ function planQuarter(){
  /* ce sont des futures : le book repart à plat, on le reconstruit chaque trimestre */
  S.k=new Array(N).fill(0);S.k0=new Array(N).fill(0);
  S.flowInC=(S.flowInC||0)+Math.max(0,S.qFlow||0);S.flowOutC=(S.flowOutC||0)+Math.max(0,-(S.qFlow||0));   /* lot 87 : flux cumulés */
- S.qColM=0;S.colBaseNav=0;S.rumors=[];S.xRiv=null;S.xRivT=null;S.xRivQ=null;S.evVerified=false;S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
+ S.qColM=0;S.colBaseNav=0;S.rumors=[];S.xRiv=null;S.xRivT=null;S.xRivQ=null;S.xRivL=null;S.xRivB=null;S.evVerified=false;S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
  S.pendingTC=0;S.freeAdjUsed=false;S.live=false;S.qClosed=false;S.goalK=null;S.execSlipQ=0;gonesL().forEach(g=>g.n=0);S.cntBp=0;S.qSevM=0;
  /* la commission de gestion est prélevée sur le fonds et vous est versée dès l'ouverture ;
     la performance et le bonus d'objectif attendent la clôture */
@@ -3253,10 +3253,16 @@ function rivFx(rv,j){const u=prng32(hash32('rivk'+j+'_'+S.q,S.seed)),f=S.f||[0,0
 function rivBookW(rv,j){const x=rivFx(rv,j),w=INSTR.map(m=>m.b.reduce((a,b,k)=>a+b*x[k],0)/m.sig),v=pvol(w);const a=v>1e-9?XRIVV*Math.min(0.20,rivV(rv))/v:0;return w.map(z=>z*a)}
 const XRIVV=0.60;
 const XRIVR=0.75;   /* part du mouvement complet que les concurrents encaissent, en moyenne après réaction */
-function xRivHit(id){const sc=STRESS.find(x=>x.id===id);if(!sc)return;if(S.xRivT==null||S.xRivQ!==S.q){S.xRivT=typeof qElapsed==='function'?qElapsed():0;S.xRivQ=S.q}
+function addXRiv(a){const t=typeof qElapsed==='function'&&S.live?qElapsed():0;(S.xRivL=S.xRivL||[]).push({t,a});S.xRivQ=S.q;S.xRivT=S.xRivT==null?t:S.xRivT;S.xRiv=S.rivals.map((r,j)=>((S.xRiv||[])[j]||0)+(a[j]||0))}
+function rivXAt(j,t,tq){if(S.xRivQ!==tq)return 0;if(!S.xRivL)return (S.xRiv&&t>=(S.xRivT||0))?(S.xRiv[j]||0):0;return S.xRivL.reduce((x,e)=>x+(t>=e.t?(e.a[j]||0):0),0)}
+const RIVEV={flux:1.5,fonda:1.5,syst:1};
+function rivEvHit(ev,touched,mult){if(!S.rivals)return;const a=S.rivals.map((rv,j)=>{const w=(rv._bk&&rv._bkq===S.q)?rv._bk:rivBookQ(rv,j,S.q);
+  const st=rv.style||'fonda',ph=st==='fonda'?(prng32(hash32('rev'+j+'_'+S.q+'_'+(ev.t||''),S.seed))()<0.5?RIVEV.fonda:1):(RIVEV[st]||1);
+  let v=0;touched.forEach(i=>{const h=(ev.hit[INSTR[i].sym]||0)*INSTR[i].sigQ;v+=w[i]*h*(0.5+ph*mult)});return v});addXRiv(a)}
+function xRivHit(id){const sc=STRESS.find(x=>x.id===id);if(!sc)return;S.xRivB=S.xRivQ===S.q?S.xRiv:null;
  S.xRiv=S.rivals.map((rv,j)=>{const w=rivBookW(rv,j),h=stressHit(sc,w.map(z=>z*100));let v=0;INSTR.forEach((m,i)=>{if(h[m.sym])v+=w[i]*h[m.sym]*m.sigQ});
-  return ((S.xRiv||[])[j]||0)+XRIVR*v});
- toast('Les concurrents encaissent aussi, selon leur portefeuille : '+S.rivals.map((rv,j)=>`${rv.nm} ${sgnp(S.xRiv[j],1)}`).join(' · '))}
+  return XRIVR*v});const xa=S.xRiv;S.xRiv=S.rivals.map((r,j)=>((S.xRivB||[])[j]||0));addXRiv(xa);
+ toast('Les concurrents encaissent aussi, selon leur portefeuille : '+S.rivals.map((rv,j)=>`${rv.nm} ${sgnp(xa[j],1)}`).join(' · '))}
 function rivalReturns(){   /* lot 67 : exactement rivRet(j,1) — plus aucun tirage de rng */
  return S.rivals.map((rv,j)=>{const tl=rivTail(rv,j,rivV(rv),S.q);rv.tailHit=tl>0?tl:0;return rivRet(j,1,S.q)+((S.xRiv||[])[j]||0)});
 }
@@ -4119,7 +4125,7 @@ function rivalTapes(){
    bridgePts(v*100,nv*100,TAPEM,hash32('riv'+j+'_'+i,S.seed),tapeVol(TAPEM,1,(r.vqh&&r.vqh[i])||r.vol)).forEach(z=>pts.push(z));v=nv}
   /* trimestre en cours : un segment par segment du joueur, au même instant t */
   let last=v*100;
-  ts.forEach((t,k)=>{const xr=(S.xRiv&&S.xRivQ===tq&&t>=(S.xRivT||0))?(S.xRiv[j]||0):0,nv=v*(1+rivRet(j,t,tq)+xr)*100;
+  ts.forEach((t,k)=>{const xr=rivXAt(j,t,tq),nv=v*(1+rivRet(j,t,tq)+xr)*100;
    bridgePts(last,nv,tapeM(t-(k?ts[k-1]:0)),hash32('rivq'+j+'_'+tq+'_'+k,S.seed),tapeVol(tapeM(t-(k?ts[k-1]:0)),t-(k?ts[k-1]:0),rivV(r))).forEach(z=>pts.push(z));last=nv});
   /* clôture : leur vrai résultat, bruit propre compris, sur le même dernier pas que vous */
   if(closed){const nv=v*(1+((r.hist&&r.hist[tq])||0))*100;
@@ -5535,7 +5541,7 @@ function screenTip(){S.tipQ=S.q;const D=tipDraw();if(!D){screenExec();return}con
  const go=k=>{clearTimer();const imm=win?t.g-t.c:-t.c;
   if(k){const navB=S.nav;S.nav*=(1+imm);S.qEvM=(S.qEvM||0)+imm*navB;(S.tipLog=S.tipLog||[]).push({q:S.q,id:t.id,win,m:imm*navB});
    toast(win?`${t.nm} : l'affaire passe, ${sgnp(imm,1)} pour le fonds (${mm(imm*navB)}).`:`${t.nm} : l'affaire ne passe pas, ${sgnp(imm,1)} pour le fonds.`)}
-  else{S.xRiv=S.rivals.map((r,j)=>((S.xRiv||[])[j]||0)+(j===rj?imm:0));toast(`${rv.nm} a pris l'affaire : ${win?'elle est passée':'elle a échoué'} (${sgnp(imm,1)} pour lui).`)}
+  else{addXRiv(S.rivals.map((r,j)=>j===rj?imm:0));toast(`${rv.nm} a pris l'affaire : ${win?'elle est passée':'elle a échoué'} (${sgnp(imm,1)} pour lui).`)}
   {const lpT=k?(win?2:-1):0,g=lpT?gauge(lpT,0,`${t.nm} : ${win?'le pari a payé':'le pari a échoué'}`):{lp:0,rc:0};
    resultCard('PRIME BROKER · PROPOSITION HORS BOOK',k?(win?`${t.ic} ${t.nm} : l'affaire passe`:`${t.ic} ${t.nm} : l'affaire échoue`):`${t.ic} ${t.nm} : ${rv.nm} l'a prise`,
     [k?`Coût certain −${dec(t.c*100,1)} %${win?`, gain +${dec(t.g*100,1)} %`:''} : <em class="${cls(imm)}">${sgn(imm,1)}</em> pour le fonds, soit ${mn(imm*S.nav)}. Le résultat compte dans le trimestre.`
@@ -5764,6 +5770,7 @@ function resolveEvent(ev,touched,o,imm,navB){
  touched.forEach(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ*mult;const pi=wE[i]*m;resid+=pi;
    perM.push([INSTR[i].sym,`${k0[i]>0?'+':''}${k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,`${sgn(m,1)}`,pi])});
  const navR=S.nav;S.nav*=(1+resid);S.qEvM+=resid*navR;
+ if(!ev.stress)try{rivEvHit(ev,touched,mult)}catch(e){}   /* lot 156 */
  const react=resid;
  const total=imm+resid*navR/navB;
  if(acted&&react>0.01){S.fl.coche=1;award('coche')}

@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **154**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **156**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -797,6 +797,12 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   (quant 0,65), coût de rotation `rivTurn` (barème du joueur, salle ×0,75), bruit propre ×0,35. Rendements trimestriels
   (14 parties, 97 trimestres par style) — ancien : fondamental 6,2 % ± 18,8, quant 6,3 ± 7,9, flux 5,0 ± 15,5 ; nouveau :
   6,9 ± 20,0, 5,5 ± 8,5, 6,3 ± 15,2. Reste : dépêches (2/4), trésorerie de départ (3/4), équilibrage (4/4).
+
+- **155** : objectif bonus (objectif de place) rappelé en tête de l'écran du desk.
+- **156** : concurrents à book réel (2/4) — dépêches : `rivEvHit` (moitié immédiate + suite × réaction de style `RIVEV` :
+  flux ×1,5, fondamental ×1,5 une fois sur deux, quant ×1), même issue que le joueur ; chocs datés `S.xRivL` / `addXRiv` /
+  `rivXAt` (rubans à l'instant du choc), `S.xRiv` = somme pour la clôture. Rendements trimestriels (14 parties) :
+  fondamental 6,5 % ± 20,8, quant 5,5 ± 10,2, flux 5,6 ± 17,1.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
