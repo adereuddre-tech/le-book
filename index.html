@@ -3058,7 +3058,7 @@ function planQuarter(){
  S.k=new Array(N).fill(0);S.k0=new Array(N).fill(0);
  S.flowInC=(S.flowInC||0)+Math.max(0,S.qFlow||0);S.flowOutC=(S.flowOutC||0)+Math.max(0,-(S.qFlow||0));   /* lot 87 : flux cumulés */
  S.qColM=0;S.colBaseNav=0;S.rumors=[];S.xRiv=null;S.xRivT=null;S.xRivQ=null;S.evVerified=false;S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
- S.pendingTC=0;S.freeAdjUsed=false;S.live=false;S.execSlipQ=0;gonesL().forEach(g=>g.n=0);S.cntBp=0;S.qSevM=0;
+ S.pendingTC=0;S.freeAdjUsed=false;S.live=false;S.qClosed=false;S.execSlipQ=0;gonesL().forEach(g=>g.n=0);S.cntBp=0;S.qSevM=0;
  /* la commission de gestion est prélevée sur le fonds et vous est versée dès l'ouverture ;
     la performance et le bonus d'objectif attendent la clôture */
  S.tresQ0=mgrCash();   /* lot 87 */
@@ -3871,7 +3871,7 @@ function ytdIdx(){
  const y0=0;let v=1;   /* lot 50 : base 100 au lancement du fonds */
  for(let i=0;i<y0;i++)v*=(1+S.rets[i]);
  let cur=1;for(let i=0;i<S.q;i++)cur*=(1+S.rets[i]);
- return {y0,base:v,now:cur*(1+((S.phase==='events'&&S.live)?liveNet():0))/v*100,closes:S.rets.slice(y0,S.q)};
+ return {y0,base:v,now:cur*(1+((S.phase==='events'&&S.live&&!S.qClosed)?liveNet():0))/v*100,closes:S.rets.slice(y0,S.q)};
 }
 /* Un trimestre fait treize semaines ; à un pas horaire, cela fait quelques centaines de
    points. L'amplitude par pas est calée sur la volatilité cible du mandat et non sur une
@@ -6085,7 +6085,7 @@ function resolveQuarter(){
  const perfM=grossM+collM+feeM+evM+incM;  /* tcM n'y est pas : c'est vous qui payez */
  const qTotal=perfM/S.navQ0;
  S.qPnl={grossM,collM,tcM,feeM,evM,incM,perfM,flowM:(S.qFlow||0)};
- S.navs.push(S.nav);S.rets.push(qTotal);
+ S.navs.push(S.nav);S.rets.push(qTotal);S.qClosed=true;
  /* vol réalisée du trimestre : ex-ante × vol du régime × bruit, plus les dépêches */
  const evVar=(S.evLog||[]).reduce((a,e)=>a+(e.pnl||0)**2,0);
  S.realVol=Math.sqrt((pvol(w)*R.sf*(0.85+0.3*rng()))**2+evVar*4);
