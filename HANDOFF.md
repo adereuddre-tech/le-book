@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **156**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **157**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -803,6 +803,12 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   flux ×1,5, fondamental ×1,5 une fois sur deux, quant ×1), même issue que le joueur ; chocs datés `S.xRivL` / `addXRiv` /
   `rivXAt` (rubans à l'instant du choc), `S.xRiv` = somme pour la clôture. Rendements trimestriels (14 parties) :
   fondamental 6,5 % ± 20,8, quant 5,5 ± 10,2, flux 5,6 ± 17,1.
+
+- **157** : concurrents (3/4) — pool `RIVPOOL` (6 fonds parodiques par style) et `RIVBOSS` (18 gérants), tirés en début de
+  partie (`rivDraw`, validés par Antoine) ; trésorerie de départ `RIVSEED` 0,5 M$ ; trésorerie négative à la clôture →
+  `rivReplace` : fonds du même style tiré dans le pool, nouveau gérant, part de zéro, montée en charge depuis `rv.q0` ;
+  annonce au débriefing. Bogue corrigé : la trésorerie d'un concurrent était remise à zéro à sa première clôture.
+  Test trésorerie de départ (12 parties, 36 concurrents) : 0,5 M$ → 6 faillites ; 1 M$ → 1 ; 1,5 et 3 M$ → 0. Retenu 0,5 M$.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
