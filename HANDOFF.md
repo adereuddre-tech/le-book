@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **159**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **160**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -815,6 +815,10 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 - **159** : équipes ×0,90 (`BUDK`, ×0,80 avant) et commission du fondamental +3 pts (+4). Campagne (270 parties normales,
   graines 10001–10030) : lot 158 80 % · 39,6 M$ (facile 88, moyen 82, difficile 70 ; quant 87, fondamental 82, flux 71) →
   lot 159 75 % · 36,8 M$ (83 / 79 / 62 ; 80 / 78 / 67 ; flux le plus payant 41,5). Δ apparié −2,8 ± 1,9 M$. Moyen encore haut.
+
+- **160** : moyen, équipe ×1,10 ; « fonds plein » affiché quand la capacité bloque une souscription (souscriptions nulles
+  à 2 × `capSoftNav()`, 300 M$ en moyen) ; souscription d'office de la Couronne soumise à la capacité. Campagne (270 parties
+  normales) : 74 % · 35,0 M$ ; facile 84, moyen 76, difficile 62 % ; quant 78, fondamental 80, flux 64 %.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.

@@ -855,7 +855,7 @@ const SIZES=[
  {id:'mid',lvl:'Normal',nav:0.1,capX:1,perf:0.20,nm:"Moyen — 20 % de performance",who:"« La place telle qu'elle est »",
   p:"Trois très bons concurrents, des investisseurs qui comparent, le tarif habituel du métier : 20 % de la performance.",
   ef:[["g","commission de performance : 20 %"],["g","capital de départ : 0,15 M$, plus celui de votre style"],["b","concurrents très bons, chacun dans son style"],["b","investisseurs exigeants"]],
-  rivSkill:0.090,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1,costM:1,seed:0.00015},
+  rivSkill:0.090,rivVol:1,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1,costM:1.10,seed:0.00015},
  {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.30,nm:"Difficile — 30 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
   p:"Des concurrents au sommet de leur art, des investisseurs voraces, une équipe hors de prix. En échange : 30 % de la performance, et l'argent arrive aussi vite qu'il part.",
   ef:[["g","commission de performance : 30 %"],["g","souscriptions 60 % plus grosses : un bon trimestre attire gros"],["b","aucun capital de départ, sauf celui de votre style"],["b","équipe 60 % plus chère"],["b","concurrents au sommet de leur art"],["b","investisseurs voraces : confiance de départ −8, pertes 40 % plus mal vécues, rachats 15 % plus gros"]],
@@ -3672,8 +3672,8 @@ function invClose(o){const I=invs(),E0=Math.max(1e-9,extNav());
   if(f>0.002){v.ntc=f;v.ntcQ=S.q;r.ntc=f*v.w*extNav()}});
  R.forEach((r,j)=>{const v=I[j],D=invD(v.id);if(v.ntc>0||r.vd<=0)return;
   if(v.w<0.01){if(v.id!=='roy'&&!r.pay&&S.lp>=INVP.backLp){r.sub=invFlow(v,INVP.back*S.aum0);r.back=true}return}
-  const f=invInF(D);if(f>0.002)r.sub=invFlow(v,f*v.w*extNav())});
- {const v=I.find(x=>x.id==='roy'),r=R.find(x=>x.id==='roy');if(v&&v.w>1e-6&&!(v.ntc>0)&&r){const f=INVP.royAuto[0]+(INVP.royAuto[1]-INVP.royAuto[0])*S.lp/100;r.sub+=invFlow(v,f*v.w*extNav());r.auto=1}}   /* lot 122 */
+  const f=invInF(D);if(f>0.002)r.sub=invFlow(v,f*v.w*extNav());else if(capStress()>0.5)r.full=1});
+ {const v=I.find(x=>x.id==='roy'),r=R.find(x=>x.id==='roy');if(v&&v.w>1e-6&&!(v.ntc>0)&&r){const f=(INVP.royAuto[0]+(INVP.royAuto[1]-INVP.royAuto[0])*S.lp/100)*Math.max(0,1-capStress());if(f>0.002){r.sub+=invFlow(v,f*v.w*extNav());r.auto=1}else r.full=1}}   /* lot 122 */
  S.invQ=R;const net=R.reduce((a,r)=>a+r.sub-r.pay,0);
  const nm=r=>invD(r.id).nm,P=R.filter(r=>r.pay>0),N=R.filter(r=>r.ntc>0),U=R.filter(r=>r.sub>0),C=R.filter(r=>r.cancel);
  S.poachMsg=[P.length?`Rachats payés : ${P.map(r=>`${nm(r)} −${mm(r.pay)}${r.gated>0?` (gate : ${mm(r.gated)} reportés)`:''}`).join(' · ')}.`:'',
@@ -3693,10 +3693,10 @@ function invSay(){const R=S.invQ||[],H=S.invH||[],L=H[H.length-1]||{r:0,rel:0,ok
 function invTable(){const I=invs(),E=extNav(),R=S.invQ||[];
  return `<table class="qt inv" style="margin-top:12px"><thead><tr><th style="text-align:left;width:58%">Investisseur</th><th>Part</th><th>Mouvement</th></tr></thead><tbody>
  ${I.map(v=>{const D=invD(v.id),r=R.find(x=>x.id===v.id)||{},h=v.w*E,never=v.id==='roy'&&!(h>1e-9)&&!r.pay;
-  const mv=[r.pay>0?`<span class="neg-g">−${mm(r.pay)}</span>`:'',r.sub>0?`<span class="pos-g">+${mm(r.sub)}</span>`:'',r.cancel?'avis retiré':'',v.ntc>0?`<span class="neg-g">avis ${mm(v.ntc*h)}</span>`:''].filter(Boolean).join(' · ')||'—';
+  const mv=[r.pay>0?`<span class="neg-g">−${mm(r.pay)}</span>`:'',r.sub>0?`<span class="pos-g">+${mm(r.sub)}</span>`:'',r.cancel?'avis retiré':'',v.ntc>0?`<span class="neg-g">avis ${mm(v.ntc*h)}</span>`:'',r.full&&!(r.sub>0)?'<span style="color:var(--gold)">fonds plein</span>':''].filter(Boolean).join(' · ')||'—';
   return `<tr${never?' style="opacity:.45"':''}><td style="text-align:left">${D.ic} ${D.nm}</td><td>${never?'pas entrée':h>1e-9?mm(h):'partie'}</td><td>${never?'':mv}</td></tr>`}).join('')}</tbody></table>
  <p class="note" style="margin-top:6px">${INVR.map(D=>`${D.ic} <b>${D.nm.split(' (')[0]}</b> ${D.rule.replace(/^la holding de la famille royale /,'')}`).join('<br>')}</p>
- <details style="margin-top:4px"><summary class="note">Montants, préavis et confiance</summary><p class="note">Le critère décide si un investisseur rachète ou souscrit ; la confiance décide combien. Un rachat vaut une part de sa ligne : ${INVR.filter(D=>!D.royal).map(D=>`${D.nm.split(' ')[0].toLowerCase()==='caisse'?'caisse de retraite':D.nm.split(' ').slice(0,2).join(' ').toLowerCase()} ${Math.round(D.out*100)} %`).join(', ')}, holding royale ${Math.round(INVR.find(D=>D.royal).out*100)} % — à confiance 50 ; deux fois plus à confiance nulle, rien à confiance 100. Une souscription vaut ${Math.round(Math.min(...INVR.map(D=>D.inn))*100)} à ${Math.round(Math.max(...INVR.map(D=>D.inn))*100)} % de la ligne à confiance 50, proportionnellement à la confiance. Un rachat est annoncé par un avis, payé à la clôture suivante ; l'avis tombe si le critère repasse au vert (pour les Cheminots : dès un trimestre positif). Au-delà de 15 % de l'encours en avis, vous pouvez activer la gate.</p></details>`}
+ <details style="margin-top:4px"><summary class="note">Montants, préavis et confiance</summary><p class="note">Le critère décide si un investisseur rachète ou souscrit ; la confiance décide combien. Un rachat vaut une part de sa ligne : ${INVR.filter(D=>!D.royal).map(D=>`${D.nm.split(' ')[0].toLowerCase()==='caisse'?'caisse de retraite':D.nm.split(' ').slice(0,2).join(' ').toLowerCase()} ${Math.round(D.out*100)} %`).join(', ')}, holding royale ${Math.round(INVR.find(D=>D.royal).out*100)} % — à confiance 50 ; deux fois plus à confiance nulle, rien à confiance 100. Une souscription vaut ${Math.round(Math.min(...INVR.map(D=>D.inn))*100)} à ${Math.round(Math.max(...INVR.map(D=>D.inn))*100)} % de la ligne à confiance 50, proportionnellement à la confiance. Un rachat est annoncé par un avis, payé à la clôture suivante ; l'avis tombe si le critère repasse au vert (pour les Cheminots : dès un trimestre positif). Au-delà de 15 % de l'encours en avis, vous pouvez activer la gate. Capacité : au-delà de ${mm(capSoftNav())}, les souscriptions diminuent, et s'arrêtent à ${mm(2*capSoftNav())} (« fonds plein ») : un fonds trop gros ne peut plus placer l'argent sans faire bouger les marchés.</p></details>`}
 
 function flowInB(frac){const inn=frac*S.nav;S.nav+=inn;S.flows+=inn;return inn}
 /* Bonus de clôture : appelés une fois le trimestre soldé, avant le débriefing. */
