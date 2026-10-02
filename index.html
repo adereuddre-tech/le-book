@@ -6568,6 +6568,9 @@ function screenDebrief(o){
   ${Math.abs(o.P.flowM)>1e-9?`<div class="attr"><span class="an">${o.P.flowM>=0?'Souscriptions':'Rachats'}</span><span class="av">${inU(o.P.flowM,UQ)}</span></div>`:''}
   ${S.colRes&&S.colRes.show?`<div class="attr"><span class="an">Collatéral · ${S.colRes.nm.toLowerCase()}${S.colRes.hit?' · défaut':''}</span><span class="av">${inU(S.colRes.m,UQ)}</span></div>`:''}
   <div class="attr"><span class="an">Gain brut des positions</span><span class="av">${inU(o.P.grossM,UQ)}</span></div>
+  ${Math.abs(o.P.evM||0)>1e-7?`<div class="attr"><span class="an">Dépêches et tuyaux</span><span class="av">${inU(o.P.evM,UQ)}</span></div>`:''}
+  ${Math.abs(o.P.incM||0)>1e-7?`<div class="attr"><span class="an">Incidents</span><span class="av">${inU(o.P.incM,UQ)}</span></div>`:''}
+  ${Math.abs(o.P.feeM||0)>1e-7?`<div class="attr"><span class="an">Frais du fonds</span><span class="av">${inU(o.P.feeM,UQ)}</span></div>`:''}
   <div class="attr"><span class="an">Confiance des investisseurs</span><span class="av">${Math.round(lpQ0)} → <b>${Math.round(S.lp)}</b></span></div>
   ${S.comm&&S.comm.ret!==null?`<div class="attr"><span class="an">Engagement ≥ ${sgn(S.comm.ret,1)}</span><span class="av"><b class="${S.commRes&&S.commRes.ok?'pos-g':'neg-g'}">${S.commRes&&S.commRes.ok?'tenu':'manqué'}</b></span></div>`:''}
   ${S.qGoal?`<div class="attr"><span class="an">Objectif « ${S.qGoal.nm.toLowerCase()} »</span><span class="av"><b class="${S.qGoal.ok?'pos-g':'neg-g'}">${S.qGoal.ok?'tenu':'manqué'}</b>${bon?' · bonus '+mm(bon):''}</span></div>`:''}
