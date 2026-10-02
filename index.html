@@ -5468,21 +5468,22 @@ function hint(id){
 }
 function screenComm(){
  hint('comm');save('screenComm');S.commPick=S.commPick||'prud';
- const w=weights(S.k),sp=pvol(w),g=VOL().goal/4;
+ const w=weights(S.k),sp=pvol(w),gk=goalK(),g=0.03*gk;
  const spD=Math.max(sp,0.04);
  const opts=[
-  {id:'prud',ico:'📄',nm:"Communication standard",who:"« Nous visons un trimestre solide »",p:`Vous annoncez ${pctc(0.03)} sur le trimestre. C'est ce que les investisseurs attendent d'un fonds macro : le tenir rassure, le manquer se remarque.`,
+  {id:'prud',ico:'📄',nm:"Communication standard",who:"« Nous visons un trimestre solide »",p:`Vous annoncez ${pctc(0.03*gk)} sur le trimestre. C'est ce que les investisseurs attendent d'un fonds macro : le tenir rassure, le manquer se remarque.`,
    ret:0.03,win:{lp:5,rc:0},lose:{lp:-5,rc:0}},
-  {id:'fort',ico:'📣',nm:"Conviction forte",who:"« C'est le trimestre de l'année »",p:`Vous annoncez ${pctc(0.09)}. Si vous y arrivez, on vous croira sur parole pendant longtemps. Sinon, on s'en souviendra aussi longtemps.`,
+  {id:'fort',ico:'📣',nm:"Conviction forte",who:"« C'est le trimestre de l'année »",p:`Vous annoncez ${pctc(0.09*gk)}. Si vous y arrivez, on vous croira sur parole pendant longtemps. Sinon, on s'en souviendra aussi longtemps.`,
    ret:0.09,win:{lp:15,rc:0},lose:{lp:-8,rc:0}},
-  {id:'gourou',ico:'🔮',nm:"Prophétie de gourou",who:"« Nous allons écraser le marché »",p:`Vous annoncez ${pctc(0.15)} en un trimestre, devant les caméras. Tenu, vous entrez dans la légende des dîners en ville ; manqué, dans les mèmes des salles de marché.`,
+  {id:'gourou',ico:'🔮',nm:"Prophétie de gourou",who:"« Nous allons écraser le marché »",p:`Vous annoncez ${pctc(0.15*gk)} en un trimestre, devant les caméras. Tenu, vous entrez dans la légende des dîners en ville ; manqué, dans les mèmes des salles de marché.`,
    ret:0.15,win:{lp:30,rc:0},lose:{lp:-10,rc:0}}
  ];
+ opts.forEach(o=>{if(o.ret!=null)o.ret*=gk});   /* lot 150 */
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Ce que vous annoncez</h2><span class="hint">aux investisseurs</span></div>
    <p class="note" style="margin-top:0">Touchez votre promesse : elle se solde à la clôture, sur le résultat tout compris.</p>
    ${S.tcvEst?`<div class="kv"><span>Votre attendu pour ce book</span><b>${expShort(expBook(S.k))}</b></div>`:''}
-   <div class="kv"><span>Objectif trimestriel du mandat</span><b>${pct(g,1)} · ${mm(g*S.nav)}</b></div>
+   <div class="kv"><span>Objectif du trimestre${gk>1.005||gk<0.995?` (mandat 3 %, ${gk>1?'relevé':'abaissé'} selon le marché)`:''}</span><b>${pct(g,1)} · ${mm(g*S.nav)}</b></div>
   </div>
   ${opts.map((o,i)=>`<div class="cardwrap"><button class="card commgo" data-i="${i}">
    <div class="who">${o.who}</div><b><span class="commico">${o.ico}</span>${o.nm}</b>
@@ -5494,7 +5495,7 @@ function screenComm(){
    </button></div>`).join('')}
   </div>`;
  app.querySelectorAll('.card[data-i]').forEach(b=>b.onclick=()=>{
-  const o=opts[+b.dataset.i];S.comm={id:o.id,nm:o.nm,ret:o.ret*goalK(),win:o.win,lose:o.lose};
+  const o=opts[+b.dataset.i];S.comm={id:o.id,nm:o.nm,ret:o.ret,win:o.win,lose:o.lose};
   S.commPick=null;screenExec();window.scrollTo(0,0);
  });
 }
