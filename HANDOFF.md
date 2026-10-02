@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **153**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **154**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -791,6 +791,12 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 - **153** : coûts des taux et de l'AUD réalistes en demi-fourchette / vol : Bund 0,35 / 0,30 (au niveau du T-Note), Gilt
   0,55 / 0,50, OAT 0,60 / 0,55, JGB 0,60 / 0,60, AUD 0,75 / 0,65 ; l'ordre des coûts suit l'ordre d'ouverture (rk) dans chaque
   classe. Prochain chantier : concurrents à book réel (voie intermédiaire), en plusieurs lots.
+
+- **154** : concurrents à book réel (1/4) — `rivBookQ` (paris factoriels projetés sur les marchés, à leur vol × montée en
+  charge `RIVB.ramp` 0,6 / 0,8 / 1), rendement = Σ poids × `S.rBase` (les vrais marchés du trimestre) × `RIVB.k` par style
+  (quant 0,65), coût de rotation `rivTurn` (barème du joueur, salle ×0,75), bruit propre ×0,35. Rendements trimestriels
+  (14 parties, 97 trimestres par style) — ancien : fondamental 6,2 % ± 18,8, quant 6,3 ± 7,9, flux 5,0 ± 15,5 ; nouveau :
+  6,9 ± 20,0, 5,5 ± 8,5, 6,3 ± 15,2. Reste : dépêches (2/4), trésorerie de départ (3/4), équilibrage (4/4).
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.

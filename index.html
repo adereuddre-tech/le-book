@@ -4089,7 +4089,20 @@ function theatre(root){
    que rivalReturns (adresse sur les facteurs réalisés), sans le bruit propre, que la clôture
    révèle. */
 function rivNz(j,q){const u=prng32(hash32('rivn'+j+'_'+q,S.seed)),a=Math.max(1e-9,u()),b=u();return Math.sqrt(-2*Math.log(a))*Math.cos(2*Math.PI*b)}
+const RIVB={ramp:[0.6,0.8,1],exec:0.75,noise:0.35,k:{syst:0.65,fonda:1,flux:1}};   /* k : calé sur les rendements de l'ancien modèle (moyenne, écart type) */
+function rivRamp(q){return RIVB.ramp[Math.min(RIVB.ramp.length-1,Math.max(0,q))]}
+/* book du concurrent j au trimestre q (pleine vol × montée en charge) ; même graine que rivalE */
+function rivBookQ(rv,j,q){const x=rivFx(rv,j),w=INSTR.map(m=>m.b.reduce((a,b,k)=>a+b*x[k],0)/m.sig),v=pvol(w);const a=v>1e-9?rivV(rv)*rivRamp(q)/v:0;return w.map(z=>z*a)}
+/* coût de rotation du book, en fraction d'encours : barème du joueur, salle de marché pleine */
+function rivTurn(w,w0){let c=0;INSTR.forEach((x,i)=>{const d=Math.abs(w[i]-((w0&&w0[i])||0));if(d>1e-9){const bn=d*S.nav;c+=d*(x.s+x.c*Math.sqrt(bn))*TCK*RIVB.exec*1e-4}});return c}
+function rivBookRet(j,q){const rv=S.rivals[j];if(!S.rBase)return 0;
+ if(!rv._bk||rv._bkq!==q){rv._bk=rivBookQ(rv,j,q);rv._bkq=q;rv._bkc=rivTurn(rv._bk,rv.wPrev)}
+ let g=0;rv._bk.forEach((w,i)=>g+=w*(S.rBase[i]||0));return {g,c:rv._bkc}}
 function rivRet(j,t,q){
+ if(S.rivals&&S.rivals[j]&&S.rBase&&q===S.q){const r=S.rivals[j],v=rivV(r),tl=rivTail(r,j,v,q),tt=0.2+0.7*prng32(hash32('rtt'+j+'_'+q,S.seed))(),B=rivBookRet(j,q);
+  return t*((RIVB.k[r.style]||1)*B.g+(v/2)*RIVB.noise*(RIVNOISE[r.style]||0.78)*rivNz(j,q)-0.008-rivDrag(v)+(r.bRet||0))-B.c-(t>=tt?tl:0)}
+ return rivRetOld(j,t,q)}
+function rivRetOld(j,t,q){
  const r=S.rivals&&S.rivals[j];if(!r||!S.f||!S.f.length)return 0;
  const e=rivalE(r,prng32(hash32('rivk'+j+'_'+q,S.seed)));
  const v=rivV(r),tl=rivTail(r,j,v,q),tt=0.2+0.7*prng32(hash32('rtt'+j+'_'+q,S.seed))();
@@ -6116,7 +6129,7 @@ function resolveQuarter(){
  S.crowd=S.crowd.map((c,i)=>Math.max(-1,Math.min(1,0.55*c+0.85*(r[i]/INSTR[i].sigQ)/3)));
  /* concurrents */
  const rr=rivalReturns();
- S.rivals.forEach((rv,j)=>{rv.last=rr[j];rv.cum*=(1+rr[j]);rv.peak=Math.max(rv.peak||1,rv.cum);(rv.hist=rv.hist||[]).push(rr[j]);(rv.vqh=rv.vqh||[]).push(rivV(rv));rv.vqLast=rivV(rv);rivalMgrQuarter(rv,rr[j])});
+ S.rivals.forEach((rv,j)=>{if(rv._bk&&rv._bkq===S.q){rv.wPrev=rv._bk}rv.last=rr[j];rv.cum*=(1+rr[j]);rv.peak=Math.max(rv.peak||1,rv.cum);(rv.hist=rv.hist||[]).push(rr[j]);(rv.vqh=rv.vqh||[]).push(rivV(rv));rv.vqLast=rivV(rv);rivalMgrQuarter(rv,rr[j])});
  /* taux directeur */
  S.rate=Math.max(0.002,Math.min(0.085,S.rate+0.004*S.f[1]+0.001*gauss()));
  /* jauges */
