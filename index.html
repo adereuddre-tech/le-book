@@ -837,7 +837,7 @@ const PROFILES=[
   sigBonus:0,capture:0.50,tcMult:0.72,rumBonus:0.05,lpMult:0.75,modelScale:0.90,ddMax:0.40,incMult:0.60,numeric:true,noAdj:true},
  {id:'fonda',lvl:'Normal',who:"« Je peux avoir raison plus longtemps que le marché ne peut rester solvable »",nm:"Gérant fondamental discrétionnaire",
   p:"Une vue du monde, construite ligne par ligne, et défendue contre tous. Vous avez passé trois nuits sur la balance courante d'un pays que personne ne regarde. Vous aurez raison — reste à savoir si votre mandat tiendra jusque-là.",
-  ef:[['g',"<b>Pouvoir propre — la source vérifiée</b> : chaque trimestre, deux rumeurs sont recoupées et données pour certaines ; une fois sur deux, votre réseau vous nomme l'événement extrême qui arrive"],['g',"+5 sources par trimestre : on vous rappelle, on vous parle"],['g',"les pré-annonces d'événements vous parviennent 13 pts plus souvent"],['g',"une fois par trimestre, la probabilité de suite d'une dépêche vous est donnée exacte"],['b',"réaction mesurée : vous ne captez que 60 % d'un mouvement en cours de trimestre"],['g',"trois catalyseurs par trimestre, que vous seul connaissez : la valeur y compte triple"],['b',"votre desk vise 22 % de vol : des convictions, et le risque qui va avec"],['b',"commission de performance +4 pts : vos investisseurs paient le temps passé à vérifier ; coûts de transaction +8 % : vous arbitrez tard ; incidents plus fréquents (×1,35) et plus chers (×1,4) : les grandes convictions font de grosses erreurs"]],
+  ef:[['g',"<b>Pouvoir propre — la source vérifiée</b> : chaque trimestre, deux rumeurs sont recoupées et données pour certaines ; une fois sur deux, votre réseau vous nomme l'événement extrême qui arrive"],['g',"+5 sources par trimestre : on vous rappelle, on vous parle"],['g',"les pré-annonces d'événements vous parviennent 13 pts plus souvent"],['g',"une fois par trimestre, la probabilité de suite d'une dépêche vous est donnée exacte"],['b',"réaction mesurée : vous ne captez que 60 % d'un mouvement en cours de trimestre"],['g',"trois catalyseurs par trimestre, que vous seul connaissez : la valeur y compte triple"],['b',"votre desk vise 22 % de vol : des convictions, et le risque qui va avec"],['b',"commission de performance +3 pts : vos investisseurs paient le temps passé à vérifier ; coûts de transaction +8 % : vous arbitrez tard ; incidents plus fréquents (×1,35) et plus chers (×1,4) : les grandes convictions font de grosses erreurs"]],
   sigBonus:5,capture:0.60,tcMult:1.08,rumBonus:0.18,lpMult:1.0,incMult:1.35,incSev:1.4,modelScale:1.10,numeric:false,verified:true},
  {id:'flux',lvl:'Expert',who:"« Le prix a toujours raison, même quand il a tort »",nm:"Gérant de flux et de momentum",
   p:"Vous ne prédisez rien : vous écoutez le marché. Votre avantage se joue sur les dépêches : vous lisez mieux que les autres la probabilité qu'un mouvement continue ou se retourne, vous en captez 85 % quand vous le suivez, et un ajustement par trimestre est gratuit. Le revers : un book plus chargé, des investisseurs qui suivent votre courbe au jour le jour, une équipe plus chère. Si vous suivez quand il fallait laisser passer, vous payez deux fois — les ordres et le retournement.",
@@ -875,7 +875,7 @@ const UNIVS=[
 const RECO={prof:'flux',arch:'std',desk:'inhouse',size:'mid',univ:'com',vol:'std',dur:'normal'};
 function SIZE(){return SIZES.find(x=>x.id===S.size)||SIZES[1]}
 /* commission de performance : fixée par la difficulté (15 / 20 / 25 %) */
-const STYPERF={syst:0,fonda:0.04,flux:0.05};   /* lot 125 : le style expert touche 5 pts de commission de plus */
+const STYPERF={syst:0,fonda:0.03,flux:0.05};   /* lot 125 : le style expert touche 5 pts de commission de plus */
 const STYSEED={syst:0.0004,fonda:0,flux:0};
 function perfFee(){return ((S&&SIZE().perf)||0.20)+((S&&STYPERF[S.prof])||0)}
 function UNIV(){return UNIVS.find(x=>x.id===(S&&S.univ))||UNIVS[1]}
@@ -2921,7 +2921,7 @@ const NAVEND=0.05;
 const FUNDMIN=0.04,DDEND=0.50;   /* lot 83 : 40 M$ ; lot 104 : plus lus pour la fin de partie */
 const FUNDEMPTY=0.01;   /* lot 104 : fonds vidé */
 const STYCOST={syst:0.85,fonda:1,flux:1.30};   /* lot 122 */
-const BUDK=0.80;   /* lot 123 : toutes les équipes 20 % moins chères */
+const BUDK=0.90;   /* lot 123 : toutes les équipes 20 % moins chères */
 function budNav(){return Math.max(S.nav,S.aum0||S.nav)*((SIZE()&&SIZE().costM)||1)*(STYCOST[S.prof]||1)*BUDK}   /* lot 104 : salaires et loyer ne suivent pas l'encours à la baisse */
 function ddMax(){return (S&&PROF().ddMax)||0.28}
 /* Profondeur de chaque carnet, en Md$ de notionnel : ce qu'un ordre peut peser avant que le
