@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **142**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **148**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -770,6 +770,16 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 - **140** : six anecdotes du back office (Josiane ×2, Gontran, Mireille, Tatillon ×2), dans TRADER_EXEC (40 au total).
 - **141** : six anecdotes de milieu de trimestre (TRADER_MID, 51 au total : Ingrid, Dwight, Tuco, Winnie, Sœur Marie-Alpha, Onésime).
 - **142** : fin de partie — trois variantes par verdict (`vp`, tirage déterministe sur la graine et le trimestre).
+
+- **143** : graphique de performance — le cumul comptait deux fois le trimestre sur l'écran de résultat (P&L vivant ajouté
+  au trimestre clos) ; drapeau `S.qClosed`.
+- **144** : bonus d'équipe — multiplicateur direct sur tous les coûts d'exécution (`BONFX.c` : 1,10 / 1,05 / 1,00 / 0,94 / 0,90) ;
+  l'ancien effet était bloqué à ×1,00 dès que le cran de salle de marché valait ×1,00.
+- **145** : objectif du trimestre = 3 % × `goalK()` (0,80 à 1,25 selon la norme du vecteur factoriel du trimestre) ;
+  annonces au même prorata.
+- **146** : en-têtes de tableaux et titres de blocs plus visibles.
+- **147** : « doubler vos lignes de levier » : effets écrits dans les boutons.
+- **148** : marge utilisée affichée en permanence sous le libellé « risque » de la carte du bandeau.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
