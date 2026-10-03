@@ -834,7 +834,7 @@ const SIG=[
 const PROFILES=[
  {id:'syst',lvl:'Débutant',who:"« Le modèle ne lit pas les journaux, et il dort très bien »",nm:"Gérant quantitatif systématique",
   p:"Pas d'opinion : un modèle. Il lit tous les signaux, pèse toutes les sources et vous propose un book d'un bouton. Vous ne savez pas toujours pourquoi il est long du yen. Lui, si.",
-  ef:[['g',"<b>Pouvoir propre — le book du modèle</b> : un portefeuille optimisé sur toutes les sources et tous les signaux, appliqué d'un bouton ; le modèle de risque annonce parfois l'événement extrême et chiffre sa perte"],['g',"il lit tendance, portage et valeur plus nettement que les autres styles"],['g',"investisseurs 25 % moins nerveux"],['b',"le modèle vise 18 % de vol : régulier, mais il laisse du rendement"],['g',"incidents opérationnels −40 % : tout est automatisé, journalisé, horodaté"],['g',"le modèle recale vite : 50 % du mouvement capté après un ajustement"],['b',"le modèle aime la tendance : il surestime de 4 pts la probabilité qu'une dépêche se prolonge"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"],['g',"capital de départ +0,40 M$ ; équipe 15 % moins chère"],['g',"coûts de transaction −28 % : le modèle exécute sans état d'âme"],['b',"aucune intuition : ce que le modèle n'a pas mesuré n'existe pas"]],
+  ef:[['g',"<b>Pouvoir propre — le book du modèle</b> : un portefeuille optimisé sur toutes les sources et tous les signaux, appliqué d'un bouton ; le modèle de risque annonce parfois l'événement extrême et chiffre sa perte"],['g',"il lit tendance, portage et valeur plus nettement que les autres styles"],['g',"investisseurs 25 % moins nerveux"],['b',"le modèle vise 18 % de vol : régulier, mais il laisse du rendement"],['g',"incidents opérationnels −40 % : tout est automatisé, journalisé, horodaté"],['g',"le modèle recale vite : 50 % du mouvement capté après un ajustement"],['b',"le modèle aime la tendance : il surestime de 4 pts la probabilité qu'une dépêche se prolonge"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"],['g',"capital de départ +1 M$ ; équipe 15 % moins chère"],['g',"coûts de transaction −28 % : le modèle exécute sans état d'âme"],['b',"aucune intuition : ce que le modèle n'a pas mesuré n'existe pas"]],
   sigBonus:0,capture:0.50,tcMult:0.72,rumBonus:0.05,lpMult:0.75,modelScale:0.90,ddMax:0.40,incMult:0.60,numeric:true,noAdj:true},
  {id:'fonda',lvl:'Normal',who:"« Je peux avoir raison plus longtemps que le marché ne peut rester solvable »",nm:"Gérant fondamental discrétionnaire",
   p:"Une vue du monde, construite ligne par ligne, et défendue contre tous. Vous avez passé trois nuits sur la balance courante d'un pays que personne ne regarde. Vous aurez raison — reste à savoir si votre mandat tiendra jusque-là.",
@@ -877,7 +877,7 @@ const RECO={prof:'flux',arch:'std',desk:'inhouse',size:'mid',univ:'com',vol:'std
 function SIZE(){return SIZES.find(x=>x.id===S.size)||SIZES[1]}
 /* commission de performance : fixée par la difficulté (15 / 20 / 25 %) */
 const STYPERF={syst:0,fonda:0.03,flux:0.05};   /* lot 125 : le style expert touche 5 pts de commission de plus */
-const STYSEED={syst:0.0004,fonda:0,flux:0};
+const STYSEED={syst:0.0010,fonda:0,flux:0};
 function perfFee(){return ((S&&SIZE().perf)||0.20)+((S&&STYPERF[S.prof])||0)}
 function UNIV(){return UNIVS.find(x=>x.id===(S&&S.univ))||UNIVS[1]}
 const VOLP=[
