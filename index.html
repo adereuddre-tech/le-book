@@ -4562,7 +4562,7 @@ function showGauge(id){
    ${tbl([...it.filter(x=>Math.abs(x[1])>1e-9).map(x=>[x[0],sg(x[1])]),[`<b>Gains nets · le score</b>`,`<b class="${net>=0?'pos-g':'neg-g'}">${score(net)}</b>`],
      ...(lock?[[`Part co-investie, bloquée (valeur du moment)`,`<b class="neg-g">−${mm(lock)}</b>`]]:[]),
      [`<b>Trésorerie disponible</b>`,`<b class="${mgrCash()>=0?'gold-g':'neg-g'}">${mm(mgrCash())}</b>`],...(bonPend()+coPend()>0?[[`Bonus d'équipe choisi`,`<b class="neg-g">−${mm(bonPend())}</b>`],[`Co-investissement du prochain trimestre`,`<b class="neg-g">−${mm(coPend())}</b>`],[`<b>Après vos choix</b>`,`<b class="${cashView()>=0?'gold-g':'neg-g'}">${mm(cashView())}</b>`]]:[])])}
-   <p class="note" style="margin-top:6px">${mgrCash()>=0?`Il vous reste <em>${mm(mgrCash())}</em> pour payer budget et ordres.`:`Vous êtes à découvert de <em>${mm(-mgrCash())}</em> : dépenses bloquées jusqu'à la prochaine commission.`}</p>
+   <p class="note" style="margin-top:6px">${mgrCash()>=0?`Il vous reste <em>${mm(mgrCash())}</em> pour payer budget et ordres.`:`Vous êtes à découvert de <em>${mm(-mgrCash())}</em>. Les ordres et les événements restent possibles, mais pas le budget de l'équipe ; à la clôture, une trésorerie négative, c'est le dépôt de bilan.`}</p>
    <p style="margin:12px 0 4px">Le co-investissement</p>
    ${lock?tbl([[`Part placée à l'ouverture`,`${pc} % · ${mm(S.coinvBase)}`],[`Valeur du moment`,`${mm(lock)}${cLive?' · '+sg(cLive):''}`],[`Rendue à la clôture`,`${mm(S.coinvBase)} × (1 + résultat du fonds)`],[`Part au trimestre prochain`,`${Math.round((S.coinvPct||COINV)*100)} %`]])
      :tbl([[`Part placée en ce moment`,S.q===0?`aucune au premier trimestre`:`aucune, trimestre clos`],[`Part au trimestre prochain`,`${pc} % de la trésorerie d'ouverture`]])}
@@ -4918,7 +4918,6 @@ function screenPlay(){
  drawRows();renderRisk();refreshSend();
  document.getElementById('send').onclick=()=>{
    const c=liveTC();
-   if(c>0&&c>Math.max(0,mgrCash()+c)){refreshSend();toast("Votre société de gestion ne peut pas payer ces ordres.");return}
    if(redBlock()){refreshSend();toast(redBlock());return}
    commitOrders();screenComm();window.scrollTo(0,0);
  };
@@ -4927,12 +4926,11 @@ function screenPlay(){
    pas. Un book inchangé ne coûte rien et n'est donc jamais bloqué — pas d'impasse possible. */
 function refreshSend(){
  const b=document.getElementById('send'),p=document.getElementById('purse');if(!b)return;
- const c=liveTC(),rest=mgrCash(),avail=Math.max(0,rest+c),ko=c>0&&c>avail,rb=redBlock();
+ const c=liveTC(),rest=mgrCash(),avail=Math.max(0,rest+c),ko=false,rb=redBlock();
  if(p)p.innerHTML=`<span>Ordres ${mm(c)} · trésorerie après paiement</span><b class="${rest>=0?'':'neg-g'}">${mm(rest)}</b>`
    +(ko||rb?` <button class="buy" id="fitbook" style="margin-left:8px">${rb?'Ramener le book dans la contrainte':'Ramener le book au payable'}</button>`:'');
  {const nt=document.getElementById('pursenote');
-  if(nt)nt.textContent=avail>0?`Les positions grisées coûteraient plus que votre trésorerie (${mm(avail)}).`
-    :"Votre trésorerie est vide : vous ne pouvez plus passer d'ordre payant ce trimestre.";}
+  if(nt)nt.textContent=rest<0?`Après ces ordres, votre trésorerie est négative (${mm(rest)}) : c'est permis pendant le trimestre, mais elle doit être revenue au-dessus de zéro à la clôture, sinon c'est le dépôt de bilan.`:'';}
  b.disabled=ko||!!rb;
  b.textContent=rb||(ko?`Trésorerie insuffisante : ${mm(c-avail)} de trop`:'Passer les ordres');
  const f=document.getElementById('fitbook');
@@ -5394,10 +5392,7 @@ function costIf(i,v){
  for(let j=0;j<N;j++){const d=(j===i?v:S.k[j])-S.k0[j];if(Math.abs(d)>1e-9)t+=tcost(d,j).cost}
  return t;
 }
-function segAfford(i,v){
- const purse=Math.max(0,mgrCash()+liveTC());
- return costIf(i,v)<=purse+1e-12;
-}
+function segAfford(i,v){return true}   /* lot 178 : les ordres peuvent creuser la trésorerie */
 function segStyle(i,v,dis){
  if(dis)return 'opacity:.22';
  const k=S.k[i];const on=k===v,lit=k!==0&&v!==0&&Math.sign(v)===Math.sign(k)&&Math.abs(v)<Math.abs(k);
@@ -5596,7 +5591,7 @@ function screenExec(){
     <p class="note">Multiplicateur du trimestre ×${dec(mult,2)} : budget desk ×${dec(execMot(),2)} (bonus ${dec(BONUS[bonEff()]*100,1)} %), liquidité ×${dec(S.liq,2)}, taux ×${dec((1+(S.rate-0.03)*4),2)}, profil ×${dec(PROF().tcMult,2)}${S.execPenalty!==1?`, débauchage ×${dec(S.execPenalty,2)}`:''}.${S.star>=0?` Recrue du trimestre sur ${INSTR[S.star].sym} : ÷3.`:''}</p></div></details>`:''}
   </div>
   ${ev?`<div class="evwrap" style="padding-top:14px"><div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p></div>
-   ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=mg<0&&(-mg/1000)>mgrCash();
+   ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=false;
      return `<button class="choice" data-i="${i}"${ko?' disabled title="Trésorerie insuffisante"':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${(()=>{const x=c.e||{},q=execGz(x.tcMult,x.leakQ),v=cf(q.lp,q.rc);return v?` Manière d'exécuter : confiance ${v>0?'+':'−'}${Math.abs(v)}.`:''})()}${stake(c)}${bkPrev(c.e,'exec')}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`
    :`<button class="cta" id="go2">Lancer le trimestre</button>`}
  </div>`;
@@ -5714,7 +5709,7 @@ function screenMacroEvent(ev){
   <div class="block"><div class="blockhead"><h2>Votre réaction</h2><span class="hint">sur la suite du mouvement</span></div>
    ${SC.ver?`<p class="note" style="margin:0 0 8px"><b>Source vérifiée</b> : votre réseau a recoupé l'information, la probabilité affichée est la vraie.</p>`:''}
    <p class="note" style="margin:0 0 6px">Confiance avant votre décision : <b>${Math.round(S.lp)}</b>. Chaque issue donne la confiance à la fin de la dépêche.</p>
-   ${plan.map((o,i)=>{const ban=o.a==='follow'&&o.trades.length&&(redOn('risk')||redOn('noadd')),ko=o.a==='follow'&&o.cost>0&&o.cost>Math.max(0,mgrCash());
+   ${plan.map((o,i)=>{const ban=o.a==='follow'&&o.trades.length&&(redOn('risk')||redOn('noadd')),ko=false;
      return `<button class="choice evopt" data-i="${i}"${ban||ko?' disabled':''}><b>${o.b}</b><span class="evs">${o.s}${o.a==='follow'&&o.t?bkD(o.t,0,false):''}${ban?' <b class="neg-g">interdit par le comité (carton rouge)</b>':ko?' <b class="neg-g">hors trésorerie</b>':''}</span>${ptab(o)}</button>`}).join('')}
    <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion ; votre desk n'est en place qu'à ${(prof.capture*100).toFixed(0)} % quand le marché repart, c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
   </div>
@@ -5861,7 +5856,7 @@ function screenTraderEvent(ev,next){
  next=next||stepEvents;ev=cast(ev);
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p>${evTimerHTML}</div>
-  ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=mg<0&&(-mg/1000)>mgrCash();
+  ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=false;
     return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${bkPrev(c.e,'mid')}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
  const pickCh=idx=>{clearTimer();
   const ch=ev.ch[idx],e=ch.e;const msg=[];let pnl=0,cost=0;const navB=S.nav;
@@ -5977,7 +5972,7 @@ function tailOpts(te){const L=te.L;
 function screenTail(te){
  const ev=TAILEV[te.i]||TAILEV[0],O=tailOpts(te),nav=S.nav,L=te.L;
  const row=(a,b)=>`<div class="gzr"><span>${a}</span>${b}</div>`;
- const btn=(o,k)=>{const ko=o.m>0&&mgrCash()<o.m*nav;
+ const btn=(o,k)=>{const ko=false;
   const body=o.id==='hold'?row('une chance sur deux',`<b class="neg-g">−${mm(0.3*L*nav)} · confiance −1</b>`)+row('une chance sur deux',`<b class="neg-g">−${mm(1.5*L*nav)} · confiance −8</b>`)
    :row('fonds',`<b class="neg-g">−${mm(o.f*nav)} · ${sgnp(-o.f,1)}</b>`)+(o.m?row('votre trésorerie',`<b class="neg-g">−${mm(o.m*nav)}</b>`):'')
     +row(o.id==='cut'?'book':'confiance',o.id==='cut'?'<b>positions divisées par deux · confiance −3</b>':`<b class="neg-g">−2</b>`)+(o.id==='cut'?bkD(S.k.map(v=>Math.trunc(v/2)),0,false):'');
@@ -6051,7 +6046,7 @@ function screenIncident(){
  O.forEach(o=>o.cf=cf(o.lp,o.rc));
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard bad">${evHead(inc.who,'risk')}<h3>${inc.t}</h3><p>${inc.p}</p>${evTimerHTML}</div>
-  ${O.map((o,i)=>{const ko=o.m>0&&o.m*navB>mgrCash();return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${o.b}</b><span>${o.s}<span class="stks"><span class="stk">fonds <em class="neg-g">−${mm(o.f*navB)}</em></span>${o.m?`<span class="stk">vous <em class="neg-g">−${mm(o.m*navB)}</em></span>`:''}<span class="stk">confiance <em class="${o.cf<0?'neg-g':'dim-g'}">${sd1(o.cf)}</em></span></span>${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
+  ${O.map((o,i)=>{const ko=false;return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${o.b}</b><span>${o.s}<span class="stks"><span class="stk">fonds <em class="neg-g">−${mm(o.f*navB)}</em></span>${o.m?`<span class="stk">vous <em class="neg-g">−${mm(o.m*navB)}</em></span>`:''}<span class="stk">confiance <em class="${o.cf<0?'neg-g':'dim-g'}">${sd1(o.cf)}</em></span></span>${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
  const pickI=k=>{clearTimer();const o=O[k];S.nav*=(1-o.f);S.qIncM-=o.f*navB;if(o.m){S.mgrCosts+=o.m*navB;refreshGain()}
   const g=gauge(o.lp,o.rc,inc.t);const loss=o.f;
   S.incidents.push({t:inc.t,loss});S.evLog.push({t:inc.t,pnl:-loss,m:-loss*navB,lp:g.lp,rc:g.rc});
@@ -6727,7 +6722,7 @@ function screenBoard(){
  const ev=cast(pick(av));S.usedEv.push(ev.t0||ev.t);
  app.innerHTML=statusBar(true)+`<div class="evwrap fade">
   <div class="evcard">${evHead(ev.who,'inv')}<h3>${ev.t}</h3><p>${ev.p}</p>${evTimerHTML}</div>
-  ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=mg<0&&(-mg/1000)>mgrCash();
+  ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=false;
     return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${c.b}</b><span>${c.s}${boardFx(c.e)}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
  const pickB=idx=>{clearTimer();
   const e=ev.ch[idx].e;
