@@ -5061,7 +5061,7 @@ const STRESS=[
  {id:'cyber',nm:'Cyberattaque sur les bourses',ext:1,sh:[-0.5,0,0.5,-1.5],liq:2.0,mg:1.2,p:"Les systèmes d'une grande place de cotation tombent pendant deux séances. Personne ne sait plus où est le prix."},
  {id:'crypto',nm:'Effondrement d\'une plateforme crypto',ext:1,x:{BTC:-3.5},sh:[0,0,0,-1.0],p:"La plus grande plateforme d'échange gèle les retraits. Le bitcoin perd un tiers en un week-end."},
  {id:'secheresse',nm:'Sécheresse historique',ext:1,x:{NRAM:-3.0,ZW:2.5,KC:2.5},sh:[0,0.5,0,0],p:"Trois mois sans pluie sur les grandes plaines et au Brésil. Les récoltes fondent, les prix agricoles flambent."}];
-const STRESSK=0.4,STRGAP=0.28;
+const STRESSK=0.32,STRGAP=0.28;
 function stressGap(k,sc){const w=weights(k);let g=0;for(let i=0;i<N;i++)g+=Math.abs(w[i])*INSTR[i].sigQ;return STRGAP*g*(sc&&sc.ext?2:1)*crowd(riskShown(w).total)}
 function stressHit(sc,k){k=k||S.k;const h={},K=STRESSK*(sc.ext?2:1);INSTR.forEach((x,i)=>{let v=0;for(let f=0;f<4;f++)v+=x.b[f]*(sc.sh?sc.sh[f]:0);v*=K;if(sc.x&&sc.x[x.sym])v+=sc.x[x.sym]*K*1.5;
   if(sc.tgt==='otc'&&x.pt==='otc'&&k[i])v-=Math.sign(k[i])*sc.H;
@@ -5682,7 +5682,7 @@ function screenMacroEvent(ev){
  /* suite du mouvement : binaire, poursuite (p) ou retournement (1−p), tirée maintenant, révélée après */
  if(!S.sc||!S.sc.m||S.sc.m.length!==2){
   reseed('sc'+S.evIdx);   /* un canal par dépêche : son issue ne dépend pas du reste */
-  S.sc={p:0.40+0.50*rng(),m:[0.45+0.40*rng(),-(0.30+0.40*rng())]};   /* poursuite dans [0,40 ; 0,90] */
+  S.sc=ev.stress?{p:0.35+0.30*rng(),m:[0.25+0.30*rng(),-(0.45+0.40*rng())]}:{p:0.40+0.50*rng(),m:[0.45+0.40*rng(),-(0.30+0.40*rng())]};   /* poursuite dans [0,40 ; 0,90] */
   /* ce que le desk lit : précision selon la recherche, le style, et la source vérifiée du fondamental */
   const pr=PROF(),sd=RESPH[S.bud.res]*(pr.id==='flux'?0.6:1);
   const ver=(pr.id==='fonda'||(S.ecoB==='ver'&&S.ecoQ===S.q))&&!S.evVerified;if(ver)S.evVerified=true;
@@ -5729,10 +5729,10 @@ function evPlans(ev,touched){
  touched.forEach(i=>{const sh=Math.sign(ev.hit[INSTR[i].sym]);
   if(ev.shut&&ev.shut.includes(INSTR[i].sym))return;   /* lot 58 : cotation suspendue */
   const tg=clampK(i,S.k[i]+sh*2),d=tg-S.k[i];if(!d)return;
-  const tc=tcost(d,i);const c=tc.cost*1.6*S.tcMultQ*(S.leakQ?1.45:1);
+  const tc=tcost(d,i);const c=tc.cost*1.6*S.tcMultQ*(S.leakQ?1.45:1)*(ev.stress?2.5:1);
   cost+=c;drift+=Math.abs(d);t[i]=tg;kE[i]=S.k[i]+prof.capture*d;
   trades.push({i,from:S.k[i],to:tg,bn:tc.bn,c})});
- const free=cost>0&&(prof.freeAdj||S.freeAdjB>0)&&!S.freeAdjUsed;
+ const free=cost>0&&!ev.stress&&(prof.freeAdj||S.freeAdjB>0)&&!S.freeAdjUsed;
  const costP=free?0:cost;
  const band0=riskRc(S.k),band1=riskRc(t),v0=pvol(weights(S.k)),v1=pvol(weights(t));
  const payF=SC.m.map(m=>{const we=weights(kE);let v=0;touched.forEach(i=>v+=we[i]*m*ev.hit[INSTR[i].sym]*INSTR[i].sigQ);return v   /* lot 59 : les ordres sont payés par le gérant, pas par le fonds */});
