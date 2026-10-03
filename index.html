@@ -4738,18 +4738,13 @@ function phase(kick,title,lines,btn,next){
  clearTimer();
  app.innerHTML=statusBar(S.statusDone)+`<div class="phase fade">
   <div class="kicker">${kick}</div><h2 class="ptitle">${title}</h2>
-  <ul class="plines">${lines.map(l=>`<li>${l}</li>`).join('')}</ul>
+  <ul class="plines">${lines.map((l,i)=>`<li style="animation:evshow .32s ease both;animation-delay:${(i*0.07).toFixed(2)}s">${l}</li>`).join('')}</ul>
   <button class="cta gold" id="pgo">${btn}</button></div>`;
  document.getElementById('pgo').onclick=()=>{next();window.scrollTo(0,0)};
  window.scrollTo(0,0);
 }
-function phaseOpen(){
- save('phaseOpen');
- const OUV=["Écrans allumés, café servi, tout est encore possible.","Personne n'a encore rien perdu. Profitez-en.","Le marché ouvre dans quelques minutes et ne vous attend pas.","Trois mois devant vous, et une page blanche.","Le desk est en place. On y va.","Nouveau trimestre, compteur remis à zéro, mémoire longue chez les investisseurs.","Tout le monde repart à égalité. Enfin, presque.","Les positions dorment encore. Réveillez-les."];
- phase(`TRIMESTRE ${S.q+1} SUR ${QT()} · OUVERTURE`,`Le trimestre ${S.q+1} commence`,
-  [pick(OUV),...(S.goal?[`Objectif du trimestre — <b>${S.goal.nm.toLowerCase()}</b> : ${S.goal.d} Bonus de ${moneyB(goalBon(S.goal))} sur votre score.${/marge/i.test(S.goal.d)?' La marge utilisée se lit sous le book.':''}`]:[]),"D'abord, le contexte du trimestre ; ensuite le budget, juste avant le book."],
-  "Voir le desk",phaseDesk);
-}
+function phaseOpen(){phaseDesk(1)}   /* lot 166 : un seul écran d'ouverture */
+const OUV=["Écrans allumés, café servi, tout est encore possible.","Personne n'a encore rien perdu. Profitez-en.","Le marché ouvre dans quelques minutes et ne vous attend pas.","Trois mois devant vous, et une page blanche.","Le desk est en place. On y va.","Nouveau trimestre, compteur remis à zéro, mémoire longue chez les investisseurs.","Tout le monde repart à égalité. Enfin, presque.","Les positions dorment encore. Réveillez-les."];
 function phaseDesk(){
  save('phaseDesk');
  const nr=S.rumors.length,nev=S.evQueue.filter(e=>!e.trader).length;
@@ -4757,8 +4752,8 @@ function phaseDesk(){
  /* coût d'un aller simple d'une unité sur un marché représentatif, sans jargon */
  let cEx=0;for(let i=0;i<N;i++)cEx+=tcost(1,i).cost;
  const cBp=cEx/Math.max(1e-9,S.nav)*1e4;
- phase(`TRIMESTRE ${S.q+1} · LE DESK`,"Le desk vous attend",
-  [`🎯 <b>Objectif du trimestre : ${sgnp(0.03*goalK(),1)} net</b> (annonce standard, ${goalK()>1.05?'relevé : le marché s\'annonce agité':goalK()<0.95?'abaissé : le marché s\'annonce calme':'normal'} ; vous pourrez promettre plus après le book).`,...(S.goal?[`🏅 <b>Objectif bonus : ${S.goal.nm}</b> — ${S.goal.d}`]:[]),`Liquidité des marchés : <b>${lqNm}</b>. Une position d'une unité sur un marché coûte en moyenne <b>${mm(cEx/Math.max(1,N))}</b> à ouvrir, soit ${dec(cBp/Math.max(1,N),1)} pb de l'encours — ${L>1.2?'nettement plus cher que d\'habitude':L>1.05?'un peu plus cher que d\'habitude':L<0.95?'moins cher que d\'habitude':'le tarif habituel'}.`,`Prime broker : marges à <b>×${dec(S.mgMult||1,2)}</b> du barème ce trimestre${(S.mgMult||1)>1.05?', liquidité oblige':''}.`,...(S.xHint?[xHintTxt()]:[]),...(S.hunch?[`<b>Votre intuition</b> : quelque chose vous dit, sans certitude, que <b>${FACT[S.hunch.k].nm.toLowerCase()}</b> va ${(S.hunch.up===(FSG[S.hunch.k]>0))?'surprendre à la hausse':'surprendre à la baisse'} ce trimestre. Vous ne sauriez pas dire d'où ça vient.`]:[]),`Le trimestre sera ${nev>=4?'très agité':nev>=3?'agité':'relativement calme'} : des dépêches sont attendues, dont certaines annoncées dans les rumeurs.`],
+ phase(`TRIMESTRE ${S.q+1} SUR ${QT()} · OUVERTURE`,`Le trimestre ${S.q+1} commence`,
+  [`<i>${OUV[((S.seed>>>0)+S.q*3)%OUV.length]}</i>`,`🎯 <b>Objectif du trimestre : ${sgnp(0.03*goalK(),1)} net</b> (annonce standard, ${goalK()>1.05?'relevé : le marché s\'annonce agité':goalK()<0.95?'abaissé : le marché s\'annonce calme':'normal'} ; vous pourrez promettre plus après le book).`,...(S.goal?[`🏅 <b>Objectif bonus : ${S.goal.nm}</b> — ${S.goal.d} Bonus de ${moneyB(goalBon(S.goal))} sur votre score.`]:[]),`Liquidité des marchés : <b>${lqNm}</b>. Une position d'une unité sur un marché coûte en moyenne <b>${mm(cEx/Math.max(1,N))}</b> à ouvrir, soit ${dec(cBp/Math.max(1,N),1)} pb de l'encours — ${L>1.2?'nettement plus cher que d\'habitude':L>1.05?'un peu plus cher que d\'habitude':L<0.95?'moins cher que d\'habitude':'le tarif habituel'}.`,`Prime broker : marges à <b>×${dec(S.mgMult||1,2)}</b> du barème ce trimestre${(S.mgMult||1)>1.05?', liquidité oblige':''}.`,...(S.xHint?[xHintTxt()]:[]),...(S.hunch?[`<b>Votre intuition</b> : quelque chose vous dit, sans certitude, que <b>${FACT[S.hunch.k].nm.toLowerCase()}</b> va ${(S.hunch.up===(FSG[S.hunch.k]>0))?'surprendre à la hausse':'surprendre à la baisse'} ce trimestre. Vous ne sauriez pas dire d'où ça vient.`]:[]),`Le trimestre sera ${nev>=4?'très agité':nev>=3?'agité':'relativement calme'} : des dépêches sont attendues, dont certaines annoncées dans les rumeurs.`],
   "Fixer le budget",screenBudget);
 }
 function phaseLive(){
