@@ -955,7 +955,9 @@ function cast(ev){if(ev&&ev.hunt&&S&&S.bud){const c=huntCands();if(c.length){con
   ['t','p','after','riskMsg','safeTxt','safe','msg'].forEach(k=>{o[k]=recast(o[k],c)});
   if(Array.isArray(o.ch))o.ch=deepCast(o.ch,c)});
  return o}
-const BONUS=[0.05,0.075,0.10,0.15,0.20],POACHP=0.5,MOT={i0:2};
+const BONOFF=[0,0.025,0.05,0.10,0.15],POACHP=0.5,MOT={i0:2};
+function bonBase(){if(!S||!S.bud)return 0;let t=-1;for(let p=Math.min(S.bud.fo,FOP.length-1);p>=0;p--)if(FOP[p].cls){t=p;break}return t>=0?10*FOP[t].bp*1e-4:0}   /* lot 179 */
+function bonRate(i){return bonBase()+BONOFF[i]}
 /* lot 115 : effet direct du cran de bonus versé — g : part de la baisse des coûts du budget salle de marché que le desk livre ;
    p : risque de débauchage par trimestre ; ×1,5 le trimestre d'une baisse de taux */
 const BONFX=[{c:1.10,p:0.50},{c:1.05,p:0.40},{c:1.00,p:0.30},{c:0.94,p:0.20},{c:0.90,p:0.12}],BONCUT=1.5;
@@ -963,10 +965,10 @@ function bonEff(){return S&&S.bonEff!=null?S.bonEff:MOT.i0}
 function execMot(i){return EXECM[i==null?S.bud.exec:i]*BONFX[bonEff()].c}
 function poachNow(){return Math.min(0.95,BONFX[bonEff()].p*(S.bonCutQ===S.q?BONCUT:1))}
 function bonCands(){const c=[];for(let p=FOP.length-1;p>=0;p--)if(here(p))c.push(p);return c}
-function bonTxt(){return `<br>Bonus au cran ${dec(BONUS[bonEff()]*100,1)} % : coûts d'exécution ×${dec(BONFX[bonEff()].c,2)} (effet du seul bonus) · risque de débauchage ${Math.round(poachNow()*100)} % ce trimestre${S.qBonT>0?` · bonus versé ${mm(S.qBonT)}`:''}${S.bonCutQ===S.q?' · <span class="neg-g">baisse du taux : débauchage ×1,5 ce trimestre</span>':''}.`}
+function bonTxt(){return `<br>Bonus au taux de ${dec(bonRate(bonEff())*100,1)} % : coûts d'exécution ×${dec(BONFX[bonEff()].c,2)} (effet du seul bonus) · risque de débauchage ${Math.round(poachNow()*100)} % ce trimestre${S.qBonT>0?` · bonus versé ${mm(S.qBonT)}`:''}${S.bonCutQ===S.q?' · <span class="neg-g">baisse du taux : débauchage ×1,5 ce trimestre</span>':''}.`}
 function payBonus(){S.qBonT=0;S.bonWhoQ=null;if(S.q<1)return;const perf=(S.mgrQ&&S.mgrQ.perf)||0;
  if(S.bonI==null)S.bonI=MOT.i0;const i=S.bonI,p=S.bonPrev==null?MOT.i0:S.bonPrev,d=i-p;
- const amt=Math.min(BONUS[i]*Math.max(0,perf),Math.max(0,mgrCash()));
+ const amt=Math.min(bonRate(i)*Math.max(0,perf),Math.max(0,mgrCash()));
  if(amt>0){S.mgrCosts+=amt;S.cBonT=(S.cBonT||0)+amt;S.qBonT=amt}
  S.bonEff=perf>0?i:0;
  if(d<0)S.bonCutQ=S.q;S.bonPrev=i}
@@ -3863,7 +3865,7 @@ const CLAW=0;   /* lot 98 : restitution supprimée, le co-investissement fait d�
 function coinvLocked(){return S&&S.coinvLock?S.coinvLock*(1+((S.phase==='events'&&S.live)?liveNet():0)):0}
 function mgrCash(){return mgrNet()-coinvLocked()}
 /* lot 98 : au débriefing, la trésorerie affichée déduit déjà le bonus d'équipe choisi puis la part co-investie */
-function bonPend(){if(!S||S.phase!=='debrief'||S.over||S.q>=QT())return 0;const pf=(S.mgrQ&&S.mgrQ.perf)||0;return pf>0?Math.min(BONUS[S.bonI==null?MOT.i0:S.bonI]*pf,Math.max(0,mgrCash())):0}
+function bonPend(){if(!S||S.phase!=='debrief'||S.over||S.q>=QT())return 0;const pf=(S.mgrQ&&S.mgrQ.perf)||0;return pf>0?Math.min(bonRate(S.bonI==null?MOT.i0:S.bonI)*pf,Math.max(0,mgrCash())):0}
 function coPend(){if(!S||S.phase!=='debrief'||S.over||S.q>=QT())return 0;return coinvPct()*Math.max(0,mgrCash()-bonPend())}
 function cashView(){return mgrCash()-bonPend()-coPend()}   /* lot 63 : pas de capital de départ, trésorerie = gains nets */
 function liveTC(){let tot=0;const k0=S.k0||S.k;for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}return tot}
@@ -5588,7 +5590,7 @@ function screenExec(){
    ${orders.length?`<details style="margin-top:10px"><summary>Détail des ordres et des coûts</summary>
     <p class="note" style="margin:8px 0 0">${orders.length} marché${orders.length>1?'s':''} à travailler · liquidité ${lqNm} (×${dec(S.liq,2)}) · taux au jour le jour ${dec((S.rate*100),1)} % · trésorerie après paiement ${mm(mgrCash())} · ordres ${(tot/S.nav*1e4).toFixed(0)} pb, impact ${(Math.abs(execImpactAmt(tot,1,S.leakQ))/S.nav*1e4).toFixed(0)} pb de l'encours.</p>
     <div class="wire" style="margin-top:8px">${orders.map(o=>`<div class="attr"><span class="an"><span class="num" style="color:${GRPC[INSTR[o.i].grp]}">${INSTR[o.i].sym}</span> <span class="recap" style="color:var(--dimmer)">${S.k0[o.i]>0?'+':''}${S.k0[o.i]} → ${S.k[o.i]>0?'+':''}${S.k[o.i]} · ${moneyB(o.t.bn)}</span></span><span class="av neg-g">${dec(o.t.bp,1)} pb · ${mm(o.t.cost)}</span></div>`).join('')}
-    <p class="note">Multiplicateur du trimestre ×${dec(mult,2)} : budget desk ×${dec(execMot(),2)} (bonus ${dec(BONUS[bonEff()]*100,1)} %), liquidité ×${dec(S.liq,2)}, taux ×${dec((1+(S.rate-0.03)*4),2)}, profil ×${dec(PROF().tcMult,2)}${S.execPenalty!==1?`, débauchage ×${dec(S.execPenalty,2)}`:''}.${S.star>=0?` Recrue du trimestre sur ${INSTR[S.star].sym} : ÷3.`:''}</p></div></details>`:''}
+    <p class="note">Multiplicateur du trimestre ×${dec(mult,2)} : budget desk ×${dec(execMot(),2)} (bonus ${dec(bonRate(bonEff())*100,1)} %), liquidité ×${dec(S.liq,2)}, taux ×${dec((1+(S.rate-0.03)*4),2)}, profil ×${dec(PROF().tcMult,2)}${S.execPenalty!==1?`, débauchage ×${dec(S.execPenalty,2)}`:''}.${S.star>=0?` Recrue du trimestre sur ${INSTR[S.star].sym} : ÷3.`:''}</p></div></details>`:''}
   </div>
   ${ev?`<div class="evwrap" style="padding-top:14px"><div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p></div>
    ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=false;
@@ -6628,8 +6630,8 @@ function screenDebrief(o){
  </div>`;
  const bnSel=(S.over||S.q>=QT())?'':(()=>{const pf=Math.max(0,(S.mgrQ&&S.mgrQ.perf)||0),cur=S.bonI==null?MOT.i0:S.bonI,prev=S.bonPrev==null?MOT.i0:S.bonPrev,e=EXECM[S.bud.exec];
   return `<div class="block"><div class="blockhead"><h2>Taux de bonus d'équipe</h2><span class="hint">versé à l'ouverture</span></div>
-  <p class="note" style="margin-top:0">Une part de votre commission de performance${pf>0?` (${mm(pf)} ce trimestre)`:' — aucune ce trimestre : rien ne sera versé, et le desk se comporte comme au cran minimal'}. Le taux fixe deux choses, directement : un multiplicateur sur tous vos coûts d'exécution (×1,10 à 5 %, ×0,90 à 20 %) et le risque de débauchage. Baisser le taux multiplie le débauchage par 1,5 le trimestre de la baisse.</p>
-  <div class="cisel">${BONUS.map((p,i)=>{const F=BONFX[pf>0?i:0],c=F.c;return `<button class="bnp${i===cur?' on':''}" data-i="${i}">${dec(p*100,Number.isInteger(Math.round(p*1000)/10)?0:1)} %<br><small>${mm(p*pf)} · coûts ×${dec(c,2)} · débauche ${Math.round(Math.min(0.95,F.p*(i<prev?BONCUT:1))*100)} %</small></button>`}).join('')}</div></div>`})();
+  <p class="note" style="margin-top:0">Une part de votre commission de performance${pf>0?` (${mm(pf)} ce trimestre)`:' — aucune ce trimestre : rien ne sera versé, et le desk se comporte comme au cran minimal'}. Le minimum vaut 10 fois le coût de vos traders sur 100 M$ (${dec(bonBase()*100,1)} % aujourd'hui) ; chaque cran ajoute 2,5, 5, 10 ou 15 points. Le taux fixe deux choses, directement : un multiplicateur sur tous vos coûts d'exécution (×1,10 à 5 %, ×0,90 à 20 %) et le risque de débauchage. Baisser le taux multiplie le débauchage par 1,5 le trimestre de la baisse.</p>
+  <div class="cisel">${BONOFF.map((o,i)=>{const p=bonRate(i),F=BONFX[pf>0?i:0],c=F.c;return `<button class="bnp${i===cur?' on':''}" data-i="${i}">${dec(p*100,Number.isInteger(Math.round(p*1000)/10)?0:1)} %<br><small>${mm(p*pf)} · coûts ×${dec(c,2)} · débauche ${Math.round(Math.min(0.95,F.p*(i<prev?BONCUT:1))*100)} %</small></button>`}).join('')}</div></div>`})();
  const gtSel=(S.over||S.q>=QT()||!gateOk())?'':`<div class="block"><div class="blockhead"><h2>Gate</h2><span class="hint">prochaine clôture</span></div>
   <p class="note" style="margin-top:0">${mm(invDue())} d'avis de rachat tombent à la prochaine clôture, ${dec(invDue()/Math.max(1e-9,extNav())*100,1)} % de l'encours. La gate limite les paiements à ${Math.round(INVP.gate*100)} % de l'encours, au prorata ; le reste est reporté d'un trimestre. Prix : confiance ${INVP.gateLp}, et pas deux trimestres de suite.</p>
   <div class="cisel"><button class="gtp${S.gateNext?'':' on'}" data-g="0">Payer à l'échéance</button><button class="gtp${S.gateNext?' on':''}" data-g="1">Activer la gate</button></div></div>`;
