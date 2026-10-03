@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **162**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **165**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -828,6 +828,13 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 - **162** : moyen sans capital de départ (bonus de style seul), équipe ×1,10. Campagne (270 normales, graines 10001–10030) :
   73 % · 39,7 M$ ; facile 83, moyen 74, difficile 60 % ; quant 79 · 39,8, fondamental 76 · 33,5, flux 63 · 45,7.
   Moyen par style : quant 80, fondamental 83, flux 60 % (± 7 pts par case).
+
+- **163** : objectif du trimestre et objectif bonus en haut de la page du book ; textes « book reconduit » corrigés (il repart
+  à plat chaque trimestre) ; « dollar » → « liquidité » dans l'aide des sources.
+- **164** : chance de tenir chaque annonce affichée à tous les niveaux ; événement du conseil « Vos investisseurs veulent
+  remettre au pot » (+12 % au prorata) à la place de l'entrée de la Couronne.
+- **165** : charges des taux européens (proposition d'Antoine, un cran = 0,20, affichage C/I/L/A) — Bund −1 −3 0 −2,
+  Gilt −2 −2 +1 −2, OAT −1 −3 −1 +1.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
