@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **165**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **171**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -835,6 +835,14 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   remettre au pot » (+12 % au prorata) à la place de l'entrée de la Couronne.
 - **165** : charges des taux européens (proposition d'Antoine, un cran = 0,20, affichage C/I/L/A) — Bund −1 −3 0 −2,
   Gilt −2 −2 +1 −2, OAT −1 −3 −1 +1.
+
+- **166** : un seul écran d'ouverture (« Le trimestre N commence ») ; lignes animées (`phase`, `evshow` décalé).
+- **167** : dépêches d'institutions — icône selon le type (`EVICO`, `evIco`) au lieu d'un visage ; les personnes gardent leur portrait.
+- **168** : VIX — portage du vendeur dans l'attendu selon l'appétit estimé (`vixCarry` : nul à −1,5 σ) ; le réalisé dépendait
+  déjà du régime (crise ×−2,2, récession ×−0,9).
+- **169** : Bund liquidité −1 (aucune charge nulle).
+- **170** : tableau des investisseurs, ligne Total.
+- **171** : tableau des concurrents, votre fonds a toujours ses lignes « événements extrêmes » et « accidents de levier ».
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
