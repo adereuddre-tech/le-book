@@ -2923,7 +2923,7 @@ const FUNDMIN=0.04,DDEND=0.50;   /* lot 83 : 40 M$ ; lot 104 : plus lus pour la 
 const FUNDEMPTY=0.01;   /* lot 104 : fonds vidé */
 const STYCOST={syst:0.85,fonda:1,flux:1.50};   /* lot 122 */
 const BUDK=0.90;   /* lot 123 : toutes les équipes 20 % moins chères */
-function budNav(){return Math.max(S.nav,S.aum0||S.nav)*((SIZE()&&SIZE().costM)||1)*(STYCOST[S.prof]||1)*BUDK}   /* lot 104 : salaires et loyer ne suivent pas l'encours à la baisse */
+function budNav(){return (S.aum0||0.1)*((SIZE()&&SIZE().costM)||1)*(STYCOST[S.prof]||1)*BUDK}   /* lot 176 : base fixe, l'encours de départ */   /* lot 104 : salaires et loyer ne suivent pas l'encours à la baisse */
 function ddMax(){return (S&&PROF().ddMax)||0.28}
 /* Profondeur de chaque carnet, en Md$ de notionnel : ce qu'un ordre peut peser avant que le
    marché ne le fasse payer. Au-delà, l'impact croît en racine carrée du rapport. */
@@ -4863,7 +4863,7 @@ function drawBuds(){
    <div class="lvef">${budEf(b.id,cur)}${b.id==='fo'?covTxt()+bonTxt():''}</div>
    <details style="margin-top:8px"><summary>À quoi sert ce budget · les ${b.lv.length} crans</summary><p class="note">${b.d}</p>${budExpl(b.id)}<ul class="efl">${b.lv.map((l,i)=>`<li><b>${l.who}</b> · ${l.bp} pb · ${budEf(b.id,i)}</li>`).join('')}</ul></details></div>`}).join('');
  const bp=budgetBp();
- document.getElementById('btot').textContent=`${bp.toFixed(0)} pb · ${mm(bp*1e-4*budNav())} · ${dec((bp*4/100),1)} % par an${S.qSevM>0?` · bonus versés aux partants ${mm(S.qSevM)}`:''}`;
+ document.getElementById('btot').textContent=`${bp.toFixed(0)} pb de 100 M$ · ${mm(bp*1e-4*budNav())} · ${dec(bp*1e-4*budNav()*4/Math.max(1e-9,S.nav)*100,1)} % de l'encours par an${S.qSevM>0?` · bonus versés aux partants ${mm(S.qSevM)}`:''}`;
  {const t=document.getElementById('btre');if(t){const v=mgrCash();t.textContent=mm(v);t.className=v>=0?'':'neg-g'}}
  app.querySelectorAll('.cntb[data-cnt]').forEach(cn=>cn.onclick=()=>{const p=+cn.dataset.cnt,cb=cntCost(p);S.cntBp=(S.cntQ===S.q?(S.cntBp||0):0)+cb;S.cntQ=S.q;S.gones=gonesL().filter(g=>g.p!==p);setOps();drawBuds();refreshStatus();toast(`Contre-offre acceptée : <b>${FOP[p].who}</b> revient (${mm(cb*1e-4*budNav())}).`)});
  app.querySelectorAll('.lvl.tm').forEach(x=>x.onclick=()=>{
@@ -6583,7 +6583,7 @@ function screenDebrief(o){
  const cums=[{nm:S.fundName,v:S.idx-1,me:1},...S.rivals.map(r=>({nm:r.nm,v:r.cum-1}))].sort((a,b)=>b.v-a.v);
  const warn=[];
  const detl=[];if(S.poachMsg)detl.push(S.poachMsg);   /* lot 55 : les flux clients par concurrent, en tête */
- if(!S.over&&mgrCash()<-1e-9)warn.push(`🧾 <b>Trésorerie négative : −${mm(-mgrCash())}.</b> À la clôture, la société de gestion déposera le bilan si elle reste dans le rouge. Les salaires sont facturés sur ${moneyB(budNav())} tant que l'encours reste sous son niveau de départ : alléger l'équipe coûte le versement du bonus aux partants.`);
+ if(!S.over&&mgrCash()<-1e-9)warn.push(`🧾 <b>Trésorerie négative : −${mm(-mgrCash())}.</b> À la clôture, la société de gestion déposera le bilan si elle reste dans le rouge. Les salaires sont fixes, quel que soit l'encours : alléger l'équipe coûte le versement du bonus aux partants.`);
  (S.qRivNew||[]).forEach(x=>warn.push(`🏚️ <b>${x.o.nm} ferme ses portes</b> : la société de gestion de ${x.o.boss} n'a plus de trésorerie. <b>${x.nv.nm}</b> prend sa place, lancé par ${x.nv.boss}, ancien bras droit de ${x.o.boss} ; il part de zéro et monte en charge.`));
  {const I=invs().filter(v=>v.ntc>0);if(I.length&&!S.over){const E=extNav(),t=I.reduce((a,v)=>a+v.ntc*v.w*E,0);
   warn.push(`📨 <b>Avis de rachat pour la prochaine clôture</b> : ${I.map(v=>`${invD(v.id).nm} ${mm(v.ntc*v.w*E)}`).join(' · ')}, soit ${dec(t/Math.max(1e-9,E)*100,1)} % de l'encours. Un avis tombe si le critère de l'investisseur repasse au vert d'ici là.`)}}
