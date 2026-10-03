@@ -572,6 +572,7 @@ body.tmron #app{padding-bottom:150px}
 .cisel{display:flex;gap:6px;margin-top:6px}
 .cardw{position:fixed;left:10px;right:10px;bottom:12px;z-index:60;padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.35;color:#fff;background:#3b300c;border:2px solid #E3B341;box-shadow:0 4px 18px rgba(0,0,0,.45)}
 .cardw.r{background:#3d1010;border-color:#E5483C}
+.evhead .evico{font-size:34px;width:46px;height:46px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid var(--gold);background:var(--panel2);margin-right:8px}
 .evhead .pic{font-size:26px;margin:0 6px 0 -4px;align-self:center}
 .sect .trd{margin-left:8px;font-size:12px;color:var(--gold);font-weight:600;letter-spacing:0}
 .cisel .lmp,.cisel .gtp{flex:1;padding:8px 4px;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-size:12.5px}
@@ -6316,7 +6317,14 @@ function avatar(name,kind,gen){
 const PGEN={'Ingrid':'f','Josiane':'f','Mireille':'f','Pare-Feu':'f','Solange':'f','Marie-Alpha':'f','Jean-Kevin':'m','Dwight':'m','Boris':'m','Tuco':'m','Winnie':'f','Gontran':'m','Report-à-Nouveau':'m','Tatillon':'m'};
 function personOf(who){const L=[...FOP,...BOP].filter(p=>p.ic&&p.who!=='Le loyer');for(const p of L){const keys=[p.full,p.who,...p.full.split(/[ «»]+/).filter(w=>w.length>3&&/^[A-ZÀ-Ý]/.test(w))];if(keys.some(k=>k&&who.includes(k)))return p}return null}
 function personGen(who){for(const k in PGEN)if(who.includes(k))return PGEN[k];return null}
-function evHead(who,kind){const P=personOf(who||'');return `<div class="evhead">${avatar(who,kind,personGen(who||''))}${P?`<span class="pic">${P.ic}</span>`:''}<div class="who">${who.toUpperCase()}</div></div>`}
+const EVICO=[[/banque centrale|BCE|Fed|Réserve fédérale|gouverneur|banque du Japon|BoE|banque d'Angleterre|BNS|monétaire/i,'🏦'],[/Trésor|ministère|gouvernement|Congrès|parlement|vote|élection|présiden|Bruxelles|Commission|sommet/i,'🏛️'],
+ [/OPEP|pétrol|baril|raffiner|gaz|énergie|oléoduc/i,'🛢️'],[/blé|récolte|café|cacao|agricole|Chicago|sécheresse|mousson/i,'🌾'],[/météo|ouragan|typhon|séisme|climat|inondation|tempête/i,'🌪️'],
+ [/guerre|armée|missile|militaire|frontière|sanction|embargo|attentat|coup d'État/i,'⚔️'],[/bourse|indice|cotation|marché|séance/i,'📈'],[/crypto|bitcoin|stablecoin|blockchain/i,'🪙'],
+ [/régulat|autorité|tribunal|juge|enquête|amende|SEC/i,'⚖️'],[/statisti|emploi|PIB|inflation|chômage|enquête PMI|données|INSEE|BLS/i,'📊'],[/agence de notation|notation|Moody|S&P Global|Fitch/i,'🏷️'],
+ [/banque|faillite|crédit|dette|obligat|spread/i,'💳'],[/presse|journal|dépêche|agence|Bloomberg|Reuters/i,'📰']];
+function evIco(who,t){const x=(who||'')+' '+(t||'');for(const [rx,ic] of EVICO)if(rx.test(x))return ic;return '📰'}
+function evHead(who,kind){const P=personOf(who||'');
+ if(kind==='news'&&!P&&!personGen(who||''))return `<div class="evhead"><span class="evico">${evIco(who,'')}</span><div class="who">${(who||'').toUpperCase()}</div></div>`;return `<div class="evhead">${avatar(who,kind,personGen(who||''))}${P?`<span class="pic">${P.ic}</span>`:''}<div class="who">${who.toUpperCase()}</div></div>`}
 /* ---------- bandeau d'actualité ---------- */
 function tickerItems(){
  const T=[];
