@@ -855,6 +855,12 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   0,7 M$ → 76 % ; 1,0 M$ → 83 % (facile 90, moyen 83, difficile 77). Ensemble reconstitué : 77 % · 45,6 M$ ; quant 83,
   fondamental 77, flux 71 ; facile 88, moyen 77, difficile 67.
 
+- **Confirmation du lot 174** (180 parties, graines neuves 10031–10050) : 74 % · 22,5 M$ ; facile 82, moyen 78, difficile 62 ;
+  quant 78, fondamental 72, flux 72. Cumul avec les graines 10001–10030 (240 parties de quant et de chaque style) : quant ≈ 81 %,
+  fondamental ≈ 75 %, flux ≈ 71 % ; facile ≈ 86 %, moyen ≈ 77 %, difficile ≈ 65 %. Équilibre gelé (lots 172–174). Hors
+  périmètre, laissés tels quels à la demande d'Antoine : Gilt +1 appétit, tracé de mi-parcours, couverture forcée des anecdotes,
+  express et saison remesurés.
+
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
 - Pertes immédiates jusqu'à 60 % sur certains événements extrêmes pour le bot (sécheresse, short squeeze) : héritage du
