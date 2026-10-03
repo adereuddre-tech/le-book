@@ -4884,13 +4884,14 @@ function screenPlay(){
  tuto(2,3);
  goldFlush(500);
  app.innerHTML=statusBar()+`<div class="fade">
+  ${objRows()}
   <div class="block"><div class="blockhead"><h2>Bruits de salle et rumeurs</h2><span class="hint">T${S.q+1} · ${S.rumors.length} sources</span></div>
    ${S.rupture?`<div class="flag" style="margin:0 0 10px"><span><b>Rupture factorielle sur ${INSTR[S.rupture.i].sym}</b> — sa sensibilité au facteur « ${FACT[S.rupture.k].nm.toLowerCase()} » passe de ${S.rupture.old*FSG[S.rupture.k]>=0?'+':'−'}${dec(Math.abs(S.rupture.old),2)} à ${S.rupture.nw*FSG[S.rupture.k]>=0?'+':'−'}${dec(Math.abs(S.rupture.nw),2)} : ${S.rupture.why}.</span></div>`:''}
    <div class="wire" id="news"></div>
    ${PROF().numeric?`<div class="wire" style="margin:10px 0 8px"><div class="kv" style="padding-bottom:6px"><span><b>Le book que le modèle construirait</b></span></div><div id="factest"></div></div>`:''}
    <details style="margin-top:8px"><summary>Sous le capot · sources, avis du desk, matrice</summary>
     <div class="kicker" style="margin:10px 0 4px">LIRE LES SOURCES</div>
-    <p class="note">Chaque source prétend un effet sur les quatre facteurs — croissance, inflation, dollar, appétit pour le risque — de ▼▼ à ▲▲. La <em>fiabilité</em> est la probabilité que la source dise vrai : faible ≈ ${Math.round((RELP.faible+RESREL[S.bud.res])*100)} %, moyenne ≈ ${Math.round((RELP.moyenne+RESREL[S.bud.res])*100)} %, forte ≈ ${Math.round((RELP.forte+RESREL[S.bud.res])*100)} % au niveau de recherche choisi. Une pré-annonce concerne un événement qui peut survenir en cours de trimestre — ou pas.</p>
+    <p class="note">Chaque source prétend un effet sur les quatre facteurs — croissance, inflation, liquidité, appétit pour le risque — de ▼▼ à ▲▲. La <em>fiabilité</em> est la probabilité que la source dise vrai : faible ≈ ${Math.round((RELP.faible+RESREL[S.bud.res])*100)} %, moyenne ≈ ${Math.round((RELP.moyenne+RESREL[S.bud.res])*100)} %, forte ≈ ${Math.round((RELP.forte+RESREL[S.bud.res])*100)} % au niveau de recherche choisi. Une pré-annonce concerne un événement qui peut survenir en cours de trimestre — ou pas.</p>
     <p class="note">Leur nombre et leur fiabilité dépendent du budget de recherche macro et de votre style. Les quatre tuiles de la barre du haut en donnent la lecture consolidée ; le rendement attendu de chaque marché en tient compte.</p>
     <div class="kicker" style="margin:12px 0 4px">CE QUE PENSE LE DESK</div>
     <p class="note">${STYLEW[S.prof].txt} Il agrège les impacts prétendus de vos sources, pondérés par leur fiabilité (2p−1) et par la famille de la source, puis traduit le tout en positions via la matrice factorielle, en y ajoutant les signaux de tendance, de portage et de valeur selon les poids de votre style. La lecture consolidée ci-dessus dit <em>ce que pensent les sources</em> ; ce book dit <em>ce qu'il faudrait acheter ou vendre</em> si vous suiviez votre desk. À vous de suivre, de nuancer ou d'ignorer.</p>
@@ -4911,7 +4912,7 @@ function screenPlay(){
   <div class="kv" id="purse"></div>
   <p class="note" id="pursenote" style="margin-top:-2px"></p>
   <button class="cta" id="send">Passer les ordres</button>
-  <p class="note" style="text-align:center">Le book est reconduit tel quel au trimestre suivant tant que vous ne le modifiez pas — seuls les changements coûtent, et c'est vous qui les payez.</p></div>`;
+  <p class="note" style="text-align:center">Le book repart à plat à chaque trimestre : chaque position se rachète, et c'est vous qui payez les ordres.</p></div>`;
  S.k0=[...S.k];S.phase='book';S.hotFactor=null;refreshStatus();save('screenPlay');
  renderNews();
  const col=v=>v>0.35?'var(--long)':v>0.15?'#8FC7B3':v<-0.35?'var(--short)':v<-0.15?'#D9909F':'var(--dimmer)';
@@ -5449,7 +5450,6 @@ function renderRisk(){
   <div class="kv"><span>Marge utilisée · seuil d'appel</span><b class="${MGU>MGC.thr?'neg-g':''}">${(MGU*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} %</b></div>
   ${limRows(S.k)}
   <div class="kv"><span>Perte à −2 σ trimestriels</span><b class="neg-g">${sgn(-sp)} · ${moneyB(sp*S.nav)}</b></div>
-  ${objRows()}
   ${S.xHint?`<div class="flag xh"><span>${xHintTxt(S.k)}</span></div>`:''}
   <div style="margin-top:8px"><div class="kv"><span><b>Événements extrêmes</b> · l'un d'eux frappe ce trimestre avec une probabilité de ${Math.round(stressP()*100)} %</span><b></b></div>${(()=>{const L=STRESS.map(sc=>({sc,v:stressLoss(S.k,sc)})).sort((a,b)=>a.v-b.v),row=o=>[o.sc.nm+(o.sc.ext?' <span class="dim-g">· extrême</span>':''),`<b class="${o.v>=0?'pos-g':'neg-g'}">${sgn(o.v,1)} · ${moneyB(Math.abs(o.v)*S.nav)}</b>`];return tbl(L.slice(0,6).map(row),['Les six pires pour votre book','Mouvement complet'])+`<details><summary>Les ${L.length-6} autres événements</summary>${tbl(L.slice(6).map(row))}</details>`})()}<p class="note" style="margin-top:4px">Au-delà de 20 % de risque annuel, les pertes sont amplifiées : un gros book se vend mal quand tout le monde réduit (×${dec(crowd(RS.total),1)} pour le vôtre). La moitié du choc tombe tout de suite ; la suite dépend de votre réaction, comme pour une dépêche. Le prime broker relève ensuite ses marges.</p></div>
   ${fb}
@@ -5591,7 +5591,7 @@ function screenExec(){
   <div class="block"><div class="blockhead"><h2>${orders.length?'Les traders passent vos ordres':'Aucun ordre à passer'}</h2><span class="hint">T${S.q+1} · exécution</span></div>
    ${orders.length?`<div class="kv"><span><b style="color:#fff">Ordres, à votre charge</b></span><b style="color:#fff;font-size:17px">−${mm(tot)}</b></div>
    <div class="kv"><span>Impact de marché, pour le fonds</span><b class="neg-g">${mm(Math.abs(execImpactAmt(tot,1,S.leakQ)))}</b></div>`
-   :`<p class="note" style="margin:0">Le book est reconduit tel quel : vous ne payez rien. Le desk en profite pour vous parler d'autre chose.</p>`}
+   :`<p class="note" style="margin:0">Aucune position ce trimestre : vous ne payez aucun ordre. Le desk en profite pour vous parler d'autre chose.</p>`}
    ${orders.length?`<details style="margin-top:10px"><summary>Détail des ordres et des coûts</summary>
     <p class="note" style="margin:8px 0 0">${orders.length} marché${orders.length>1?'s':''} à travailler · liquidité ${lqNm} (×${dec(S.liq,2)}) · taux au jour le jour ${dec((S.rate*100),1)} % · trésorerie après paiement ${mm(mgrCash())} · ordres ${(tot/S.nav*1e4).toFixed(0)} pb, impact ${(Math.abs(execImpactAmt(tot,1,S.leakQ))/S.nav*1e4).toFixed(0)} pb de l'encours.</p>
     <div class="wire" style="margin-top:8px">${orders.map(o=>`<div class="attr"><span class="an"><span class="num" style="color:${GRPC[INSTR[o.i].grp]}">${INSTR[o.i].sym}</span> <span class="recap" style="color:var(--dimmer)">${S.k0[o.i]>0?'+':''}${S.k0[o.i]} → ${S.k[o.i]>0?'+':''}${S.k[o.i]} · ${moneyB(o.t.bn)}</span></span><span class="av neg-g">${dec(o.t.bp,1)} pb · ${mm(o.t.cost)}</span></div>`).join('')}
