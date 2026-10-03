@@ -3618,6 +3618,10 @@ function markBonus(id){(S.bonus=S.bonus||{})[id]=S.q+1}
 /* lot 117 : une anecdote qui réduit le débauchage coûte au moins 15 pb (10 pb + 50 pb par unité de débauchage évitée) */
 [TRADER_EXEC,TRADER_MID,STAKE,INCIDENTS,BOARDEV].forEach(A=>A.forEach(ev=>(ev.ch||[]).forEach(c=>{const e=c.e||{};
  if(e.poach<0&&e.cash<0){const bp=Math.max(15,Math.round(10+50*Math.abs(e.poach)));e.cash=-bp/1e4;if(c.s)c.s=c.s.replace(/−\d+ pb/,'−'+bp+' pb')}})));
+/* lot 182 : anecdotes d'exécution — plus de gain pour vous, moins de risque pour le fonds */
+TRADER_EXEC.forEach(ev=>(ev.ch||[]).forEach(c=>{const e=c.e||{};
+ if(e.tcMult<1){const nt=Math.max(0.4,1-(1-e.tcMult)*1.5);e.tcMult=+nt.toFixed(2);if(c.s)c.s=c.s.replace(/Coûts −\d+ %/,'Coûts −'+Math.round((1-e.tcMult)*100)+' %')}
+ if(Array.isArray(e.risk)&&e.risk[1]<0){e.risk=[e.risk[0],e.risk[1]/5];if(c.s)c.s=c.s.replace(/−\d+,\d+ %/,'−'+(Math.abs(e.risk[1])*100).toFixed(2).replace('.',',')+' %')}}));
 /* ══════════ lot 103 : limites du comité ══════════ */
 const LIM={vol:0.30,red:1.5,stop:0.10,conc:0.70,negLp:-3,neg:{vol:1.25,stop:0.03,conc:0.15}};
 function limBO(){return Math.sqrt(BANDB[(S&&S.bud)?S.bud.risk:3]/BANDB[3])}

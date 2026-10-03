@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **179**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **182**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -876,6 +876,13 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   Trésorerie négative à la clôture → dépôt de bilan (inchangé).
 - **179** : bonus d'équipe minimal `bonBase()` = 10 × le coût sur 100 M$ du trader le plus haut embauché (Dwight 1 %, Ingrid
   2,5 %, Boris 4,5 %, Tuco 7 %, Winnie 10 %) ; crans = minimum + `BONOFF` (0 / 2,5 / 5 / 10 / 15 pts) ; effets par cran inchangés.
+
+- **180** : bonus d'équipe — cran par défaut au minimum (`MOT.i0` 0) ; `bonBase()` = 10 × le coût du cran de salle de marché
+  (Marie-Alpha 15 %, Onésime 25 %).
+- **181** : événements extrêmes moins exploitables — `STRESSK` 0,32 (0,40) ; issue imprévisible (p 0,35–0,65, poursuite
+  0,25–0,55, retournement 0,45–0,85) ; ordres de suivi ×2,5 ; pas d'ajustement gratuit (flux).
+- **182** : anecdotes d'exécution — baisse des coûts ×1,5 (plafond −60 %), risque pour le fonds ÷5, textes recalculés au
+  chargement. Campagne de contrôle à refaire (lots 176–182 non mesurés ensemble).
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
