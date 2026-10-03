@@ -4968,6 +4968,7 @@ const SIGW={t:0.12,c:0.10,v:0.10},CATM=3;
 /* le signal que chaque style lit le mieux */
 const STYLESIG={syst:'c',flux:'t',fonda:'v'},SIGNM={t:'Tendance',c:'Portage',v:'Valeur'};
 function sigNoise(key){const e=TCVQ[S.bud.exec]*(S.tcvPerm?0.33:1);return e*(S.prof==='syst'?0.6:(typeof STYLESIG!=='undefined'&&STYLESIG[S.prof]===key)?0.3:(typeof STYLESIG!=='undefined'?1.3:1))}
+function vixCarry(x,a){if(x.sym!=='VX'||!x.drift)return x.drift||0;return x.drift*Math.max(0,Math.min(1,1+a/1.5))}   /* lot 168 : a = appétit (σ) ; −1,5 σ ⇒ portage nul */
 function expRet(i){
  const x=INSTR[i],f=S.factEst||[0,0,0,0],e=S.tcvEst;
  let z=0;for(let k=0;k<K;k++)z+=x.b[k]*f[k];
@@ -4976,14 +4977,14 @@ function expRet(i){
   z+=(SIGW.t*e.t[i]+SIGW.c*e.c[i]+SIGW.v*cv*e.v[i])*(UNIV().edge||1);
   v+=SIGW.t**2*(sigNoise('t')**2+0.1)+SIGW.c**2*(sigNoise('c')**2+0.1)+SIGW.v**2*(sigNoise('v')**2+0.1)}
  v+=(x.idio||0)**2;
- return {m:x.sigQ*z+(x.drift||0)+(PREM[x.grp]||0),s:x.sigQ*Math.sqrt(v)};
+ return {m:x.sigQ*z+vixCarry(x,f[3]||0)+(PREM[x.grp]||0),s:x.sigQ*Math.sqrt(v)};
 }
 /* L'attendu d'un marché, morceau par morceau (mêmes termes que expRet). */
 function expParts(i){
  const x=INSTR[i],f=S.factEst||[0,0,0,0],e=S.tcvEst||{t:[],c:[],v:[]},ed=UNIV().edge||1;
  const cv=(S.prof==='fonda'&&S.cat&&S.cat.includes(i))?CATM:1;
  return {fac:x.b.map((b,k)=>({b,f:f[k],v:x.sigQ*b*f[k]})),
-  t:x.sigQ*SIGW.t*(e.t[i]||0)*ed,c:x.sigQ*SIGW.c*(e.c[i]||0)*ed,v:x.sigQ*SIGW.v*cv*(e.v[i]||0)*ed,cv,drift:x.drift||0};
+  t:x.sigQ*SIGW.t*(e.t[i]||0)*ed,c:x.sigQ*SIGW.c*(e.c[i]||0)*ed,v:x.sigQ*SIGW.v*cv*(e.v[i]||0)*ed,cv,drift:vixCarry(x,f[3]||0)};
 }
 /* Contribution de chaque marché au risque affiché, en points de volatilité (somme = risque affiché). */
 function riskPts(k){
