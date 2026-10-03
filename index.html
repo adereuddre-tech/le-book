@@ -2449,9 +2449,9 @@ const TAILEV=[
   o:["Démentir et tenir","Réduire de moitié pour prouver votre solvabilité","Faire garantir vos positions par une banque, contre commission"]}
 ];
 const BOARDEV=[
- {who:"Relations investisseurs",t:"La Couronne du Liquidistan veut entrer",
-  p:"Une souscription de 12 % de votre encours, disponible immédiatement, assortie d'une fenêtre de rachat trimestrielle sans préavis.",
-  ch:[{b:"Prendre l'argent",s:"La holding royale entre avec 12 % de l'encours : il grimpe, le passif devient plus fragile.",e:{royIn:0.12,lp:4,rc:-7,flighty:true}},
+ {who:"Relations investisseurs",t:"Vos investisseurs veulent remettre au pot",
+  p:"Ensemble, ils proposent 12 % d'encours en plus, tout de suite — en échange d'une fenêtre de rachat trimestrielle sans préavis.",
+  ch:[{b:"Prendre l'argent",s:"+12 % d'encours, au prorata de chacun ; le passif devient plus fragile.",e:{aum:0.12,lp:4,rc:-7,flighty:true}},
       {b:"Refuser, garder le lock-up",s:"Vous préservez la stabilité du passif au prix de la croissance.",e:{lp:-3,rc:6}}]},
  {who:"Prime broker",t:"Relèvement des appels de marge",
   p:"Votre courtier principal relève de 40 % les exigences sur les matières premières et les émergents.",
@@ -5525,8 +5525,8 @@ function screenComm(){
    ${o.ret===null?`<div class="commrow"><span>En fin de trimestre, quoi qu'il arrive</span><b class="dim-g">rien ne bouge</b></div>`
     :`<div class="commrow"><span>Vous promettez</span><b>au moins ${sgnp(o.ret,1)} · ${mm(o.ret*S.nav)}</b></div>
       <div class="commrow"><span>Tenu · manqué</span><b>confiance <i class="pos-g">+${o.win.lp}</i> · <i class="neg-g">−${-o.lose.lp}</i></b></div>
-      ${S.tcvEst&&(S.size||'mid')!=='mega'?(()=>{const b=expBook(S.k),z=b.s>0?(b.m-o.ret)/b.s:0,p=1/(1+Math.exp(-1.702*z));
-        return `<div class="commrow"><span>Chance de tenir, d'après votre attendu</span><b>${Math.round(p*100)} %</b></div>`})():''}`}
+      ${(()=>{const b=expBook(S.k),z=b.s>0?(b.m-o.ret)/b.s:0,p=1/(1+Math.exp(-1.702*z));
+        return `<div class="commrow"><span>Chance de tenir, d'après votre attendu</span><b>${Math.round(p*100)} %</b></div>`})()}`}
    </button></div>`).join('')}
   </div>`;
  app.querySelectorAll('.card[data-i]').forEach(b=>b.onclick=()=>{
