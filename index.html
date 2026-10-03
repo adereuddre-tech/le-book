@@ -3631,17 +3631,17 @@ function limRows(k){const w=weights(k),sp=pvol(w),cc=clsConc(w),lv=limVol(),lc=l
   <div class="kv"><span>Limite · stop trimestriel${ng==='stop'?' (négocié)':''}</span><b>−${dec(limStop()*100,1)} %</b></div>`}
 /* ══════════ lot 102/105 : investisseurs nommés — déclencheur = performance, montant = confiance ══════════ */
 const INVR=[
- {id:'cr',nm:'Caisse de retraite des Cheminots',ic:'🚂',w0:0.35,out:0.45,inn:0.05,crit:'Régularité',
+ {id:'cr',nm:'Caisse de retraite des Cheminots',ic:'🚂',w0:0.35,out:0.225,inn:0.025,crit:'Régularité',
   rule:"souscrit après 2 trimestres positifs d'affilée, dépose un avis de rachat après 2 trimestres négatifs d'affilée ; un seul trimestre positif suffit à le lui faire retirer."},
- {id:'fs',nm:'Fonds souverain de Nordhavn',ic:'🏛️',w0:0.30,out:0.35,inn:0.08,crit:'Engagement',
+ {id:'fs',nm:'Fonds souverain de Nordhavn',ic:'🏛️',w0:0.30,out:0.175,inn:0.04,crit:'Engagement',
   rule:"chaque trimestre : souscrit si l'objectif annoncé est tenu, rachète s'il est manqué."},
- {id:'fam',nm:'Family office Vandermeer',ic:'🎩',w0:0.15,out:0.55,inn:0.12,crit:'Absolue',
+ {id:'fam',nm:'Family office Vandermeer',ic:'🎩',w0:0.15,out:0.275,inn:0.06,crit:'Absolue',
   rule:"rachète après un trimestre sous −3 % ; souscrit après un trimestre au-dessus de +4 %."},
- {id:'ff',nm:'Fonds de fonds Albatros',ic:'🐦',w0:0.20,out:0.50,inn:0.10,crit:'Relative',
-  rule:"rachète si vous finissez 3 points sous la moyenne des concurrents ; souscrit 3 points au-dessus."}, {id:'roy',nm:'Couronne du Liquidistan (holding)',ic:'👑',w0:0,out:0.55,inn:0.05,crit:'Le plus sévère',royal:1,
-  rule:"la holding de la famille royale souscrit d'office chaque trimestre, de 10 à 25 % de sa ligne selon la confiance ; en plus, elle se règle sur le plus sévère des quatre autres : elle rachète dès que l'un d'eux rachète (au taux le plus fort, 55 %), et souscrit encore si tous souscrivent."}
+ {id:'ff',nm:'Fonds de fonds Albatros',ic:'🐦',w0:0.20,out:0.25,inn:0.05,crit:'Relative',
+  rule:"rachète si vous finissez 3 points sous la moyenne des concurrents ; souscrit 3 points au-dessus."}, {id:'roy',nm:'Couronne du Liquidistan (holding)',ic:'👑',w0:0,out:0.275,inn:0.025,crit:'Le plus sévère',royal:1,
+  rule:"la holding de la famille royale souscrit d'office chaque trimestre, de 5 à 12,5 % de sa ligne selon la confiance ; en plus, elle se règle sur le plus sévère des quatre autres : elle rachète dès que l'un d'eux rachète (au taux le plus fort, 27,5 %), et souscrit encore si tous souscrivent."}
 ];
-const INVP={royAuto:[0.10,0.25],abs:[-0.03,0.04],rel:0.03,back:0.05,backLp:60,gate:0.15,gateLp:-6};
+const INVP={royAuto:[0.05,0.125],abs:[-0.03,0.04],rel:0.03,back:0.025,backLp:60,gate:0.15,gateLp:-6};
 function invs(){if(!S.inv)S.inv=INVR.map(d=>({id:d.id,w:d.w0,ntc:0}));if(!S.inv.some(v=>v.id==='roy'))S.inv.push({id:'roy',w:0,ntc:0});
  const o=INVR.map(d=>d.id);S.inv.sort((a,b)=>o.indexOf(a.id)-o.indexOf(b.id));return S.inv}
 function invD(id){return INVR.find(d=>d.id===id)}
