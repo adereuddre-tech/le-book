@@ -3544,6 +3544,8 @@ function factorExpo(w){return FACT.map((f,k)=>{let e=0;for(let i=0;i<N;i++)e+=w[
    d'ordres type, par trimestre, en fraction de leur encours. */
 const RIVBP=[15,18,31,53,119,233,419];   /* lot 92 : ancien barème des concurrents, figé */
 function rivalCostQ(rv){const L=(rv&&rv.bl)||3;return (RIVBP[L]+16)*1e-4}
+/* lot 193 : équipe figée sur l'encours de départ, facture d'ordres (16 pb) sur l'encours du moment */
+function rivalCostAmt(rv,A){const L=(rv&&rv.bl)||3;return RIVBP[L]*1e-4*(S.aum0||A)+16e-4*A}
 /* lot 79 : surcroît de rendement trimestriel d'un concurrent selon son cran de budget (les trois postes au même cran) */
 const RIVBRET=[0,0,0,0,0.008,0.014,0.018];
 function rivBudget(rv){
@@ -3551,7 +3553,7 @@ function rivBudget(rv){
  const A=rv.mAum||S.aum0,cash=rv.mgr||0,c3=rivalCostQ({bl:3});
  /* l'argent pèse moins quand la caisse est pleine : λ = 1 à 3 % de l'encours en trésorerie */
  const lam=Math.max(0.5,Math.min(1.5,0.03*A/Math.max(1e-9,cash)));let best=0;
- for(let L=4;L<=6;L++){const dc=rivalCostQ({bl:L})-c3;
+ for(let L=4;L<=6;L++){const dc=(rivalCostQ({bl:L})-c3)*(S.aum0||A)/A;   /* lot 193 : surcoût d'équipe fixe */
   if(cash<2*dc*A)break;                      /* deux trimestres de surcoût d'avance, sinon on ne monte pas */
   const u=RIVBRET[L]-lam*dc;if(u>best){best=u;rv.bl=L;rv.bRet=RIVBRET[L]}}
 }
@@ -3563,7 +3565,7 @@ function rivalMgrQuarter(rv,r){
   /* sauvegarde d'avant le lot 42 : on rejoue les trimestres déjà joués (le dernier de hist est r) */
   const h=(rv.hist||[]).slice(0,-1);rv.mgr=rv.mgr0||0;h.forEach(g=>rivalMgrQuarter(rv,g));
  }
- const mg=v.mgmt*rv.mAum,cost=rivalCostQ(rv)*rv.mAum,ci=COINV*Math.max(0,rv.mgr||0)*r;   /* lot 81 : leur co-investissement (10 %) */
+ const mg=v.mgmt*rv.mAum,cost=rivalCostAmt(rv,rv.mAum),ci=COINV*Math.max(0,rv.mgr||0)*r;   /* lot 81 : leur co-investissement (10 %) */
  rv.mAum*=(1+r);
  {const ex=Math.max(0,rivV(rv)-RISKLP.fl),o=1-Math.min(0.5,(RISKLP.fk*ex+RISKQ.fl*ex*ex)*((SIZE()&&SIZE().flowMult)||1));rv.mAum*=o;rv.mHwm*=o}   /* lot 80 : leurs clients aussi */
  const perf=perfFee()*Math.max(0,rv.mAum-rv.mHwm);rv.mHwm=Math.max(rv.mHwm,rv.mAum);

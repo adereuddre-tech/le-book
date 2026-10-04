@@ -221,4 +221,5 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **190** : budget en dollars (coût supplémentaire, coût d'équipe, trois chiffres significatifs, départs justes).
 - **191** : trésorerie juste sur l'écran d'ouverture (`S.phase='open'`).
 - **192** : compteur du trimestre juste sur l'écran de résultat.
+- **193** : concurrents à coûts d'équipe fixes (masse salariale sur l'encours de départ, facture d'ordres 16 pb sur l'encours du moment ; `rivalCostAmt`).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
