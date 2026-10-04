@@ -5423,8 +5423,8 @@ function updateRow(i){
  for(let j=0;j<N;j++)rowInfo(j);
 }
 function goalK(){if(S.goalK==null){const f=S.f||[0,0,0,0],I=Math.sqrt(f.reduce((a,x)=>a+x*x,0)/4);S.goalK=Math.max(0.80,Math.min(1.25,0.70+0.45*I))}return S.goalK}   /* lot 145 */
-function objRows(){const g=VOL().goal/4,c=S.comm&&S.comm.ret!=null?S.comm:null;
- return `<div class="flag" style="border-left:3px solid var(--gold)"><span>🎯 <b>Objectif du trimestre</b> : ${sgnp(c?c.ret:g,1)} net${c?` (annonce « ${c.nm.toLowerCase()} »)`:` (annonce standard)`}. Le fonds souverain juge sur cet objectif chaque trimestre, la caisse de retraite sur deux trimestres d'affilée, le family office sur la performance absolue, le fonds de fonds sur la moyenne des concurrents.${S.goal?`<br>Objectif de place : <b>${S.goal.nm}</b> — ${S.goal.d}`:''}</span></div>`}
+function objRows(){const g=0.03*goalK(),c=S.comm&&S.comm.ret!=null?S.comm:null;
+ return `<div class="flag" style="border-left:3px solid var(--gold)"><span>🎯 <b>Objectif du trimestre</b> : ${sgnp(c?c.ret:g,1)} net${c?` (annonce « ${c.nm.toLowerCase()} »)`:` (annonce standard${goalK()>1.005?', relevé : marché agité':goalK()<0.995?', abaissé : marché calme':''})`}. Le fonds souverain juge sur cet objectif chaque trimestre, la caisse de retraite sur deux trimestres d'affilée, le family office sur la performance absolue, le fonds de fonds sur la moyenne des concurrents.${S.goal?`<br>Objectif de place : <b>${S.goal.nm}</b> — ${S.goal.d}`:''}</span></div>`}
 function renderRisk(){
  const w=weights(S.k),sp=pvol(w),vd=varDecomp(w),rc=riskContrib(w);
 
