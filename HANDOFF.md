@@ -1,7 +1,7 @@
-# Le Book — note de reprise (état au lot 197)
+# Le Book — note de reprise (état au lot 198)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 197.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 198.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -153,6 +153,7 @@ estimé (`vixCarry`). Tableau des concurrents : lignes « dépêches et chocs »
 pour votre fonds.
 
 ## 4. Invariants à ne pas casser
+0. **Convention des facteurs** : tout ce qui est *affiché* (exposition d'un marché, lecture, tuiles) passe par `FSG` (liquidité = −dollar) ; les calculs internes (`expRet`, `S.factEst`, `x.b`) restent en convention brute. Un affichage qui lit `x.b` ou `S.factEst` sans `FSG` est un bug.
 1. `setUniverse` avant toute restauration de `b` dans `loadGame` ; un échec de reprise n'appelle pas `clearSave()`.
 2. Effets citant un symbole : `IDX[sym]` gardé. Ne jamais indexer un marché par position (`d.ord` fait partie de la sauvegarde).
 3. Dépêches : montants et jauges affichés = appliqués (`evPlans` / `resolveEvent`, sonde `bad`).
@@ -190,11 +191,11 @@ des investisseurs, incidents au-delà de leur niveau actuel, coût d'équipe du 
 
 1. **Campagne de contrôle** des lots 175–197 (plan de référence, 270 parties, comparée au lot 174), puis retouches. Les
    lots 193 (coûts fixes des concurrents) et 197 (8e cran) touchent aussi l'équilibre.
-2. **Libellés des tuiles de facteurs** (proposé, pas demandé) : « lecture » (flèches) et « votre exposition » (chiffre).
+2. **Libellés des tuiles de facteurs** (proposé, pas demandé) : « lecture » (flèches) et « votre exposition » (chiffre) ; sur une tuile, flèches et chiffre sont deux grandeurs différentes (lecture du desk / exposition de votre book), ce qui peut sembler contradictoire (▲▲▲ avec −2).
 
 Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de débriefing.
 
-## 7. Journal des lots 175–197
+## 7. Journal des lots 175–198
 - **175** : flux, équipe ×1,50.
 - **176** : coûts d'équipe figés à leur coût pour 100 M$.
 - **177** : rachats et souscriptions des investisseurs ÷2.
@@ -218,4 +219,5 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **195** : objectifs « concurrent nommé » (Citadelle, Pont-Levis, Médaillon) rattachés au concurrent du même style (`rivSty`, getters `nm`/`d`, `id` stable).
 - **196** : concurrent fermé affiché, classé dernier, « clôturé » en rouge, exclu des rangs ; remplacé au début du trimestre suivant (`planQuarter`, `S.qRivIn`, annonce à l'ouverture).
 - **197** : Onésime 8e cran normal (barèmes prolongés, `syncBud` jusqu'à 7, `syncBud()` au chargement), coup de pouce retiré (`ecoBoost` inerte), « Atterrissage-en-Douceur » retiré du nom.
+- **198** : facteurs cohérents partout. Fenêtre d'un marché en convention d'affichage (`FSG` sur exposition et lecture : la liquidité était en dollar brut, d'où « +0,35 » contre « Liquid. −− » sur la ligne) ; flèches des tuiles, tableau « Lecture du desk » et détail de la fenêtre lisent tous `factRead()` (moyenne ×2,2 + intuition ; une flèche = 0,45).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).

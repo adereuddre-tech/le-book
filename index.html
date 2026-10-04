@@ -3152,12 +3152,15 @@ function recoBook(){
   a*=r;k=raw.map((z,i)=>clampK(i,Math.round(z*a)));}
  return {k,W,sc,mx,vol:pvol(weights(k))};
 }
-function rumorEst(){
- const b=S.rumors.filter(r=>r.bought);
+/* lot 198 : la lecture du desk, convention brute (liquidité = dollar) ; une seule source pour tout l'affichage */
+function factRead(){
+ const b=(S.rumors||[]).filter(r=>r.bought);
  const est=[0,0,0,0];b.forEach(r=>{const p=r.p||RELP[r.rel];r.v.forEach((z,k)=>est[k]+=(2*p-1)*z)});
- S.factEst=est.map(z=>z/Math.max(1,b.length)*2.2);
- if(S.hunch&&HUNCHW)S.factEst[S.hunch.k]+=(S.hunch.up?1:-1)*HUNCHW;   /* lot 77 */
+ const f=est.map(z=>z/Math.max(1,b.length)*2.2);
+ if(S.hunch&&HUNCHW)f[S.hunch.k]+=(S.hunch.up?1:-1)*HUNCHW;   /* lot 77 */
+ return f;
 }
+function rumorEst(){S.factEst=factRead()}
 var HUNCHW=1.4;   /* poids de l'intuition du flux dans l'attendu : ≈ (2×0,85−1) × |f| typique ×1,4 */
 function renderNews(){
  const el=document.getElementById('news');if(!el)return;
@@ -3169,9 +3172,9 @@ function renderNews(){
  const rs=document.getElementById('rsum');
  const b=S.rumors.filter(r=>r.bought);
  if(rs)rs.innerHTML=b.length?`<table class="qt"><thead><tr><th>Facteur</th><th>Lecture du desk</th></tr></thead><tbody>`+FACT.map((f,k)=>{
-   let wsum=0;b.forEach(r=>{const z=r.v[k],p=r.p||RELP[r.rel];wsum+=(2*p-1)*z/2});
+   const wsum=factRead()[k]*FSG[k];   /* lot 198 */
    return `<tr><td style="color:var(--txt)">${f.id} · ${f.nm}</td><td style="font-weight:500;color:${readCol(wsum)}"><span style="margin-right:6px">${readTri(k)}</span>${readLab(wsum)}</td></tr>`}).join('')+`</tbody></table>
-   <details style="margin-top:6px"><summary>Détails</summary><p class="note">Chaque source achetée est pondérée par sa fiabilité (une source forte pèse environ trois fois une source faible) et ses impacts prétendus sont additionnés. Score net par facteur : ${FACT.map((f,k)=>{let z=0;b.forEach(r=>{const p=r.p||RELP[r.rel];z+=(2*p-1)*r.v[k]/2});return `${f.id} ${z>=0?'+':'−'}${dec(Math.abs(z),1)}`}).join(' · ')}.</p></details>`
+   <details style="margin-top:6px"><summary>Détails</summary><p class="note">Chaque source achetée est pondérée par sa fiabilité (une source forte pèse environ trois fois une source faible) et leurs impacts prétendus sont moyennés. Lecture par facteur, la même que dans le détail d'un marché : ${FACT.map((f,k)=>{const z=factRead()[k]*FSG[k];return `${f.id} ${z>=0?'+':'−'}${dec(Math.abs(z),2)}`}).join(' · ')}. Une flèche = 0,45.</p></details>`
   :`<p class="note" style="margin:0">Aucune source achetée : le desk n'a rien à consolider.</p>`;
  if(rs&&S.xHint)rs.innerHTML+=`<p class="note" style="margin:8px 0 0">${xHintTxt()}</p>`;   /* lot 106 */
  if(rs&&S.hunch)rs.innerHTML+=`<p class="note" style="margin:8px 0 0">🫀 <b>Votre intuition</b> : <b>${FACT[S.hunch.k].nm.toLowerCase()}</b> va surprendre ${(S.hunch.up===(FSG[S.hunch.k]>0))?'à la hausse':'à la baisse'} ce trimestre.</p>`;
@@ -3532,8 +3535,8 @@ function renderPicks(){
 }
 
 function readScore(k){
- const b=(S.rumors||[]).filter(r=>r.bought);if(!b.length)return null;
- let z=0;b.forEach(r=>{const p=r.p||RELP[r.rel];z+=(2*p-1)*r.v[k]/2});return z*FSG[k];
+ if(!(S.rumors||[]).some(r=>r.bought)&&!S.hunch)return null;
+ return factRead()[k]*FSG[k];   /* lot 198 : convention d'affichage, comme la fenêtre du marché */
 }
 function readTri(k){
  const z=readScore(k);
@@ -5361,7 +5364,7 @@ function showMarket(i){
  const L=(z)=>`<span class="${z>0?'pos-g':z<0?'neg-g':'dim-g'}">${chip(z)}</span>`;
  openModal(`${MFLAG[x.sym]||''} ${x.sym} — ${x.nm}`,`${dens}
   <p class="note" style="margin-top:0">Attendu du trimestre <em class="${cls(XR.m)}">${sgn(XR.m,1)}</em>, de ${sgn(XR.m-2*XR.s,1)} à ${sgn(XR.m+2*XR.s,1)} à 95 %. Trait doré : l'attendu ; pointillé : le zéro.</p>
-  ${tbl([...XP.fac.map((o,k)=>[FACT[k].nm,`${o.b>=0?'+':'−'}${dec(Math.abs(o.b),2)} × ${o.f>=0?'+':'−'}${dec(Math.abs(o.f),2)}`,pc(o.v)]),
+  ${tbl([...XP.fac.map((o,k)=>{const g=FSG[k],eb=o.b*g,ef=o.f*g;return [FACT[k].nm,`${eb>=0?'+':'−'}${dec(Math.abs(eb),2)} × ${ef>=0?'+':'−'}${dec(Math.abs(ef),2)}`,pc(o.v)]}),
     ['Tendance',L(e.t[i]),pc(XP.t)],['Portage',L(e.c[i]),pc(XP.c)],[`Valeur${XP.cv>1?' ⚡':''}`,L(e.v[i]),pc(XP.v)],
     ...(Math.abs(XP.drift)>1e-6?[['Dérive propre','',pc(XP.drift)]]:[]),
     ['<b>Attendu</b>','',`<b>${pc(XR.m)}</b>`]],['','Exposition × lecture','Effet'])}
