@@ -1515,9 +1515,9 @@ TRADER_EXEC.push(
  {who:"Boris Rasoumovsky · devises",t:"« L'aussie ne se traite pas, il se négocie. Je connais un mineur »",need:['AUD'],p:"Un producteur australien couvre ses ventes. Boris veut être sa contrepartie.",
   ch:[{b:"Traiter avec le mineur",s:"Coûts −45 % sur l'AUD.",e:{tcMultOn:['AUD'],tcMult:0.55}},{b:"Marché ordinaire",s:"Plein tarif.",e:{}},{b:"Traiter avec le mineur et lui vendre une option en prime",s:"Coûts −60 %, comité −4, 30 % de −0,4 % si l'option est exercée.",e:{tcMultOn:['AUD'],tcMult:0.4,rc:-4,risk:[0.3,-0.004],riskMsg:"L'option a été exercée contre vous"}}]},
  {who:"Boris Rasoumovsky · exécution quantitative",t:"« Le modèle prédit un pic de liquidité à 15h50. Tout à ce moment-là »",p:"L'algorithme de Boris voit un créneau. Il voit souvent des créneaux.",
-  ch:[{b:"Faire confiance au modèle",s:"Coûts −20 % sur tout. 20 % de risque que le créneau soit un piège : −0,3 %.",e:{tcMult:0.8,risk:[0.2,-0.003],riskMsg:"Le créneau était un piège"}},{b:"Exécution répartie",s:"Plein tarif.",e:{}},{b:"Tester le modèle sur la moitié des ordres",s:"Coûts −10 %, risque divisé par deux.",e:{tcMult:0.9,risk:[0.1,-0.0015],riskMsg:"La moitié testée est tombée dans le piège"}}]},
+  ch:[{b:"Faire confiance au modèle",s:"Coûts −20 % sur tout. 20 % de risque que le créneau soit un piège : −0,3 %.",e:{tcMult:0.8,risk:[0.2,-0.003],riskMsg:"Le créneau était un piège"}},{b:"Exécution répartie",s:"Plein tarif.",e:{}},{b:"Tester le modèle sur la moitié des ordres",s:"Coûts −10 %. 10 % de risque : −0,15 %.",e:{tcMult:0.9,risk:[0.1,-0.0015],riskMsg:"La moitié testée est tombée dans le piège"}}]},
  {who:"Boris Rasoumovsky · exécution quantitative",t:"« Les émergents se traitent via des ETF américains, c'est plus liquide »",need:['MXEF'],p:"Répliquer les émergents avec un ETF coté à New York : liquide, mais avec un écart de suivi.",
-  ch:[{b:"Passer par l'ETF",s:"Coûts −35 % sur MXEF, 30 % de risque d'écart de suivi : −0,2 %.",e:{tcMultOn:['MXEF'],tcMult:0.65,risk:[0.3,-0.002],riskMsg:"L'ETF a décroché de son indice"}},{b:"Futures classiques",s:"Plein tarif.",e:{}},{b:"Moitié ETF, moitié futures",s:"Coûts −18 %, risque réduit.",e:{tcMultOn:['MXEF'],tcMult:0.82,risk:[0.15,-0.001],riskMsg:"Petit écart de suivi"}}]},
+  ch:[{b:"Passer par l'ETF",s:"Coûts −35 % sur MXEF, 30 % de risque d'écart de suivi : −0,2 %.",e:{tcMultOn:['MXEF'],tcMult:0.65,risk:[0.3,-0.002],riskMsg:"L'ETF a décroché de son indice"}},{b:"Futures classiques",s:"Plein tarif.",e:{}},{b:"Moitié ETF, moitié futures",s:"Coûts −18 %. 15 % de risque d'écart de suivi : −0,1 %.",e:{tcMultOn:['MXEF'],tcMult:0.82,risk:[0.15,-0.001],riskMsg:"Petit écart de suivi"}}]},
  {who:"Boris Rasoumovsky · exécution quantitative",t:"« Le blé, ça ne s'algorithmise pas. Je passe la main à un humain ? »",need:['ZW'],p:"Boris admet une limite. C'est rare.",
   ch:[{b:"Confier le blé à un courtier de Chicago",s:"Coûts −25 % sur le blé, comité −1.",e:{tcMultOn:['ZW'],tcMult:0.75,rc:-1}},{b:"Laisser l'algo essayer",s:"Coûts +30 % sur le blé.",e:{tcMultOn:['ZW'],tcMult:1.3}},{b:"Ne traiter que la moitié de l'ordre",s:"Coûts −40 %, mais la position visée n'est atteinte qu'à moitié.",e:{tcMultOn:['ZW'],tcMult:0.6,halfOn:['ZW']}}]},
  {who:"Jean-Kevin Lévêque-Charbonnier · stagiaire",t:"« Vous vouliez 2 unités ou 2 milliards ? »",p:"Le stagiaire a un doute. Il aurait dû l'avoir avant d'envoyer.",
@@ -1525,7 +1525,7 @@ TRADER_EXEC.push(
  {who:"Jean-Kevin Lévêque-Charbonnier · stagiaire",t:"« J'ai trouvé une contrepartie sur un forum. Sérieux, elle est bien »",p:"Un pool de liquidité inconnu. Les prix sont excellents.",
   ch:[{b:"Essayer avec un petit ordre",s:"Coûts −10 %, comité −2.",e:{tcMult:0.9,rc:-2}},{b:"Refuser",s:"Plein tarif, sommeil garanti.",e:{}},{b:"Tout y passer",s:"Coûts −50 %, comité −10, 25 % de risque de contrepartie défaillante : −0,8 %.",e:{tcMult:0.5,rc:-10,risk:[0.25,-0.008],riskMsg:"La contrepartie a disparu avec le collatéral"}}]},
  {who:"Wing-Fat « Winnie » Leung · Asie",t:"« Les indices actions asiatiques ouvrent en trombe. On suit ou on attend Londres ? »",need:['ESTX','MXEF'],p:"Tokyo et Hong Kong sont en hausse de 2 %. Winnie sent que ça va continuer.",
-  ch:[{b:"Exécuter en Asie tout de suite",s:"Coûts +10 %, 50 % de ±0,3 %.",e:{tcMultOn:['ESTX','MXEF'],tcMult:1.1,risk:[0.5,0.003],riskMsg:"L'Asie a tiré l'Europe",safeTxt:"L'Europe a effacé le rebond asiatique : −0,30 %.",safePnl:-0.003}},{b:"Attendre Londres",s:"Plein tarif.",e:{}},{b:"Moitié maintenant, moitié à Londres",s:"Coûts +5 %, risque divisé par deux.",e:{tcMultOn:['ESTX','MXEF'],tcMult:1.05,risk:[0.5,0.0015],riskMsg:"La moitié asiatique a payé",safeTxt:"La moitié asiatique a coûté −0,15 %.",safePnl:-0.0015}}]},
+  ch:[{b:"Exécuter en Asie tout de suite",s:"Coûts +10 %, 50 % de ±0,3 %.",e:{tcMultOn:['ESTX','MXEF'],tcMult:1.1,risk:[0.5,0.003],riskMsg:"L'Asie a tiré l'Europe",safeTxt:"L'Europe a effacé le rebond asiatique : −0,30 %.",safePnl:-0.003}},{b:"Attendre Londres",s:"Plein tarif.",e:{}},{b:"Moitié maintenant, moitié à Londres",s:"Coûts +5 %. 50 % de ±0,15 %.",e:{tcMultOn:['ESTX','MXEF'],tcMult:1.05,risk:[0.5,0.0015],riskMsg:"La moitié asiatique a payé",safeTxt:"La moitié asiatique a coûté −0,15 %.",safePnl:-0.0015}}]},
  {who:"Wing-Fat « Winnie » Leung · Asie",t:"« Mon contact à la bourse de Hong Kong dit que les stops sont à 5 % en dessous »",need:['MXEF'],p:"Une information sur le carnet d'ordres. Précieuse, et pas très propre.",
   ch:[{b:"Utiliser l'information",s:"Coûts −30 % sur MXEF, comité −6.",e:{tcMultOn:['MXEF'],tcMult:0.7,rc:-6}},{b:"L'ignorer",s:"Plein tarif, conscience tranquille.",e:{}},{b:"La signaler à la conformité",s:"Plein tarif, comité +4, Winnie furieuse (débauchage +20 %).",e:{rc:4,poach:0.2}}]},
  {who:"Mireille Cauchemar · contrôle des risques",t:"« Vous concentrez 40 % du risque sur un seul facteur. Je veux une note écrite »",p:"Le rapport pré-trade a sonné. Mireille veut une justification signée.",
@@ -2082,7 +2082,7 @@ const TRADER_MID=[
       {b:"Corriger discrètement",s:"Personne ne saura. Sauf si quelqu'un compare les deux versions un jour : 20 % de risque, −0,30 % et comité −8.",e:{risk:[0.2,-0.003],riskRc:-8,riskMsg:"Un investisseur a comparé les deux rapports"}}]},
  {who:"Boris Rasoumovsky · devises",t:"« Je parie ma prime que le yen se retourne. Donnez-moi une unité »",
   p:"Boris joue rarement, et quand il joue, il joue son argent avec le vôtre.",
-  ch:[{b:"Une unité contre la tendance sur le yen",s:"JPY en sens inverse de sa dernière performance, 1 unité. 50/50, ±0,54 % de l'encours.",e:{kContra:'JPY',gamble2:[0.5,0.0054,-0.0054]}},
+  ch:[{b:"Une unité contre la tendance sur le yen",s:"JPY en sens inverse de sa dernière performance, 1 unité. 50 % de chances de +0,54 % de l'encours, sinon −0,54 %.",e:{kContra:'JPY',gamble2:[0.5,0.0054,-0.0054]}},
       {b:"Refuser",s:"« Alors je garde ma prime. » Il la gardera.",e:{}}]},
  {who:"Boris Rasoumovsky · exécution quantitative",t:"« Le moteur d'exécution a un comportement bizarre. Je l'arrête trois jours ? »",
   p:"Un bug potentiel. Sans le moteur, tout s'exécute à la main, plus cher. Avec, peut-être une erreur.",
@@ -2329,7 +2329,7 @@ MACROEV.push(
 );
 const STAKE=[
  {who:"Comité des risques · Mireille Cauchemar",t:"« Réduisez le risque de 30 % avant la clôture. Pas demain, ce soir »",p:"La vol de marché a monté, le comité s'est réuni sans vous. La décision est prise, il reste la manière.",
-  ch:[{b:"Obéir : couper les trois plus gros contributeurs",s:"Une unité de moins sur chacun, coûts de transaction dans un marché nerveux. Comité +4.",e:{cutTopN:3,rc:4}},{b:"Négocier : couper le plus gros seulement",s:"Comité −3, investisseurs −1.",e:{cutTopN:1,rc:-3,lp:-1}},{b:"Refuser et en appeler au conseil",s:"Comité −10, investisseurs −3. Le conseil vous donne raison une fois sur trois.",e:{rc:-10,lp:-3,risk:[0.33,0],riskMsg:"Le conseil vous a donné raison",riskRc:6,safeTxt:"Le conseil a confirmé le comité."}}]},
+  ch:[{b:"Obéir : couper les trois plus gros contributeurs",s:"Une unité de moins sur chacun, coûts de transaction dans un marché nerveux. Comité +4.",e:{cutTopN:3,rc:4}},{b:"Négocier : couper le plus gros seulement",s:"Comité −3, investisseurs −1.",e:{cutTopN:1,rc:-3,lp:-1}},{b:"Refuser et en appeler au conseil",s:"Comité −10, investisseurs −3. 33 % de chances que le conseil vous donne raison : comité +6.",e:{rc:-10,lp:-3,risk:[0.33,0],riskMsg:"Le conseil vous a donné raison",riskRc:6,safeTxt:"Le conseil a confirmé le comité."}}]},
  {who:"Comité des risques · Mireille Cauchemar",t:"« Votre exposition au dollar dépasse la limite factorielle »",cond:()=>Math.abs(factorExpo(weights(S.k))[2])>0.05,p:"La limite a été votée il y a deux ans. Personne ne s'en souvenait. Mireille, si.",
   ch:[{b:"Ramener l'exposition dollar de moitié",s:"Positions réduites sur les marchés qui portent le dollar. Comité +3.",e:{cutFactor:[2,0.5],rc:3}},{b:"Demander une dérogation trimestrielle",s:"Comité −5.",e:{rc:-5}},{b:"Contester la mesure de l'exposition",s:"Comité −8. Vous avez peut-être raison ; personne ne veut le vérifier.",e:{rc:-8}}]},
  {who:"Comité des risques",t:"« Le risque dort. Montez-le ou expliquez pourquoi vous facturez »",cond:()=>pvol(weights(S.k))<0.14,p:"Le comité, cette fois, vous reproche la prudence. Les investisseurs sont copiés.",
@@ -4308,6 +4308,15 @@ function bkD(k1,cost,hid){
  return `<span class="bkd">${l1?`<span>${l1}</span>`:''}${ch.length?`<span>rentabilité ${pc2(dp)}</span><span>risque <b class="${dr>0.05?'neg-g':dr<-0.05?'pos-g':'dim-g'}">${dr>=0?'+':'−'}${dec(Math.abs(dr),1)} pt</b></span>`:''}${hid?`<span><i>positions supplémentaires tirées au moment de l'exécution</i></span>`:''}</span>`;
 }
 function bkPrev(e,mode){if(!e)return '';const p=kPrev(e,mode);return p?bkD(p.k,p.cost,p.hid):''}
+/* lot 200 : probabilité de gagner un choix à issue aléatoire (null si rien n'est tiré au sort) */
+function winP(e){if(!e)return null;let p=null;const mul=q=>{p=(p===null?1:p)*q};
+ if(e.gamble2)mul(e.gamble2[1]>=0?e.gamble2[0]:1-e.gamble2[0]);
+ if(e.gambleLp)mul(e.gambleLp[1]>=0?e.gambleLp[0]:1-e.gambleLp[0]);
+ if(e.gamble)mul(1-e.gamble[0]);
+ if(e.risk){const [q,v]=e.risk,good=v>0||(v===0&&((e.riskRc||0)+(e.riskLp||0))>0);mul(good?q:1-q)}
+ return p}
+function winChip(e){const p=winP(e);if(p===null)return '';const v=Math.round(p*100);
+ return `<span class="stks"><span class="stk">chances de gagner <em class="${v>=50?'pos-g':'neg-g'}">${v} %</em></span></span>`}
 function fxTxt(s,x){
  if(typeof s!=='string'||!/(omité|nvestisseurs)(\s+des risques)?\s*[+−-]\s*\d/.test(s))return s;
  x=x||{};
@@ -5614,7 +5623,7 @@ function screenExec(){
   </div>
   ${ev?`<div class="evwrap" style="padding-top:14px"><div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p></div>
    ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=false;
-     return `<button class="choice" data-i="${i}"${ko?' disabled title="Trésorerie insuffisante"':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${(()=>{const x=c.e||{},q=execGz(x.tcMult,x.leakQ),v=cf(q.lp,q.rc);return v?` Manière d'exécuter : confiance ${v>0?'+':'−'}${Math.abs(v)}.`:''})()}${stake(c)}${bkPrev(c.e,'exec')}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`
+     return `<button class="choice" data-i="${i}"${ko?' disabled title="Trésorerie insuffisante"':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${(()=>{const x=c.e||{},q=execGz(x.tcMult,x.leakQ),v=cf(q.lp,q.rc);return v?` Manière d'exécuter : confiance ${v>0?'+':'−'}${Math.abs(v)}.`:''})()}${stake(c)}${winChip(c.e)}${bkPrev(c.e,'exec')}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`
    :`<button class="cta" id="go2">Lancer le trimestre</button>`}
  </div>`;
  /* sans anecdote, le fonds paie quand même l'impact d'une exécution standard */
@@ -5880,7 +5889,7 @@ function screenTraderEvent(ev,next){
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p>${evTimerHTML}</div>
   ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=false;
-    return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${bkPrev(c.e,'mid')}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
+    return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${winChip(c.e)}${bkPrev(c.e,'mid')}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
  const pickCh=idx=>{clearTimer();
   const ch=ev.ch[idx],e=ch.e;const msg=[];let pnl=0,cost=0;const navB=S.nav;
   const setK=(i,nk)=>{nk=clampK(i,nk);if(nk!==S.k[i]){const t=tcost(nk-S.k[i],i);const c=t.cost*S.tcMultQ;S.pendingTC+=c/S.nav;S.totalTC+=c;cost+=c;S.k[i]=nk;
