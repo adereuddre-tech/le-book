@@ -1,7 +1,7 @@
-# Le Book — note de reprise (état au lot 192)
+# Le Book — note de reprise (état au lot 197)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 192.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 197.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -96,8 +96,8 @@ stop) → clôture (`resolveQuarter`) → résultat et débriefing (`screenDebri
 - **Coûts d'équipe fixes** (lot 176) : `budNav()` = encours de départ × `SIZE().costM` (0,85 / 1,10 / 1,75) ×
   `STYCOST[style]` (0,85 / 1 / 1,50) × `BUDK` (0,90). Ne bougent plus avec l'encours.
 - Front office `FOP` (crans cumulés, pb de 100 M$) : Jean-Kevin 0, Dwight 10, Ingrid 25, Boris 45, Tuco 70, Winnie 100,
-  Sœur Marie-Alpha 150, Onésime 250. Back office `BOP` : loyer 5, Gontran 10, Josiane 15, Tatillon 30, Mireille 60,
-  Solange 100. `syncBud()` : `exec=res=ret=min(fo,6)`, `risk=BOMAP[bo]`.
+  Sœur Marie-Alpha 150, Onésime 250 (8e cran normal depuis le lot 197). Back office `BOP` : loyer 5, Gontran 10, Josiane 15, Tatillon 30, Mireille 60,
+  Solange 100. `syncBud()` : `exec=res=ret=min(fo,7)`, `risk=BOMAP[bo]`.
 - Départ d'un salarié : un demi-trimestre de son salaire (`sevRaw`). Trader débauché : parti pour de bon (`S.gones`),
   « Faire revenir » = 1,5 trimestre de salaire (`cntCost`).
 - **Bonus d'équipe** (lots 179–180, 187) : taux = `bonBase()` (10 × coût sur 100 M$ du cran de front office atteint, ex.
@@ -143,8 +143,8 @@ Trois fonds tirés en début de partie dans `RIVPOOL` (6 parodies par style) ave
 liste validée par Antoine. Book réel (`rivBookQ` : paris factoriels projetés sur les marchés, montée en charge 60 / 80 /
 100 %), rendement = Σ poids × `S.rBase` (les vrais marchés) × `RIVB.k` (quant 0,65), coûts de rotation (`rivTurn`),
 dépêches (`rivEvHit`, réaction `RIVEV`), extrêmes (`xRivHit`), tuyaux. Chocs datés (`S.xRivL`) visibles sur les rubans.
-Trésorerie de départ `RIVSEED` 0,5 M$ ; faillite → remplacé tout de suite (`rivReplace`) par un fonds du même style.
-Leurs équipes coûtent encore **en proportion de leur encours** (`rivalCostQ × mAum`).
+Trésorerie de départ `RIVSEED` 0,5 M$ ; faillite → affiché « clôturé », dernier, hors rangs, puis remplacé au `planQuarter` suivant (`rivReplace`, lot 196).
+Équipes à coût fixe sur l'encours de départ, facture d'ordres (16 pb) sur l'encours du moment (`rivalCostAmt`, lot 193).
 
 ### Divers
 Objectif du trimestre = 3 % × `goalK()` (0,80–1,25 selon l'intensité des facteurs) ; annonces au même prorata (+5/−5,
@@ -186,23 +186,15 @@ Leviers éprouvés : coût d'équipe par style / difficulté (le plus efficace s
 faillites du premier trimestre), commission (agit sur le score, pas sur la survie). Inefficaces sur la survie : nervosité
 des investisseurs, incidents au-delà de leur niveau actuel, coût d'équipe du seul niveau moyen.
 
-## 6. Reste à faire (demandé par Antoine, non commencé)
+## 6. Reste à faire
 
-1. **Concurrents à coûts d'équipe fixes**, comme le joueur (aujourd'hui `rivalCostQ × mAum`).
-2. **Logos des fonds** dans le tableau des concurrents, celui du joueur compris (blasons `CRESTS`, `rivCol`).
-3. **Objectif « La citadelle tombe »** : il cite Citadelle Nord, souvent absent depuis le tirage des noms → le rattacher au
-   concurrent du moment (style flux ou meilleur concurrent).
-4. **Concurrent fermé** : rester affiché, classé dernier, performance en rouge avec « clôturé » ; le remplaçant n'apparaît qu'au
-   trimestre suivant (aujourd'hui `rivReplace` à la clôture même ; reporter à `planQuarter`, exclure les fermés du rang).
-5. **Onésime** : retirer « Atterrissage-en-Douceur » de son nom (`full`, `who:"Le professeur Atterrissage"`, regex de
-   présence `/Atterrissage/` dans `CAST`) et l'intégrer à la progression normale du front office (étendre `EXECM`, `TCVQ`,
-   `RESN`, `RESREL`, `RESR`, `RESPH`, `RETM` à un 8e cran, `syncBud` sans plafond à 6, retirer le « coup de pouce »).
-6. **Libellés des tuiles de facteurs** (proposé, pas demandé) : « lecture » (flèches) et « votre exposition » (chiffre).
-7. **Campagne de contrôle** des lots 175–192, puis retouches.
+1. **Campagne de contrôle** des lots 175–197 (plan de référence, 270 parties, comparée au lot 174), puis retouches. Les
+   lots 193 (coûts fixes des concurrents) et 197 (8e cran) touchent aussi l'équilibre.
+2. **Libellés des tuiles de facteurs** (proposé, pas demandé) : « lecture » (flèches) et « votre exposition » (chiffre).
 
 Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de débriefing.
 
-## 7. Journal des lots 175–192
+## 7. Journal des lots 175–197
 - **175** : flux, équipe ×1,50.
 - **176** : coûts d'équipe figés à leur coût pour 100 M$.
 - **177** : rachats et souscriptions des investisseurs ÷2.
