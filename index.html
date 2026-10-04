@@ -6588,7 +6588,8 @@ function screenDebrief(o){
    <p class="note" style="margin-top:6px">Les quatre facteurs plus la part propre font le brut des positions, ${sgn(o.gross,1)}. La part propre est ce qui a bougé pour des raisons de marché et non de macro : c'est la portion de votre trimestre qui ne dit rien de la justesse de vos paris.</p>`;}
  let byl=lines.map(z=>`<div class="attr"><span class="an"><span class="num" style="color:var(--txt)">${z.sym}</span> <span style="font-family:var(--mono);font-size:11px;color:var(--dimmer)">${z.k>0?'+':'−'}${Math.abs(z.k)} · marché ${sgn(z.r,1)}</span></span><span class="av ${cls(z.p)}">${sgn(z.p,1)} · ${mn(z.p*S.nav)}</span></div>`).join('');
  const myT=(S.tails||[]).filter(x=>x.q===S.q-1),myEv=(o.P&&o.P.evM||0)/Math.max(1e-9,S.navQ0);
- const all=[{nm:S.fundName,v:o.qTotal,me:1,rk:o.sp,cv:S.idx-1,mt:myT,xr:myEv},...S.rivals.map(r=>({nm:r.nm+'<span class="bossn">'+r.boss+'</span>',v:r.last,cv:r.cum-1,rk:r.vqLast||rivV(r),st:(RIVSTRAT[r.style]||{}).nm,th:r.tailHit,xr:(S.xRiv||[])[S.rivals.indexOf(r)]||0}))].sort((a,b)=>b.v-a.v);
+ const crI=i=>`<span style="display:inline-block;vertical-align:-4px;margin-right:6px">${crestSvg(i,16)}</span>`;   /* lot 194 */
+ const all=[{nm:crI(S.crest!==undefined?S.crest:0)+S.fundName,v:o.qTotal,me:1,rk:o.sp,cv:S.idx-1,mt:myT,xr:myEv},...S.rivals.map((r,j)=>({nm:crI(r.crest!==undefined?r.crest:RIVCREST[j%4])+r.nm+'<span class="bossn">'+r.boss+'</span>',v:r.last,cv:r.cum-1,rk:r.vqLast||rivV(r),st:(RIVSTRAT[r.style]||{}).nm,th:r.tailHit,xr:(S.xRiv||[])[S.rivals.indexOf(r)]||0}))].sort((a,b)=>b.v-a.v);
  const cums=[{nm:S.fundName,v:S.idx-1,me:1},...S.rivals.map(r=>({nm:r.nm,v:r.cum-1}))].sort((a,b)=>b.v-a.v);
  const warn=[];
  const detl=[];if(S.poachMsg)detl.push(S.poachMsg);   /* lot 55 : les flux clients par concurrent, en tête */
