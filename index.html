@@ -3618,10 +3618,12 @@ function markBonus(id){(S.bonus=S.bonus||{})[id]=S.q+1}
 /* lot 117 : une anecdote qui réduit le débauchage coûte au moins 15 pb (10 pb + 50 pb par unité de débauchage évitée) */
 [TRADER_EXEC,TRADER_MID,STAKE,INCIDENTS,BOARDEV].forEach(A=>A.forEach(ev=>(ev.ch||[]).forEach(c=>{const e=c.e||{};
  if(e.poach<0&&e.cash<0){const bp=Math.max(15,Math.round(10+50*Math.abs(e.poach)));e.cash=-bp/1e4;if(c.s)c.s=c.s.replace(/−\d+ pb/,'−'+bp+' pb')}})));
-/* lot 182 : anecdotes d'exécution — plus de gain pour vous, moins de risque pour le fonds */
+/* lot 183 : anecdotes d'exécution — gain fixe pour la société de gestion, risque du fonds inchangé */
+const EXGAIN=40;   /* pb de 100 M$ par unité de baisse de coût d'origine */
 TRADER_EXEC.forEach(ev=>(ev.ch||[]).forEach(c=>{const e=c.e||{};
- if(e.tcMult<1){const nt=Math.max(0.4,1-(1-e.tcMult)*1.5);e.tcMult=+nt.toFixed(2);if(c.s)c.s=c.s.replace(/Coûts −\d+ %/,'Coûts −'+Math.round((1-e.tcMult)*100)+' %')}
- if(Array.isArray(e.risk)&&e.risk[1]<0){e.risk=[e.risk[0],e.risk[1]/5];if(c.s)c.s=c.s.replace(/−\d+,\d+ %/,'−'+(Math.abs(e.risk[1])*100).toFixed(2).replace('.',',')+' %')}}));
+ if(e.tcMult<1){const bp=Math.round(EXGAIN*(1-e.tcMult));e.gainBp=bp;delete e.tcMult;delete e.tcMultOn;
+  const k=(bp*10).toFixed(0);if(c.s){c.s=c.s.replace(/Coûts −\d+ %( sur [^.:]*)?( ce trimestre)?/,`+${bp} pb pour votre société de gestion (${k} k$ sur 100 M$)`);
+   if(e.gamble)c.s=c.s.replace(/coûts ×\d+(,\d+)? à la place/,`−${Math.round(bp/2)} pb à la place`)}}}));
 /* ══════════ lot 103 : limites du comité ══════════ */
 const LIM={vol:0.30,red:1.5,stop:0.10,conc:0.70,negLp:-3,neg:{vol:1.25,stop:0.03,conc:0.15}};
 function limBO(){return Math.sqrt(BANDB[(S&&S.bud)?S.bud.risk:3]/BANDB[3])}
@@ -5610,6 +5612,7 @@ function screenExec(){
  setTimeout(()=>armTimer(()=>{const bs=app.querySelectorAll('.choice');if(bs.length)bs[bs.length-1].click()}),0);
  app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
   const ch=ev.ch[+b.dataset.i],e=ch.e;let msg=[];const navB0=S.nav;
+  if(e.gainBp){let g=e.gainBp*1e-4*S.aum0;if(e.gamble&&rng()<e.gamble[0]){g=-g/2;msg.push("Le tuyau a mal tourné.")}S.mgrCosts-=g;S.qExGain=(S.qExGain||0)+g;refreshGain();msg.push(`${g>=0?'+':'−'}${mm(Math.abs(g))} pour votre société de gestion.`)}   /* lot 183 */
   if(e.tcMult){let sub=0;
    if(e.tcMultOn){orders.forEach(o=>{if(e.tcMultOn.includes(INSTR[o.i].sym))sub+=o.t.cost})}
    else {sub=tot;S.tcMultQ*=e.tcMult}   /* la manière d'exécuter vaut aussi pour les ajustements du trimestre */
