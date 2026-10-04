@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 205, bot 199)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 209.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 210.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -232,4 +232,5 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **207 (lot A)** : dépêches et extrêmes à 5 crans (+2, +1, 0, −1, −2 unités dans le sens du choc ; `evPlans` → `mk(a)`, champs `n`, `v0`, `v1`) ; sélecteur `.evstep`, panneau `#evpan`, bouton `#evok` ; défaut « ne pas réagir » ; le carton rouge bloque les crans qui augmentent la vol ex ante. Bot et `play.js` adaptés (bot : argmax de l'utilité sur les crans ouverts).
 - **208 (lot B)** : rivalité à 5 crans (suivre, suivre ½ à mi-chemin, rien, contrer ½, contrer ; `RT`, `RP`, `.rvstep`, `#rvpan`, `#rvok`) ; écho de presse ×0,5 pour les demi-crans. Bot (utilité lue sur le panneau, coût déduit) et `play.js` adaptés.
 - **209 (lot C)** : accidents de levier et appels de marge — part du book coupée sur 5 crans (0, 25, 50, 75, 100 %) + couverture (`tailOpts` : `x`, `fA/fB`, `cA/cB`, `fE`) ; 25 % = moitié pari, moitié coupe ; 75/100 % = plus d'impact (+0,1 L / +0,2 L) mais confiance −2 / 0. Défaut et minuterie : 50 %. Affichage corrigé (tenir montrait −0,3 L / −1,5 L et −1 / −8 au lieu de −0,5 L / −1,8 L et −2 / −10 appliqués ; couper −3 au lieu de −4 ; couvrir −2 au lieu de −3). `.tlstep`, `#tlpan`, `#tlok`.
+- **210** : objectifs bonus réduits à un coup de pouce de début de partie — un objectif au trimestre 1, un au trimestre 2, plus rien ensuite. 13 objectifs (`qn` 1 ou 2, `pre` gain/loss/rank2) remplacent la centaine d'avant ; nouveaux compteurs `S.qReactW`, `S.qContraW` (réactions gagnantes, contres gagnants). Bonus inchangé (`b` × 0,25 × encours de départ, 2 à 3 M$).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
