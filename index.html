@@ -1024,6 +1024,7 @@ function bandNow(){return BANDB[(S&&S.bud)?S.bud.risk:1]*((S&&S.bandTight)||1)}
    commission de performance et davantage que la commission de gestion — le bonus ÉTAIT le
    score. Ramené au quart, il redevient un accessoire de la performance. */
 const GOALB=0.25;
+function rivSty(st){const R=S.rivals||[];return R.find(x=>x.style===st&&!x.closed)||R.find(x=>x.style===st)||null}   /* lot 195 */
 function goalBon(g){return g?g.b*GOALB*S.aum0:0}
 const QGOALS=[
  /* — performance absolue — */
@@ -1047,9 +1048,10 @@ const QGOALS=[
  {nm:"Gagner une place",d:"Progresser d'au moins une place au classement cumulé.",t:c=>c.rankUp>=1,b:0.07,pre:'rank2'},
  {nm:"Deux places d'un coup",d:"Progresser d'au moins deux places au classement cumulé.",t:c=>c.rankUp>=2,b:0.13,pre:'rank3'},
  {nm:"L'écart net",d:"Battre la médiane des concurrents de plus de deux points.",t:c=>c.rel>0.02,b:0.10},
- {nm:"Pont-Levis dans le rétroviseur",d:"Faire mieux que Pont-Levis Associés ce trimestre.",t:c=>c.beat('Pont-Levis Associés'),b:0.05},
- {nm:"Plus malin que Médaillon",d:"Faire mieux que Médaillon d'Or ce trimestre.",t:c=>c.beat("Médaillon d'Or"),b:0.08},
- {nm:"La Citadelle tombe",d:"Faire mieux que Citadelle Nord ce trimestre.",t:c=>c.beat('Citadelle Nord'),b:0.06},
+ /* lot 195 : le concurrent du même style, quel que soit son nom */
+ {id:"Pont-Levis dans le rétroviseur",rs:'fonda',get nm(){const r=rivSty('fonda');return !r||r.nm==='Pont-Levis Associés'?'Pont-Levis dans le rétroviseur':r.nm+' dans le rétroviseur'},get d(){return 'Faire mieux que '+((rivSty('fonda')||{}).nm||'le concurrent fondamental')+' ce trimestre.'},t:c=>c.beatSty('fonda'),b:0.05},
+ {id:"Plus malin que Médaillon",rs:'syst',get nm(){const r=rivSty('syst');return !r||r.nm==="Médaillon d'Or"?'Plus malin que Médaillon':'Plus malin que '+r.nm},get d(){return 'Faire mieux que '+((rivSty('syst')||{}).nm||'le concurrent quant')+' ce trimestre.'},t:c=>c.beatSty('syst'),b:0.08},
+ {id:"La Citadelle tombe",rs:'flux',get nm(){const r=rivSty('flux');return !r||r.nm==='Citadelle Nord'?'La Citadelle tombe':r.nm+' tombe'},get d(){return 'Faire mieux que '+((rivSty('flux')||{}).nm||'le concurrent flux')+' ce trimestre.'},t:c=>c.beatSty('flux'),b:0.06},
  {nm:"Vert quand ils sont rouges",d:"Terminer positif un trimestre où la médiane des concurrents est négative.",t:c=>c.q>0&&c.med<0,b:0.08},
  {nm:"Moins pire",d:"Perdre moins que la médiane des concurrents, un trimestre où tout le monde perd.",t:c=>c.q<0&&c.med<0&&c.rel>0,b:0.06},
  /* — risque et discipline — */
@@ -2841,6 +2843,7 @@ function goalCtx(o){
   beatBest:o.qTotal>Math.max(...S.rivals.map(r=>r.last)),
   worst:S.rivals.every(r=>r.last>o.qTotal),
   beat:nm=>{const r=S.rivals.find(x=>x.nm===nm);return r?o.qTotal>r.last:false},
+  beatSty:st=>{const r=rivSty(st);return r?o.qTotal>r.last:false},
   rank:o.rank,rankUp:(g0.rank||o.rank)-o.rank,
   vol:S.realVol,tgt:S.tgt,sp:pvol(w),tail:(S.tails||[]).some(x=>x.q===S.q),
   dd:o.dd,newHigh:S.nav>=S.hwm-1e-9,rate:S.rate,
@@ -3064,9 +3067,9 @@ function planQuarter(){
  /* objectif du trimestre : tiré maintenant, soldé à la clôture */
  S.usedGoals=(S.usedGoals||[]).slice(-16);
  /* lot 76 : « Le rebond » et ses cousins ne sortent qu'après un trimestre du bon signe */
- const lastQ=(S.rets&&S.rets.length)?S.rets[S.rets.length-1]:0,preOk=g=>(!g.sym||IDX[g.sym]!==undefined)&&(!g.cls||INSTR.some(x=>x.grp===g.cls))&&(!g.pre||(g.pre==='never'?false:g.pre==='rank2'?S.q>=1&&rivalRank()>=2:g.pre==='rank3'?S.q>=1&&rivalRank()>=3:g.pre==='loss'?lastQ<0:lastQ>0));   /* lot 89 : marchés et classes ouverts */
- const gav=QGOALS.filter(g=>!S.usedGoals.includes(g.nm)&&preOk(g));
- S.goal=pick(gav.length?gav:QGOALS.filter(preOk));S.usedGoals.push(S.goal.nm);
+ const lastQ=(S.rets&&S.rets.length)?S.rets[S.rets.length-1]:0,preOk=g=>(!g.rs||rivSty(g.rs))&&(!g.sym||IDX[g.sym]!==undefined)&&(!g.cls||INSTR.some(x=>x.grp===g.cls))&&(!g.pre||(g.pre==='never'?false:g.pre==='rank2'?S.q>=1&&rivalRank()>=2:g.pre==='rank3'?S.q>=1&&rivalRank()>=3:g.pre==='loss'?lastQ<0:lastQ>0));   /* lot 89 : marchés et classes ouverts */
+ const gav=QGOALS.filter(g=>!S.usedGoals.includes(g.id||g.nm)&&preOk(g));
+ S.goal=pick(gav.length?gav:QGOALS.filter(preOk));S.usedGoals.push(S.goal.id||S.goal.nm);
  if(S.redNext){S.redC=typeof S.redNext==='object'?S.redNext:{id:'cap',nm:'Plafond de position',t:'±2 unités au plus sur chaque marché'};S.redNext=false;S.redOn=true}
  else if(S.redOn){S.redOn=false;S.redC=null}
  S.maxk=S.capK||5;if(redOn('cap'))S.maxk=Math.min(S.maxk,2);   /* lot 58 : plafond de base ±3, ±4, ±5 */
@@ -4730,7 +4733,7 @@ function loadGame(){
   else if(S.aum0>=0.5)OPENRK=S.aum0>=5?5:4;   /* full-floor et mastodonte d'avant le lot 49 */
   if(S.exoOpen===undefined)S.exoOpen=(S.univ==='ext');   /* l'univers « monde entier » les avait d'emblée */
   applyPools();
-  if(S.goal&&S.goal.nm)S.goal=QGOALS.find(g=>g.nm===S.goal.nm)||null;
+  if(S.goal&&S.goal.nm)S.goal=QGOALS.find(g=>(S.goal.id&&g.id===S.goal.id)||g.nm===S.goal.nm)||null;
   S.evQueue=(d.evQ||[]).map(evFromTag).filter(Boolean);S.preDesk=evFromTag(d.preD);
   const P={phaseOpen:()=>phaseOpen(),screenBudget:()=>screenBudget(),phaseDesk:()=>phaseDesk(),screenPlay:()=>screenPlay(),
    screenComm:()=>screenComm(),phaseExec:()=>screenExec(),screenExec:()=>screenExec(),phaseLive:()=>phaseLive(),

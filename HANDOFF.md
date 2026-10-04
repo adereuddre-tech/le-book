@@ -223,4 +223,5 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **192** : compteur du trimestre juste sur l'écran de résultat.
 - **193** : concurrents à coûts d'équipe fixes (masse salariale sur l'encours de départ, facture d'ordres 16 pb sur l'encours du moment ; `rivalCostAmt`).
 - **194** : écussons des fonds dans le tableau des concurrents (résultat), le vôtre compris.
+- **195** : objectifs « concurrent nommé » (Citadelle, Pont-Levis, Médaillon) rattachés au concurrent du même style (`rivSty`, getters `nm`/`d`, `id` stable).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
