@@ -5882,6 +5882,8 @@ function screenRivalEvent(e){
  const i=e.i,x=INSTR[i],rv=e.rv,r=S.rBase[i],dir=Math.sign(r);
  const half=0.5*r;
  const nk=clampK(i,dir*Math.max(2,Math.abs(S.k[i]))),t=tcost(nk-S.k[i],i);
+ const hF=Math.round((S.k[i]+nk)/2),hD=Math.round((S.k[i]-nk)/2);   /* lot 208 : demi-crans, à mi-chemin */
+ const RT={follow:nk,fhalf:hF,none:S.k[i],dhalf:hD,fade:-nk};
  const src=pick(PRESS_SRC);
  const t1=`${rv.nm} a misé sur ${x.nm.toLowerCase()} et gagné ; ${S.fundName} a raté le coche`;
  const p=`${rv.boss} l'a dit à qui voulait l'entendre : « ${x.sym} ${dir>0?'monte':'baisse'}, c'était écrit ». Le marché a déjà fait ${sgn(half,1)} depuis le début du trimestre ; vous êtes ${S.k[i]===0?'plat':'du mauvais côté'} dessus. Vos investisseurs ont lu l'article.`;
@@ -5890,25 +5892,33 @@ function screenRivalEvent(e){
   <div class="evcard">${evHead(rv.boss+' · '+src,'rival')}<h3>${t1}</h3><p>${p}</p>
    <div class="shock"><span style="color:${dir>0?'var(--long)':'var(--short)'}">${x.sym} ${sgn(half,1)} déjà réalisé</span><span>vous : ${S.k[i]===0?'plat':(S.k[i]>0?'+':'')+S.k[i]}</span><span>${rv.nm} : ${dir>0?'long':'court'}</span></div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px"><div class="kv"><span>Effet de l'article</span><b><span class="${cls(g0.lp)}">confiance ${sd1(g0.lp)}</span></b></div></div>
-  <button class="choice" data-a="follow"><b>Suivre ${rv.boss} : passer ${x.sym} à ${nk>0?'+':''}${nk}</b><span>Coût ${mm(tcost(nk-S.k[i],i).cost*1.5*S.tcMultQ)}, à votre charge, dans un marché qui a déjà bougé. La suite du mouvement vaut en moyenne un tiers de ce qui a été fait, avec beaucoup de bruit. Si ça continue, la presse parle d'un rattrapage ; sinon, d'un gérant qui court après les autres.${bkD(S.k.map((v,m)=>m===i?nk:v),0,false)}</span></button>
-  <button class="choice" data-a="fade"><b>Prendre le contre-pied : ${x.sym} à ${(-nk)>0?'+':''}${-nk}</b><span>Vous pariez que ${rv.boss} a tort de rester. Coût ${mm(tcost(-nk-S.k[i],i).cost*1.5*S.tcMultQ)}, même bruit, gloire ou ridicule.${bkD(S.k.map((v,m)=>m===i?-nk:v),0,false)}</span></button>
-  <button class="choice" data-a="none"><b>Ne pas répondre à la presse</b><span>Vous ne changez rien. Investisseurs −1,5 de plus : ils voulaient une réaction.</span></button></div>`;
+  <div class="evsel">${[['follow','+','suivre'],['fhalf','+½','suivre'],['none','0','rien'],['dhalf','−½','contrer'],['fade','−','contrer']].map(([a,l,c])=>{const off=a!=='none'&&RT[a]===S.k[i];
+    return `<button class="evstep rvstep ${a==='follow'||a==='fhalf'?'up':a==='none'?'zr':'dn'}${a==='none'?' on':''}" data-a="${a}"${off?' disabled':''}><b>${l}</b><small>${c}</small></button>`}).join('')}</div>
+  <div class="evpan" id="rvpan"></div><button class="cta" id="rvok" style="margin-top:10px">Valider</button></div>`;
+ const RP={follow:`<b>Suivre ${rv.boss} : passer ${x.sym} à ${nk>0?'+':''}${nk}</b><span>Coût ${mm(tcost(nk-S.k[i],i).cost*1.5*S.tcMultQ)}, à votre charge, dans un marché qui a déjà bougé. La suite du mouvement vaut en moyenne un tiers de ce qui a été fait, avec beaucoup de bruit. Si ça continue, la presse parle d'un rattrapage ; sinon, d'un gérant qui court après les autres.${bkD(S.k.map((v,m)=>m===i?nk:v),0,false)}</span>`,
+  fhalf:`<b>Suivre à moitié : ${x.sym} à ${hF>0?'+':''}${hF}</b><span>Coût ${mm(tcost(hF-S.k[i],i).cost*1.5*S.tcMultQ)}, à votre charge. La moitié du pari, la moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hF:v),0,false)}</span>`,
+  none:`<b>Ne pas répondre à la presse</b><span>Vous ne changez rien. Investisseurs −1,5 de plus : ils voulaient une réaction.</span>`,
+  dhalf:`<b>Contrer à moitié : ${x.sym} à ${hD>0?'+':''}${hD}</b><span>Vous pariez, sans tout miser, que ${rv.boss} a tort de rester. Coût ${mm(tcost(hD-S.k[i],i).cost*1.5*S.tcMultQ)}. La moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hD:v),0,false)}</span>`,
+  fade:`<b>Prendre le contre-pied : ${x.sym} à ${(-nk)>0?'+':''}${-nk}</b><span>Vous pariez que ${rv.boss} a tort de rester. Coût ${mm(tcost(-nk-S.k[i],i).cost*1.5*S.tcMultQ)}, même bruit, gloire ou ridicule.${bkD(S.k.map((v,m)=>m===i?-nk:v),0,false)}</span>`};
  const pickR=a=>{clearTimer();const navB=S.nav;let msg=[],cost=0,pnl=0;
   if(a==='none'){const g=gauge(-1.5,0,"Silence face à la presse");S.evLog.push({t:t1,pnl:0,m:0,lp:g0.lp+g.lp,rc:g0.rc+g.rc});
     resultCard(`RIVALITÉ · ${rv.nm.toUpperCase()}`,"Vous laissez dire",[`${rv.boss} a eu ses colonnes. Vous gardez votre book.`],[['Confiance',`<span class="${cls(gcf(g0,g))}">${sd1(gcf(g0,g))}</span>`]],"Continuer le trimestre",stepEvents);return}
-  const target=a==='follow'?nk:-nk;const tt=tcost(target-S.k[i],i);cost=tt.cost*1.5*S.tcMultQ;S.k[i]=target;S.pendingTC+=cost/S.nav;S.totalTC+=cost;
+  const dA=(a==='follow'||a==='fhalf')?'follow':'fade',hs=(a==='fhalf'||a==='dhalf')?0.5:1,target=RT[a];   /* lot 208 */const tt=tcost(target-S.k[i],i);cost=tt.cost*1.5*S.tcMultQ;S.k[i]=target;S.pendingTC+=cost/S.nav;S.totalTC+=cost;
   const resid=r*(0.17+0.45*gauss());const w=weights(S.k);pnl=w[i]*resid;
   S.nav*=(1+pnl);S.qEvM+=pnl*navB;
   const total=pnl;   /* lot 59 : coût payé par le gérant seul */
-  const g=pnlGauge(total,`${a==='follow'?'Rattrapage sur':'Contre-pied face à'} ${rv.nm} — ${x.sym}`);
-  if(a==='fade'&&total>0){S.fl.contra=1;award('contra')}
-  const g2=(a==='follow'&&total>0)?gauge(2,0,"La presse parle d'un rattrapage"):(a==='fade'&&total>0)?gauge(3,1,`La presse parle d'un gérant qui a osé contredire ${rv.boss}`):(a==='fade'&&total<0)?gauge(-2,-1,`La presse rit : ${rv.boss} avait raison deux fois`):gauge(-1,0,"La presse parle d'un gérant qui court après les autres");
+  const g=pnlGauge(total,`${dA==='follow'?'Rattrapage sur':'Contre-pied face à'} ${rv.nm} — ${x.sym}`);
+  if(dA==='fade'&&total>0){S.fl.contra=1;award('contra')}
+  const g2=(dA==='follow'&&total>0)?gauge(2*hs,0,"La presse parle d'un rattrapage"):(dA==='fade'&&total>0)?gauge(3*hs,1*hs,`La presse parle d'un gérant qui a osé contredire ${rv.boss}`):(dA==='fade'&&total<0)?gauge(-2*hs,-1*hs,`La presse rit : ${rv.boss} avait raison deux fois`):gauge(-1*hs,0,"La presse parle d'un gérant qui court après les autres");
   S.evLog.push({t:t1,pnl:total,m:total*navB,lp:g0.lp+g.lp+g2.lp,rc:g0.rc+g.rc+g2.rc});
   resultCard(`RIVALITÉ · ${rv.nm.toUpperCase()}`,total>=0?"La presse change de camp":"La presse en remet une couche",
-   [`${x.sym} passe à ${target>0?'+':''}${target} (${mm(cost)} de coûts). La suite du mouvement : ${sgn(resid,1)} sur ${x.nm}.`,total>=0?`« ${S.fundName} ${a==='follow'?'recolle':'prend '+rv.boss+' à contre-pied'} », titre ${pick(PRESS_SRC)}.`:`« ${S.fundName} ${a==='follow'?'arrive après la bataille':'s\'entête contre '+rv.boss} », titre ${pick(PRESS_SRC)}.`],
+   [`${x.sym} passe à ${target>0?'+':''}${target} (${mm(cost)} de coûts). La suite du mouvement : ${sgn(resid,1)} sur ${x.nm}.`,total>=0?`« ${S.fundName} ${dA==='follow'?'recolle':'prend '+rv.boss+' à contre-pied'} », titre ${pick(PRESS_SRC)}.`:`« ${S.fundName} ${dA==='follow'?'arrive après la bataille':'s\'entête contre '+rv.boss} », titre ${pick(PRESS_SRC)}.`],
    [],"Continuer le trimestre",stepEvents,{key:[['<b>Résultat</b>',`<span class="${cls(total)}">${sgn(total,1)} · ${mn(total*navB)}</span>`],['Confiance',`<span class="${cls(gcf(g0,g,g2))}">${sd1(gcf(g0,g,g2))}</span>`]]});
  };
- app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>pickR(b.dataset.a));
+ let sel='none';const pan=a=>{document.getElementById('rvpan').innerHTML=`<div class="choice" style="cursor:default">${RP[a]}</div>`;
+  app.querySelectorAll('.rvstep').forEach(b=>b.classList.toggle('on',b.dataset.a===a));sel=a};pan('none');
+ app.querySelectorAll('.rvstep').forEach(b=>b.onclick=()=>{if(!b.disabled)pan(b.dataset.a)});
+ document.getElementById('rvok').onclick=()=>pickR(sel);
  armTimer(()=>pickR('none'));
 
 }

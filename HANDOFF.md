@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 205, bot 199)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 207.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 208.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -230,4 +230,5 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **Calibration du coût d'équipe par difficulté (sans changement retenu)** : 240 parties, graines 20001–20010, `costM` facile ×0,85/0,70/0,55 → survie 90/90/83 % ; moyen ×1,10/1,30 → 93/90 % ; difficile ×1,75/2,10/2,50 → 83/87/90 %. Aucun effet utile : le bot ajuste son cran d'équipe à sa caisse, et en difficile une équipe plus chère le pousse vers une équipe plus petite, donc plus prudente. Le coût d'équipe, comme le capital, ne crée pas le gradient de difficulté.
 - **Bot 206 (outil)** : plancher de trésorerie retiré (`FLOORK=0`), garde conservée — bot moins prudent. Calibration (285 parties, graines 20001–20008) : plancher ½ + garde 83 %, sans plancher + garde 73 %, sans garde 44–54 %.
 - **207 (lot A)** : dépêches et extrêmes à 5 crans (+2, +1, 0, −1, −2 unités dans le sens du choc ; `evPlans` → `mk(a)`, champs `n`, `v0`, `v1`) ; sélecteur `.evstep`, panneau `#evpan`, bouton `#evok` ; défaut « ne pas réagir » ; le carton rouge bloque les crans qui augmentent la vol ex ante. Bot et `play.js` adaptés (bot : argmax de l'utilité sur les crans ouverts).
+- **208 (lot B)** : rivalité à 5 crans (suivre, suivre ½ à mi-chemin, rien, contrer ½, contrer ; `RT`, `RP`, `.rvstep`, `#rvpan`, `#rvok`) ; écho de presse ×0,5 pour les demi-crans. Bot (utilité lue sur le panneau, coût déduit) et `play.js` adaptés.
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
