@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **182**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **189**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -883,6 +883,15 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
   0,25–0,55, retournement 0,45–0,85) ; ordres de suivi ×2,5 ; pas d'ajustement gratuit (flux).
 - **182** : anecdotes d'exécution — baisse des coûts ×1,5 (plafond −60 %), risque pour le fonds ÷5, textes recalculés au
   chargement. Campagne de contrôle à refaire (lots 176–182 non mesurés ensemble).
+
+- **183** : anecdotes d'exécution (remplace le lot 182) — risque du fonds d'origine ; gain fixe pour la société de gestion
+  `gainBp` = 40 × la baisse d'origine (pb de 100 M$, `EXGAIN`), pari raté = −½ gain ; textes recalculés.
+- **184** : charges T-Note (L −1), Gilt (−3 −3 0 −1), Bund (C −2, L 0), OAT (C −2, I −3), JGB (I −2, A −1), Euro-fx (C +2).
+- **185** : rappel d'objectif sur la page du book au niveau ajusté (`goalK`), plus le mandat fixe.
+- **186** : Mireille 60 pb (45), Solange 100 pb (60).
+- **187** : bonus d'équipe ×1,20 → ×0,80 (`BONFX.c`), sur fourchette et impact.
+- **188** : suivre une dépêche ×2 (×1,6), un événement extrême ×5 (×2,5) ; concurrents qui suivent : même barème (`rivTurn`).
+- **189** : tableau des concurrents — « dépêches et chocs » (somme de `S.xRiv`) ; même ligne pour votre fonds (`evM`).
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.
