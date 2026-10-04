@@ -225,4 +225,5 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **194** : écussons des fonds dans le tableau des concurrents (résultat), le vôtre compris.
 - **195** : objectifs « concurrent nommé » (Citadelle, Pont-Levis, Médaillon) rattachés au concurrent du même style (`rivSty`, getters `nm`/`d`, `id` stable).
 - **196** : concurrent fermé affiché, classé dernier, « clôturé » en rouge, exclu des rangs ; remplacé au début du trimestre suivant (`planQuarter`, `S.qRivIn`, annonce à l'ouverture).
+- **197** : Onésime 8e cran normal (barèmes prolongés, `syncBud` jusqu'à 7, `syncBud()` au chargement), coup de pouce retiré (`ecoBoost` inerte), « Atterrissage-en-Douceur » retiré du nom.
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).

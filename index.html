@@ -905,7 +905,7 @@ const FOP=[
  {who:"Tuco",hi:"J'apporte mes cigares et mes contacts à Rotterdam.",full:"Bartolomeo « Tuco » Ossobuco",role:"trader matières premières, un cigare par cargaison",ic:"🛢️",bp:70,cls:'Matières premières'},
  {who:"Winnie",hi:"Hong Kong ouvre dans six heures. J'y suis déjà.",full:"Wing-Fat « Winnie » Leung",role:"trader exotiques, vit à l'heure de Hong Kong",ic:"🐉",bp:100,cls:'Exotiques',g:'f'},
  {who:"Sœur Marie-Alpha",hi:"Le modèle est juste. Ce sont les hommes qui pèchent.",full:"Sœur Marie-Alpha « Sister Sharpe »",role:"stratégiste quantitative, prie pour la normalité des rendements",ic:"📿",bp:150},
- {who:"Le professeur Atterrissage",hi:"Je ne prévois pas la récession. Je la commente avant tout le monde.",full:"Pr Onésime « The Oracle » Atterrissage-en-Douceur",role:"économiste en chef, une prévision par plateau télé : un coup de pouce par trimestre",ic:"🎓",bp:250}];
+ {who:"Le professeur Onésime",hi:"Je ne prévois pas la récession. Je la commente avant tout le monde.",full:"Pr Onésime « The Oracle »",role:"économiste en chef, une prévision par plateau télé",ic:"🎓",bp:250}];
 const BOP=[
  {who:"Le loyer",full:"Le loyer",role:"bureaux, écrans, électricité, et rien d'autre",ic:"🏢",bp:5},
  {who:"Gontran Report-à-Nouveau",hi:"Tout finit au report à nouveau, même vos erreurs.",full:"Gontran Report-à-Nouveau",role:"expert-comptable",ic:"🧮",bp:10},
@@ -916,13 +916,13 @@ const BOP=[
 const BOMAP=[0,1,3,4,5,6],NOTRD=4,TRD={'Actions':1,'Taux':2,'Devises':3,'Matières premières':4,'Exotiques':5};
 const BUDGET=[
  {id:'fo',ico:'📈',nm:"Front office",
-  d:"Les traders et la recherche. Chaque recrue améliore l'avis du desk sur toutes les classes et sur la macro : coûts d'exécution, bruit des indicateurs, nombre et fiabilité des sources, lecture des dépêches. L'économiste en chef, au dernier cran, apporte un coup de pouce par trimestre. Un trader couvre en plus sa classe : sans lui, vos ordres y passent par un courtier, commission et impact de marché multipliés.",
+  d:"Les traders et la recherche. Chaque recrue améliore l'avis du desk sur toutes les classes et sur la macro : coûts d'exécution, bruit des indicateurs, nombre et fiabilité des sources, lecture des dépêches. Un trader couvre en plus sa classe : sans lui, vos ordres y passent par un courtier, commission et impact de marché multipliés.",
   lv:FOP.map(p=>Object.assign({nm:p.who},p))},
  {id:'bo',ico:'⚖️',nm:"Back office",
   d:"Le loyer, la comptabilité, les opérations, le contrôle des risques et la conformité. Josiane Suspens est le point neutre. Le loyer seul, c'est la catastrophe : incidents en série, chocs extrêmes encaissés de plein fouet. Au-dessus, chaque poste réduit nettement la fréquence et la gravité des incidents et amortit le choc immédiat des événements extrêmes, et rassure le comité.",
   lv:BOP.map(p=>Object.assign({nm:p.who},p))}
 ];
-function syncBud(){if(!S||!S.bud)return;S.bud.exec=S.bud.res=S.bud.ret=Math.min(S.bud.fo,6);S.bud.risk=BOMAP[S.bud.bo]}
+function syncBud(){if(!S||!S.bud)return;S.bud.exec=S.bud.res=S.bud.ret=Math.min(S.bud.fo,7);   /* lot 197 : 8 crans */S.bud.risk=BOMAP[S.bud.bo]}
 function eF(p){return FOP[p]&&FOP[p].g==='f'?'e':''}
 function gonesL(){if(!S.gones){S.gones=[];if(S.gone){S.gones.push({p:S.gone.p,n:S.gone.n,boss:S.gone.boss});S.gone=null}}return S.gones}
 const CNTK=1.5;   /* lot 117 : un trader parti ne revient que contre 1,5 trimestre de son salaire */
@@ -939,7 +939,7 @@ const CAST=[
  {re:'Mireille Cauchemar|Mireille',bo:1,on:()=>S.bud.bo>=4,sub:()=>S.bud.bo>=2?'Josiane Suspens':'Gontran Report-à-Nouveau'}];
 CAST.forEach(c=>{c.rx=new RegExp('(?:'+c.re+')')});
 const PERSO={"Tuco a gagné le concours de chili du prime broker":4,"Citadelle Nord fait une offre à Ingrid":2,"Pont-Levis Associés cherche un gérant énergie":4,"Votre gérante taux part chez un concurrent":2,"Un concurrent tourne autour de Boris":3,"« Ken Griffon m'a appelé. Pour un conseil. Je crois »":1};
-function persoOk(e){const w=e.who||'';if(e.hunt&&!huntCands().length)return false;if(/Marie-Alpha/.test(w)&&!here(6))return false;if(/^Dwight/.test(w)&&!here(1))return false;if(/Atterrissage/.test(w)&&!here(7))return false;if((/Report-à-Nouveau/.test(w)&&S.bud.bo<1)||(/Josiane/.test(w)&&S.bud.bo<2)||(/Tatillon/.test(w)&&S.bud.bo<3)||(/Pare-Feu/.test(w)&&S.bud.bo<5))return false;const p=PERSO[e.t];return p===undefined||here(p)}
+function persoOk(e){const w=e.who||'';if(e.hunt&&!huntCands().length)return false;if(/Marie-Alpha/.test(w)&&!here(6))return false;if(/^Dwight/.test(w)&&!here(1))return false;if(/Onésime/.test(w)&&!here(7))return false;if((/Report-à-Nouveau/.test(w)&&S.bud.bo<1)||(/Josiane/.test(w)&&S.bud.bo<2)||(/Tatillon/.test(w)&&S.bud.bo<3)||(/Pare-Feu/.test(w)&&S.bud.bo<5))return false;const p=PERSO[e.t];return p===undefined||here(p)}
 function deepCast(x,c){if(typeof x==='string')return recast(x,c);if(Array.isArray(x))return x.map(y=>deepCast(y,c));if(x&&typeof x==='object'){const q={};for(const k in x)q[k]=deepCast(x[k],c);return q}return x}
 function recast(x,c){if(typeof x!=='string'||!c.rx.test(x))return x;const n=c.sub(),A=c.re,le=n.startsWith('le ');
  x=x.replace(new RegExp('(^|[^\\wÀ-ÿ])de (?:'+A+')','g'),(m,p)=>p+(le?'du '+n.slice(3):'de '+n));
@@ -980,21 +980,21 @@ function setOps(){S.mgrCosts-=S.qOps||0;S.cOps=(S.cOps||0)-(S.qOps||0);const pur
  S.qSevM=Math.min(sevRaw()*1e-4*budNav(),Math.max(0,purse-b));S.qOps=b+S.qSevM;S.mgrCosts+=S.qOps;S.cOps+=S.qOps}
 function covTxt(){const op=GRP.filter(g=>g!=='Exotiques'||S.exoOpen),c=op.filter(covered),u=op.filter(g=>!covered(g));
  return `<br>Classes couvertes : ${c.map(g=>g.toLowerCase()).join(', ')||'aucune'}${u.length?` · <span class="neg-g">sans trader, courtier ×${dec(NOTRD,1)}</span> : ${u.map(g=>g.toLowerCase()).join(', ')}`:''}`}
-const EXECM=[1.35,1.15,1.00,0.75,0.666,0.575,0.498],   /* lot 38 : trois quarts de l'ancienne facture, le reste se paie en impact de marché */
+const EXECM=[1.35,1.15,1.00,0.75,0.666,0.575,0.498,0.431],   /* lot 197 : 8e cran (Onésime) */   /* lot 38 : trois quarts de l'ancienne facture, le reste se paie en impact de marché */
 RISKM=[5.0,2.0,2.0,1.00,0.8,0.65,0.5],   /* lot 96 : aux crans 0,2,3,5,6 seulement (BOMAP) */
 RISKS=[3.00,1.95,1.95,1.5,1.2,0.975,0.75],
-RETM =[2.00,1.93,1.51,1.00,0.741,0.503,0.398];
-const RESN=[6,6,7,9,10,11,12],
-RESREL=[-0.08,-0.07,-0.06,0.00,0.028,0.049,0.084],
-RESR  =[0.3,0.32,0.39,0.6,0.726,0.831,0.866],
+RETM =[2.00,1.93,1.51,1.00,0.741,0.503,0.398,0.315];
+const RESN=[6,6,7,9,10,11,12,13],
+RESREL=[-0.08,-0.07,-0.06,0.00,0.028,0.049,0.084,0.11],
+RESR  =[0.3,0.32,0.39,0.6,0.726,0.831,0.866,0.89],
 /* précision de la lecture d'une dépêche : écart-type du bruit sur la probabilité affichée */
-RESPH =[0.16,0.156,0.141,0.1,0.084,0.068,0.05];
+RESPH =[0.16,0.156,0.141,0.1,0.084,0.068,0.05,0.037];
 /* la finesse des indicateurs vient du desk, la tolérance du comité du contrôle des risques */
-const TCVQ=[0.9,0.88,0.76,0.6,0.509,0.425,0.355],
+const TCVQ=[0.9,0.88,0.76,0.6,0.509,0.425,0.355,0.296],
 BANDB=[0.12,0.19,0.19,0.25,0.30,0.36,0.42];
 /* avis du comité à chaque clôture, et chance de recruter une recrue du trimestre */
 const RISKRC=[-3.0,-1.5,-1.5,0.00,2.5,4.0,5.0],
-STARP=[0.00,0.00,0.00,0.00,0.105,0.217,0.329];
+STARP=[0.00,0.00,0.00,0.00,0.105,0.217,0.329,0.44];
 /* lot 79 : crans hauts deux fois plus chers au plus (×4/3, ×5/3, ×2) ; leurs effets ramenés à 70 % de leur
    écart au standard */
 const BUDMAX=5;   /* à partir de ce cran, un budget est « renforcé » pour les objectifs */
@@ -1009,10 +1009,10 @@ function budEf0(id,i){
  return `${RESN[i]} sources · fiabilité des sources ${Math.abs(RESREL[i])<0.005?'de référence':(RESREL[i]>0?'+':'−')+Math.round(Math.abs(RESREL[i])*100)+' pts'} · pré-annonces ${Math.round(RESR[i]*100)} % · lecture des dépêches ±${Math.round(RESPH[i]*100)} pts`;
 }
 /* lot 82 : ce que veulent dire les chiffres de chaque budget, au cran choisi */
-function budEf(id,i){if(id==='fo')return budEf0('exec',Math.min(i,6))+' · '+budEf0('res',Math.min(i,6))+(i>=7?' · un coup de pouce de l\'économiste chaque trimestre':'');if(id==='bo')return budEf0('risk',BOMAP[i]);return budEf0(id,i)}
-function budExpl(id){if(id==='fo')return budExpl0('exec',Math.min(S.bud.fo,6))+budExpl0('res',Math.min(S.bud.fo,6))+`<p class="note"><b>Économiste en chef</b> (dernier cran) : à chaque trimestre, un marché de plus s'il en reste à ouvrir, sinon un passage à la télévision (confiance +3), une note au comité (confiance +3) ou une dépêche lue juste.</p>`;if(id==='bo')return budExpl0('risk',BOMAP[S.bud.bo]);return budExpl0(id,S.bud[id])}
+function budEf(id,i){if(id==='fo')return budEf0('exec',Math.min(i,7))+' · '+budEf0('res',Math.min(i,7));if(id==='bo')return budEf0('risk',BOMAP[i]);return budEf0(id,i)}
+function budExpl(id){if(id==='fo')return budExpl0('exec',Math.min(S.bud.fo,7))+budExpl0('res',Math.min(S.bud.fo,7));if(id==='bo')return budExpl0('risk',BOMAP[S.bud.bo]);return budExpl0(id,S.bud[id])}
 function budExpl0(id,i){
- if(id==='exec')return `<p class="note"><b>Coûts</b> : chaque ordre coûte ${dec(EXECM[i],2)} fois le tarif de référence. <b>Indicateurs</b> : les tuiles tendance, portage et valeur affichent le vrai signal plus un bruit d'écart-type ${dec(TCVQ[i],2)} σ (standard ${dec(TCVQ[3],2)}, sans limite ${dec(TCVQ[6],2)}).</p>`;
+ if(id==='exec')return `<p class="note"><b>Coûts</b> : chaque ordre coûte ${dec(EXECM[i],2)} fois le tarif de référence. <b>Indicateurs</b> : les tuiles tendance, portage et valeur affichent le vrai signal plus un bruit d'écart-type ${dec(TCVQ[i],2)} σ (standard ${dec(TCVQ[3],2)}, sans limite ${dec(TCVQ[7],2)}).</p>`;
  if(id==='risk')return `<p class="note"><b>Incidents</b> : fréquence ×${dec(RISKM[i],2)}, gravité ×${dec(RISKS[i]/RISKS[3],2)} par rapport au standard. <b>Choc immédiat des événements extrêmes</b> ×${dec(0.5+0.5*TAILM[i],2)}. ${Math.abs(RISKRC[i])>=0.05?`<b>Comité</b> : ${RISKRC[i]>0?'+':'−'}${dec(Math.abs(RISKRC[i]),1)} à chaque clôture.`:''}</p>`;
  const f=r=>Math.round(Math.min(0.99,(RELP[r]+RESREL[i]))*100);
  return `<p class="note"><b>Sources</b> : ${RESN[i]} par trimestre sur votre bureau. <b>Fiabilité</b> : la probabilité qu'une source dise vrai — à ce cran, faible ≈ ${f('faible')} %, moyenne ≈ ${f('moyenne')} %, forte ≈ ${f('forte')} %. <b>Pré-annonces</b> : ${Math.round(RESR[i]*100)} % des événements du trimestre vous sont signalés à l'avance. <b>Lecture des dépêches</b> : sur chaque dépêche, la probabilité de poursuite qu'on vous affiche est la vraie, décalée d'un écart typique de ±${Math.round(RESPH[i]*100)} pts${S.prof==='flux'?' (×0,6 pour le flux)':''} ; plus elle est serrée, plus vos choix sur les dépêches sont justes.</p>`}
@@ -1418,7 +1418,7 @@ const TRADER_EXEC=[
   ch:[{b:"Contrer l'armateur",s:"Coûts −30 % sur le Baltic Dry, comité −1 : le comité n'aime pas les ordres de nuit.",e:{tcMultOn:['BDI'],tcMult:0.7,rc:-1}},{b:"Passer par le courtier londonien",s:"Plein tarif.",e:{}}]},
  {who:"Sœur Marie-Alpha · exécution systématique",t:"« Le VIX est hors de sa loi normale depuis trois séances. Je recommande la prière, et un écart »",need:['VX'],p:"Elle prie pour la normalité des rendements. Elle prépare aussi un ordre d'arbitrage, au cas où.",
   ch:[{b:"Suivre la recommandation",s:"Coûts −20 % sur le VIX. 25 % de risque que la queue grossisse encore : −0,25 %.",e:{tcMultOn:['VX'],tcMult:0.8,risk:[0.25,-0.0025],riskMsg:"La distribution n'était pas normale : elle était pire",safeTxt:"Le VIX revient dans sa loi. Sœur Marie-Alpha se signe et range ses graphiques."}},{b:"Ne pas toucher à la volatilité",s:"Plein tarif.",e:{}}]},
- {who:"Le professeur Atterrissage · économiste en chef",t:"« Je passe sur un plateau à 7 h. Si je dis “atterrissage en douceur”, les taux longs détendent »",need:['TN','GBL'],p:"Une prévision par plateau télé. Il a déjà choisi sa cravate : celle de l'atterrissage.",
+ {who:"Le professeur Onésime · économiste en chef",t:"« Je passe sur un plateau à 7 h. Si je dis “atterrissage en douceur”, les taux longs détendent »",need:['TN','GBL'],p:"Une prévision par plateau télé. Il a déjà choisi sa cravate : celle de l'atterrissage.",
   ch:[{b:"Acheter les taux avant l'émission",s:"Coûts −25 % sur le T-Note et le Bund, comité −2 : le comité n'aime pas qu'on trade sur sa propre télé.",e:{tcMultOn:['TN','GBL'],tcMult:0.75,rc:-2}},{b:"Lui demander de rester vague",s:"Plein tarif. Le professeur est vexé (débauchage +5 %).",e:{poach:0.05}}]},
  {who:"Dwight Tannenbaum · actions, à la voix",t:"« Donnez-moi le S&P au téléphone. Trois coups de fil et je vous trouve la contrepartie »",need:['ES','NQ'],p:"Dwight a quatre téléphones sur son bureau. Trois sonnent. Il jure que le quatrième est le bon.",
   ch:[{b:"Laisser Dwight décrocher",s:"Coûts −25 % sur les actions américaines. 30 % de risque qu'il se fasse lire : coûts ×1,3 à la place.",e:{tcMultOn:['ES','NQ'],tcMult:0.75,gamble:[0.3,1.3]}},{b:"Passer par l'écran",s:"Plein tarif.",e:{}}]},
@@ -1989,7 +1989,7 @@ const TRADER_MID=[
  {"who": "Bartolomeo « Tuco » Ossobuco · énergie", "t": "« Mon cousin de Rotterdam dit qu'un pétrolier fait demi-tour. Je ne sais pas pourquoi »", "p": "« Un cousin ne dit jamais pourquoi. Il dit juste demi-tour. »", "ch": [{"b": "Croire le cousin", "s": "40 % de chances de +0,2 %, sinon −0,1 %.", "e": {"risk": [0.6, -0.001], "riskMsg": "Le pétrolier avait juste oublié un marin", "safeTxt": "Le pétrolier a fait demi-tour pour de bon : +0,2 %.", "safePnl": 0.002}}, {"b": "Ignorer le cousin", "s": "Rien. Tuco est vexé (débauchage +5 %).", "e": {"poach": 0.05}}]},
  {"who": "Wing-Fat « Winnie » Leung · Asie", "t": "« Je suis à Hong Kong pour un mariage. Je trade depuis la salle de bal »", "p": "On entend un orchestre. Puis des applaudissements. Puis « achète ».", "ch": [{"b": "La laisser trader au mariage", "s": "Coûts −10 % ce trimestre sur les exotiques, comité −1.", "e": {"tcMult": 0.9, "rc": -1}}, {"b": "Lui dire de profiter du mariage", "s": "Coûts +5 % ce trimestre. Winnie danse.", "e": {"tcMult": 1.05}}]},
  {"who": "Sœur Marie-Alpha · exécution systématique", "t": "« Le modèle a détecté un régime nouveau. Je propose un jeûne de trois jours pour le recalibrer »", "p": "« Le jeûne, c'est pour moi. Le modèle, je le relance ce soir. »", "ch": [{"b": "Recalibrer tout de suite", "s": "−2 pb de calcul, comité +1.", "e": {"cash": -0.0002, "rc": 1}}, {"b": "Attendre la fin du trimestre", "s": "25 % de risque d'un mauvais signal : −0,15 %.", "e": {"risk": [0.25, -0.0015], "riskMsg": "Le régime avait bien changé, le modèle non"}}]},
- {"who": "Le professeur Atterrissage · économiste en chef", "t": "« J'ai prévu la récession sur une chaîne et la reprise sur une autre. Le même jour »", "p": "« Les deux étaient en direct. Les deux étaient sincères. »", "ch": [{"b": "Lui demander de choisir", "s": "Comité +1, le professeur boude (débauchage +5 %).", "e": {"rc": 1, "poach": 0.05}}, {"b": "S'en servir comme publicité", "s": "Confiance +1, comité −1.", "e": {"lp": 1, "rc": -1}}]},
+ {"who": "Le professeur Onésime · économiste en chef", "t": "« J'ai prévu la récession sur une chaîne et la reprise sur une autre. Le même jour »", "p": "« Les deux étaient en direct. Les deux étaient sincères. »", "ch": [{"b": "Lui demander de choisir", "s": "Comité +1, le professeur boude (débauchage +5 %).", "e": {"rc": 1, "poach": 0.05}}, {"b": "S'en servir comme publicité", "s": "Confiance +1, comité −1.", "e": {"lp": 1, "rc": -1}}]},
  {"who": "Solange Pare-Feu · sécurité", "t": "« Quelqu'un a branché une clé USB trouvée sur le parking »", "p": "« Elle s'appelait BONUS_2026.xlsx. Évidemment qu'il l'a branchée. »", "ch": [{"b": "Tout isoler et tout réinstaller", "s": "−3 pb, comité +3.", "e": {"cash": -0.0003, "rc": 3}}, {"b": "Nettoyer le seul poste concerné", "s": "20 % de risque d'intrusion : −0,3 %.", "e": {"risk": [0.2, -0.003], "riskMsg": "La clé était pleine de surprises"}}]},
  {"who": "Solange Pare-Feu · sécurité", "t": "« Exercice d'évacuation. Tout le monde dehors, desk compris »", "p": "« Le plan de continuité prévoit une salle de secours à Créteil. Elle n'a jamais servi. Aujourd'hui, elle sert. »", "ch": [{"b": "Jouer le jeu jusqu'au bout", "s": "Coûts +5 % ce trimestre, comité +3.", "e": {"tcMult": 1.05, "rc": 3}}, {"b": "Dispenser le desk", "s": "Comité −2.", "e": {"rc": -2}}]},
  {"who": "Solange Pare-Feu · sécurité", "t": "« Un faux Ken Griffon a appelé Josiane pour un virement urgent »", "p": "« La voix était bonne. Le compte était à Chypre. Elle a raccroché. »", "ch": [{"b": "Former toute l'équipe à la fraude au président", "s": "−2 pb, comité +2.", "e": {"cash": -0.0002, "rc": 2}}, {"b": "Féliciter Josiane", "s": "Débauchage −5 %, comité +1.", "e": {"poach": -0.05, "rc": 1}}]},
@@ -2010,17 +2010,17 @@ const TRADER_MID=[
   ch:[{b:"L'écouter jusqu'au bout",s:"Comité −1, mais le desk rit (débauchage −10 %).",e:{rc:-1,poach:-0.1}},{b:"L'arrêter à la diapositive 2",s:"Comité +1.",e:{rc:1}}]},
  {who:"Jean-Kevin · analyste stagiaire",t:"« J'ai trouvé une erreur de valorisation. Elle est en notre faveur »",p:"« 0,3 % de performance en trop depuis deux mois. Je le dis, ou… je le dis ? »",
   ch:[{b:"Corriger et prévenir les investisseurs",s:"−10 pb de rectification, confiance +3.",e:{cash:-0.001,lp:3}},{b:"Corriger au prochain calcul",s:"Comité +1.",e:{rc:1}}]},
- {who:"Le professeur Atterrissage · économiste en chef",t:"« Mon modèle voit un atterrissage en douceur. Comme les onze dernières fois »",p:"Le professeur présente sa prévision au comité avec un pointeur laser et une confiance absolue.",
+ {who:"Le professeur Onésime · économiste en chef",t:"« Mon modèle voit un atterrissage en douceur. Comme les onze dernières fois »",p:"Le professeur présente sa prévision au comité avec un pointeur laser et une confiance absolue.",
   ch:[{b:"Le laisser présenter",s:"Comité +3. 30 % de risque que le marché le contredise dans la semaine : −0,2 %.",e:{rc:3,risk:[0.3,-0.002],riskMsg:"L'atterrissage a été plutôt brutal",safeTxt:"Le marché a atterri. En douceur."}},{b:"Lui demander un scénario noir",s:"−2 pb de travail, comité +1.",e:{cash:-0.0002,rc:1}}]},
- {who:"Le professeur Atterrissage · économiste en chef",t:"« On m'invite sur un plateau télé. Je peux parler du fonds ? »",p:"Il a déjà choisi sa cravate. Elle est couleur taux directeur.",
+ {who:"Le professeur Onésime · économiste en chef",t:"« On m'invite sur un plateau télé. Je peux parler du fonds ? »",p:"Il a déjà choisi sa cravate. Elle est couleur taux directeur.",
   ch:[{b:"Oui, en restant vague",s:"Confiance +2.",e:{lp:2}},{b:"Oui, avec nos convictions",s:"Confiance +4. 30 % de risque que le marché joue contre vous : −0,25 %.",e:{lp:4,risk:[0.3,-0.0025],riskMsg:"Tout le marché a joué contre vos convictions",safeTxt:"Le marché a trouvé l'intervention passionnante et n'a rien fait."}},{b:"Non",s:"Rien.",e:{}}]},
- {who:"Le professeur Atterrissage · économiste en chef",t:"« J'ai dîné avec un ancien gouverneur. Il ne m'a rien dit. Mais il l'a très bien dit »",p:"Le professeur a passé trois heures à interpréter un haussement de sourcil au dessert.",
+ {who:"Le professeur Onésime · économiste en chef",t:"« J'ai dîné avec un ancien gouverneur. Il ne m'a rien dit. Mais il l'a très bien dit »",p:"Le professeur a passé trois heures à interpréter un haussement de sourcil au dessert.",
   ch:[{b:"Ajuster le book sur le sourcil",s:"50 % de ±0,3 %.",e:{risk:[0.5,0.003],riskMsg:"Le sourcil disait vrai",safeTxt:"Le sourcil était une allergie : −0,3 %.",safePnl:-0.003}},{b:"Noter et ne rien faire",s:"Rien.",e:{}}]},
- {who:"Le professeur Atterrissage · économiste en chef",t:"« Mon livre sort. Le fonds peut en acheter deux mille exemplaires ? »",p:"Titre : « L'Atterrissage, ou l'art de ne pas tomber ». Préface d'un Prix Nobel qui ne se souvient pas l'avoir écrite.",
+ {who:"Le professeur Onésime · économiste en chef",t:"« Mon livre sort. Le fonds peut en acheter deux mille exemplaires ? »",p:"Titre : « L'Atterrissage, ou l'art de ne pas tomber ». Préface d'un Prix Nobel qui ne se souvient pas l'avoir écrite.",
   ch:[{b:"Les offrir aux clients",s:"−3 pb, confiance +3.",e:{cash:-0.0003,lp:3}},{b:"Refuser",s:"Le professeur vexé (débauchage +10 %).",e:{poach:0.1}}]},
- {who:"Le professeur Atterrissage · économiste en chef",t:"« La courbe s'inverse. Je l'avais dit. Enfin, je l'avais pensé très fort »",p:"Il réclame une réunion de crise, un tableau blanc et trois feutres de couleurs différentes.",
+ {who:"Le professeur Onésime · économiste en chef",t:"« La courbe s'inverse. Je l'avais dit. Enfin, je l'avais pensé très fort »",p:"Il réclame une réunion de crise, un tableau blanc et trois feutres de couleurs différentes.",
   ch:[{b:"Réunion de crise",s:"−1 pb, comité +2.",e:{cash:-0.0001,rc:2}},{b:"« On sait, professeur. »",s:"Rien. Il boude jusqu'à jeudi.",e:{}}]},
- {who:"Le professeur Atterrissage · économiste en chef",t:"« Un fonds souverain du Golfe veut m'entendre. Classe affaires, évidemment »",p:"« Ils cherchent un gérant macro. Je leur parlerai de vous. Entre deux digressions sur 1929. »",
+ {who:"Le professeur Onésime · économiste en chef",t:"« Un fonds souverain du Golfe veut m'entendre. Classe affaires, évidemment »",p:"« Ils cherchent un gérant macro. Je leur parlerai de vous. Entre deux digressions sur 1929. »",
   ch:[{b:"L'envoyer à Abou Dhabi",s:"−4 pb de frais, confiance +4.",e:{cash:-0.0004,lp:4}},{b:"Une visioconférence suffira",s:"Confiance +1.",e:{lp:1}}]},
  {who:"Gontran Report-à-Nouveau · expert-comptable",t:"« Votre bonus d'équipe, c'est une charge, un produit ou un sentiment ? »",p:"Il a trois colonnes et aucune réponse. Il veut une réunion.",
   ch:[{b:"Une réunion, vite",s:"−1 pb, comité +1.",e:{cash:-0.0001,rc:1}},{b:"Lui dire de trancher seul",s:"20 % de risque qu'il se trompe de colonne : −0,15 %.",e:{risk:[0.2,-0.0015],riskMsg:"Le bonus a été passé en produit exceptionnel",safeTxt:"Il a tranché juste. Il en parle encore."}}]},
@@ -4730,6 +4730,7 @@ function loadGame(){
   /* sauvegarde des lots 39 à 44 : onze crans ramenés à sept */
   if(S.budN===11&&S.bud){const M11=[0,1,1,2,3,3,4,4,5,6,6];for(const k in S.bud)S.bud[k]=M11[S.bud[k]]!==undefined?M11[S.bud[k]]:3;S.budN=7}
   if(S.bud&&S.bud.fo===undefined){const r=S.bud.risk!==undefined?S.bud.risk:3;S.bud.fo=Math.round(((S.bud.exec||0)+(S.bud.res||0))/2);let bj=0;BOMAP.forEach((v,j)=>{if(Math.abs(v-r)<Math.abs(BOMAP[bj]-r))bj=j});S.bud.bo=bj;syncBud()}   /* lot 92 */
+  syncBud();   /* lot 197 : une sauvegarde avec Onésime passe au 8e cran */
   if(S.openRk)OPENRK=S.openRk;
   else if(S.aum0>=0.5)OPENRK=S.aum0>=5?5:4;   /* full-floor et mastodonte d'avant le lot 49 */
   if(S.exoOpen===undefined)S.exoOpen=(S.univ==='ext');   /* l'univers « monde entier » les avait d'emblée */
@@ -4843,14 +4844,15 @@ function screenBudget(){
    if(S.preDesk&&(!S.preDesk.cond||S.preDesk.cond())){const ev=S.preDesk;S.preDesk=null;screenTraderEvent(ev,screenPlay)}else screenPlay();
  };
 }
-function ecoBoost(){if(!here(7)||S.ecoQ===S.q)return;S.ecoQ=S.q;let t;
+function ecoBoost(){return;   /* lot 197 : coup de pouce retiré, Onésime est un cran comme les autres */
+ if(!here(7)||S.ecoQ===S.q)return;S.ecoQ=S.q;let t;
  if(OPENRK<5){OPENRK++;S.openRk=OPENRK;applyPools();const nw=INSTR.filter(x=>x.rk===OPENRK);S.ecoB='mk';t=`il obtient de votre courtier l'accès à ${nw.map(x=>x.nm).join(', ')||'un nouveau marché'}`}
  else if(!S.exoOpen&&GRP.includes('Exotiques')){S.exoOpen=true;applyPools();S.ecoB='exo';t="il convainc le comité de vous ouvrir les marchés exotiques"}
  else{const o=PROF().id==='fonda'?['tv','note']:['tv','note','ver'];S.ecoB=o[Math.floor(rng()*o.length)];
   if(S.ecoB==='tv'){gauge(3,0,"L'économiste en chef à la télévision");t="il passe au journal de 20 heures : confiance +3"}
   else if(S.ecoB==='note'){gauge(0,3,"Note de l'économiste en chef au comité");t="sa note rassure le comité : confiance +3"}
   else t="il vous lira juste la première dépêche du trimestre"}
- S.ecoTxt=t;toast(`🎓 <b>Le professeur Atterrissage</b> : ${t}.`)}
+ S.ecoTxt=t;toast(`🎓 <b>Le professeur Onésime</b> : ${t}.`)}
 function planSignalsAfterBudget(){
  ecoBoost();   /* lot 96 */
  /* la recherche et le contrôle sont choisis avant la publication des rumeurs et des signaux */
