@@ -1,7 +1,7 @@
-# Le Book — note de reprise (état au lot 198, bot 199)
+# Le Book — note de reprise (état au lot 205, bot 199)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 198.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 205.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -189,12 +189,12 @@ des investisseurs, incidents au-delà de leur niveau actuel, coût d'équipe du 
 
 ## 6. Reste à faire
 
-1. **Équilibre** (bot 199, lot 198) : survie 76 %, mais flux 62 % et aucun gradient de difficulté (76 / 77 / 74) ; le flux ne paie pas plus que les autres. Effet propre des lots 193–198 non isolé (rejouer le lot 192 avec le bot 199).
+1. **Équilibre** (lot 205, bot 199) : survie 77 % ; gradient de difficulté faible (80 / 79 / 73) ; le capital seul ne le crée pas. Leviers possibles : coût d'équipe, commission ou sévérité des investisseurs par difficulté.
 2. **Libellés des tuiles de facteurs** (proposé, pas demandé) : « lecture » (flèches) et « votre exposition » (chiffre) ; sur une tuile, flèches et chiffre sont deux grandeurs différentes (lecture du desk / exposition de votre book), ce qui peut sembler contradictoire (▲▲▲ avec −2).
 
 Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de débriefing.
 
-## 7. Journal des lots 175–198
+## 7. Journal des lots 175–205
 - **175** : flux, équipe ×1,50.
 - **176** : coûts d'équipe figés à leur coût pour 100 M$.
 - **177** : rachats et souscriptions des investisseurs ÷2.
@@ -220,4 +220,11 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **197** : Onésime 8e cran normal (barèmes prolongés, `syncBud` jusqu'à 7, `syncBud()` au chargement), coup de pouce retiré (`ecoBoost` inerte), « Atterrissage-en-Douceur » retiré du nom.
 - **198** : facteurs cohérents partout. Fenêtre d'un marché en convention d'affichage (`FSG` sur exposition et lecture : la liquidité était en dollar brut, d'où « +0,35 » contre « Liquid. −− » sur la ligne) ; flèches des tuiles, tableau « Lecture du desk » et détail de la fenêtre lisent tous `factRead()` (moyenne ×2,2 + intuition ; une flèche = 0,45).
 - **199 (outil, jeu inchangé)** : bot conscient du risque de faillite (`tools/bot.js`). Trésorerie visée après book, équipe comprise : `FLOORS` quant 2 %, fondamental 2 %, flux 4 % de l'encours (budget plafonné en conséquence ; book réduit, ordres les plus chers d'abord, jamais sous la moitié). En cours de trimestre, il écarte les ordres de dépêche et les options d'accident qui mettraient la trésorerie dans le rouge. Campagne de référence (270 parties, graines 10001–10030, lot 198) : survie 47 → 76 % (quant 68 → 89, fondamental 41 → 76, flux 32 → 62 ; facile 76, moyen 77, difficile 74), gain moyen 18,3 → 17,8 M$, écart-type 52,5 → 25,1, médiane −0,1 → 9,4. Faillites restantes : surtout trimestres 1 à 3.
+- **200** : anecdotes — pastille « chances de gagner NN % » sur chaque choix tiré au sort (exécution et traders), calculée sur les effets (`winP`, `winChip`) ; textes sans pourcentage chiffrés.
+- **201 / 201b** : capital de départ des concurrents par difficulté (`rivSeed` : 0,25 / 1,5 / 4 M$) ; choix du cran de budget (`rivBud`) en moyen et difficile, pas en facile (équipe standard). Effet apparié sur leur rendement trimestriel : moyen +0,9 pt, difficile ≈ 0 (déjà au meilleur cran).
+- **202** : Firmin Tatillon 30 → 40 pb.
+- **203** : promesses — conviction forte ×2 l'objectif standard (6 %), prophétie ×3 (9 %) ; textes « Joueur de poker » et « Le prophète » réécrits.
+- **204** : grand ruban du résultat piloté en JS (`opt.js` de `tapeSvg`, `.tclip`, `.tmk`, avancés par `theatre`) : le tracé du trimestre se déroule en 4 s avec le compteur, sans dépendre de SMIL.
+- **205** : capital de départ du joueur : facile 1 M$, moyen 0,5 M$, difficile 0 ; style quant +0,5, flux +0,5, fondamental 0. Calibration (378 parties) : survie 86 % à 0 M$, 94 % à 1 M$, 86 % à 2,5 M$ (au-delà, le capital part en équipe et en book).
+  Campagne de référence (bot 199, graines 10001–10030) lot 198 → 205 : survie 76 → 77 % (quant 89 → 86, fondamental 76 → 81, flux 62 → 66 ; facile 76 → 80, moyen 77 → 79, difficile 74 → 73), gain moyen 17,8 → 19,3 M$ (écart-type 25,1 → 29,3) ; flux 13,0 → 19,6 M$ (écart-type 36,8).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
