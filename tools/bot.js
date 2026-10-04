@@ -14,6 +14,10 @@ function utilText(t){
   if(/risque d'incident|fuite/.test(t))u-=0.5;
   return u;
 }
+/* lot 199 : risque de faillite. Le bot vise une trésorerie minimale après book (FLOORS, fraction de l'encours, commission
+   de gestion du trimestre comprise) : la réserve sert aux ajustements du trimestre. En cours de trimestre, il n'exécute
+   un ordre de dépêche que si la trésorerie reste ≥ 0 à la clôture attendue (trésorerie − coût + commission de gestion). */
+const FLOORS={syst:0.02,fonda:0.02,flux:0.04},FLOORK=1;   /* FLOORK : échelle (calibration) */
 function playGame(o){
   const file=o.file||'index.html';const html=CACHE[file]||(CACHE[file]=fs.readFileSync(file,'utf8'));
   const errs=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>errs.push(String(e.message||e)));
@@ -23,6 +27,7 @@ function playGame(o){
       w.setInterval=()=>0;w.clearInterval=()=>{};w.setTimeout=f=>{try{f()}catch(e){errs.push('t:'+e.message)}return 0}}});
   const w=dom.window,d=w.document,$=s=>d.querySelector(s),click=el=>{try{el.click()}catch(e){errs.push('click:'+e.message)}};
   const cfg={prof:o.prof,vol:o.vol||'std',size:o.size||'mid',univ:o.univ||'com',dur:o.dur||'normal'};
+  const FLOOR=o.floor!=null?o.floor:(FLOORS[o.prof]||0)*(o.fk!=null?o.fk:FLOORK);   /* lot 199 */
   const budArg=o.bud;   /* lot 92 : [front, back] ; ancien fichier : [salle, contrôle, recherche] */   /* lot 45 : sept crans, le standard est le cran 3 */const smart=!o.policy||o.policy==='smart',dumb=o.policy==='dumb';   /* dumb : book au hasard, choix au hasard */
   w.eval(`refreshStatus=function(){};toast=function(){};window.__plan=null;(function(){const E=evPlans;window.evPlans=function(){const r=E.apply(this,arguments);window.__plan=r;return r}})()`);
   if(o.probe)w.eval(o.probe);          /* sonde injectée dans la page, avant la partie */
@@ -39,7 +44,7 @@ function playGame(o){
       /* lot 39 : onze crans, et les plus chers se verrouillent quand la caisse ne suit pas —
          on prend alors le cran le plus haut encore ouvert sous celui demandé */
       ids.forEach((b,i)=>{let e=null;
-        const res=o.reserve==null?0.35:o.reserve,okR=j=>j===0||w.eval(`(S.budPrev&&${j}<=S.budPrev['${b}'])||budgetBpIf('${b}',${j})*1e-4*budNav()<=${1-res}*(mgrCash()+(S.qOps||0))`);   /* garde une réserve pour les ordres */
+        const res=o.reserve==null?0.35:o.reserve,okR=j=>j===0||w.eval(`(S.budPrev&&${j}<=S.budPrev['${b}'])||budgetBpIf('${b}',${j})*1e-4*budNav()<=Math.min(${1-res}*(mgrCash()+(S.qOps||0)),mgrCash()+(S.qOps||0)-${o.fbud===false?0:FLOOR}*S.nav)`);   /* lot 199 : l'équipe ne mange pas le plancher */   /* garde une réserve pour les ordres */
         for(let j=bud[i];j>=0;j--){const c=$(`#buds .lvl[data-b="${b}"][data-i="${j}"]`);if(c&&!c.disabled&&okR(j)){e=c;break}}
         if(e&&!e.classList.contains('on')){click(e);ch=true}});
       if(ch)continue}
@@ -60,6 +65,12 @@ function playGame(o){
           v+=W.X*0.30*S.crowd[i];return v});
         const mx=Math.max(0.001,...sc.map(Math.abs));const raw=sc.map(v=>v/mx*3);
         S.k=best(raw.map(z=>z/3));})()`);
+      /* lot 199 : plancher de trésorerie après book (risque de faillite). Le bot retire des ordres, les plus chers d'abord,
+         jusqu'à ce que la trésorerie après paiement atteigne `floor` × encours : de quoi payer impacts, dépêches et accidents
+         en cours de trimestre, sans dépôt de bilan à la clôture. Plancher par défaut : voir FLOORS. */
+      w.eval(`(()=>{const fl=${FLOOR}*S.nav,tc0=liveTC();for(let g=0;g<600;g++){if(mgrCash()>=fl-1e-12||liveTC()<=0.5*tc0)break;   /* jamais moins de la moitié du book */let bi=-1,bv=0;
+        for(let i=0;i<N;i++){const d=S.k[i]-S.k0[i];if(Math.abs(d)<1e-9)continue;const t=tcost(d,i).cost;if(t>bv){bv=t;bi=i}}
+        if(bi<0)break;S.k[bi]-=Math.sign(S.k[bi]-S.k0[bi])}})()`);
       if($('#send').disabled&&$('#fitbook'))click($('#fitbook'));
       w.eval('window.__sps=(window.__sps||[]).concat(riskShown(weights(S.k)).total)');
       if($('#send').disabled){errs.push('book bloque');break}
@@ -69,7 +80,10 @@ function playGame(o){
       let i=w.eval(`(()=>{const P=window.__plan,SC=S.sc;if(!P)return 1;const ph=[SC.ph,1-SC.ph];
         const lo=Math.min(S.lp,S.rc),beta=1+Math.max(0,(45-lo)/8);
         const U=P.map(o=>ph.reduce((a,p,s)=>a+p*(o.pay[s]*1e4*0.35+beta*(o.gz[s].lp+(typeof cf==='function'?0:o.gz[s].rc))),0));
-        return ${smart}?(U[0]>U[1]?0:1):(Math.random()<0.6?0:1)})()`);
+        /* lot 199 : pas d'ordre qui mettrait la clôture attendue dans le rouge */
+        if(${o.guard===false?'false':'true'}){const cash=mgrCash();P.forEach((o,j)=>{if((o.cost||0)>1e-12&&cash-o.cost<0)U[j]=-1e9})}
+        if(${smart}){let bi=U[0]>U[1]?0:1;if(U[bi]<=-1e8)bi=P.length-1;return bi}
+        return Math.random()<0.6?0:1})()`);
       if(!evOk[i])i=ev.length-1;
       if(w.eval('S.sc&&S.sc.ver'))st.verified++;
       if(i===0)st.follow++;click(ev[i]);continue}
@@ -77,11 +91,14 @@ function playGame(o){
     if($('.choice[data-tip="1"]')){st.tip=(st.tip||0)+1;click($('.choice[data-tip="1"]'));continue}
     /* accident de levier : le bot intelligent minimise perte du fonds + 2 × ce que paie sa trésorerie */
     if(smart&&$('.choice[data-t]')){const bs=[...d.querySelectorAll('.choice[data-t]')];
-      const c=JSON.parse(w.eval(`JSON.stringify(tailOpts(S.tailEv).map(o=>(o.id==='hold'?0.9*S.tailEv.L:o.f)+2*o.m))`));
+      const c=JSON.parse(w.eval(`JSON.stringify(tailOpts(S.tailEv).map(o=>(o.id==='hold'?0.9*S.tailEv.L:o.f)+2*o.m+(${o.guard===false?'false':'true'}&&o.m&&mgrCash()-o.m*S.nav<0?1e3:0)))`));   /* lot 199 : garde */
       let bi=-1,bc=1e9;bs.forEach((b,j)=>{if(!b.disabled&&c[j]<bc){bc=c[j];bi=j}});if(bi>=0){st.tail=(st.tail||0)+1;click(bs[bi]);continue}}
     const chs=[...d.querySelectorAll('.choice')].filter(b=>!b.disabled);
     if(chs.length){let bi=chs.length-1;
-      if(smart){let bu=-1e9;chs.forEach((c,j)=>{const u=utilText(c.textContent);if(u>bu+1e-9){bu=u;bi=j}})}
+      if(smart){let bu=-1e9;const cash=w.eval('S&&S.phase==="events"?mgrCash():null');chs.forEach((c,j)=>{let u=utilText(c.textContent);
+        const m=/(?:Coût|vous)\s*[−-]?\s*([\d\s,]+)\s*(k\$|M\$)/.exec(c.textContent.replace(/\u00a0/g,' '));
+        if(o.guard!==false&&m&&cash!=null){const v=parseFloat(m[1].replace(/\s/g,'').replace(',','.'))*(m[2]==='k$'?1e-6:1e-3);if(cash-v<0)u-=50}
+        if(u>bu+1e-9){bu=u;bi=j}})}
       else bi=Math.floor(Math.random()*chs.length);
       click(chs[bi]);continue}
     const cc=d.querySelectorAll('.card.commgo');
@@ -96,7 +113,7 @@ function playGame(o){
   const r=JSON.parse(w.eval(`JSON.stringify({score:(S.mgrFees-S.mgrCosts)*1000,fees:S.mgrFees*1000,costs:S.mgrCosts*1000,q:S.q,qtot:S.qtot,over:S.over,ret:S.idx-1,nav:S.nav*1000,bud:S.bud,lp:S.lp,rc:S.rc,feats:Object.keys(S.fl||{}).length,red:(S.cards||{}).r||0,yel:((S.cards||{}).log||[]).filter(x=>x.c==='jaune').length,tails:(S.tails||[]).length,sp:(window.__sps||[]).reduce((a,b)=>a+b,0)/Math.max(1,(window.__sps||[]).length),riv:S.rivals.map(r=>+(r.cum-1).toFixed(3))})`));
   if(o.collect){try{r.probe=JSON.parse(w.eval(o.collect))}catch(e){r.probe={err:e.message}}}
   w.close();
-  return Object.assign(r,{cfg,budIn:budArg,done,steps,nerr:errs.length,err:errs[0],st});
+  return Object.assign(r,{cfg,floor:FLOOR,budIn:budArg,done,steps,nerr:errs.length,err:errs[0],st});
 }
 module.exports={playGame,utilText};
 if(require.main===module){

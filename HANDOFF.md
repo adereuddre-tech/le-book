@@ -1,4 +1,4 @@
-# Le Book — note de reprise (état au lot 198)
+# Le Book — note de reprise (état au lot 198, bot 199)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
 https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 198.**
@@ -189,8 +189,7 @@ des investisseurs, incidents au-delà de leur niveau actuel, coût d'équipe du 
 
 ## 6. Reste à faire
 
-1. **Campagne de contrôle** des lots 175–197 (plan de référence, 270 parties, comparée au lot 174), puis retouches. Les
-   lots 193 (coûts fixes des concurrents) et 197 (8e cran) touchent aussi l'équilibre.
+1. **Équilibre** (bot 199, lot 198) : survie 76 %, mais flux 62 % et aucun gradient de difficulté (76 / 77 / 74) ; le flux ne paie pas plus que les autres. Effet propre des lots 193–198 non isolé (rejouer le lot 192 avec le bot 199).
 2. **Libellés des tuiles de facteurs** (proposé, pas demandé) : « lecture » (flèches) et « votre exposition » (chiffre) ; sur une tuile, flèches et chiffre sont deux grandeurs différentes (lecture du desk / exposition de votre book), ce qui peut sembler contradictoire (▲▲▲ avec −2).
 
 Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de débriefing.
@@ -220,4 +219,5 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **196** : concurrent fermé affiché, classé dernier, « clôturé » en rouge, exclu des rangs ; remplacé au début du trimestre suivant (`planQuarter`, `S.qRivIn`, annonce à l'ouverture).
 - **197** : Onésime 8e cran normal (barèmes prolongés, `syncBud` jusqu'à 7, `syncBud()` au chargement), coup de pouce retiré (`ecoBoost` inerte), « Atterrissage-en-Douceur » retiré du nom.
 - **198** : facteurs cohérents partout. Fenêtre d'un marché en convention d'affichage (`FSG` sur exposition et lecture : la liquidité était en dollar brut, d'où « +0,35 » contre « Liquid. −− » sur la ligne) ; flèches des tuiles, tableau « Lecture du desk » et détail de la fenêtre lisent tous `factRead()` (moyenne ×2,2 + intuition ; une flèche = 0,45).
+- **199 (outil, jeu inchangé)** : bot conscient du risque de faillite (`tools/bot.js`). Trésorerie visée après book, équipe comprise : `FLOORS` quant 2 %, fondamental 2 %, flux 4 % de l'encours (budget plafonné en conséquence ; book réduit, ordres les plus chers d'abord, jamais sous la moitié). En cours de trimestre, il écarte les ordres de dépêche et les options d'accident qui mettraient la trésorerie dans le rouge. Campagne de référence (270 parties, graines 10001–10030, lot 198) : survie 47 → 76 % (quant 68 → 89, fondamental 41 → 76, flux 32 → 62 ; facile 76, moyen 77, difficile 74), gain moyen 18,3 → 17,8 M$, écart-type 52,5 → 25,1, médiane −0,1 → 9,4. Faillites restantes : surtout trimestres 1 à 3.
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
