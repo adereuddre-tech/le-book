@@ -2,7 +2,7 @@
 
 Jeu de gérant de hedge fund global macro. Fichier unique `index.html` (~716 ko),
 publié sur GitHub Pages : https://adereuddre-tech.github.io/le-book/
-Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **189**.
+Dépôt : `adereuddre-tech/le-book`, branche `main`. Dernier lot publié : **192**.
 L'historique détaillé des lots 1 à 75 et les anciennes mesures sont dans `docs/HANDOFF_archive_lot90.md`.
 
 ## Règles d'Antoine (à respecter)
@@ -892,6 +892,13 @@ survie). Cibles de survie : ≈ 70 % en normal, ≈ 60 % en difficile.
 - **187** : bonus d'équipe ×1,20 → ×0,80 (`BONFX.c`), sur fourchette et impact.
 - **188** : suivre une dépêche ×2 (×1,6), un événement extrême ×5 (×2,5) ; concurrents qui suivent : même barème (`rivTurn`).
 - **189** : tableau des concurrents — « dépêches et chocs » (somme de `S.xRiv`) ; même ligne pour votre fonds (`evM`).
+
+- **190** : budget — coût supplémentaire en dollars par personne et coût de l'équipe (`m3`, trois chiffres significatifs) ;
+  indemnités affichées à un demi-trimestre (comme appliquées).
+- **191** : écran d'ouverture — `S.phase='open'` (la trésorerie retirait une seconde fois bonus et co-investissement).
+- **192** : résultat du trimestre — point de départ du compteur du trimestre fourni (`opt.q0v`).
+- Restent demandés : coûts fixes pour les concurrents, logos dans le tableau des concurrents, objectif « la citadelle tombe »,
+  concurrent fermé affiché « clôturé » jusqu'au trimestre suivant, Onésime dans la progression du front office.
 
 ### Après les lots 102–110
 - Survie par difficulté à l'ordre voulu (lot 113) ; quant encore pas le plus solide ; score du difficile ≤ moyen.

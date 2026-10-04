@@ -4074,7 +4074,7 @@ function tapeSvg(p,from,opt){
  const hx=x(n-1),hy=y(p[n-1]),myC=S&&S.crest!==undefined?S.crest:0;
  const me=`<circle cx="${f(hx)}" cy="${f(hy)}" r="8.6" fill="none" stroke="#F3EEE4" stroke-width="1.5"/>${crestMark(myC,hx,hy,7)}`;
  const vals=anim?Array.from({length:NS+1},(_,k)=>p[at(k)]):[p[n-1]];
- const dv=` data-vals="${vals.map(v=>v.toFixed(2)).join(';')}" data-dur="${anim?DRAW:0}" data-q0="${(p[Math.min(n-1,opt.qs||0)]||100).toFixed(3)}"`;
+ const dv=` data-vals="${vals.map(v=>v.toFixed(2)).join(';')}" data-dur="${anim?DRAW:0}" data-q0="${(opt.q0v||p[Math.min(n-1,opt.qs||0)]||100).toFixed(3)}"`;
  if(!anim){
   const head=`<g><animateTransform attributeName="transform" type="translate" dur="1.9s" repeatCount="indefinite"
     values="0 0;${f(-hx*0.14)} ${f(-hy*0.14)};0 0"/>
@@ -6662,7 +6662,7 @@ function screenDebrief(o){
    <div class="regime">${R.nm}</div><div class="sub">${R.d}</div></div>
   ${(S.tape&&S.tape.pts&&S.tape.pts.length>3)?`<div class="tape big" style="margin-top:12px"><div class="tapehead">
     <span>T${S.q} <b class="cntq">—</b> · CUMUL</span><b class="cnt">—</b></div>
-    ${tapeSvg(S.tape.pts,S.tape.q0||0,{h:150,anim:1,draw:3,zero:1,rivals:rivalTapes(),qs:S.tape.q0||0,ql:S.q})}</div>`
+    ${tapeSvg(S.tape.pts,S.tape.q0||0,{h:150,anim:1,draw:3,zero:1,rivals:rivalTapes(),qs:S.tape.q0||0,ql:S.q,q0v:S.tape.pts[S.tape.pts.length-1]/(1+o.qTotal)})}</div>`
    :navBox(`PERFORMANCE NETTE CUMULÉE · ${S.q} TRIMESTRE${S.q>1?'S':''}`,idxSeries(),{anim:1,trough:1})}
   <div class="thold">${ess}${warn.map(t=>`<div class="flag" style="margin-top:12px"><span>${t}</span></div>`).join('')}${bnSel}${gtSel}${lmSel}${coSel}
 
