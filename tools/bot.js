@@ -17,7 +17,9 @@ function utilText(t){
 /* lot 199 : risque de faillite. Le bot vise une trésorerie minimale après book (FLOORS, fraction de l'encours, commission
    de gestion du trimestre comprise) : la réserve sert aux ajustements du trimestre. En cours de trimestre, il n'exécute
    un ordre de dépêche que si la trésorerie reste ≥ 0 à la clôture attendue (trésorerie − coût + commission de gestion). */
-const FLOORS={syst:0.02,fonda:0.02,flux:0.04},FLOORK=0;   /* FLOORK : échelle. Bot 206 : 0 (plancher retiré, garde conservée) — un bot moins prudent, exposé au risque de faillite */
+const FLOORS={syst:0.02,fonda:0.02,flux:0.04},FLOORK=0;
+/* lot 211 (lot D) : seuil de netteté du signal avant de réagir à une dépêche, par style (o.theta pour forcer) */
+const THETA0={syst:0.8,fonda:0.4,flux:0};   /* FLOORK : échelle. Bot 206 : 0 (plancher retiré, garde conservée) — un bot moins prudent, exposé au risque de faillite */
 function playGame(o){
   const file=o.file||'index.html';const html=CACHE[file]||(CACHE[file]=fs.readFileSync(file,'utf8'));
   const errs=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>errs.push(String(e.message||e)));
@@ -27,7 +29,8 @@ function playGame(o){
       w.setInterval=()=>0;w.clearInterval=()=>{};w.setTimeout=f=>{try{f()}catch(e){errs.push('t:'+e.message)}return 0}}});
   const w=dom.window,d=w.document,$=s=>d.querySelector(s),click=el=>{try{el.click()}catch(e){errs.push('click:'+e.message)}};
   const cfg={prof:o.prof,vol:o.vol||'std',size:o.size||'mid',univ:o.univ||'com',dur:o.dur||'normal'};
-  const FLOOR=o.floor!=null?o.floor:(FLOORS[o.prof]||0)*(o.fk!=null?o.fk:FLOORK);   /* lot 199 */
+  const FLOOR=o.floor!=null?o.floor:(FLOORS[o.prof]||0)*(o.fk!=null?o.fk:FLOORK);
+  const THETA=o.theta!=null?{syst:o.theta,fonda:o.theta,flux:o.theta}:THETA0;   /* lot 199 */
   const budArg=o.bud;   /* lot 92 : [front, back] ; ancien fichier : [salle, contrôle, recherche] */   /* lot 45 : sept crans, le standard est le cran 3 */const smart=!o.policy||o.policy==='smart',dumb=o.policy==='dumb';   /* dumb : book au hasard, choix au hasard */
   w.eval(`refreshStatus=function(){};toast=function(){};window.__plan=null;(function(){const E=evPlans;window.evPlans=function(){const r=E.apply(this,arguments);window.__plan=r;return r}})()`);
   if(o.probe)w.eval(o.probe);          /* sonde injectée dans la page, avant la partie */
@@ -92,7 +95,10 @@ function playGame(o){
         if(${o.guard===false?'false':'true'}){const cash=mgrCash();P.forEach((o,j)=>{if((o.cost||0)>1e-12&&cash-o.cost<0)U[j]=-1e9})}
         const ok=${JSON.stringify(ok)};
         if(!${smart})return Math.random()<0.6?0:P.findIndex(o=>o.n===0);
-        let bi=P.findIndex(o=>o.n===0);P.forEach((o,j)=>{if(ok[j]&&U[j]>U[bi]+1e-9)bi=j});return bi})()`);
+        /* lot 211 (lot D) : seuil de netteté par style — z = (U − U_rien) / écart-type de cet écart entre les deux scénarios */
+        const TH=${JSON.stringify(THETA)}[S.prof]||0,nn=P.findIndex(o=>o.n===0);
+        const z=j=>{const d=ph.map((p,s)=>(P[j].pay[s]-P[nn].pay[s])*1e4*0.35+beta*(P[j].gz[s].lp-P[nn].gz[s].lp));const m=ph[0]*d[0]+ph[1]*d[1],sd=Math.abs(d[0]-d[1])*Math.sqrt(ph[0]*ph[1]);return sd>1e-9?m/sd:(m>0?9:-9)};
+        let bi=nn;P.forEach((o,j)=>{if(ok[j]&&j!==nn&&z(j)>=TH&&U[j]>U[bi]+1e-9)bi=j});return bi})()`);
       if(i<0||!ok[i])i=[...evs].findIndex(b=>b.classList.contains('zr'));
       if(w.eval('S.sc&&S.sc.ver'))st.verified++;
       const nn=w.eval(`(window.__plan&&window.__plan[${i}])?window.__plan[${i}].n:0`);
