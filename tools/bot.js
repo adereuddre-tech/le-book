@@ -75,6 +75,22 @@ function playGame(o){
       w.eval('window.__sps=(window.__sps||[]).concat(riskShown(weights(S.k)).total)');
       if($('#send').disabled){errs.push('book bloque');break}
       click($('#send'));continue}
+    /* lot 207 : dépêche à 5 crans — même utilité qu'avant, sur tous les crans ouverts ; clic sur le cran puis « Valider » */
+    const evs=d.querySelectorAll('.evstep');
+    if(evs.length&&$('#evok')){st.ev++;
+      const ok=[...evs].map(b=>!b.disabled);
+      let i=w.eval(`(()=>{const P=window.__plan,SC=S.sc;if(!P)return -1;const ph=[SC.ph,1-SC.ph];
+        const lo=Math.min(S.lp,S.rc),beta=1+Math.max(0,(45-lo)/8);
+        const U=P.map(o=>ph.reduce((a,p,s)=>a+p*(o.pay[s]*1e4*0.35+beta*(o.gz[s].lp)),0));
+        if(${o.guard===false?'false':'true'}){const cash=mgrCash();P.forEach((o,j)=>{if((o.cost||0)>1e-12&&cash-o.cost<0)U[j]=-1e9})}
+        const ok=${JSON.stringify(ok)};
+        if(!${smart})return Math.random()<0.6?0:P.findIndex(o=>o.n===0);
+        let bi=P.findIndex(o=>o.n===0);P.forEach((o,j)=>{if(ok[j]&&U[j]>U[bi]+1e-9)bi=j});return bi})()`);
+      if(i<0||!ok[i])i=[...evs].findIndex(b=>b.classList.contains('zr'));
+      if(w.eval('S.sc&&S.sc.ver'))st.verified++;
+      const nn=w.eval(`(window.__plan&&window.__plan[${i}])?window.__plan[${i}].n:0`);
+      if(nn>0)st.follow++;if(nn<0)st.contra=(st.contra||0)+1;if(Math.abs(nn)===1)st.half=(st.half||0)+1;
+      click(evs[i]);click($('#evok'));continue}
     const ev=d.querySelectorAll('.choice.evopt');const evOk=[...ev].map(b=>!b.disabled);
     if(ev.length){st.ev++;
       let i=w.eval(`(()=>{const P=window.__plan,SC=S.sc;if(!P)return 1;const ph=[SC.ph,1-SC.ph];

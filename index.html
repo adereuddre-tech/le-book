@@ -461,6 +461,13 @@ summary::marker{color:var(--dimmer)}
 .pos .rr{font-family:var(--mono);font-size:12px;text-align:right}
 .pos .sub2{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--dimmer);margin-bottom:6px}
 .seg{display:grid;grid-template-columns:repeat(11,1fr);gap:2px}
+.evsel{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px}
+.evstep{padding:8px 0 6px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--dim);text-align:center;font-family:var(--mono)}
+.evstep b{display:block;font-size:15px}.evstep small{display:block;font-size:9px;letter-spacing:.03em}
+.evstep.up.on{background:rgba(63,207,142,.16);border-color:var(--long);color:var(--long)}
+.evstep.dn.on{background:rgba(242,84,91,.16);border-color:var(--short);color:var(--short)}
+.evstep.zr.on{background:var(--flat);border-color:var(--txt);color:var(--txt)}
+.evstep:disabled{opacity:.35}
 .seg button{padding:8px 0;border-radius:4px;background:var(--panel2);color:var(--dimmer);font-family:var(--mono);font-size:10px}
 .seg button[data-v="-5"],.seg button[data-v="-4"],.seg button[data-v="4"],.seg button[data-v="5"]{background:#1F2233}
 .seg button.on.zero{background:var(--flat);color:var(--txt)}
@@ -5748,24 +5755,34 @@ function screenMacroEvent(ev){
   <div class="block"><div class="blockhead"><h2>Votre réaction</h2><span class="hint">sur la suite du mouvement</span></div>
    ${SC.ver?`<p class="note" style="margin:0 0 8px"><b>Source vérifiée</b> : votre réseau a recoupé l'information, la probabilité affichée est la vraie.</p>`:''}
    <p class="note" style="margin:0 0 6px">Confiance avant votre décision : <b>${Math.round(S.lp)}</b>. Chaque issue donne la confiance à la fin de la dépêche.</p>
-   ${plan.map((o,i)=>{const ban=o.a==='follow'&&o.trades.length&&(redOn('risk')||redOn('noadd')),ko=false;
-     return `<button class="choice evopt" data-i="${i}"${ban||ko?' disabled':''}><b>${o.b}</b><span class="evs">${o.s}${o.a==='follow'&&o.t?bkD(o.t,0,false):''}${ban?' <b class="neg-g">interdit par le comité (carton rouge)</b>':ko?' <b class="neg-g">hors trésorerie</b>':''}</span>${ptab(o)}</button>`}).join('')}
+   ${(()=>{const NO=plan.findIndex(o=>o.n===0);
+     /* lot 207 : un cran, un panneau ; le bouton « Valider » joue le cran affiché */
+     return `<div class="evsel">${plan.map((o,i)=>{const ban=o.trades.length&&(redOn('risk')||redOn('noadd'))&&o.v1>o.v0+1e-9;o.ban=ban;
+       return `<button class="evstep${o.n>0?' up':o.n<0?' dn':' zr'}${i===NO?' on':''}" data-i="${i}"${ban||(!o.trades.length&&o.n!==0)?' disabled':''}><b>${o.n>0?'+':o.n<0?'−':''}${Math.abs(o.n)}</b><small>${o.n>0?'renforcer':o.n<0?'contrer':'rien'}</small></button>`}).join('')}</div>
+     <div class="evpan" id="evpan"></div>
+     <button class="cta" id="evok" style="margin-top:10px">Valider</button>`})()}
    <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion ; votre desk n'est en place qu'à ${(prof.capture*100).toFixed(0)} % quand le marché repart, c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
   </div>
  </div>`;
  const go=i=>{clearTimer();resolveEvent(ev,touched,plan[i],imm,navB)};
- app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>go(+b.dataset.i));
- armTimer(()=>go(plan.length-1));
+ const NO=plan.findIndex(o=>o.n===0);let sel=NO;
+ const pan=i=>{const o=plan[i];document.getElementById('evpan').innerHTML=`<div class="choice evopt" data-i="${i}" style="cursor:default"><b>${o.b}</b><span class="evs">${o.s}${o.n!==0&&o.trades.length&&o.t?bkD(o.t,0,false):''}${o.ban?' <b class="neg-g">interdit par le comité (carton rouge)</b>':''}</span>${ptab(o)}</div>`;
+  app.querySelectorAll('.evstep').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));sel=i};
+ pan(NO);
+ app.querySelectorAll('.evstep').forEach(b=>b.onclick=()=>{if(!b.disabled)pan(+b.dataset.i)});
+ document.getElementById('evok').onclick=()=>go(sel);
+ armTimer(()=>go(NO));
 }
 /* les deux réactions possibles, chiffrées exactement : ce qui est affiché est ce qui arrive */
 function evPlans(ev,touched){
  const prof=PROF(),SC=S.sc,syst=!!prof.noAdj;
  const pieces=[];
- /* suivre le mouvement */
+ /* lot 207 : un cran a (unités dans le sens du choc, négatif = contrer) */
+ const mk=a=>{
  const t=[...S.k],kE=[...S.k],trades=[];let cost=0,drift=0;
  touched.forEach(i=>{const sh=Math.sign(ev.hit[INSTR[i].sym]);
   if(ev.shut&&ev.shut.includes(INSTR[i].sym))return;   /* lot 58 : cotation suspendue */
-  const tg=clampK(i,S.k[i]+sh*2),d=tg-S.k[i];if(!d)return;
+  const tg=clampK(i,S.k[i]+sh*a),d=tg-S.k[i];if(!d)return;
   const tc=tcost(d,i);const c=tc.cost*(ev.stress?5:2)*S.tcMultQ*(S.leakQ?1.45:1);
   cost+=c;drift+=Math.abs(d);t[i]=tg;kE[i]=S.k[i]+prof.capture*d;
   trades.push({i,from:S.k[i],to:tg,bn:tc.bn,c})});
@@ -5778,21 +5795,25 @@ function evPlans(ev,touched){
   fixRc.push([-Math.min(3,0.25*drift+0.5),`Écart au book de départ (${drift} unité${drift>1?'s':''})`]);
   const db=Math.max(-3,Math.min(3,0.5*(band1-band0)));if(Math.abs(db)>=0.05)fixRc.push([db,`Vol ex-ante ${pctc(v0)} → ${pctc(v1)}`]);
   if(syst)fixRc.push([-3,'Dérogation au modèle']);
-  if(S.noAddQ)fixRc.push([-6,"Renforcement malgré l'interdiction du comité"]);
+  if(S.noAddQ&&v1>v0+1e-9)fixRc.push([-6,`${a>0?'Renforcement':'Prise de position'} malgré l'interdiction du comité`]);
  }
  const gzF=payF.map(p=>{const a=pnlD(p);let lp=a.lp,rc=a.rc;
   let c=cf(a.lp,a.rc);   /* lot 58 : la somme exacte de ce que gauge() appliquera, appel par appel */
   if(trades.length){const r=reactGz(p);lp+=r.lp;rc+=r.rc;c+=cf(r.lp,r.rc);fixRc.forEach(x=>{rc+=x[0];c+=cf(0,x[0])})}
   return {lp:c,rc,pnl:a}});
  const syms=trades.map(x=>INSTR[x.i].sym).join(', ');
- const fS=!trades.length?'Déjà au maximum autorisé sur les marchés touchés : aucun ordre possible.'
-  :`${syst?'Dérogation au modèle : ':''}+2 unités dans le sens du choc sur ${syms}. ${free?`Coût ${nb(mm(cost))} offert par le desk`:`Coût ${nb(mm(cost))} à votre charge`} · vol ex-ante ${pctc(v0)} → ${pctc(v1)}${S.noAddQ?' · interdit par le comité':''}.`;
- pieces.push({a:'follow',b:'Suivre le mouvement',s:fS,t,kE,trades,cost:costP,costRaw:cost,free,pay:payF,gz:gzF,fixRc});
+ const fS=!trades.length?(a<0?'Aucun ordre possible sur les marchés touchés (limite de position ou cotation suspendue).':'Déjà au maximum autorisé sur les marchés touchés : aucun ordre possible.')
+  :`${syst?'Dérogation au modèle : ':''}${a>0?'+':'−'}${Math.abs(a)} unité${Math.abs(a)>1?'s':''} ${a>0?'dans le sens du choc':'contre le choc'} sur ${syms}. ${free?`Coût ${nb(mm(cost))} offert par le desk`:`Coût ${nb(mm(cost))} à votre charge`} · vol ex-ante ${pctc(v0)} → ${pctc(v1)}${S.noAddQ?' · interdit par le comité':''}.`;
+  const AID={2:'follow',1:'half','-1':'chalf','-2':'contra'},ALAB={2:'Renforcer au maximum',1:'Renforcer à moitié','-1':'Contrer à moitié','-2':'Contrer au maximum'};
+ return {a:AID[a],n:a,b:ALAB[a],s:fS,t,kE,trades,cost:costP,costRaw:cost,free,pay:payF,gz:gzF,fixRc,v0,v1};
+ };
+ pieces.push(mk(2),mk(1));
  /* ne pas réagir */
  const payN=SC.m.map(m=>{const we=weights(S.k);let v=0;touched.forEach(i=>v+=we[i]*m*ev.hit[INSTR[i].sym]*INSTR[i].sigQ);return v});
  pieces.push({a:'none',b:syst?'Laisser le modèle':'Ne pas réagir',
   s:syst?'Le modèle rééquilibrera au prochain signal. Aucun ordre, aucun coût.':'Aucun ordre, aucun coût : le book reste tel quel.',
-  t:[...S.k],kE:[...S.k],trades:[],cost:0,costRaw:0,free:false,pay:payN,gz:payN.map(p=>{const a=pnlD(p);return {lp:cf(a.lp,a.rc),rc:a.rc,pnl:a}}),fixRc:[]});
+  t:[...S.k],kE:[...S.k],trades:[],cost:0,costRaw:0,free:false,pay:payN,gz:payN.map(p=>{const a=pnlD(p);return {lp:cf(a.lp,a.rc),rc:a.rc,pnl:a}}),fixRc:[],n:0});
+ pieces.push(mk(-1),mk(-2));   /* lot 207 */
  /* lot 119 : si l'effet net de la dépêche sur le fonds est nul ou positif, la confiance ne baisse pas sur l'ensemble de la dépêche */
  pieces.forEach(pc=>pc.gz.forEach((z,k)=>{const net=(S.evImm||0)+pc.pay[k],i0=(S.evImmG&&S.evImmG.lp)||0;z.fl=(net>=0&&z.lp+i0<0)?-(z.lp+i0):0;z.lp+=z.fl}));
  return pieces;
@@ -5845,7 +5866,7 @@ function resolveEvent(ev,touched,o,imm,navB){
  const scName=['Le mouvement s\'est poursuivi.','Le mouvement s\'est retourné.'][si];
  const tr=o.trades.map(x=>`${INSTR[x.i].sym} ${x.from>0?'+':''}${x.from} → ${x.to>0?'+':''}${x.to} (${moneyB(x.bn)}, ${mm(x.c)})`).join(' ; ');
  const what=!acted?(syst?"Le modèle n'a rien fait, comme prévu.":"Vous tenez votre book sans bouger.")
-   :`${syst?'Vous passez outre le modèle et suivez le mouvement':'Vous suivez le mouvement'} : ${tr}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${o.free?` Votre desk vous offre cet ajustement (un par trimestre) : ${mm(o.costRaw)} économisés.`:''}`;
+   :`${syst?'Vous passez outre le modèle et ':'Vous '}${{2:'renforcez au maximum dans le sens du mouvement',1:'renforcez à moitié dans le sens du mouvement','-1':'contrez à moitié le mouvement','-2':'contrez au maximum le mouvement'}[o.n]||'suivez le mouvement'} : ${tr}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${o.free?` Votre desk vous offre cet ajustement (un par trimestre) : ${mm(o.costRaw)} économisés.`:''}`;
  const keyRows=[['<b>Bilan de la dépêche</b>',`${sgn(total,1)} · ${inU(total*navB,UE)}`],
   ['Confiance',`${Math.round(S.lp-tg.lp)} → <b>${Math.round(S.lp)}</b> (${gz(tg.lp,0,'always')})`]];
  resultCard(`DÉPÊCHE · ${ev.t.toUpperCase()}`,['Le mouvement s\'est poursuivi','Le mouvement s\'est retourné'][si],

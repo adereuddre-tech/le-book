@@ -36,6 +36,14 @@ const SIG=[];while(steps++<3000&&!done){
   if(w.__e){errs.push('reco:'+w.__e);w.__e=null}
   if($('#send').disabled&&$('#fitbook'))click($('#fitbook'));
   stats.qs++;if($('#send').disabled){errs.push('book bloque');break}click($('#send'));continue}
+ /* lot 207 : dépêche à 5 crans — joueur au hasard sur les crans ouverts (sage : ne pas réagir) */
+ const evs=[...d.querySelectorAll('.evstep:not([disabled])')];
+ if(evs.length&&d.querySelector('#evok')){stats.events++;
+  if(RES&&stats.events===RES&&!resumed){resumed=1;const sv=w.localStorage.getItem('lebook_save_v2');dom=mk(sv);w=dom.window;d=w.document;
+   const rb=d.querySelector('#resume');if(!rb){errs.push('pas de bouton reprendre');break}rb.click();stats.resumedTo=(d.querySelector('.evstep')?'dépêche':d.querySelector('.rescard')?'résultat':'?');continue}
+  const zr=evs.find(b=>b.classList.contains('zr'));const b=sage?zr:evs[Math.floor(rnd()*evs.length)];
+  const k=b.classList.contains('up')?'follow':b.classList.contains('dn')?'contra':'none';stats[k]=(stats[k]||0)+1;
+  w.__lg0=w.eval('S.lp+"|"+S.rc');click(b);click(d.querySelector('#evok'));continue}
  const ev=d.querySelectorAll('.choice.evopt:not([disabled])');
  if(ev.length){stats.events++;
   const pl=w.eval(`JSON.stringify({p:S.sc.p,s:[...document.querySelectorAll('.choice.evopt')].map(b=>b.textContent.replace(/\\s+/g,' '))})`);
