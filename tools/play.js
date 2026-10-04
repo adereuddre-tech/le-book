@@ -36,6 +36,9 @@ const SIG=[];while(steps++<3000&&!done){
   if(w.__e){errs.push('reco:'+w.__e);w.__e=null}
   if($('#send').disabled&&$('#fitbook'))click($('#fitbook'));
   stats.qs++;if($('#send').disabled){errs.push('book bloque');break}click($('#send'));continue}
+ /* lot 209 : accident à 5 crans + couverture — au hasard (sage : couper 50 %) */
+ const tls=[...d.querySelectorAll('.tlstep:not([disabled])')];
+ if(tls.length&&d.querySelector('#tlok')){const b=sage?tls[2]:tls[Math.floor(rnd()*tls.length)];stats['tl_'+b.dataset.t]=(stats['tl_'+b.dataset.t]||0)+1;click(b);click(d.querySelector('#tlok'));continue}
  /* lot 208 : rivalité à 5 crans — au hasard sur les crans ouverts (sage : ne pas répondre) */
  const rvs=[...d.querySelectorAll('.rvstep:not([disabled])')];
  if(rvs.length&&d.querySelector('#rvok')){const zr=rvs.find(b=>b.dataset.a==='none');const b=sage?zr:rvs[Math.floor(rnd()*rvs.length)];

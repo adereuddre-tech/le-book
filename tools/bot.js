@@ -113,9 +113,11 @@ function playGame(o){
     /* tuyau du prime broker (espérance positive) : le bot le prend */
     if($('.choice[data-tip="1"]')){st.tip=(st.tip||0)+1;click($('.choice[data-tip="1"]'));continue}
     /* accident de levier : le bot intelligent minimise perte du fonds + 2 × ce que paie sa trésorerie */
-    if(smart&&$('.choice[data-t]')){const bs=[...d.querySelectorAll('.choice[data-t]')];
-      const c=JSON.parse(w.eval(`JSON.stringify(tailOpts(S.tailEv).map(o=>(o.id==='hold'?0.9*S.tailEv.L:o.f)+2*o.m+(${o.guard===false?'false':'true'}&&o.m&&mgrCash()-o.m*S.nav<0?1e3:0)))`));   /* lot 199 : garde */
-      let bi=-1,bc=1e9;bs.forEach((b,j)=>{if(!b.disabled&&c[j]<bc){bc=c[j];bi=j}});if(bi>=0){st.tail=(st.tail||0)+1;click(bs[bi]);continue}}
+    /* lot 209 : accident à 5 crans + couverture — minimise perte attendue du fonds + 2 × trésorerie (garde) */
+    if($('.tlstep')&&$('#tlok')){const bs=[...d.querySelectorAll('.tlstep')];
+      const c=JSON.parse(w.eval(`JSON.stringify(tailOpts(S.tailEv).map(o=>o.fE+2*o.m-0.0005*(o.cA+o.cB)/2+(${o.guard===false?'false':'true'}&&o.m&&mgrCash()-o.m*S.nav<0?1e3:0)))`));
+      let bi=-1,bc=1e9;bs.forEach((b,j)=>{const v=smart?c[j]:Math.random();if(!b.disabled&&v<bc){bc=v;bi=j}});
+      if(bi<0)bi=2;st.tail=(st.tail||0)+1;st['t_'+bi]=(st['t_'+bi]||0)+1;click(bs[bi]);click($('#tlok'));continue}
     const chs=[...d.querySelectorAll('.choice')].filter(b=>!b.disabled);
     if(chs.length){let bi=chs.length-1;
       if(smart){let bu=-1e9;const cash=w.eval('S&&S.phase==="events"?mgrCash():null');chs.forEach((c,j)=>{let u=utilText(c.textContent);
