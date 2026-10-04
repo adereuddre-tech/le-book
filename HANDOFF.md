@@ -189,7 +189,7 @@ des investisseurs, incidents au-delà de leur niveau actuel, coût d'équipe du 
 
 ## 6. Reste à faire
 
-1. **Équilibre** (lot 205, bot 199) : survie 77 % ; gradient de difficulté faible (80 / 79 / 73) ; le capital seul ne le crée pas. Leviers possibles : coût d'équipe, commission ou sévérité des investisseurs par difficulté.
+1. **Équilibre** (lot 205, bot 199) : survie 77 % ; gradient de difficulté faible (80 / 79 / 73) ; le capital seul ne le crée pas. Capital et coût d'équipe testés sans effet utile (le bot s'adapte). Leviers restants : coût des incidents et accidents pour la société de gestion selon la difficulté (cause principale des faillites), rachats des investisseurs.
 2. **Libellés des tuiles de facteurs** (proposé, pas demandé) : « lecture » (flèches) et « votre exposition » (chiffre) ; sur une tuile, flèches et chiffre sont deux grandeurs différentes (lecture du desk / exposition de votre book), ce qui peut sembler contradictoire (▲▲▲ avec −2).
 
 Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de débriefing.
@@ -227,4 +227,5 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **204** : grand ruban du résultat piloté en JS (`opt.js` de `tapeSvg`, `.tclip`, `.tmk`, avancés par `theatre`) : le tracé du trimestre se déroule en 4 s avec le compteur, sans dépendre de SMIL.
 - **205** : capital de départ du joueur : facile 1 M$, moyen 0,5 M$, difficile 0 ; style quant +0,5, flux +0,5, fondamental 0. Calibration (378 parties) : survie 86 % à 0 M$, 94 % à 1 M$, 86 % à 2,5 M$ (au-delà, le capital part en équipe et en book).
   Campagne de référence (bot 199, graines 10001–10030) lot 198 → 205 : survie 76 → 77 % (quant 89 → 86, fondamental 76 → 81, flux 62 → 66 ; facile 76 → 80, moyen 77 → 79, difficile 74 → 73), gain moyen 17,8 → 19,3 M$ (écart-type 25,1 → 29,3) ; flux 13,0 → 19,6 M$ (écart-type 36,8).
+- **Calibration du coût d'équipe par difficulté (sans changement retenu)** : 240 parties, graines 20001–20010, `costM` facile ×0,85/0,70/0,55 → survie 90/90/83 % ; moyen ×1,10/1,30 → 93/90 % ; difficile ×1,75/2,10/2,50 → 83/87/90 %. Aucun effet utile : le bot ajuste son cran d'équipe à sa caisse, et en difficile une équipe plus chère le pousse vers une équipe plus petite, donc plus prudente. Le coût d'équipe, comme le capital, ne crée pas le gradient de difficulté.
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
