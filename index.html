@@ -3190,10 +3190,21 @@ const XRIVR=0.75;   /* part du mouvement complet que les concurrents encaissent,
 function addXRiv(a){const t=typeof qElapsed==='function'&&S.live?qElapsed():0;(S.xRivL=S.xRivL||[]).push({t,a});S.xRivQ=S.q;S.xRivT=S.xRivT==null?t:S.xRivT;S.xRiv=S.rivals.map((r,j)=>((S.xRiv||[])[j]||0)+(a[j]||0))}
 function rivXAt(j,t,tq){if(S.xRivQ!==tq)return 0;if(!S.xRivL)return (S.xRiv&&t>=(S.xRivT||0))?(S.xRiv[j]||0):0;return S.xRivL.reduce((x,e)=>x+(t>=e.t?(e.a[j]||0):0),0)}
 const RIVEV={flux:1.5,fonda:1.5,syst:1};
-function rivEvHit(ev,touched,mult){if(!S.rivals)return;const a=S.rivals.map((rv,j)=>{const w=(rv._bk&&rv._bkq===S.q)?rv._bk:rivBookQ(rv,j,S.q);
-  const st=rv.style||'fonda',ph=st==='fonda'?(prng32(hash32('rev'+j+'_'+S.q+'_'+(ev.t||''),S.seed))()<0.5?RIVEV.fonda:1):(RIVEV[st]||1);
-  let v=0;touched.forEach(i=>{const h=(ev.hit[INSTR[i].sym]||0)*INSTR[i].sigQ;v+=w[i]*h*(0.5+ph*mult)});
-  if(ph>1){const w1=[...w];touched.forEach(i=>{w1[i]=w[i]*ph});v-=rivTurn(w1,w)*(ev.stress?5:2)}return v});addXRiv(a)}
+const RIVTH={syst:1.2,fonda:0.7,flux:0.3},RIVAMP={syst:1.25,fonda:1.5,flux:1.75};   /* lot 212 */
+function rivEta(){const z=SIZE()||{};return z.id==='small'?1.0:z.id==='mega'?0.3:0.6}
+function rivEvHit(ev,touched,mult,SC){if(!S.rivals)return;
+ let z0=0;if(SC&&SC.m&&SC.m.length===2){const p=SC.p,e=p*SC.m[0]+(1-p)*SC.m[1],sd=Math.abs(SC.m[0]-SC.m[1])*Math.sqrt(p*(1-p));z0=sd>1e-9?e/sd:0}
+ const a=S.rivals.map((rv,j)=>{const w=(rv._bk&&rv._bkq===S.q)?rv._bk:rivBookQ(rv,j,S.q);
+  const st=rv.style||'fonda',th=RIVTH[st]!=null?RIVTH[st]:0.4,k=RIVAMP[st]||1.5;
+  const g=prng32(hash32('rev'+j+'_'+S.q+'_'+(ev.t||''),S.seed)),u1=g(),u2=g();
+  const zh=z0+rivEta()*Math.sqrt(-2*Math.log(u1+1e-12))*Math.cos(2*Math.PI*u2);
+  const r=zh>2*th?1:zh>th?0.5:zh<-2*th?-1:zh<-th?-0.5:0;
+  const nzw=w.filter(x=>x!==0),u=nzw.length?nzw.reduce((a,x)=>a+Math.abs(x),0)/nzw.length:0;
+  const w1=[...w];if(r)touched.forEach(i=>{const h=ev.hit[INSTR[i].sym]||0;if(h)w1[i]=w[i]+r*(k-1)*Math.max(Math.abs(w[i]),u)*Math.sign(h)});
+  let v=0,v0=0;touched.forEach(i=>{const h=(ev.hit[INSTR[i].sym]||0)*INSTR[i].sigQ;v+=w[i]*h*0.5+w1[i]*h*mult;v0+=w[i]*h*(0.5+mult)});
+  if(r)v-=rivTurn(w1,w)*(ev.stress?5:2);
+  if(window.__rvlog)window.__rvlog.push({st,sz:(SIZE()||{}).id,r,dv:v-v0});
+  return v});addXRiv(a)}
 function xRivHit(id){const sc=STRESS.find(x=>x.id===id);if(!sc)return;S.xRivB=S.xRivQ===S.q?S.xRiv:null;
  S.xRiv=S.rivals.map((rv,j)=>{const w=rivBookW(rv,j),h=stressHit(sc,w.map(z=>z*100));let v=0;INSTR.forEach((m,i)=>{if(h[m.sym])v+=w[i]*h[m.sym]*m.sigQ});
   return XRIVR*v});const xa=S.xRiv;S.xRiv=S.rivals.map((r,j)=>((S.xRivB||[])[j]||0));addXRiv(xa);
@@ -5739,7 +5750,7 @@ function resolveEvent(ev,touched,o,imm,navB){
  touched.forEach(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ*mult;const pi=wE[i]*m;resid+=pi;
    perM.push([INSTR[i].sym,`${k0[i]>0?'+':''}${k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,`${sgn(m,1)}`,pi])});
  const navR=S.nav;S.nav*=(1+resid);S.qEvM+=resid*navR;
- if(!ev.stress)try{rivEvHit(ev,touched,mult)}catch(e){}   /* lot 156 */
+ if(!ev.stress)try{rivEvHit(ev,touched,mult,SC)}catch(e){}   /* lot 156 */
  const react=resid;
  if(acted&&react>0){S.qReactW=(S.qReactW||0)+1;if(o.n<0)S.qContraW=(S.qContraW||0)+1}   /* lot 210 */
  const total=imm+resid*navR/navB;
