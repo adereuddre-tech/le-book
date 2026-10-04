@@ -3276,7 +3276,8 @@ function rivXAt(j,t,tq){if(S.xRivQ!==tq)return 0;if(!S.xRivL)return (S.xRiv&&t>=
 const RIVEV={flux:1.5,fonda:1.5,syst:1};
 function rivEvHit(ev,touched,mult){if(!S.rivals)return;const a=S.rivals.map((rv,j)=>{const w=(rv._bk&&rv._bkq===S.q)?rv._bk:rivBookQ(rv,j,S.q);
   const st=rv.style||'fonda',ph=st==='fonda'?(prng32(hash32('rev'+j+'_'+S.q+'_'+(ev.t||''),S.seed))()<0.5?RIVEV.fonda:1):(RIVEV[st]||1);
-  let v=0;touched.forEach(i=>{const h=(ev.hit[INSTR[i].sym]||0)*INSTR[i].sigQ;v+=w[i]*h*(0.5+ph*mult)});return v});addXRiv(a)}
+  let v=0;touched.forEach(i=>{const h=(ev.hit[INSTR[i].sym]||0)*INSTR[i].sigQ;v+=w[i]*h*(0.5+ph*mult)});
+  if(ph>1){const w1=[...w];touched.forEach(i=>{w1[i]=w[i]*ph});v-=rivTurn(w1,w)*(ev.stress?5:2)}return v});addXRiv(a)}
 function xRivHit(id){const sc=STRESS.find(x=>x.id===id);if(!sc)return;S.xRivB=S.xRivQ===S.q?S.xRiv:null;
  S.xRiv=S.rivals.map((rv,j)=>{const w=rivBookW(rv,j),h=stressHit(sc,w.map(z=>z*100));let v=0;INSTR.forEach((m,i)=>{if(h[m.sym])v+=w[i]*h[m.sym]*m.sigQ});
   return XRIVR*v});const xa=S.xRiv;S.xRiv=S.rivals.map((r,j)=>((S.xRivB||[])[j]||0));addXRiv(xa);
@@ -5736,7 +5737,7 @@ function evPlans(ev,touched){
  touched.forEach(i=>{const sh=Math.sign(ev.hit[INSTR[i].sym]);
   if(ev.shut&&ev.shut.includes(INSTR[i].sym))return;   /* lot 58 : cotation suspendue */
   const tg=clampK(i,S.k[i]+sh*2),d=tg-S.k[i];if(!d)return;
-  const tc=tcost(d,i);const c=tc.cost*1.6*S.tcMultQ*(S.leakQ?1.45:1)*(ev.stress?2.5:1);
+  const tc=tcost(d,i);const c=tc.cost*(ev.stress?5:2)*S.tcMultQ*(S.leakQ?1.45:1);
   cost+=c;drift+=Math.abs(d);t[i]=tg;kE[i]=S.k[i]+prof.capture*d;
   trades.push({i,from:S.k[i],to:tg,bn:tc.bn,c})});
  const free=cost>0&&!ev.stress&&(prof.freeAdj||S.freeAdjB>0)&&!S.freeAdjUsed;
