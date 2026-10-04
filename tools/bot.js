@@ -17,7 +17,7 @@ function utilText(t){
 /* lot 199 : risque de faillite. Le bot vise une trésorerie minimale après book (FLOORS, fraction de l'encours, commission
    de gestion du trimestre comprise) : la réserve sert aux ajustements du trimestre. En cours de trimestre, il n'exécute
    un ordre de dépêche que si la trésorerie reste ≥ 0 à la clôture attendue (trésorerie − coût + commission de gestion). */
-const FLOORS={syst:0.02,fonda:0.02,flux:0.04},FLOORK=1;   /* FLOORK : échelle (calibration) */
+const FLOORS={syst:0.02,fonda:0.02,flux:0.04},FLOORK=0;   /* FLOORK : échelle. Bot 206 : 0 (plancher retiré, garde conservée) — un bot moins prudent, exposé au risque de faillite */
 function playGame(o){
   const file=o.file||'index.html';const html=CACHE[file]||(CACHE[file]=fs.readFileSync(file,'utf8'));
   const errs=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>errs.push(String(e.message||e)));
