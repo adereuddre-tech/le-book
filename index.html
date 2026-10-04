@@ -4758,6 +4758,7 @@ function phase(kick,title,lines,btn,next){
 function phaseOpen(){phaseDesk(1)}   /* lot 166 : un seul écran d'ouverture */
 const OUV=["Écrans allumés, café servi, tout est encore possible.","Personne n'a encore rien perdu. Profitez-en.","Le marché ouvre dans quelques minutes et ne vous attend pas.","Trois mois devant vous, et une page blanche.","Le desk est en place. On y va.","Nouveau trimestre, compteur remis à zéro, mémoire longue chez les investisseurs.","Tout le monde repart à égalité. Enfin, presque.","Les positions dorment encore. Réveillez-les."];
 function phaseDesk(){
+ S.phase='open';   /* lot 191 */
  save('phaseDesk');
  const nr=S.rumors.length,nev=S.evQueue.filter(e=>!e.trader).length;
  const L=S.liq,lqNm=L>1.5?'très dégradée':L>1.2?'dégradée':L>1.05?'un peu tendue':L<0.92?'excellente':'normale';
