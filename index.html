@@ -468,6 +468,7 @@ summary::marker{color:var(--dimmer)}
 .evstep.dn.on{background:rgba(242,84,91,.16);border-color:var(--short);color:var(--short)}
 .evstep.zr.on{background:var(--flat);border-color:var(--txt);color:var(--txt)}
 .evstep:disabled{opacity:.35}
+.mgt{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:0;white-space:nowrap}
 .evpan{display:grid}.evpan>.pcell{grid-area:1/1;visibility:hidden}.evpan>.pcell.on{visibility:visible}
 .bkd .nw{white-space:nowrap}
 .seg button{padding:8px 0;border-radius:4px;background:var(--panel2);color:var(--dimmer);font-family:var(--mono);font-size:10px}
@@ -4157,7 +4158,7 @@ function statusBar(done){
   </div>
   <div class="srow">
    ${(()=>{if(S.phase!=='book'||!S.k0)return '';const p=previewGauge();S._pv=p;return ''})()}
-   <button class="tile gold" data-gauge="gain"><span>Trésorerie</span><b id="gaintile" class="${cashView()>=0?'':'neg-g'}">${treso(cashView())}</b></button>
+   <button class="tile gold" data-gauge="gain"><span style="display:flex;justify-content:space-between;gap:6px"><span>Trésorerie</span>${S.k&&S.k.some(v=>v)?`<span class="mgt">marge ${Math.round(marginPct(S.k)*100)} %</span>`:''}</span><b id="gaintile" class="${cashView()>=0?'':'neg-g'}">${treso(cashView())}</b></button>
    <button class="tile gauge${(mvL||mvR)?' moved':''}" data-gauge="lp" style="flex:2.1${mvSty(mvL||mvR)}"><span><i>Confiance</i><b>${S.phase!=='book'&&S.lastG?gArrow(S.lastG.lp0,conf()):Math.round(conf())}${S.phase==='book'&&S._pv?(()=>{const nl=Math.max(0,Math.min(100,S.lp+cf(S._pv.lp,S._pv.rc))),nc=nl,d=nc-conf();return Math.abs(d)>=0.05?`<span class="${cls(d)}">→${Math.round(nc)}</span>`:''})():''}</b></span><span class="track"><i style="width:${conf()}%;background:${gc(conf())}"></i></span></button>
    ${cardTile()}
   </div>
@@ -5203,7 +5204,6 @@ function riskMap(sp,big){
   +`<i class="gzb y" style="top:${f(Math.min(Y(0),py))}%;height:${f(Math.abs(py-Y(0)))}%;background:${cY}"></i>`
   +`<i class="gzk x" style="left:${f(px)}%;background:${cX}"></i><i class="gzk y" style="top:${f(py)}%;background:${cY}"></i>`
   +`<span class="rv" style="left:${f(Math.min(44,Math.max(L+2,px-14)))}%;bottom:7%;color:${cX}">risque ${sv}</span>`
-  +(S.k&&S.k.some(v=>v)?`<span class="rv mgl" style="right:3%;top:4%;left:auto;color:var(--dim)">marge ${Math.round(marginPct(S.k)*100)} %</span>`:'')
   +`<span class="rv" style="left:${L+2}%;top:${f(Math.min(62,Math.max(T+1,py-12)))}%;color:${cY}">rentabilité ${mv}</span>`;
  return `<div class="rmap">${s}</div>`;
 }
