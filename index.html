@@ -3560,7 +3560,7 @@ function markBonus(id){(S.bonus=S.bonus||{})[id]=S.q+1}
 const EXGAIN=80;   /* pb de 100 M$ par unité de baisse de coût d'origine ; lot 216 : 40 → 80 (−10 % de coûts = +8 pb, et non +4) */
 TRADER_EXEC.forEach(ev=>(ev.ch||[]).forEach(c=>{const e=c.e||{};
  if(e.tcMult<1){const bp=Math.round(EXGAIN*(1-e.tcMult));e.gainBp=bp;delete e.tcMult;delete e.tcMultOn;
-  const k=(bp*10).toFixed(0);if(c.s){c.s=c.s.replace(/Coûts −\d+ %( sur [^.:]*)?( ce trimestre)?/,`+${bp} pb pour votre société de gestion (${k} k$ sur 100 M$)`);
+  const k=(bp*10).toFixed(0);if(c.s){c.s=c.s.replace(/Coûts −\d+ %( sur [^.:,]*)?( ce trimestre)?/,`+${bp} pb pour votre société de gestion (${k} k$ sur 100 M$)`);
    if(e.gamble)c.s=c.s.replace(/coûts ×\d+(,\d+)? à la place/,`−${Math.round(bp/2)} pb à la place`)}}}));
 /* ══════════ lot 103 : limites du comité ══════════ */
 const LIM={vol:0.30,red:1.5,stop:0.10,conc:0.70,negLp:-3,neg:{vol:1.25,stop:0.03,conc:0.15}};
@@ -4255,7 +4255,11 @@ function opxChip(e){if(!e||!e.opex)return '';const a=e.opex*S.aum0;   /* lot 222
  return `<span class="stks"><span class="stk">société de gestion <em class="${a>=0?'pos-g':'neg-g'}">${a>=0?'+':'−'}${mm(Math.abs(a))}</em></span></span>`}
 function winChip(e){const p=winP(e);if(p===null)return '';const v=Math.round(p*100);
  return `<span class="stks"><span class="stk">chances de gagner <em class="${v>=50?'pos-g':'neg-g'}">${v} %</em></span></span>`}
-function fxTxt(s,x){
+function effTxt(s,e){if(typeof s!=='string'||!e)return s;   /* lot 230 */
+ const sub=(p0,good)=>{const a=Math.round(p0*100),b=Math.round(pAdj(p0,good)*100);if(a!==b)s=s.replace(new RegExp('(^|[^\\d,])'+a+' %'),(m,c)=>c+b+' %')};
+ if(e.gamble2)sub(e.gamble2[0],e.gamble2[1]>=0);if(e.gambleLp)sub(e.gambleLp[0],e.gambleLp[1]>=0);
+ if(e.gamble)sub(e.gamble[0],false);if(e.risk)sub(e.risk[0],riskGood(e));return s}
+function fxTxt(s,x){s=effTxt(s,x);
  if(typeof s!=='string'||!/(omité|nvestisseurs)(\s+des risques)?\s*[+−-]\s*\d/.test(s))return s;
  x=x||{};
  const RX=/([Cc]omité|[Ii]nvestisseurs)(\s+des risques)?\s*([+−-])\s*(\d+(?:,\d+)?)/g;
@@ -5856,6 +5860,12 @@ function screenRivalEvent(e){
 }
 function screenTraderEvent(ev,next){
  next=next||stepEvents;ev=cast(ev);
+ /* lot 230 : idée de trade d'un trader, chance tirée dans [55 % ; 70 %] */
+ ev=Object.assign({},ev,{ch:(ev.ch||[]).map(c=>{const e=c.e||{};
+  if(!(e.gamble2&&e.gamble2[0]<=0.55&&e.gamble2[1]>0&&(e.kAdd||e.kAddAbs||e.kContra||(e.trendAdd||0)>0)&&!/Jean-Kevin/.test(ev.who||'')))return c;
+  const p0=e.gamble2[0],p=Math.round((0.55+0.15*rng())*100)/100,P=Math.round(p*100);
+  const s2=c.s.replace(/(\d+) % de ±([\d,]+) %/,(m,a,b)=>`${P} % de chances de +${b} %, sinon −${b} %`).replace(new RegExp('\\b'+Math.round(p0*100)+' %'),P+' %');
+  return Object.assign({},c,{s:s2,e:Object.assign({},e,{gamble2:[p,e.gamble2[1],e.gamble2[2]]})})})});
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p>${evTimerHTML}</div>
   ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=false;
