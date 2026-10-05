@@ -3577,12 +3577,14 @@ const INVR=[
   rule:"rachète après un trimestre sous −3 % ; souscrit après un trimestre au-dessus de +4 %."},
  {id:'ff',nm:'Fonds de fonds Albatros',ic:'🐦',w0:0.20,out:0.25,inn:0.05,crit:'Relative',
   rule:"rachète si vous finissez 3 points sous la moyenne des concurrents ; souscrit 3 points au-dessus."}, {id:'roy',nm:'Couronne du Liquidistan (holding)',ic:'👑',w0:0,out:0.275,inn:0.025,crit:'Le plus sévère',royal:1,
-  rule:"la holding de la famille royale souscrit d'office chaque trimestre, de 5 à 12,5 % de sa ligne selon la confiance ; en plus, elle se règle sur le plus sévère des quatre autres : elle rachète dès que l'un d'eux rachète (au taux le plus fort, 27,5 %), et souscrit encore si tous souscrivent."}
+  rule:"la holding de la famille royale souscrit d'office chaque trimestre, de 5 à 12,5 % de sa mise initiale selon la confiance ; en plus, elle se règle sur le plus sévère des quatre autres : elle rachète dès que l'un d'eux rachète (au taux le plus fort, 27,5 %), et souscrit encore si tous souscrivent."}
 ];
 const INVP={royAuto:[0.05,0.125],abs:[-0.03,0.04],rel:0.03,back:0.025,backLp:60,gate:0.15,gateLp:-6};
 function invs(){if(!S.inv)S.inv=INVR.map(d=>({id:d.id,w:d.w0,ntc:0}));if(!S.inv.some(v=>v.id==='roy'))S.inv.push({id:'roy',w:0,ntc:0});
  const o=INVR.map(d=>d.id);S.inv.sort((a,b)=>o.indexOf(a.id)-o.indexOf(b.id));return S.inv}
 function invD(id){return INVR.find(d=>d.id===id)}
+/* lot 215 : base des souscriptions = allocation initiale */
+function invBase(v){const D=invD(v.id);if(D&&D.w0>0)return D.w0*S.aum0;if(!v.a0&&v.w>1e-9)v.a0=v.w*extNav();return v.a0||0}
 function extNav(){return Math.max(0,S.nav-(S.coinvLock?coinvLocked():0))}
 function invFlow(v,amt){const I=invs(),E=extNav(),h=I.map(x=>x.w*E),j=I.indexOf(v);amt=Math.max(-h[j],amt);h[j]+=amt;const E2=E+amt;
  I.forEach((x,q)=>x.w=E2>1e-12?Math.max(0,h[q])/E2:0);S.nav+=amt;S.flows=(S.flows||0)+amt;S.qFlow=(S.qFlow||0)+amt;return amt}
@@ -3611,8 +3613,8 @@ function invClose(o){const I=invs(),E0=Math.max(1e-9,extNav());
   if(f>0.002){v.ntc=f;v.ntcQ=S.q;r.ntc=f*v.w*extNav()}});
  R.forEach((r,j)=>{const v=I[j],D=invD(v.id);if(v.ntc>0||r.vd<=0)return;
   if(v.w<0.01){if(v.id!=='roy'&&!r.pay&&S.lp>=INVP.backLp){r.sub=invFlow(v,INVP.back*S.aum0);r.back=true}return}
-  const f=invInF(D);if(f>0.002)r.sub=invFlow(v,f*v.w*extNav());else if(capStress()>0.5)r.full=1});
- {const v=I.find(x=>x.id==='roy'),r=R.find(x=>x.id==='roy');if(v&&v.w>1e-6&&!(v.ntc>0)&&r){const f=(INVP.royAuto[0]+(INVP.royAuto[1]-INVP.royAuto[0])*S.lp/100)*Math.max(0,1-capStress());if(f>0.002){r.sub+=invFlow(v,f*v.w*extNav());r.auto=1}else r.full=1}}   /* lot 122 */
+  const f=invInF(D);if(f>0.002)r.sub=invFlow(v,f*invBase(v));else if(capStress()>0.5)r.full=1});   /* lot 215 */
+ {const v=I.find(x=>x.id==='roy'),r=R.find(x=>x.id==='roy');if(v&&v.w>1e-6&&!(v.ntc>0)&&r){const f=(INVP.royAuto[0]+(INVP.royAuto[1]-INVP.royAuto[0])*S.lp/100)*Math.max(0,1-capStress());if(f>0.002){r.sub+=invFlow(v,f*invBase(v));r.auto=1}else r.full=1}}   /* lot 122 ; lot 215 : sur sa mise initiale */
  S.invQ=R;const net=R.reduce((a,r)=>a+r.sub-r.pay,0);
  const nm=r=>invD(r.id).nm,P=R.filter(r=>r.pay>0),N=R.filter(r=>r.ntc>0),U=R.filter(r=>r.sub>0),C=R.filter(r=>r.cancel);
  S.poachMsg=[P.length?`Rachats payés : ${P.map(r=>`${nm(r)} −${mm(r.pay)}${r.gated>0?` (gate : ${mm(r.gated)} reportés)`:''}`).join(' · ')}.`:'',
@@ -3636,7 +3638,7 @@ function invTable(){const I=invs(),E=extNav(),R=S.invQ||[];
   return `<tr${never?' style="opacity:.45"':''}><td style="text-align:left">${D.ic} ${D.nm}</td><td>${never?'pas entrée':h>1e-9?mm(h):'partie'}</td><td>${never?'':mv}</td></tr>`}).join('')}
  <tr style="border-top:2px solid var(--line2);font-weight:700"><td style="text-align:left">Total</td><td>${mm(E)}</td><td>${(()=>{const n=R.reduce((a,r)=>a+(r.sub||0)-(r.pay||0),0);return Math.abs(n)>1e-9?`<span class="${cls(n)}">${n>=0?'+':'−'}${mm(Math.abs(n))}</span>`:'—'})()}</td></tr></tbody></table>
  <p class="note" style="margin-top:6px">${INVR.map(D=>`${D.ic} <b>${D.nm.split(' (')[0]}</b> ${D.rule.replace(/^la holding de la famille royale /,'')}`).join('<br>')}</p>
- <details style="margin-top:4px"><summary class="note">Montants, préavis et confiance</summary><p class="note">Le critère décide si un investisseur rachète ou souscrit ; la confiance décide combien. Un rachat vaut une part de sa ligne : ${INVR.filter(D=>!D.royal).map(D=>`${D.nm.split(' ')[0].toLowerCase()==='caisse'?'caisse de retraite':D.nm.split(' ').slice(0,2).join(' ').toLowerCase()} ${Math.round(D.out*100)} %`).join(', ')}, holding royale ${Math.round(INVR.find(D=>D.royal).out*100)} % — à confiance 50 ; deux fois plus à confiance nulle, rien à confiance 100. Une souscription vaut ${Math.round(Math.min(...INVR.map(D=>D.inn))*100)} à ${Math.round(Math.max(...INVR.map(D=>D.inn))*100)} % de la ligne à confiance 50, proportionnellement à la confiance. Un rachat est annoncé par un avis, payé à la clôture suivante ; l'avis tombe si le critère repasse au vert (pour les Cheminots : dès un trimestre positif). Au-delà de 15 % de l'encours en avis, vous pouvez activer la gate.</p></details>`}
+ <details style="margin-top:4px"><summary class="note">Montants, préavis et confiance</summary><p class="note">Le critère décide si un investisseur rachète ou souscrit ; la confiance décide combien. Un rachat vaut une part de sa ligne : ${INVR.filter(D=>!D.royal).map(D=>`${D.nm.split(' ')[0].toLowerCase()==='caisse'?'caisse de retraite':D.nm.split(' ').slice(0,2).join(' ').toLowerCase()} ${Math.round(D.out*100)} %`).join(', ')}, holding royale ${Math.round(INVR.find(D=>D.royal).out*100)} % — à confiance 50 ; deux fois plus à confiance nulle, rien à confiance 100. Une souscription vaut ${Math.round(Math.min(...INVR.map(D=>D.inn))*100)} à ${Math.round(Math.max(...INVR.map(D=>D.inn))*100)} % de l'allocation initiale à confiance 50, proportionnellement à la confiance. Un rachat est annoncé par un avis, payé à la clôture suivante ; l'avis tombe si le critère repasse au vert (pour les Cheminots : dès un trimestre positif). Au-delà de 15 % de l'encours en avis, vous pouvez activer la gate.</p></details>`}
 
 function flowInB(frac){const inn=frac*S.nav;S.nav+=inn;S.flows+=inn;return inn}
 /* Bonus de clôture : appelés une fois le trimestre soldé, avant le débriefing. */
