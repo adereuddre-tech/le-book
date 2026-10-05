@@ -3190,7 +3190,8 @@ const XRIVR=0.75;   /* part du mouvement complet que les concurrents encaissent,
 function addXRiv(a){const t=typeof qElapsed==='function'&&S.live?qElapsed():0;(S.xRivL=S.xRivL||[]).push({t,a});S.xRivQ=S.q;S.xRivT=S.xRivT==null?t:S.xRivT;S.xRiv=S.rivals.map((r,j)=>((S.xRiv||[])[j]||0)+(a[j]||0))}
 function rivXAt(j,t,tq){if(S.xRivQ!==tq)return 0;if(!S.xRivL)return (S.xRiv&&t>=(S.xRivT||0))?(S.xRiv[j]||0):0;return S.xRivL.reduce((x,e)=>x+(t>=e.t?(e.a[j]||0):0),0)}
 const RIVEV={flux:1.5,fonda:1.5,syst:1};
-const RIVTH={syst:1.2,fonda:0.7,flux:0.3},RIVAMP={syst:1.25,fonda:1.5,flux:1.75};   /* lot 212 */
+const RIVTH={syst:1.0,fonda:0.6,flux:0.25},   /* lot 217 : recalibrés (poursuite ≤ 80 %) */
+ RIVAMP={syst:1.25,fonda:1.5,flux:1.75};   /* lot 212 */
 function rivEta(){const z=SIZE()||{};return z.id==='small'?1.0:z.id==='mega'?0.3:0.6}
 function rivEvHit(ev,touched,mult,SC){if(!S.rivals)return;
  let z0=0;if(SC&&SC.m&&SC.m.length===2){const p=SC.p,e=p*SC.m[0]+(1-p)*SC.m[1],sd=Math.abs(SC.m[0]-SC.m[1])*Math.sqrt(p*(1-p));z0=sd>1e-9?e/sd:0}
@@ -5640,12 +5641,12 @@ function screenMacroEvent(ev){
  /* suite du mouvement : binaire, poursuite (p) ou retournement (1−p), tirée maintenant, révélée après */
  if(!S.sc||!S.sc.m||S.sc.m.length!==2){
   reseed('sc'+S.evIdx);   /* un canal par dépêche : son issue ne dépend pas du reste */
-  S.sc=ev.stress?{p:0.35+0.30*rng(),m:[0.25+0.30*rng(),-(0.45+0.40*rng())]}:{p:0.40+0.50*rng(),m:[0.45+0.40*rng(),-(0.30+0.40*rng())]};   /* poursuite dans [0,40 ; 0,90] */
+  S.sc=ev.stress?{p:0.35+0.30*rng(),m:[0.25+0.30*rng(),-(0.45+0.40*rng())]}:{p:0.40+0.40*rng(),m:[0.45+0.40*rng(),-(0.30+0.40*rng())]};   /* poursuite dans [0,40 ; 0,80] (lot 217) */
   /* ce que le desk lit : précision selon la recherche, le style, et la source vérifiée du fondamental */
   const pr=PROF(),sd=RESPH[S.bud.res]*(pr.id==='flux'?0.6:1);
   const ver=(pr.id==='fonda'||(S.ecoB==='ver'&&S.ecoQ===S.q))&&!S.evVerified;if(ver)S.evVerified=true;
   const sh=pr.id==='syst'?0.04:0;   /* le modèle suit la tendance : il surestime un peu la poursuite */
-  S.sc.ph=ver?S.sc.p:Math.max(0.10,Math.min(0.90,S.sc.p+sh+sd*gauss()));S.sc.ver=ver}
+  S.sc.ph=ver?S.sc.p:Math.max(0.10,Math.min(0.80,S.sc.p+sh+sd*gauss()));   /* lot 217 : 80 % au plus */S.sc.ver=ver}
  const SC=S.sc;if(SC.ph===undefined)SC.ph=SC.p;
  const PR=[SC.ph,1-SC.ph];
  const chips=Object.keys(ev.hit).map(sy=>{const m=ev.hit[sy]*INSTR[IDX[sy]].sigQ;return `<span style="color:${m>0?'var(--long)':'var(--short)'}">${sy} ${sgn(m,1)}</span>`}).join('');

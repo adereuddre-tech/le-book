@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 214.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 217.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -237,4 +237,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **212 (lot E)** : concurrents face aux dépêches — règle de netteté (`rivEvHit(ev,touched,mult,SC)`) : z de la dépêche, perçu avec un bruit η selon la difficulté (`rivEta` : 1,0 / 0,6 / 0,3), réaction sur 5 crans (½ au-delà de θ, plein au-delà de 2θ, symétrique pour contrer) ; `RIVTH` quant 1,2, fondamental 0,7, flux 0,3 (recalibrés : 0,8/0,4/0 donnaient 43/68/100 % de réactions) ; ampleur `RIVAMP` ×1,25 / ×1,5 / ×1,75 dans le sens du choc. Mesure : réactions 25 / 43 / 74 % ; gain moyen par réaction 37 / 61 / 69 pb (facile / moyen / difficile), 62 / 68 / 71 % de réactions gagnantes. `RIVEV` n'est plus utilisé.
 - **213** : coûts du back office en progression régulière : Loyer 5, Gontran 10, Josiane 15 → 20, Firmin 40 → 32, Mireille 60 → 55, Solange 100 (`BOP`). La campagne de référence du lot 212 a été jouée avec les anciens coûts.
 - **214** : écrans d'événements — descriptif d'abord, sélecteur en dessous, puis « Valider » (dépêche, rivalité, accident) ; contres à gauche, renforcements à droite (dépêche : −2 −1 0 +1 +2 ; rivalité : − −½ 0 +½ +) ; `bkD` : rentabilité et risque sur une seule ligne. Attention : l'ordre d'affichage des `.evstep` n'est plus celui de `plan` (utiliser `data-i`).
+- **215** : investisseurs — souscriptions en % de l'allocation initiale (`invBase` : part de départ × encours de départ ; Couronne : sa première ligne, `v.a0`), rachats toujours en % de la ligne actuelle.
+- **216** : anecdotes et autres choix — effets trop faibles renforcés (81 choix) : effet monétaire < 5 pb doublé, 5 pb au moins ; effet sur les coûts < 10 % doublé, 10 % au moins ; textes réécrits ; `EXGAIN` 40 → 80 (une baisse de coûts de 10 % sur une anecdote d'exécution rapporte 8 pb à la société de gestion, et non 4).
+- **217** : dépêches — probabilité de poursuite réelle dans [0,40 ; 0,80], lecture du desk bornée à 80 % ; seuils des concurrents recalibrés `RIVTH` 1,0 / 0,6 / 0,25.
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
