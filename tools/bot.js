@@ -81,7 +81,7 @@ function playGame(o){
     /* lot 208 : rivalité à 5 crans — utilité lue sur le panneau de chaque cran (comme les autres choix), coût déduit */
     const rvs=d.querySelectorAll('.rvstep');
     if(rvs.length&&$('#rvok')){let bu=-1e9,bj=-1;const nav=w.eval('S.nav*1000');
-      rvs.forEach((b,j)=>{if(b.disabled)return;click(b);const t=($('#rvpan')||{}).textContent||'';let u=utilText(t);
+      rvs.forEach((b,j)=>{if(b.disabled)return;click(b);const t=($('#rvpan>.pcell.on')||$('#rvpan')||{}).textContent||'';   /* lot 224 */let u=utilText(t);
         const m=t.match(/Coût\s*([\d\s,]+)\s*(k\$|M\$)/);if(m){const v=parseFloat(m[1].replace(/\s/g,'').replace(',','.'))*(m[2]==='k$'?1e-3:1);u-=8*100*v/nav}
         if(!smart)u=Math.random();if(u>bu){bu=u;bj=j}});
       if(bj<0)bj=[...rvs].findIndex(b=>b.dataset.a==='none');st.rv=(st.rv||0)+1;click(rvs[bj]);click($('#rvok'));continue}

@@ -468,6 +468,8 @@ summary::marker{color:var(--dimmer)}
 .evstep.dn.on{background:rgba(242,84,91,.16);border-color:var(--short);color:var(--short)}
 .evstep.zr.on{background:var(--flat);border-color:var(--txt);color:var(--txt)}
 .evstep:disabled{opacity:.35}
+.evpan{display:grid}.evpan>.pcell{grid-area:1/1;visibility:hidden}.evpan>.pcell.on{visibility:visible}
+.bkd .nw{white-space:nowrap}
 .seg button{padding:8px 0;border-radius:4px;background:var(--panel2);color:var(--dimmer);font-family:var(--mono);font-size:10px}
 .seg button[data-v="-5"],.seg button[data-v="-4"],.seg button[data-v="4"],.seg button[data-v="5"]{background:#1F2233}
 .seg button.on.zero{background:var(--flat);color:var(--txt)}
@@ -4238,7 +4240,7 @@ function bkD(k1,cost,hid){
  const ch=k1.map((v,i)=>v!==S.k[i]?`${INSTR[i].sym} ${S.k[i]>0?'+':''}${S.k[i]}→${v>0?'+':''}${v}`:null).filter(Boolean);
  const cs=cost>0?`coûts <b>${mm(cost)}</b>`:cost<0?`coûts <b class="pos-g">−${mm(-cost)}</b>`:'';
  const l1=[ch.length?`${ch.slice(0,4).join(', ')}${ch.length>4?'…':''}`:'',cs].filter(Boolean).join(' · ');
- return `<span class="bkd">${l1?`<span>${l1}</span>`:''}${ch.length?`<span>rentabilité ${pc2(dp)} · risque <b class="${dr>0.05?'neg-g':dr<-0.05?'pos-g':'dim-g'}">${dr>=0?'+':'−'}${dec(Math.abs(dr),1)} pt</b></span>`:''}${hid?`<span><i>positions supplémentaires tirées au moment de l'exécution</i></span>`:''}</span>`;
+ return `<span class="bkd">${l1?`<span>${l1}</span>`:''}${ch.length?`<span class="nw">rentabilité ${pc2(dp)} · risque <b class="${dr>0.05?'neg-g':dr<-0.05?'pos-g':'dim-g'}">${dr>=0?'+':'−'}${dec(Math.abs(dr),1)} pt</b></span>`:''}${hid?`<span><i>positions supplémentaires tirées au moment de l'exécution</i></span>`:''}</span>`;
 }
 function bkPrev(e,mode){if(!e)return '';const p=kPrev(e,mode);return p?bkD(p.k,p.cost,p.hid):''}
 /* lot 200 : probabilité de gagner un choix à issue aléatoire (null si rien n'est tiré au sort) */
@@ -5690,7 +5692,8 @@ function screenMacroEvent(ev){
  </div>`;
  const go=i=>{clearTimer();resolveEvent(ev,touched,plan[i],imm,navB)};
  const NO=plan.findIndex(o=>o.n===0);let sel=NO;
- const pan=i=>{const o=plan[i];document.getElementById('evpan').innerHTML=`<div class="choice evopt" data-i="${i}" style="cursor:default"><b>${o.b}</b><span class="evs">${o.s}${o.n!==0&&o.trades.length&&o.t?bkD(o.t,0,false):''}${o.ban?' <b class="neg-g">interdit par le comité (carton rouge)</b>':''}</span>${ptab(o)}</div>`;
+ document.getElementById('evpan').innerHTML=plan.map((o,i)=>`<div class="pcell" data-p="${i}"><div class="choice evopt" data-i="${i}" style="cursor:default"><b>${o.b}</b><span class="evs">${o.s}${o.n!==0&&o.trades.length&&o.t?bkD(o.t,0,false):''}${o.ban?' <b class="neg-g">interdit par le comité (carton rouge)</b>':''}</span>${ptab(o)}</div></div>`).join('');   /* lot 224 */
+ const pan=i=>{app.querySelectorAll('#evpan>.pcell').forEach(c=>c.classList.toggle('on',+c.dataset.p===i));
   app.querySelectorAll('.evstep').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));sel=i};
  pan(NO);
  app.querySelectorAll('.evstep').forEach(b=>b.onclick=()=>{if(!b.disabled)pan(+b.dataset.i)});
@@ -5791,7 +5794,7 @@ function resolveEvent(ev,touched,o,imm,navB){
  const scName=['Le mouvement s\'est poursuivi.','Le mouvement s\'est retourné.'][si];
  const tr=o.trades.map(x=>`${INSTR[x.i].sym} ${x.from>0?'+':''}${x.from} → ${x.to>0?'+':''}${x.to} (${moneyB(x.bn)}, ${mm(x.c)})`).join(' ; ');
  const what=!acted?(syst?"Le modèle n'a rien fait, comme prévu.":"Vous tenez votre book sans bouger.")
-   :`${syst?'Vous passez outre le modèle et ':'Vous '}${{2:'renforcez au maximum dans le sens du mouvement',1:'renforcez à moitié dans le sens du mouvement','-1':'contrez à moitié le mouvement','-2':'contrez au maximum le mouvement'}[o.n]||'suivez le mouvement'} : ${tr}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${o.free?` Votre desk vous offre cet ajustement (un par trimestre) : ${mm(o.costRaw)} économisés.`:''}`;
+   :`${syst?'Vous passez outre le modèle et ':'Vous '}${{2:'renforcez au maximum dans le sens du mouvement',1:'renforcez à moitié dans le sens du mouvement','-1':'contrez à moitié le mouvement','-2':'contrez au maximum le mouvement'}[o.n]||'suivez le mouvement'}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${o.free?` Votre desk vous offre cet ajustement (un par trimestre) : ${mm(o.costRaw)} économisés.`:''}`;
  const keyRows=[['<b>Bilan de la dépêche</b>',`${sgn(total,1)} · ${inU(total*navB,UE)}`],
   ['Confiance',`${Math.round(S.lp-tg.lp)} → <b>${Math.round(S.lp)}</b> (${gz(tg.lp,0,'always')})`]];
  resultCard(`DÉPÊCHE · ${ev.t.toUpperCase()}`,['Le mouvement s\'est poursuivi','Le mouvement s\'est retourné'][si],
@@ -5841,7 +5844,8 @@ function screenRivalEvent(e){
    [`${x.sym} passe à ${target>0?'+':''}${target} (${mm(cost)} de coûts). La suite du mouvement : ${sgn(resid,1)} sur ${x.nm}.`,total>=0?`« ${S.fundName} ${dA==='follow'?'recolle':'prend '+rv.boss+' à contre-pied'} », titre ${pick(PRESS_SRC)}.`:`« ${S.fundName} ${dA==='follow'?'arrive après la bataille':'s\'entête contre '+rv.boss} », titre ${pick(PRESS_SRC)}.`],
    [],"Continuer le trimestre",stepEvents,{key:[['<b>Résultat</b>',`<span class="${cls(total)}">${sgn(total,1)} · ${mn(total*navB)}</span>`],['Confiance',`<span class="${cls(gcf(g0,g,g2))}">${sd1(gcf(g0,g,g2))}</span>`]]});
  };
- let sel='none';const pan=a=>{document.getElementById('rvpan').innerHTML=`<div class="choice" style="cursor:default">${RP[a]}</div>`;
+ let sel='none';document.getElementById('rvpan').innerHTML=Object.keys(RP).map(a=>`<div class="pcell" data-p="${a}"><div class="choice" style="cursor:default">${RP[a]}</div></div>`).join('');   /* lot 224 */
+ const pan=a=>{app.querySelectorAll('#rvpan>.pcell').forEach(c=>c.classList.toggle('on',c.dataset.p===a));
   app.querySelectorAll('.rvstep').forEach(b=>b.classList.toggle('on',b.dataset.a===a));sel=a};pan('none');
  app.querySelectorAll('.rvstep').forEach(b=>b.onclick=()=>{if(!b.disabled)pan(b.dataset.a)});
  document.getElementById('rvok').onclick=()=>pickR(sel);
@@ -5993,7 +5997,8 @@ function screenTail(te){
   <div class="evpan" id="tlpan"></div>
   <div class="evsel" style="grid-template-columns:repeat(6,1fr)">${O.map((o,k)=>`<button class="evstep tlstep ${o.id==='hedge'?'zr':o.x===0?'up':'dn'}${k===CUT?' on':''}" data-t="${k}"><b>${o.id==='hedge'?'🛡':Math.round(o.x*100)}</b><small>${o.id==='hedge'?'couvrir':o.x===0?'tenir':'% coupé'}</small></button>`).join('')}</div>
   <button class="cta" id="tlok" style="margin-top:10px">Valider</button></div>`;
- let sel=CUT;const pan=k=>{const o=O[k];document.getElementById('tlpan').innerHTML=`<div class="choice" style="cursor:default"><b>${LAB[o.id]}</b><span>${body(o)}</span></div>`;
+ let sel=CUT;document.getElementById('tlpan').innerHTML=O.map((o,k)=>`<div class="pcell" data-p="${k}"><div class="choice" style="cursor:default"><b>${LAB[o.id]}</b><span>${body(o)}</span></div></div>`).join('');   /* lot 224 */
+ const pan=k=>{app.querySelectorAll('#tlpan>.pcell').forEach(c=>c.classList.toggle('on',+c.dataset.p===k));
   app.querySelectorAll('.tlstep').forEach(b=>b.classList.toggle('on',+b.dataset.t===k));sel=k};pan(CUT);
  app.querySelectorAll('.tlstep').forEach(b=>b.onclick=()=>pan(+b.dataset.t));
  const act=k=>{clearTimer();
