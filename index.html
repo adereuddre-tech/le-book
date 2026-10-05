@@ -5657,7 +5657,8 @@ function screenMacroEvent(ev){
   const pr=PROF(),sd=RESPH[S.bud.res]*(pr.id==='flux'?0.6:1)*(BONREAD[bonEff()]||1);   /* lot 223 */
   const ver=(pr.id==='fonda'||(S.ecoB==='ver'&&S.ecoQ===S.q))&&!S.evVerified;if(ver)S.evVerified=true;
   const sh=pr.id==='syst'?0.04:0;   /* le modèle suit la tendance : il surestime un peu la poursuite */
-  S.sc.ph=ver?S.sc.p:Math.max(0.10,Math.min(0.80,S.sc.p+sh+sd*gauss()));   /* lot 217 : 80 % au plus */S.sc.ver=ver}
+  S.sc.ph=ver?S.sc.p:Math.max(0.10,Math.min(0.80,S.sc.p+sh+sd*gauss()));   /* lot 217 : 80 % au plus */S.sc.ver=ver;
+  S.sc.cap=Math.min(1,pr.capture*(0.7+0.6*rng()))}   /* lot 225 : capture tirée, ±30 % autour du taux du style */
  const SC=S.sc;if(SC.ph===undefined)SC.ph=SC.p;
  const PR=[SC.ph,1-SC.ph];
  const chips=Object.keys(ev.hit).map(sy=>{const m=ev.hit[sy]*INSTR[IDX[sy]].sigQ;return `<span style="color:${m>0?'var(--long)':'var(--short)'}">${sy} ${sgn(m,1)}</span>`}).join('');
@@ -5687,7 +5688,7 @@ function screenMacroEvent(ev){
      <div class="evsel">${plan.map((o,i)=>[o,i]).reverse().map(([o,i])=>{const ban=o.trades.length&&(redOn('risk')||redOn('noadd'))&&o.v1>o.v0+1e-9;o.ban=ban;
        return `<button class="evstep${o.n>0?' up':o.n<0?' dn':' zr'}${i===NO?' on':''}" data-i="${i}"${ban||(!o.trades.length&&o.n!==0)?' disabled':''}><b>${o.n>0?'+':o.n<0?'−':''}${Math.abs(o.n)}</b><small>${o.n>0?'renforcer':o.n<0?'contrer':'rien'}</small></button>`}).join('')}</div>
      <button class="cta" id="evok" style="margin-top:10px">Valider</button>`})()}
-   <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion ; votre desk n'est en place qu'à ${(prof.capture*100).toFixed(0)} % quand le marché repart, c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
+   <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion ; votre desk n'est en place qu'à ${(capNow()*100).toFixed(0)} % quand le marché repart sur cette dépêche (de ${Math.round(prof.capture*70)} à ${Math.min(100,Math.round(prof.capture*130))} % selon les dépêches pour votre style), c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
   </div>
  </div>`;
  const go=i=>{clearTimer();resolveEvent(ev,touched,plan[i],imm,navB)};
@@ -5701,6 +5702,7 @@ function screenMacroEvent(ev){
  armTimer(()=>go(NO));
 }
 /* les deux réactions possibles, chiffrées exactement : ce qui est affiché est ce qui arrive */
+function capNow(){return S.sc&&S.sc.cap!=null?S.sc.cap:PROF().capture}   /* lot 225 */
 function evPlans(ev,touched){
  const prof=PROF(),SC=S.sc,syst=!!prof.noAdj;
  const pieces=[];
@@ -5711,7 +5713,7 @@ function evPlans(ev,touched){
   if(ev.shut&&ev.shut.includes(INSTR[i].sym))return;   /* lot 58 : cotation suspendue */
   const tg=clampK(i,S.k[i]+sh*a),d=tg-S.k[i];if(!d)return;
   const tc=tcost(d,i);const c=tc.cost*(ev.stress?5:2)*S.tcMultQ*(S.leakQ?1.45:1);
-  cost+=c;drift+=Math.abs(d);t[i]=tg;kE[i]=S.k[i]+prof.capture*d;
+  cost+=c;drift+=Math.abs(d);t[i]=tg;kE[i]=S.k[i]+capNow()*d;
   trades.push({i,from:S.k[i],to:tg,bn:tc.bn,c})});
  const free=cost>0&&!ev.stress&&(prof.freeAdj||S.freeAdjB>0)&&!S.freeAdjUsed;
  const costP=free?0:cost;
@@ -5794,7 +5796,7 @@ function resolveEvent(ev,touched,o,imm,navB){
  const scName=['Le mouvement s\'est poursuivi.','Le mouvement s\'est retourné.'][si];
  const tr=o.trades.map(x=>`${INSTR[x.i].sym} ${x.from>0?'+':''}${x.from} → ${x.to>0?'+':''}${x.to} (${moneyB(x.bn)}, ${mm(x.c)})`).join(' ; ');
  const what=!acted?(syst?"Le modèle n'a rien fait, comme prévu.":"Vous tenez votre book sans bouger.")
-   :`${syst?'Vous passez outre le modèle et ':'Vous '}${{2:'renforcez au maximum dans le sens du mouvement',1:'renforcez à moitié dans le sens du mouvement','-1':'contrez à moitié le mouvement','-2':'contrez au maximum le mouvement'}[o.n]||'suivez le mouvement'}.${prof.capture<1?` Réaction ${prof.capture<0.5?'lente':'rapide'} : ${(prof.capture*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${o.free?` Votre desk vous offre cet ajustement (un par trimestre) : ${mm(o.costRaw)} économisés.`:''}`;
+   :`${syst?'Vous passez outre le modèle et ':'Vous '}${{2:'renforcez au maximum dans le sens du mouvement',1:'renforcez à moitié dans le sens du mouvement','-1':'contrez à moitié le mouvement','-2':'contrez au maximum le mouvement'}[o.n]||'suivez le mouvement'}.${capNow()<1?` Réaction ${capNow()<0.5?'lente':'rapide'} : ${(capNow()*100).toFixed(0)} % de la nouvelle position est en place quand le marché repart.`:''}${o.free?` Votre desk vous offre cet ajustement (un par trimestre) : ${mm(o.costRaw)} économisés.`:''}`;
  const keyRows=[['<b>Bilan de la dépêche</b>',`${sgn(total,1)} · ${inU(total*navB,UE)}`],
   ['Confiance',`${Math.round(S.lp-tg.lp)} → <b>${Math.round(S.lp)}</b> (${gz(tg.lp,0,'always')})`]];
  resultCard(`DÉPÊCHE · ${ev.t.toUpperCase()}`,['Le mouvement s\'est poursuivi','Le mouvement s\'est retourné'][si],
