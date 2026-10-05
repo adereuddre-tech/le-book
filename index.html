@@ -5506,7 +5506,7 @@ function screenTip(){S.tipQ=S.q;const D=tipDraw();if(!D){screenExec();return}con
  app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard">${evHead('Prime broker · proposition hors book','trade')}<h3>${t.ic} ${t.nm}</h3><p>${t.d}</p>
   ${tbl([['Coût certain',`<b class="neg-g">−${dec(t.c*100,1)} % · ${mm(t.c*S.nav)}</b>`],['Gain si ça passe',`<b class="pos-g">+${dec(t.g*100,1)} % · ${mm(t.g*S.nav)}</b>`],['Chance',`${Math.round(t.p*100)} %`],['Espérance',`<b class="pos-g">+${dec(ev*100,2)} % · ${mm(ev*S.nav)}</b>`]])}
   <p class="note" style="margin-top:6px">Le fonds paie et encaisse tout de suite ; le résultat compte dans le trimestre. Si vous passez, ${rv.nm} prend l'affaire.</p></div>
-  <div class="choices" style="margin-top:12px"><button class="choice" data-tip="1"><b>Prendre l'affaire</b><span>−${dec(t.c*100,1)} % tout de suite, +${dec(t.g*100,1)} % une fois sur ${dec(1/t.p,1)}.</span></button>
+  <div class="choices" style="margin-top:12px"><button class="choice" data-tip="1"><b>Prendre l'affaire</b><span>−${dec(t.c*100,1)} % tout de suite, +${dec(t.g*100,1)} % avec ${Math.round(t.p*100)} % de chances.</span></button>
   <button class="choice" data-tip="0"><b>Passer</b><span>${rv.nm} la prend à votre place.</span></button></div></div>`;
  const go=k=>{clearTimer();const imm=win?t.g-t.c:-t.c;
   if(k){const navB=S.nav;S.nav*=(1+imm);S.qEvM=(S.qEvM||0)+imm*navB;(S.tipLog=S.tipLog||[]).push({q:S.q,id:t.id,win,m:imm*navB});
@@ -5973,7 +5973,7 @@ function screenTail(te){
  const LAB={hold:ev.o[0],cut25:'Couper un quart du book',cut:ev.o[1],cut75:'Couper les trois quarts du book',cut100:'Tout solder',hedge:ev.o[2]};
  const kOf=o=>S.k.map(v=>o.x===0.5||o.x===1?Math.trunc(v*(1-o.x)):Math.sign(v)*Math.round(Math.abs(v)*(1-o.x)));   /* 50 % : règle d'avant ; 25 et 75 % : au plus proche */
  const body=o=>(o.fA!==o.fB||o.cA!==o.cB
-   ?row('une chance sur deux',`<b class="neg-g">−${mm(o.fA*nav)} · confiance ${sd1(o.cA)}</b>`)+row('une chance sur deux',`<b class="neg-g">−${mm(o.fB*nav)} · confiance ${sd1(o.cB)}</b>`)
+   ?row('50 % de chances',`<b class="neg-g">−${mm(o.fA*nav)} · confiance ${sd1(o.cA)}</b>`)+row('50 % de chances',`<b class="neg-g">−${mm(o.fB*nav)} · confiance ${sd1(o.cB)}</b>`)
    :row('fonds',`<b class="neg-g">−${mm(o.f*nav)} · ${sgnp(-o.f,1)}</b>`)+row('confiance',`<b class="${cls(o.c)}">${o.c?sd1(o.c):'inchangée'}</b>`))
   +(o.m?row('votre trésorerie',`<b class="neg-g">−${mm(o.m*nav)}</b>`):'')
   +(o.x>0?row('book',`<b>positions × ${dec(1-o.x,2)}</b>`)+bkD(kOf(o),0,false):'');
