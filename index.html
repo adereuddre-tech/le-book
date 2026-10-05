@@ -1012,7 +1012,7 @@ function budEf0(id,i){
   return `coûts ×${dec(EXECM[i],2)} · bruit des indicateurs ±${dec(q,2)} σ (${q>0.78?'très bruités':q>0.62?'bruités':q>0.45?'corrects':q>0.32?'précis':'très précis'})`
    +(STARP[i]?` · recrue du trimestre ${Math.round(STARP[i]*100)} %`:'')}
  if(id==='risk')return `incidents ×${dec(RISKM[i],2)} · gravité ×${dec(RISKS[i]/RISKS[3],2)} · choc des extrêmes ×${dec(0.5+0.5*TAILM[i],2)}`
-   +(Math.abs(RISKRC[i])>=0.05?` · comité ${RISKRC[i]>0?'+':'−'}${dec(Math.abs(RISKRC[i]),1)} par trimestre`:'');
+   +(Math.abs(RISKRC[i])>=0.05?` · confiance ${RISKRC[i]>0?'+':'−'}${dec(Math.abs(RISKRC[i]*CFW),1)} par trimestre`:'');
  return `${RESN[i]} sources · fiabilité des sources ${Math.abs(RESREL[i])<0.005?'de référence':(RESREL[i]>0?'+':'−')+Math.round(Math.abs(RESREL[i])*100)+' pts'} · pré-annonces ${Math.round(RESR[i]*100)} % · lecture des dépêches ±${Math.round(RESPH[i]*100)} pts`;
 }
 /* lot 82 : ce que veulent dire les chiffres de chaque budget, au cran choisi */
@@ -3577,7 +3577,7 @@ const INVR=[
  {id:'fam',nm:'Family office Vandermeer',ic:'🎩',w0:0.15,out:0.275,inn:0.06,crit:'Absolue',
   rule:"rachète après un trimestre sous −3 % ; souscrit après un trimestre au-dessus de +4 %."},
  {id:'ff',nm:'Fonds de fonds Albatros',ic:'🐦',w0:0.20,out:0.25,inn:0.05,crit:'Relative',
-  rule:"rachète si vous finissez 3 points sous la moyenne des concurrents ; souscrit 3 points au-dessus."}, {id:'roy',nm:'Couronne du Liquidistan (holding)',ic:'👑',w0:0,out:0.275,inn:0.025,crit:'Le plus sévère',royal:1,
+  rule:"rachète si vous finissez 3 points sous la moyenne des concurrents ; souscrit 3 points au-dessus."}, {id:'roy',nm:'Couronne du Farghestan (holding)',ic:'👑',w0:0,out:0.275,inn:0.025,crit:'Le plus sévère',royal:1,
   rule:"la holding de la famille royale souscrit d'office chaque trimestre, de 5 à 12,5 % de sa mise initiale selon la confiance ; en plus, elle se règle sur le plus sévère des quatre autres : elle rachète dès que l'un d'eux rachète (au taux le plus fort, 27,5 %), et souscrit encore si tous souscrivent."}
 ];
 const INVP={royAuto:[0.05,0.125],abs:[-0.03,0.04],rel:0.03,back:0.025,backLp:60,gate:0.15,gateLp:-6};
@@ -3629,7 +3629,7 @@ function invSay(){const R=S.invQ||[],H=S.invH||[],L=H[H.length-1]||{r:0,rel:0,ok
   if(r.id==='cr')out.push(v<0?"La caisse de retraite des Cheminots voit deux trimestres négatifs d'affilée : elle demande à sortir.":v>0?"Deux trimestres positifs d'affilée : la caisse de retraite des Cheminots renforce.":"La caisse de retraite attend deux trimestres du même signe pour bouger.");
   if(r.id==='fs')out.push(L.ok?"Objectif annoncé tenu : Nordhavn souscrit, comme promis.":"Objectif annoncé manqué : Nordhavn réduit sa ligne.");
   if(r.id==='fam')out.push(v<0?`Le family office Vandermeer n'aime pas ${sgnp(L.r,1)} : il retire une partie de sa mise.`:v>0?`${sgnp(L.r,1)} : le family office Vandermeer en redemande.`:"Le family office Vandermeer ne bouge pas : trimestre ni assez bon, ni assez mauvais.");
-  if(r.id==='roy'&&(invs().find(v=>v.id==='roy').w>0||r.pay))out.push(v<0?"La Couronne du Liquidistan suit le plus inquiet de vos investisseurs : elle réduit sa ligne.":v>0?"Tous vos investisseurs souscrivent : la Couronne du Liquidistan aussi, avec parcimonie.":"La Couronne du Liquidistan attend que tout le monde soit content.");
+  if(r.id==='roy'&&(invs().find(v=>v.id==='roy').w>0||r.pay))out.push(v<0?"La Couronne du Farghestan suit le plus inquiet de vos investisseurs : elle réduit sa ligne.":v>0?"Tous vos investisseurs souscrivent : la Couronne du Farghestan aussi, avec parcimonie.":"La Couronne du Farghestan attend que tout le monde soit content.");
   if(r.id==='ff')out.push(v<0?`${sgnp(L.rel,1)} contre la moyenne des concurrents : le fonds de fonds Albatros vous déclasse.`:v>0?`${sgnp(L.rel,1)} contre la moyenne des concurrents : le fonds de fonds Albatros vous surpondère.`:"Dans la moyenne des concurrents : le fonds de fonds Albatros ne change rien.")});
  return out.join(' ')}
 function invTable(){const I=invs(),E=extNav(),R=S.invQ||[];
@@ -3670,7 +3670,7 @@ function bonusClose(o){
   return {v:'doors',k:'CROISSANCE · ENCOURS ×3,2',tier:'or',t:'Les dark pools vous ouvrent leurs portes',d:"Vous traitez désormais là où personne ne voit passer vos ordres.",g:'plafonds de capacité ×2 · coûts d\'exécution −10 %'}});
  /* séries et trophées */
  B('hot',(S.streak||0)>=5,()=>{const m=flowInB(0.03);gauge(4,0,'Main chaude');
-  return {v:'bolt',k:'SÉRIE · CINQ TRIMESTRES POSITIFS',tier:'argent',t:'Main chaude',d:"Les allocataires qui hésitaient se décident.",g:`souscription ${mm(m)} (+3 % d'encours) · investisseurs +4`}});
+  return {v:'bolt',k:'SÉRIE · CINQ TRIMESTRES POSITIFS',tier:'argent',t:'Main chaude',d:"Les allocataires qui hésitaient se décident.",g:`souscription ${mm(m)} (+3 % d'encours) · confiance +4`}});
  B('ft',o.qTotal>Math.max(...S.rivals.map(r=>r.last))+0.10&&S.rivals.every(r=>r.cum<S.idx),()=>{gauge(6,2,'À la une du Financial Times');
   return {v:'paper',k:'TROPHÉE · EN TÊTE DE LA PLACE',tier:'argent',t:'À la une du Financial Times',d:"« Le fonds qui a battu tout le monde ce trimestre » : votre nom en première page.",g:'confiance +7'}});
  if(S.q%4===0){const y=S.q/4,yid='year'+y;
@@ -3680,7 +3680,7 @@ function bonusClose(o){
    return {v:'crown',k:`TROPHÉE · ANNÉE ${y}`,tier:'or',t:"Fonds macro de l'année",d:"Le jury vous décerne le prix, devant les trois maisons que vous affrontez.",g:`souscription ${mm(m)} (+5 %) · confiance +10`}})}
  /* institutionnel et rares */
  B('souv',g>=1.6&&conf0>=78&&!(invs().find(v=>v.id==='roy').w>0),()=>{const m=invFlow(invs().find(v=>v.id==='roy'),0.20*extNav());S.bandTight=0.8;
-  return {v:'hand',k:'INSTITUTIONNEL',tier:'or',t:'La Couronne du Liquidistan entre au capital',d:"La holding de la famille royale du Liquidistan, émirat pétrolier et fiscal, prend un gros ticket. Ses conditions : le comité sortira ses cartons plus tôt, et elle se réglera sur le plus sévère de vos investisseurs.",g:`souscription ${mm(m)} (+20 % d'encours) · seuils des cartons −20 %`}});
+  return {v:'hand',k:'INSTITUTIONNEL',tier:'or',t:'La Couronne du Farghestan entre au capital',d:"La holding de la famille régnante du Farghestan, puissance lointaine et fortunée de l'autre rive, prend un gros ticket. Ses conditions : le comité sortira ses cartons plus tôt, et elle se réglera sur le plus sévère de vos investisseurs.",g:`souscription ${mm(m)} (+20 % d'encours) · seuils des cartons −20 %`}});
  B('carte',(S.inBand||0)>=4,()=>{gauge(0,3,'Carte blanche du comité');S.freeAdjB=Math.max(S.freeAdjB||0,1);
   return {v:'key',k:'INSTITUTIONNEL · QUATRE TRIMESTRES SANS CARTON',tier:'argent',t:'Carte blanche du comité',d:"Le comité vous fait confiance : il ne vous demandera pas de comptes sur le prochain ajustement.",g:'confiance +2 · un ajustement gratuit au prochain trimestre'}});
  const bestEv=Math.max(0,...(S.evLog||[]).map(x=>x.pnl||0));
@@ -5814,7 +5814,7 @@ function screenRivalEvent(e){
   <button class="cta" id="rvok" style="margin-top:10px">Valider</button></div>`;
  const RP={follow:`<b>Suivre ${rv.boss} : passer ${x.sym} à ${nk>0?'+':''}${nk}</b><span>Coût ${mm(tcost(nk-S.k[i],i).cost*1.5*S.tcMultQ)}, à votre charge, dans un marché qui a déjà bougé. La suite du mouvement vaut en moyenne un tiers de ce qui a été fait, avec beaucoup de bruit. Si ça continue, la presse parle d'un rattrapage ; sinon, d'un gérant qui court après les autres.${bkD(S.k.map((v,m)=>m===i?nk:v),0,false)}</span>`,
   fhalf:`<b>Suivre à moitié : ${x.sym} à ${hF>0?'+':''}${hF}</b><span>Coût ${mm(tcost(hF-S.k[i],i).cost*1.5*S.tcMultQ)}, à votre charge. La moitié du pari, la moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hF:v),0,false)}</span>`,
-  none:`<b>Ne pas répondre à la presse</b><span>Vous ne changez rien. Investisseurs −1,5 de plus : ils voulaient une réaction.</span>`,
+  none:`<b>Ne pas répondre à la presse</b><span>Vous ne changez rien. Confiance −1,5 de plus : vos investisseurs voulaient une réaction.</span>`,
   dhalf:`<b>Contrer à moitié : ${x.sym} à ${hD>0?'+':''}${hD}</b><span>Vous pariez, sans tout miser, que ${rv.boss} a tort de rester. Coût ${mm(tcost(hD-S.k[i],i).cost*1.5*S.tcMultQ)}. La moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hD:v),0,false)}</span>`,
   fade:`<b>Prendre le contre-pied : ${x.sym} à ${(-nk)>0?'+':''}${-nk}</b><span>Vous pariez que ${rv.boss} a tort de rester. Coût ${mm(tcost(-nk-S.k[i],i).cost*1.5*S.tcMultQ)}, même bruit, gloire ou ridicule.${bkD(S.k.map((v,m)=>m===i?-nk:v),0,false)}</span>`};
  const pickR=a=>{clearTimer();const navB=S.nav;let msg=[],cost=0,pnl=0;
@@ -6733,7 +6733,7 @@ function screenBoard(){
  app.innerHTML=statusBar(true)+`<div class="evwrap fade">
   <div class="evcard">${evHead(ev.who,'inv')}<h3>${ev.t}</h3><p>${ev.p}</p>${evTimerHTML}</div>
   ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=false;
-    return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${c.b}</b><span>${c.s}${boardFx(c.e)}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
+    return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${boardFx(c.e)}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
  const pickB=idx=>{clearTimer();
   const e=ev.ch[idx].e;
   {const d=cf(e.lp,e.rc);if(d||e.rc)S.lastG={lp:d,rc:e.rc||0,lp0:S.lp,rc0:S.rc};
