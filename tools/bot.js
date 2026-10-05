@@ -88,7 +88,7 @@ function playGame(o){
     /* lot 207 : dépêche à 5 crans — même utilité qu'avant, sur tous les crans ouverts ; clic sur le cran puis « Valider » */
     const evs=d.querySelectorAll('.evstep');
     if(evs.length&&$('#evok')){st.ev++;
-      const ok=[...evs].map(b=>!b.disabled);
+      const ok=[];evs.forEach(b=>{ok[+b.dataset.i]=!b.disabled});   /* lot 214 : ordre d'affichage ≠ ordre des crans */
       let i=w.eval(`(()=>{const P=window.__plan,SC=S.sc;if(!P)return -1;const ph=[SC.ph,1-SC.ph];
         const lo=Math.min(S.lp,S.rc),beta=1+Math.max(0,(45-lo)/8);
         const U=P.map(o=>ph.reduce((a,p,s)=>a+p*(o.pay[s]*1e4*0.35+beta*(o.gz[s].lp)),0));
@@ -99,11 +99,11 @@ function playGame(o){
         const TH=${JSON.stringify(THETA)}[S.prof]||0,nn=P.findIndex(o=>o.n===0);
         const z=j=>{const d=ph.map((p,s)=>(P[j].pay[s]-P[nn].pay[s])*1e4*0.35+beta*(P[j].gz[s].lp-P[nn].gz[s].lp));const m=ph[0]*d[0]+ph[1]*d[1],sd=Math.abs(d[0]-d[1])*Math.sqrt(ph[0]*ph[1]);return sd>1e-9?m/sd:(m>0?9:-9)};
         let bi=nn;P.forEach((o,j)=>{if(ok[j]&&j!==nn&&z(j)>=TH&&U[j]>U[bi]+1e-9)bi=j});return bi})()`);
-      if(i<0||!ok[i])i=[...evs].findIndex(b=>b.classList.contains('zr'));
+      if(i<0||!ok[i])i=+[...evs].find(b=>b.classList.contains('zr')).dataset.i;
       if(w.eval('S.sc&&S.sc.ver'))st.verified++;
       const nn=w.eval(`(window.__plan&&window.__plan[${i}])?window.__plan[${i}].n:0`);
       if(nn>0)st.follow++;if(nn<0)st.contra=(st.contra||0)+1;if(Math.abs(nn)===1)st.half=(st.half||0)+1;
-      click(evs[i]);click($('#evok'));continue}
+      click([...evs].find(b=>+b.dataset.i===i));click($('#evok'));continue}
     const ev=d.querySelectorAll('.choice.evopt');const evOk=[...ev].map(b=>!b.disabled);
     if(ev.length){st.ev++;
       let i=w.eval(`(()=>{const P=window.__plan,SC=S.sc;if(!P)return 1;const ph=[SC.ph,1-SC.ph];

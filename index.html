@@ -4231,7 +4231,7 @@ function bkD(k1,cost,hid){
  const ch=k1.map((v,i)=>v!==S.k[i]?`${INSTR[i].sym} ${S.k[i]>0?'+':''}${S.k[i]}→${v>0?'+':''}${v}`:null).filter(Boolean);
  const cs=cost>0?`coûts <b>${mm(cost)}</b>`:cost<0?`coûts <b class="pos-g">−${mm(-cost)}</b>`:'';
  const l1=[ch.length?`${ch.slice(0,4).join(', ')}${ch.length>4?'…':''}`:'',cs].filter(Boolean).join(' · ');
- return `<span class="bkd">${l1?`<span>${l1}</span>`:''}${ch.length?`<span>rentabilité ${pc2(dp)}</span><span>risque <b class="${dr>0.05?'neg-g':dr<-0.05?'pos-g':'dim-g'}">${dr>=0?'+':'−'}${dec(Math.abs(dr),1)} pt</b></span>`:''}${hid?`<span><i>positions supplémentaires tirées au moment de l'exécution</i></span>`:''}</span>`;
+ return `<span class="bkd">${l1?`<span>${l1}</span>`:''}${ch.length?`<span>rentabilité ${pc2(dp)} · risque <b class="${dr>0.05?'neg-g':dr<-0.05?'pos-g':'dim-g'}">${dr>=0?'+':'−'}${dec(Math.abs(dr),1)} pt</b></span>`:''}${hid?`<span><i>positions supplémentaires tirées au moment de l'exécution</i></span>`:''}</span>`;
 }
 function bkPrev(e,mode){if(!e)return '';const p=kPrev(e,mode);return p?bkD(p.k,p.cost,p.hid):''}
 /* lot 200 : probabilité de gagner un choix à issue aléatoire (null si rien n'est tiré au sort) */
@@ -5669,9 +5669,9 @@ function screenMacroEvent(ev){
    <p class="note" style="margin:0 0 6px">Confiance avant votre décision : <b>${Math.round(S.lp)}</b>. Chaque issue donne la confiance à la fin de la dépêche.</p>
    ${(()=>{const NO=plan.findIndex(o=>o.n===0);
      /* lot 207 : un cran, un panneau ; le bouton « Valider » joue le cran affiché */
-     return `<div class="evsel">${plan.map((o,i)=>{const ban=o.trades.length&&(redOn('risk')||redOn('noadd'))&&o.v1>o.v0+1e-9;o.ban=ban;
+     return `<div class="evpan" id="evpan"></div>
+     <div class="evsel">${plan.map((o,i)=>[o,i]).reverse().map(([o,i])=>{const ban=o.trades.length&&(redOn('risk')||redOn('noadd'))&&o.v1>o.v0+1e-9;o.ban=ban;
        return `<button class="evstep${o.n>0?' up':o.n<0?' dn':' zr'}${i===NO?' on':''}" data-i="${i}"${ban||(!o.trades.length&&o.n!==0)?' disabled':''}><b>${o.n>0?'+':o.n<0?'−':''}${Math.abs(o.n)}</b><small>${o.n>0?'renforcer':o.n<0?'contrer':'rien'}</small></button>`}).join('')}</div>
-     <div class="evpan" id="evpan"></div>
      <button class="cta" id="evok" style="margin-top:10px">Valider</button>`})()}
    <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion ; votre desk n'est en place qu'à ${(prof.capture*100).toFixed(0)} % quand le marché repart, c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
   </div>
@@ -5805,9 +5805,10 @@ function screenRivalEvent(e){
   <div class="evcard">${evHead(rv.boss+' · '+src,'rival')}<h3>${t1}</h3><p>${p}</p>
    <div class="shock"><span style="color:${dir>0?'var(--long)':'var(--short)'}">${x.sym} ${sgn(half,1)} déjà réalisé</span><span>vous : ${S.k[i]===0?'plat':(S.k[i]>0?'+':'')+S.k[i]}</span><span>${rv.nm} : ${dir>0?'long':'court'}</span></div>${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px"><div class="kv"><span>Effet de l'article</span><b><span class="${cls(g0.lp)}">confiance ${sd1(g0.lp)}</span></b></div></div>
-  <div class="evsel">${[['follow','+','suivre'],['fhalf','+½','suivre'],['none','0','rien'],['dhalf','−½','contrer'],['fade','−','contrer']].map(([a,l,c])=>{const off=a!=='none'&&RT[a]===S.k[i];
+  <div class="evpan" id="rvpan"></div>
+  <div class="evsel">${[['fade','−','contrer'],['dhalf','−½','contrer'],['none','0','rien'],['fhalf','+½','suivre'],['follow','+','suivre']].map(([a,l,c])=>{const off=a!=='none'&&RT[a]===S.k[i];
     return `<button class="evstep rvstep ${a==='follow'||a==='fhalf'?'up':a==='none'?'zr':'dn'}${a==='none'?' on':''}" data-a="${a}"${off?' disabled':''}><b>${l}</b><small>${c}</small></button>`}).join('')}</div>
-  <div class="evpan" id="rvpan"></div><button class="cta" id="rvok" style="margin-top:10px">Valider</button></div>`;
+  <button class="cta" id="rvok" style="margin-top:10px">Valider</button></div>`;
  const RP={follow:`<b>Suivre ${rv.boss} : passer ${x.sym} à ${nk>0?'+':''}${nk}</b><span>Coût ${mm(tcost(nk-S.k[i],i).cost*1.5*S.tcMultQ)}, à votre charge, dans un marché qui a déjà bougé. La suite du mouvement vaut en moyenne un tiers de ce qui a été fait, avec beaucoup de bruit. Si ça continue, la presse parle d'un rattrapage ; sinon, d'un gérant qui court après les autres.${bkD(S.k.map((v,m)=>m===i?nk:v),0,false)}</span>`,
   fhalf:`<b>Suivre à moitié : ${x.sym} à ${hF>0?'+':''}${hF}</b><span>Coût ${mm(tcost(hF-S.k[i],i).cost*1.5*S.tcMultQ)}, à votre charge. La moitié du pari, la moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hF:v),0,false)}</span>`,
   none:`<b>Ne pas répondre à la presse</b><span>Vous ne changez rien. Investisseurs −1,5 de plus : ils voulaient une réaction.</span>`,
@@ -5976,8 +5977,9 @@ function screenTail(te){
   <div class="evcard bad">${evHead(ev.who,'risk')}<h3>${ev.t}</h3><p>${ev.p}</p>
    <p class="note">${ev.mg?'Appel de marge':'Accident de levier'} : votre book tourne à ${pct(RQ(te.sp))} de risque. En dessous de ${dec(TAIL.x0*50,0)} %, il ne serait pas arrivé.</p></div>
   <p class="note" style="margin:12px 0 0">Part du book que vous coupez, ou couverture payée par votre trésorerie :</p>
+  <div class="evpan" id="tlpan"></div>
   <div class="evsel" style="grid-template-columns:repeat(6,1fr)">${O.map((o,k)=>`<button class="evstep tlstep ${o.id==='hedge'?'zr':o.x===0?'up':'dn'}${k===CUT?' on':''}" data-t="${k}"><b>${o.id==='hedge'?'🛡':Math.round(o.x*100)}</b><small>${o.id==='hedge'?'couvrir':o.x===0?'tenir':'% coupé'}</small></button>`).join('')}</div>
-  <div class="evpan" id="tlpan"></div><button class="cta" id="tlok" style="margin-top:10px">Valider</button></div>`;
+  <button class="cta" id="tlok" style="margin-top:10px">Valider</button></div>`;
  let sel=CUT;const pan=k=>{const o=O[k];document.getElementById('tlpan').innerHTML=`<div class="choice" style="cursor:default"><b>${LAB[o.id]}</b><span>${body(o)}</span></div>`;
   app.querySelectorAll('.tlstep').forEach(b=>b.classList.toggle('on',+b.dataset.t===k));sel=k};pan(CUT);
  app.querySelectorAll('.tlstep').forEach(b=>b.onclick=()=>pan(+b.dataset.t));
