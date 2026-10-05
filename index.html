@@ -5193,7 +5193,8 @@ function riskMap(sp,big){
   +`<i class="gzb x" style="left:${L}%;width:${f(Math.max(0,px-L))}%;background:${cX}"></i>`
   +`<i class="gzb y" style="top:${f(Math.min(Y(0),py))}%;height:${f(Math.abs(py-Y(0)))}%;background:${cY}"></i>`
   +`<i class="gzk x" style="left:${f(px)}%;background:${cX}"></i><i class="gzk y" style="top:${f(py)}%;background:${cY}"></i>`
-  +`<span class="rv" style="left:${f(Math.min(44,Math.max(L+2,px-14)))}%;bottom:7%;color:${cX}">risque ${sv}${S.k&&S.k.some(v=>v)?` · marge ${Math.round(marginPct(S.k)*100)} %`:''}</span>`
+  +`<span class="rv" style="left:${f(Math.min(44,Math.max(L+2,px-14)))}%;bottom:7%;color:${cX}">risque ${sv}</span>`
+  +(S.k&&S.k.some(v=>v)?`<span class="rv mgl" style="right:3%;top:4%;left:auto;color:var(--dim)">marge ${Math.round(marginPct(S.k)*100)} %</span>`:'')
   +`<span class="rv" style="left:${L+2}%;top:${f(Math.min(62,Math.max(T+1,py-12)))}%;color:${cY}">rentabilité ${mv}</span>`;
  return `<div class="rmap">${s}</div>`;
 }
