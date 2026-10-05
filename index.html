@@ -6433,14 +6433,14 @@ function pk(arr,n){/* mélange avalanche : le tirage reste déterministe mais ne
    f = [croissance, inflation, dollar, appétit pour le risque], en écarts-types. */
 const QNAMES=[
  /* croissance + inflation : les quatre quadrants */
- {nm:"Surchauffe",d:"La croissance et les prix accélèrent ensemble. Tout le monde gagne de l'argent et personne ne dort tranquille.",t:f=>f[0]>0.9&&f[1]>0.9},
+ {nm:"Surchauffe",d:"La croissance et les prix accélèrent ensemble. Les acheteurs gagnent de l'argent et personne ne dort tranquille.",t:f=>f[0]>0.9&&f[1]>0.9},
  {nm:"Reflation désordonnée",d:"L'activité repart, les prix aussi, et les banques centrales découvrent qu'elles sont en retard.",t:f=>f[0]>0.6&&f[1]>0.6},
  {nm:"Boom sans inflation",d:"La croissance surprend à la hausse sans tension sur les prix. Le meilleur des mondes, et il ne dure jamais.",t:f=>f[0]>0.9&&f[1]<-0.5},
  {nm:"Désinflation immaculée",d:"Les prix ralentissent sans que l'activité en souffre. Les manuels disaient que c'était impossible.",t:f=>f[0]>0.4&&f[1]<-0.9},
  {nm:"Stagflation",d:"L'activité cale et les prix montent. La pire combinaison pour un book, et la plus difficile à couvrir.",t:f=>f[0]<-0.9&&f[1]>0.9},
  {nm:"Choc d'offre",d:"Les prix montent parce que quelque chose manque, pas parce que la demande est forte.",t:f=>f[0]<-0.4&&f[1]>0.8},
  {nm:"Atterrissage brutal",d:"L'activité décroche, les prix avec elle. Les taux longs sont le seul endroit où l'on gagne.",t:f=>f[0]<-0.9&&f[1]<-0.9},
- {nm:"Récession déflationniste",d:"Tout ralentit en même temps. Le collatéral rapporte plus que le book.",t:f=>f[0]<-0.7&&f[1]<-0.5},
+ {nm:"Récession déflationniste",d:"Tout ralentit en même temps. Le collatéral rapporte plus que la plupart des books.",t:f=>f[0]<-0.7&&f[1]<-0.5},
  {nm:"Atterrissage en douceur",d:"L'activité ralentit juste assez pour calmer les prix, pas assez pour casser quoi que ce soit.",t:f=>f[0]<-0.2&&f[0]>-0.7&&f[1]<-0.4},
  {nm:"Reprise molle",d:"La croissance revient sans conviction, les prix ne bougent pas. Les gérants s'ennuient.",t:f=>f[0]>0.3&&f[0]<0.8&&Math.abs(f[1])<0.4},
  /* dollar dominant */
@@ -6449,7 +6449,7 @@ const QNAMES=[
  {nm:"Resserrement des conditions financières",d:"Dollar fort et appétit en berne : les conditions se durcissent sans qu'aucune banque centrale n'ait bougé.",t:f=>f[2]>0.7&&f[3]<-0.3},
  {nm:"Dollar en repli",d:"Le billet vert lâche du lest. Les émergents respirent, l'or s'apprécie, les exportateurs américains sourient.",t:f=>f[2]<-1.1},
  {nm:"Détente monétaire mondiale",d:"Dollar faible et appétit revenu : les conditions financières se relâchent partout à la fois.",t:f=>f[2]<-0.7&&f[3]>0.4},
- {nm:"Le dollar fait le trimestre",d:"Un seul facteur a compté, et c'est celui que la moitié du book ne regardait pas.",t:f=>Math.abs(f[2])>0.9&&Math.abs(f[0])<0.4&&Math.abs(f[1])<0.4},
+ {nm:"Le dollar fait le trimestre",d:"Un seul facteur a compté, et c'est celui que la moitié des books ne regardait pas.",t:f=>Math.abs(f[2])>0.9&&Math.abs(f[0])<0.4&&Math.abs(f[1])<0.4},
  /* appétit pour le risque */
  {nm:"Euphorie",d:"Tout ce qui est risqué monte, et plus c'est risqué, plus ça monte. Personne ne demande pourquoi.",t:f=>f[3]>1.2},
  {nm:"Appétit retrouvé",d:"Les investisseurs reprennent du risque après l'avoir vendu trop tôt.",t:f=>f[3]>0.8&&f[0]>0},
@@ -6519,16 +6519,20 @@ const QNAMES=[
  {nm:"Croissance financée à crédit",d:"L'activité tient, l'appétit aussi, mais les conditions se durcissent en arrière-plan.",t:f=>f[0]>0.4&&f[3]>0.3&&f[2]>0.4},
  {nm:"Le trimestre des banques centrales",d:"Chaque mot compté, chaque virgule interprétée. Les données macro n'ont presque rien dit.",t:f=>Math.abs(f[1])>0.6&&Math.abs(f[0])<0.4},
  {nm:"Le trimestre des politiques",d:"Les marchés ont réagi à des décisions, pas à des chiffres.",t:f=>Math.abs(f[3])>0.6&&Math.abs(f[0])<0.4&&Math.abs(f[1])<0.4},
- {nm:"Vent de face généralisé",d:"Rien de catastrophique, mais tout a tiré dans le mauvais sens.",t:f=>f[0]<-0.2&&f[1]>0.2&&f[3]<-0.2},
- {nm:"Vent arrière généralisé",d:"Tout est allé dans le bon sens en même temps. Profitez-en, ça ne se reproduira pas de sitôt.",t:f=>f[0]>0.3&&f[1]<0.2&&f[3]>0.3},
+ {nm:"Vent de face généralisé",d:"Croissance en recul, inflation en hausse, appétit en berne : tout a soufflé contre les acheteurs.",wind:-1,t:f=>f[0]<-0.2&&f[1]>0.2&&f[3]<-0.2},
+ {nm:"Vent arrière généralisé",d:"Croissance, désinflation et appétit pour le risque en même temps : tout a porté les acheteurs.",wind:1,t:f=>f[0]>0.3&&f[1]<0.2&&f[3]>0.3},
  {nm:"Trimestre en dents de scie",d:"Deux facteurs se sont opposés du début à la fin. Le résultat dépend entièrement du côté choisi.",t:f=>f[0]*f[1]<-0.3},
  {nm:"Fin de cycle",d:"L'activité ralentit, les prix restent hauts, le marché commence à en tirer les conséquences.",t:f=>f[0]<-0.3&&f[1]>0.3},
  {nm:"Début de cycle",d:"L'activité repart d'un point bas, les prix ne suivent pas encore. C'est le meilleur moment pour être long de tout.",t:f=>f[0]>0.3&&f[1]<-0.2&&f[3]>0.2},
  {nm:"Milieu de cycle",d:"Rien d'extrême, tout en place. Les gérants qui gagnent ici gagnent sur le détail.",t:f=>f.every(x=>Math.abs(x)<0.7)&&f[0]>0},
  {nm:"Trimestre indéchiffrable",d:"Les facteurs ont bougé sans logique apparente. Personne n'en tirera de leçon.",gen:1,t:f=>true},
- {nm:"Trimestre ordinaire",d:"Ni drame ni exploit : les marchés ont fait leur travail et le book a fait le sien.",gen:1,t:f=>true},
+ {nm:"Trimestre ordinaire",d:"Ni drame ni exploit : les marchés ont fait leur travail, sans excès.",gen:1,t:f=>true},
  {nm:"Trimestre sans histoire",d:"Il ne s'est rien passé qui mérite d'être raconté au conseil.",gen:1,t:f=>true}
 ];
+/* lot 226 : ce que le book a fait du trimestre, cohérent avec son résultat */
+function qVerb(R,q){if(R&&R.wind<0&&q>0)return 'Votre book était du bon côté : il gagne contre le vent.';
+ if(R&&R.wind>0&&q<0)return "Votre book n'en a pas profité.";
+ return q>=0.02?'Votre book en a tiré le meilleur.':q>=0?'Votre book termine dans le vert, sans éclat.':q>-0.02?'Votre book y laisse un peu.':'Votre book en a fait les frais.'}
 function qRegime(){
  const f=S.f||[0,0,0,0];
  const m=QNAMES.filter(x=>{try{return !x.gen&&x.t(f)}catch(e){return false}});
@@ -6674,7 +6678,7 @@ function screenDebrief(o){
   <div class="pnlhead"><div class="q">RÉSULTAT DU TRIMESTRE ${S.q} · TOUT COMPRIS</div>
    <div class="big thold ${cls(o.qTotal)}">${sgn(o.qTotal,1)}</div>
    <div class="num thold ${cls(o.qTotal)}" style="font-size:18px;margin-top:4px">${bn(o.qTotal*o.q0,2)} sur ${moneyB(o.q0)} d'encours en début de trimestre</div>
-   <div class="regime">${R.nm}</div><div class="sub">${R.d}</div></div>
+   <div class="regime">${R.nm}</div><div class="sub">${R.d} ${qVerb(R,o.qTotal)}</div></div>
   ${(S.tape&&S.tape.pts&&S.tape.pts.length>3)?`<div class="tape big" style="margin-top:12px"><div class="tapehead">
     <span>T${S.q} <b class="cntq">—</b> · CUMUL</span><b class="cnt">—</b></div>
     ${tapeSvg(S.tape.pts,S.tape.q0||0,{h:150,anim:1,draw:4,js:1,zero:1,rivals:rivalTapes(),qs:S.tape.q0||0,ql:S.q,q0v:S.tape.pts[S.tape.pts.length-1]/(1+o.qTotal)})}</div>`
