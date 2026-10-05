@@ -967,12 +967,16 @@ function bonBase(){if(!S||!S.bud)return 0;const p=Math.min(S.bud.fo,FOP.length-1
 function bonRate(i){return bonBase()+BONOFF[i]}
 /* lot 115 : effet direct du cran de bonus versé — g : part de la baisse des coûts du budget salle de marché que le desk livre ;
    p : risque de débauchage par trimestre ; ×1,5 le trimestre d'une baisse de taux */
-const BONFX=[{c:1.20,p:0.50},{c:1.10,p:0.40},{c:1.00,p:0.30},{c:0.88,p:0.20},{c:0.80,p:0.12}],BONCUT=1.5;
+const BONFX=[{c:1.35,p:0.50},{c:1.17,p:0.40},{c:1.00,p:0.30},{c:0.82,p:0.20},{c:0.70,p:0.12}],BONCUT=1.5;   /* lot 223 : coûts élargis */
+const BONREAD=[1.25,1.12,1,0.87,0.75],BONWIN=[-0.08,-0.04,0,0.04,0.08];   /* lot 223 : lecture des dépêches, chances des anecdotes */
+function bonD(){try{return BONWIN[bonEff()]||0}catch(e){return 0}}
+function riskGood(e){const v=e.risk[1];return v>0||(v===0&&((e.riskRc||0)+(e.riskLp||0))>0)}
+function pAdj(p,good){return Math.max(0.02,Math.min(0.98,p+(good?1:-1)*bonD()))}
 function bonEff(){return S&&S.bonEff!=null?S.bonEff:MOT.i0}
 function execMot(i){return EXECM[i==null?S.bud.exec:i]*BONFX[bonEff()].c}
 function poachNow(){return Math.min(0.95,BONFX[bonEff()].p*(S.bonCutQ===S.q?BONCUT:1))}
 function bonCands(){const c=[];for(let p=FOP.length-1;p>=0;p--)if(here(p))c.push(p);return c}
-function bonTxt(){return `<br>Bonus au taux de ${dec(bonRate(bonEff())*100,1)} % : coûts d'exécution ×${dec(BONFX[bonEff()].c,2)} (effet du seul bonus) · risque de débauchage ${Math.round(poachNow()*100)} % ce trimestre${S.qBonT>0?` · bonus versé ${mm(S.qBonT)}`:''}${S.bonCutQ===S.q?' · <span class="neg-g">baisse du taux : débauchage ×1,5 ce trimestre</span>':''}.`}
+function bonTxt(){return `<br>Bonus au taux de ${dec(bonRate(bonEff())*100,1)} % : coûts d'exécution ×${dec(BONFX[bonEff()].c,2)} · lecture des dépêches ×${dec(BONREAD[bonEff()],2)} · chances des anecdotes ${bonD()>=0?'+':'−'}${Math.round(Math.abs(bonD())*100)} pts (effets du seul bonus) · risque de débauchage ${Math.round(poachNow()*100)} % ce trimestre${S.qBonT>0?` · bonus versé ${mm(S.qBonT)}`:''}${S.bonCutQ===S.q?' · <span class="neg-g">baisse du taux : débauchage ×1,5 ce trimestre</span>':''}.`}
 function payBonus(){S.qBonT=0;S.bonWhoQ=null;if(S.q<1)return;const perf=(S.mgrQ&&S.mgrQ.perf)||0;
  if(S.bonI==null)S.bonI=MOT.i0;const i=S.bonI,p=S.bonPrev==null?MOT.i0:S.bonPrev,d=i-p;
  const amt=Math.min(bonRate(i)*Math.max(0,perf),Math.max(0,mgrCash()));
@@ -4238,11 +4242,11 @@ function bkD(k1,cost,hid){
 }
 function bkPrev(e,mode){if(!e)return '';const p=kPrev(e,mode);return p?bkD(p.k,p.cost,p.hid):''}
 /* lot 200 : probabilité de gagner un choix à issue aléatoire (null si rien n'est tiré au sort) */
-function winP(e){if(!e)return null;let p=null;const mul=q=>{p=(p===null?1:p)*q};
- if(e.gamble2)mul(e.gamble2[1]>=0?e.gamble2[0]:1-e.gamble2[0]);
- if(e.gambleLp)mul(e.gambleLp[1]>=0?e.gambleLp[0]:1-e.gambleLp[0]);
- if(e.gamble)mul(1-e.gamble[0]);
- if(e.risk){const [q,v]=e.risk,good=v>0||(v===0&&((e.riskRc||0)+(e.riskLp||0))>0);mul(good?q:1-q)}
+function winP(e){if(!e)return null;let p=null;const mul=q=>{p=(p===null?1:p)*q};   /* lot 223 : avec l'effet du bonus d'équipe */
+ if(e.gamble2){const g=e.gamble2[1]>=0,q=pAdj(e.gamble2[0],g);mul(g?q:1-q)}
+ if(e.gambleLp){const g=e.gambleLp[1]>=0,q=pAdj(e.gambleLp[0],g);mul(g?q:1-q)}
+ if(e.gamble)mul(1-pAdj(e.gamble[0],false));
+ if(e.risk){const g=riskGood(e),q=pAdj(e.risk[0],g);mul(g?q:1-q)}
  return p}
 function opxChip(e){if(!e||!e.opex)return '';const a=e.opex*S.aum0;   /* lot 222 */
  return `<span class="stks"><span class="stk">société de gestion <em class="${a>=0?'pos-g':'neg-g'}">${a>=0?'+':'−'}${mm(Math.abs(a))}</em></span></span>`}
@@ -5568,19 +5572,19 @@ function screenExec(){
  setTimeout(()=>armTimer(()=>{const bs=app.querySelectorAll('.choice');if(bs.length)bs[bs.length-1].click()}),0);
  app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
   const ch=ev.ch[+b.dataset.i],e=ch.e;let msg=[];const navB0=S.nav;
-  if(e.gainBp){let g=e.gainBp*1e-4*S.aum0;if(e.gamble&&rng()<e.gamble[0]){g=-g/2;msg.push("Le tuyau a mal tourné.")}S.mgrCosts-=g;S.qExGain=(S.qExGain||0)+g;refreshGain();msg.push(`${g>=0?'+':'−'}${mm(Math.abs(g))} pour votre société de gestion.`)}   /* lot 183 */
+  if(e.gainBp){let g=e.gainBp*1e-4*S.aum0;if(e.gamble&&rng()<pAdj(e.gamble[0],false)){g=-g/2;msg.push("Le tuyau a mal tourné.")}S.mgrCosts-=g;S.qExGain=(S.qExGain||0)+g;refreshGain();msg.push(`${g>=0?'+':'−'}${mm(Math.abs(g))} pour votre société de gestion.`)}   /* lot 183 */
   if(e.tcMult){let sub=0;
    if(e.tcMultOn){orders.forEach(o=>{if(e.tcMultOn.includes(INSTR[o.i].sym))sub+=o.t.cost})}
    else {sub=tot;S.tcMultQ*=e.tcMult}   /* la manière d'exécuter vaut aussi pour les ajustements du trimestre */
    let m=e.tcMult;
-   if(e.gamble&&rng()<e.gamble[0]){m=e.gamble[1];msg.push("Le gros acheteur s'est aperçu de la manœuvre et a tout retiré.")}
+   if(e.gamble&&rng()<pAdj(e.gamble[0],false)){m=e.gamble[1];msg.push("Le gros acheteur s'est aperçu de la manœuvre et a tout retiré.")}
    const delta=sub*(m-1);S.pendingTC+=delta/S.nav;
    msg.push(`Coûts d'exécution ${delta<=0?'':'+'}${mm(delta)}.`);
    e._m=m}
   /* l'impact de marché du trimestre, sur la facture telle qu'elle est après ce choix */
   {const bill=S.pendingTC*S.nav,im=execImpactAmt(bill,e._m||e.tcMult,e.leakQ);
    if(im){execSlip(im,'Impact');msg.push(`Impact de marché sur le prix moyen : ${mn(im)} pour le fonds.`)}}
-  if(e.risk){if(rng()<e.risk[0]){S.nav*=(1+e.risk[1]);S.qEvM+=e.risk[1]*navB0;msg.push(`${e.riskMsg||'Le marché est parti pendant l\'exécution'} : ${sgn(e.risk[1],1)}.`);e._hit=true}
+  if(e.risk){if(rng()<pAdj(e.risk[0],riskGood(e))){S.nav*=(1+e.risk[1]);S.qEvM+=e.risk[1]*navB0;msg.push(`${e.riskMsg||'Le marché est parti pendant l\'exécution'} : ${sgn(e.risk[1],1)}.`);e._hit=true}
    else if(e.safePnl){S.nav*=(1+e.safePnl);S.qEvM+=e.safePnl*navB0;e._hit=true;msg.push(e.safeTxt)}}
   if(e.invert){const i=IDX[e.invert];S.k[i]=-S.k[i];msg.push(`Position sur ${e.invert} inversée pour le trimestre.`)}
   if(e.cap2){for(let i=0;i<N;i++)if(Math.abs(S.k[i])===3){const d=S.k[i]>0?-1:1;const t=tcost(d,i);S.k[i]+=d;S.pendingTC-=t.cost*0.8/S.nav;msg.push(`${INSTR[i].sym} ramené à ${S.k[i]>0?'+':''}${S.k[i]}.`)}}
@@ -5648,7 +5652,7 @@ function screenMacroEvent(ev){
   reseed('sc'+S.evIdx);   /* un canal par dépêche : son issue ne dépend pas du reste */
   S.sc=ev.stress?{p:0.35+0.30*rng(),m:[0.25+0.30*rng(),-(0.45+0.40*rng())]}:{p:0.40+0.40*rng(),m:[0.45+0.40*rng(),-(0.30+0.40*rng())]};   /* poursuite dans [0,40 ; 0,80] (lot 217) */
   /* ce que le desk lit : précision selon la recherche, le style, et la source vérifiée du fondamental */
-  const pr=PROF(),sd=RESPH[S.bud.res]*(pr.id==='flux'?0.6:1);
+  const pr=PROF(),sd=RESPH[S.bud.res]*(pr.id==='flux'?0.6:1)*(BONREAD[bonEff()]||1);   /* lot 223 */
   const ver=(pr.id==='fonda'||(S.ecoB==='ver'&&S.ecoQ===S.q))&&!S.evVerified;if(ver)S.evVerified=true;
   const sh=pr.id==='syst'?0.04:0;   /* le modèle suit la tendance : il surestime un peu la poursuite */
   S.sc.ph=ver?S.sc.p:Math.max(0.10,Math.min(0.80,S.sc.p+sh+sd*gauss()));   /* lot 217 : 80 % au plus */S.sc.ver=ver}
@@ -5888,13 +5892,13 @@ function screenTraderEvent(ev,next){
   if(e.tcvBoost){const t=S.tcv;S.tcvEst={t:t.t.map(quant),c:t.c.map(quant),v:t.v.map(quant)};msg.push("Le desk dispose maintenant de signaux marché exacts pour le trimestre.")}
   if(e.tcvPerm){S.tcvPerm=true;const t=S.tcv;S.tcvEst={t:t.t.map(quant),c:t.c.map(quant),v:t.v.map(quant)};msg.push("Vos indicateurs sont recalés dès maintenant, et le resteront jusqu'à la fin du mandat.")}
   if(e.mgrM){const a=e.mgrM/1000*S.aum0/0.1;S.mgrCosts-=a;refreshGain();msg.push(`${a<0?'−':'+'}${mm(Math.abs(a))} sur vos gains de gérant.`)}   /* 150 pb d'encours initial, à toute taille */
-  if(e.gambleLp){const win=rng()<e.gambleLp[0];e.lp=(e.lp||0)+(win?e.gambleLp[1]:e.gambleLp[2]);msg.push(win?"L'entretien s'est bien passé.":"Il voulait des comptes.")}
+  if(e.gambleLp){const win=rng()<pAdj(e.gambleLp[0],e.gambleLp[1]>=0);e.lp=(e.lp||0)+(win?e.gambleLp[1]:e.gambleLp[2]);msg.push(win?"L'entretien s'est bien passé.":"Il voulait des comptes.")}
   if(e.lpIfPos){const pos=(S.nav/S.navQ0-1)>0;e.lp=(e.lp||0)+(pos?e.lpIfPos[0]:e.lpIfPos[1]);msg.push(pos?"La lettre passe bien : le trimestre est positif.":"La lettre tombe mal : le trimestre est négatif.")}
   if(e.cashIfPos&&(S.nav/S.navQ0-1)>0){pnl+=e.cashIfPos;msg.push("Bonus versé.")}
   if(e.kContra){const i=IDX[e.kContra];setK(i,S.k[i]+(S.lastR[i]>=0?-1:1))}
-  if(e.gamble2){const win=rng()<e.gamble2[0];const r=win?e.gamble2[1]:e.gamble2[2];pnl+=r;msg.push(`${win?(e.winTxt||'Le pari était bon'):(e.loseTxt||'Le pari était mauvais')} : ${sgn(r,1)}.`)}
+  if(e.gamble2){const win=rng()<pAdj(e.gamble2[0],e.gamble2[1]>=0);const r=win?e.gamble2[1]:e.gamble2[2];pnl+=r;msg.push(`${win?(e.winTxt||'Le pari était bon'):(e.loseTxt||'Le pari était mauvais')} : ${sgn(r,1)}.`)}
   if(e.cutTop2){const w=weights(S.k),rc=riskContrib(w);rc.map((v,i)=>({v:Math.abs(v),i})).sort((a,b)=>b.v-a.v).slice(0,2).forEach(o=>{if(S.k[o.i]!==0)setK(o.i,S.k[o.i]-Math.sign(S.k[o.i]))})}
-  if(e.risk){if(rng()<e.risk[0]){pnl+=e.risk[1];if(e.riskRc||e.riskLp)gauge(e.riskLp||0,e.riskRc||0,e.riskMsg||'Incident');if(e.leakQ)S.leakQ=true;msg.push(`${e.riskMsg||'Mauvaise surprise'} : ${sgn(e.risk[1],1)}.`)}else msg.push(e.safeTxt||"Tout s'est bien passé.")}
+  if(e.risk){if(rng()<pAdj(e.risk[0],riskGood(e))){pnl+=e.risk[1];if(e.riskRc||e.riskLp)gauge(e.riskLp||0,e.riskRc||0,e.riskMsg||'Incident');if(e.leakQ)S.leakQ=true;msg.push(`${e.riskMsg||'Mauvaise surprise'} : ${sgn(e.risk[1],1)}.`)}else msg.push(e.safeTxt||"Tout s'est bien passé.")}
   if(e.tcMultQ)S.tcMultQ=e.tcMultQ;
   if(e.cash){pnl+=e.cash;msg.push(`Encours du fonds ${sgn(e.cash,1)} (${(e.cash*1e4).toFixed(0)} pb).`)}
   if(e.opex){const a=e.opex*S.aum0;S.mgrCosts-=a;refreshGain();msg.push(`${a>=0?'+':'−'}${mm(Math.abs(a))} pour votre société de gestion.`)}   /* lot 222 */
@@ -6644,8 +6648,8 @@ function screenDebrief(o){
  </div>`;
  const bnSel=(S.over||S.q>=QT())?'':(()=>{const pf=Math.max(0,(S.mgrQ&&S.mgrQ.perf)||0),cur=S.bonI==null?MOT.i0:S.bonI,prev=S.bonPrev==null?MOT.i0:S.bonPrev,e=EXECM[S.bud.exec];
   return `<div class="block"><div class="blockhead"><h2>Taux de bonus d'équipe</h2><span class="hint">versé à l'ouverture</span></div>
-  <p class="note" style="margin-top:0">Une part de votre commission de performance${pf>0?` (${mm(pf)} ce trimestre)`:' — aucune ce trimestre : rien ne sera versé, et le desk se comporte comme au cran minimal'}. Le minimum vaut 10 fois le coût de votre salle de marché sur 100 M$ (${dec(bonBase()*100,1)} % aujourd'hui) ; chaque cran ajoute 2,5, 5, 10 ou 15 points. Le taux fixe deux choses, directement : un multiplicateur sur tous vos coûts d'exécution, fourchette et impact de marché compris (×1,20 au minimum, ×0,80 au cran le plus haut) et le risque de débauchage. Baisser le taux multiplie le débauchage par 1,5 le trimestre de la baisse.</p>
-  <div class="cisel">${BONOFF.map((o,i)=>{const p=bonRate(i),F=BONFX[pf>0?i:0],c=F.c;return `<button class="bnp${i===cur?' on':''}" data-i="${i}">${dec(p*100,Number.isInteger(Math.round(p*1000)/10)?0:1)} %<br><small>${mm(p*pf)} · coûts ×${dec(c,2)} · débauche ${Math.round(Math.min(0.95,F.p*(i<prev?BONCUT:1))*100)} %</small></button>`}).join('')}</div></div>`})();
+  <p class="note" style="margin-top:0">Une part de votre commission de performance${pf>0?` (${mm(pf)} ce trimestre)`:' — aucune ce trimestre : rien ne sera versé, et le desk se comporte comme au cran minimal'}. Le minimum vaut 10 fois le coût de votre salle de marché sur 100 M$ (${dec(bonBase()*100,1)} % aujourd'hui) ; chaque cran ajoute 2,5, 5, 10 ou 15 points. Le taux fixe quatre choses, directement : un multiplicateur sur tous vos coûts d'exécution, fourchette et impact de marché compris (×1,35 au minimum, ×0,70 au cran le plus haut), la précision de la lecture des dépêches (bruit ×1,25 à ×0,75), les chances de gagner des anecdotes du desk (−8 à +8 points) et le risque de débauchage. Baisser le taux multiplie le débauchage par 1,5 le trimestre de la baisse.</p>
+  <div class="cisel">${BONOFF.map((o,i)=>{const p=bonRate(i),F=BONFX[pf>0?i:0],c=F.c;return `<button class="bnp${i===cur?' on':''}" data-i="${i}">${dec(p*100,Number.isInteger(Math.round(p*1000)/10)?0:1)} %<br><small>${mm(p*pf)} · coûts ×${dec(c,2)} · lecture ×${dec(BONREAD[pf>0?i:0],2)} · anecdotes ${BONWIN[pf>0?i:0]>=0?'+':'−'}${Math.round(Math.abs(BONWIN[pf>0?i:0])*100)} pts · débauche ${Math.round(Math.min(0.95,F.p*(i<prev?BONCUT:1))*100)} %</small></button>`}).join('')}</div></div>`})();
  const gtSel=(S.over||S.q>=QT()||!gateOk())?'':`<div class="block"><div class="blockhead"><h2>Gate</h2><span class="hint">prochaine clôture</span></div>
   <p class="note" style="margin-top:0">${mm(invDue())} d'avis de rachat tombent à la prochaine clôture, ${dec(invDue()/Math.max(1e-9,extNav())*100,1)} % de l'encours. La gate limite les paiements à ${Math.round(INVP.gate*100)} % de l'encours, au prorata ; le reste est reporté d'un trimestre. Prix : confiance ${INVP.gateLp}, et pas deux trimestres de suite.</p>
   <div class="cisel"><button class="gtp${S.gateNext?'':' on'}" data-g="0">Payer à l'échéance</button><button class="gtp${S.gateNext?' on':''}" data-g="1">Activer la gate</button></div></div>`;
