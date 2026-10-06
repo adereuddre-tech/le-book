@@ -17,6 +17,9 @@ function utilText(t){
 /* lot 199 : risque de faillite. Le bot vise une trésorerie minimale après book (FLOORS, fraction de l'encours, commission
    de gestion du trimestre comprise) : la réserve sert aux ajustements du trimestre. En cours de trimestre, il n'exécute
    un ordre de dépêche que si la trésorerie reste ≥ 0 à la clôture attendue (trésorerie − coût + commission de gestion). */
+/* lot 233 : équipe du bot par style [front, back] et réserve de caisse ; le flux, plus sobre (calibration : 30 parties par variante,
+   [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1) */
+const BUD0={syst:[3,2],fonda:[3,2],flux:[1,1]},RES0={flux:0.6};
 const FLOORS={syst:0.02,fonda:0.02,flux:0.04},FLOORK=0;
 /* lot 211 (lot D) : seuil de netteté du signal avant de réagir à une dépêche, par style (o.theta pour forcer) */
 const THETA0={syst:0.8,fonda:0.4,flux:0};   /* FLOORK : échelle. Bot 206 : 0 (plancher retiré, garde conservée) — un bot moins prudent, exposé au risque de faillite */
@@ -31,7 +34,7 @@ function playGame(o){
   const cfg={prof:o.prof,vol:o.vol||'std',size:o.size||'mid',univ:o.univ||'com',dur:o.dur||'normal'};
   const FLOOR=o.floor!=null?o.floor:(FLOORS[o.prof]||0)*(o.fk!=null?o.fk:FLOORK);
   const THETA=o.theta!=null?{syst:o.theta,fonda:o.theta,flux:o.theta}:THETA0;   /* lot 199 */
-  const budArg=o.bud;   /* lot 92 : [front, back] ; ancien fichier : [salle, contrôle, recherche] */   /* lot 45 : sept crans, le standard est le cran 3 */const smart=!o.policy||o.policy==='smart',dumb=o.policy==='dumb';   /* dumb : book au hasard, choix au hasard */
+  const budArg=o.bud||BUD0[o.prof];   /* lot 233 : équipe par style */   /* lot 92 : [front, back] ; ancien fichier : [salle, contrôle, recherche] */   /* lot 45 : sept crans, le standard est le cran 3 */const smart=!o.policy||o.policy==='smart',dumb=o.policy==='dumb';   /* dumb : book au hasard, choix au hasard */
   w.eval(`refreshStatus=function(){};toast=function(){};window.__plan=null;(function(){const E=evPlans;window.evPlans=function(){const r=E.apply(this,arguments);window.__plan=r;return r}})()`);
   if(o.probe)w.eval(o.probe);          /* sonde injectée dans la page, avant la partie */
   if(o.pre)w.eval(o.pre);   /* sonde injectée avant la partie (tools/expchk.js…) */
@@ -47,7 +50,7 @@ function playGame(o){
       /* lot 39 : onze crans, et les plus chers se verrouillent quand la caisse ne suit pas —
          on prend alors le cran le plus haut encore ouvert sous celui demandé */
       ids.forEach((b,i)=>{let e=null;
-        const res=o.reserve==null?0.35:o.reserve,okR=j=>j===0||w.eval(`(S.budPrev&&${j}<=S.budPrev['${b}'])||budgetBpIf('${b}',${j})*1e-4*budNav()<=Math.min(${1-res}*(mgrCash()+(S.qOps||0)),mgrCash()+(S.qOps||0)-${o.fbud===false?0:FLOOR}*S.nav)`);   /* lot 199 : l'équipe ne mange pas le plancher */   /* garde une réserve pour les ordres */
+        const res=o.reserve!=null?o.reserve:(RES0[o.prof]!=null?RES0[o.prof]:0.35),okR=j=>j===0||w.eval(`(S.budPrev&&${j}<=S.budPrev['${b}'])||budgetBpIf('${b}',${j})*1e-4*budNav()<=Math.min(${1-res}*(mgrCash()+(S.qOps||0)),mgrCash()+(S.qOps||0)-${o.fbud===false?0:FLOOR}*S.nav)`);   /* lot 199 : l'équipe ne mange pas le plancher */   /* garde une réserve pour les ordres */
         for(let j=bud[i];j>=0;j--){const c=$(`#buds .lvl[data-b="${b}"][data-i="${j}"]`);if(c&&!c.disabled&&okR(j)){e=c;break}}
         if(e&&!e.classList.contains('on')){click(e);ch=true}});
       if(ch)continue}
