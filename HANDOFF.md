@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 223.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 231.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -247,4 +247,13 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **222** : petites dépenses de fonctionnement (≤ 30 pb : consultants, avocats, formations, heures sup, remises, petites récupérations) à la charge de la société de gestion (`e.opex`, même montant en dollars sur l'encours de départ : 5 pb = 50 k$), pastille `opxChip` ; 73 choix convertis. Restent au fonds (`e.cash`) : financement et marché (base, prime, marge, collatéral) et grosses licences ou frais de développement (> 30 pb), 48 choix.
 - **223** : bonus d'équipe — coûts d'exécution ×1,35 … ×0,70 (`BONFX`), lecture des dépêches bruit ×1,25 … ×0,75 (`BONREAD`), chances des anecdotes du desk −8 … +8 pts (`BONWIN`, `pAdj`, `riskGood`, appliqué au tirage et à la pastille `winP`).
 - **Campagne de référence lot 223** (bot 211 : sans plancher, garde, seuil par style ; graines 10001–10030, 264 parties) : survie 60 % (quant 78, fondamental 66, flux 35 ; facile 71, moyen 60, difficile 49), gain moyen 11,5 M$ (écart-type 24,9, médiane 2,9). Contre le lot 205 / bot 199 : survie 77 → 60 %, gain 19,5 → 11,5 M$ — effets mêlés (bot moins prudent, lots 207–223). Faillites réparties sur tous les trimestres. Le gradient de difficulté apparaît ; le flux est trop puni.
+- **224** : panneau de détail à hauteur fixe ; rentabilité et risque insécables ; ordres chiffrés retirés du résultat d'une dépêche
+- **225** : taux de capture des dépêches tiré au sort (±30 % autour du taux du style)
+- **226** : résultat du trimestre, commentaire cohérent avec le résultat
+- **227** : règles des investisseurs dans le détail « Montants, préavis et confiance »
+- **228** : page desk, objectif du trimestre = objectif bonus ; objectif en % et explications des investisseurs retirés
+- **229** : marge sur la ligne d'intitulé de la tuile Trésorerie
+- **230** : idées de trade des traders à 55–70 % ; textes à la chance effective ; conversion des baisses de coûts corrigée
+- **231** : flux, équipe ×1,50 → ×1,35
+  Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
