@@ -2822,6 +2822,9 @@ const TCK=3;
 /* lot 232 : exposant d'impact 0,8 au lieu de 0,5, calé sur l'encours de départ (S.aum0) */
 const IMPEXP=0.8;
 function impScale(A){const a0=(S&&S.aum0)||0.1;return Math.pow(Math.max(0.05,(A===undefined?S.nav:A)/a0),IMPEXP-0.5)}
+/* lot 234 */
+let BRK=0.25;
+function brake(A){const a0=(S&&S.aum0)||0.1;return Math.pow(Math.max(1,(A===undefined?S.nav:A)/a0),BRK)}
 function tcost(dk,i){
  if(Math.abs(dk)<1e-9)return {cost:0,bp:0,bn:0};
  const x=INSTR[i],bn=Math.abs(dk*U/x.sig*S.nav);
@@ -2830,13 +2833,13 @@ function tcost(dk,i){
  let bp=x.s+x.c*Math.pow(bn,pw)*(pw===0.5?1:Math.pow(bn,0.5-pw)*0+1);
  const Z=SIZES.find(z=>z.id===S.size)||SIZES[1];
  const bnE=bn*(Z.capX||1)*capFactor();
- bp=(x.s+x.c*Math.pow(bnE,pw)*(pw===0.5?1:1.9)*depthMult(x,bn)*impScale())*TCK;   /* lot 232 */
+ bp=(x.s+x.c*Math.pow(bnE,pw)*(pw===0.5?1:1.9)*depthMult(x,bn)*impScale())*TCK*brake();   /* lot 232 ; lot 234 : frein sur la facture entière */
  let m=execMot()*desk.mult(x)*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult;
  if(S.leak&&Math.abs(S.k[i])>2)m*=1.45;
  if((S.stars||[]).includes(INSTR[i].grp))m*=0.5;
  if(!covered(x.grp))m*=NOTRD;   /* lot 92 : sans trader, le courtier */   /* lot 70 : recrues gardées jusqu'à la fin, ÷2 sur leur classe (sans cumul) */
  bp*=m;
- const cost=bn*bp*1e-4,spr=Math.min(cost,bn*x.s*TCK*m*1e-4);
+ const cost=bn*bp*1e-4,spr=Math.min(cost,bn*x.s*TCK*m*brake()*1e-4);
  return {cost,bp,bn,spr,imp:cost-spr};
 }
 /* Fin de partie : l'encours sous 5 % de son niveau de départ (−95 %). */
@@ -4074,7 +4077,7 @@ function rivRamp(q){return RIVB.ramp[Math.min(RIVB.ramp.length-1,Math.max(0,q))]
 /* book du concurrent j au trimestre q (pleine vol × montée en charge) ; même graine que rivalE */
 function rivBookQ(rv,j,q){const x=rivFx(rv,j),w=INSTR.map(m=>m.b.reduce((a,b,k)=>a+b*x[k],0)/m.sig),v=pvol(w);const a=v>1e-9?rivV(rv)*rivRamp(q-(rv.q0||0))/v:0;return w.map(z=>z*a)}
 /* coût de rotation du book, en fraction d'encours : barème du joueur, salle de marché pleine */
-function rivTurn(w,w0){let c=0;INSTR.forEach((x,i)=>{const d=Math.abs(w[i]-((w0&&w0[i])||0));if(d>1e-9){const bn=d*S.nav;c+=d*(x.s+x.c*Math.sqrt(bn)*impScale())*TCK*RIVB.exec*1e-4}});return c}   /* lot 232 */
+function rivTurn(w,w0){let c=0;INSTR.forEach((x,i)=>{const d=Math.abs(w[i]-((w0&&w0[i])||0));if(d>1e-9){const bn=d*S.nav;c+=d*(x.s+x.c*Math.sqrt(bn)*impScale())*TCK*brake()*RIVB.exec*1e-4}});return c}   /* lot 232 */
 function rivBookRet(j,q){const rv=S.rivals[j];if(!S.rBase)return 0;
  if(!rv._bk||rv._bkq!==q){rv._bk=rivBookQ(rv,j,q);rv._bkq=q;rv._bkc=rivTurn(rv._bk,rv.wPrev)}
  let g=0;rv._bk.forEach((w,i)=>g+=w*(S.rBase[i]||0));return {g,c:rv._bkc}}
