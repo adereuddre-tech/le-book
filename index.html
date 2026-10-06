@@ -2819,11 +2819,9 @@ function riskShown(w){
    discrétionnaire. Un ordre préparé revient à environ 5 pb du notionnel traité, davantage
    sur les marchés étroits (émergents, crypto, volatilité, carbone, fret). */
 const TCK=3;
-/* lot 232 : exposant d'impact 0,8 au lieu de 0,5, calé sur l'encours de départ (S.aum0) */
-const IMPEXP=0.8;
-function impScale(A){const a0=(S&&S.aum0)||0.1;return Math.pow(Math.max(0.05,(A===undefined?S.nav:A)/a0),IMPEXP-0.5)}
-/* lot 234 */
-let BRK=0.25;
+/* lot 235 : impact ×1,5 ; facture × (encours / encours de départ)^0,35 au-dessus de l'encours de départ */
+const IMPC=1.5;
+let BRK=0.35;
 function brake(A){const a0=(S&&S.aum0)||0.1;return Math.pow(Math.max(1,(A===undefined?S.nav:A)/a0),BRK)}
 function tcost(dk,i){
  if(Math.abs(dk)<1e-9)return {cost:0,bp:0,bn:0};
@@ -2833,7 +2831,7 @@ function tcost(dk,i){
  let bp=x.s+x.c*Math.pow(bn,pw)*(pw===0.5?1:Math.pow(bn,0.5-pw)*0+1);
  const Z=SIZES.find(z=>z.id===S.size)||SIZES[1];
  const bnE=bn*(Z.capX||1)*capFactor();
- bp=(x.s+x.c*Math.pow(bnE,pw)*(pw===0.5?1:1.9)*depthMult(x,bn)*impScale())*TCK*brake();   /* lot 232 ; lot 234 : frein sur la facture entière */
+ bp=(x.s+x.c*Math.pow(bnE,pw)*(pw===0.5?1:1.9)*depthMult(x,bn)*IMPC)*TCK*brake();   /* lot 235 : impact ×1,5, frein sur la facture entière */
  let m=execMot()*desk.mult(x)*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult;
  if(S.leak&&Math.abs(S.k[i])>2)m*=1.45;
  if((S.stars||[]).includes(INSTR[i].grp))m*=0.5;
@@ -3216,7 +3214,7 @@ function rivEvHit(ev,touched,mult,SC){if(!S.rivals)return;
   const nzw=w.filter(x=>x!==0),u=nzw.length?nzw.reduce((a,x)=>a+Math.abs(x),0)/nzw.length:0;
   const w1=[...w];if(r)touched.forEach(i=>{const h=ev.hit[INSTR[i].sym]||0;if(h)w1[i]=w[i]+r*(k-1)*Math.max(Math.abs(w[i]),u)*Math.sign(h)});
   let v=0,v0=0;touched.forEach(i=>{const h=(ev.hit[INSTR[i].sym]||0)*INSTR[i].sigQ;v+=w[i]*h*0.5+w1[i]*h*mult;v0+=w[i]*h*(0.5+mult)});
-  if(r)v-=rivTurn(w1,w)*(ev.stress?5:2);
+  if(r)v-=rivTurn(w1,w,rv.mAum)*(ev.stress?5:2);
   if(window.__rvlog)window.__rvlog.push({st,sz:(SIZE()||{}).id,r,dv:v-v0});
   return v});addXRiv(a)}
 function xRivHit(id){const sc=STRESS.find(x=>x.id===id);if(!sc)return;S.xRivB=S.xRivQ===S.q?S.xRiv:null;
@@ -3486,7 +3484,7 @@ function factorExpo(w){return FACT.map((f,k)=>{let e=0;for(let i=0;i<N;i++)e+=w[
 const RIVBP=[15,18,31,53,119,233,419];   /* lot 92 : ancien barème des concurrents, figé */
 function rivalCostQ(rv){const L=(rv&&rv.bl)||3;return (RIVBP[L]+16)*1e-4}
 /* lot 193 : équipe figée sur l'encours de départ, facture d'ordres (16 pb) sur l'encours du moment */
-function rivalCostAmt(rv,A){const L=(rv&&rv.bl)||3;return RIVBP[L]*1e-4*(S.aum0||A)+16e-4*A*impScale(A)}   /* lot 232 : ordres au même frein que le joueur */
+function rivalCostAmt(rv,A){const L=(rv&&rv.bl)||3;return RIVBP[L]*1e-4*(S.aum0||A)+16e-4*A*brake(A)}   /* lot 232 : ordres au même frein que le joueur */
 /* lot 79 : surcroît de rendement trimestriel d'un concurrent selon son cran de budget (les trois postes au même cran) */
 const RIVBRET=[0,0,0,0,0.008,0.014,0.018];
 function rivBudget(rv){
@@ -4077,9 +4075,9 @@ function rivRamp(q){return RIVB.ramp[Math.min(RIVB.ramp.length-1,Math.max(0,q))]
 /* book du concurrent j au trimestre q (pleine vol × montée en charge) ; même graine que rivalE */
 function rivBookQ(rv,j,q){const x=rivFx(rv,j),w=INSTR.map(m=>m.b.reduce((a,b,k)=>a+b*x[k],0)/m.sig),v=pvol(w);const a=v>1e-9?rivV(rv)*rivRamp(q-(rv.q0||0))/v:0;return w.map(z=>z*a)}
 /* coût de rotation du book, en fraction d'encours : barème du joueur, salle de marché pleine */
-function rivTurn(w,w0){let c=0;INSTR.forEach((x,i)=>{const d=Math.abs(w[i]-((w0&&w0[i])||0));if(d>1e-9){const bn=d*S.nav;c+=d*(x.s+x.c*Math.sqrt(bn)*impScale())*TCK*brake()*RIVB.exec*1e-4}});return c}   /* lot 232 */
+function rivTurn(w,w0,A){let c=0;INSTR.forEach((x,i)=>{const d=Math.abs(w[i]-((w0&&w0[i])||0));if(d>1e-9){const bn=d*S.nav;c+=d*(x.s+x.c*Math.sqrt(bn)*IMPC)*TCK*brake(A)*RIVB.exec*1e-4}});return c}   /* lot 235 : selon l'encours du concurrent */   /* lot 232 */
 function rivBookRet(j,q){const rv=S.rivals[j];if(!S.rBase)return 0;
- if(!rv._bk||rv._bkq!==q){rv._bk=rivBookQ(rv,j,q);rv._bkq=q;rv._bkc=rivTurn(rv._bk,rv.wPrev)}
+ if(!rv._bk||rv._bkq!==q){rv._bk=rivBookQ(rv,j,q);rv._bkq=q;rv._bkc=rivTurn(rv._bk,rv.wPrev,rv.mAum)}
  let g=0;rv._bk.forEach((w,i)=>g+=w*(S.rBase[i]||0));return {g,c:rv._bkc}}
 function rivRet(j,t,q){
  if(S.rivals&&S.rivals[j]&&S.rBase&&q===S.q){const r=S.rivals[j],v=rivV(r),tl=rivTail(r,j,v,q),tt=0.2+0.7*prng32(hash32('rtt'+j+'_'+q,S.seed))(),B=rivBookRet(j,q);
