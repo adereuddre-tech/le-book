@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 233.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 235.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -256,6 +256,8 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **230** : idées de trade des traders à 55–70 % ; textes à la chance effective ; conversion des baisses de coûts corrigée
 - **231** : flux, équipe ×1,50 → ×1,35
 - **232** : impact de marché en puissance 0,8 (`IMPEXP`, `impScale()`) : le terme d'impact de `tcost` est multiplié par (encours / encours de départ)^0,3 ; rien ne change au départ. Mesuré sur la facture d'un ±1 unité sur 25 marchés : 104 pb à l'encours de départ ; à 10× l'encours 122 pb avant, 147 pb après ; à 20× 133 → 186 pb. L'impact ne pèse que 7 % de la facture au départ (la fourchette domine) : le frein est modéré. Concurrents au même frein (`rivTurn`, `rivalCostAmt`). Plafond d'impact par exécution (`IMPMAX`, 1,5 % de l'encours) retiré.
+- **234** : frein sur la facture entière, (encours / départ)^0,25 — jamais publié seul, remplacé par le 235.
+- **235** : frein à la croissance retenu par Antoine. Formule initiale d'impact rétablie (racine carrée ; la puissance 0,8 du lot 232 pénalisait d'abord les marchés liquides, où une unité de risque pèse un gros notionnel) ; impact ×1,5 dès le départ (`IMPC`) ; facture entière × (encours / encours de départ)^0,35 au-dessus du départ (`BRK`, `brake(A)`) : ×1,76 à 500 M$, ×2,85 à 2 Md$, identique pour tous les marchés (ordre des coûts conservé). Concurrents freinés selon leur propre encours (`rivTurn(w,w0,A)`, facture d'ordres type). Plafond d'impact de 1,5 % par exécution toujours retiré (lot 232). Coût d'un ordre +1 unité : ×1,03 à 100 M$, ×1,9 à 500 M$, ×3,3 à 2 Md$.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
