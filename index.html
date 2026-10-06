@@ -598,7 +598,7 @@ const FSG=[1,1,-1,1];   /* lot 110 : le facteur 2 s'affiche comme la liquidité 
 const FACT=[{id:'C',nm:'Croissance'},{id:'I',nm:'Inflation'},{id:'L',nm:'Liquidité'},{id:'A',nm:'Appétit pour le risque'}];
 const GRPC={'Actions':'var(--eq)','Taux':'var(--rt)','Devises':'var(--fx)','Matières premières':'var(--cm)','Exotiques':'var(--ex)'};
 /* 25 marchés : 5 classes × 5. rk = rang d'ouverture (1-3 boutique, 4 établi, 5 mastodonte)
-   s = demi-fourchette en pb ; c = impact en pb par √(Md$) — loi en racine carrée
+   s = demi-fourchette en pb ; c = impact en pb par √(Md$) à l'encours de départ ; au-delà, l'impact croît en notionnel^0,8 (lot 232)
    b = charges factorielles [Croissance, Inflation, Dollar, Appétit] */
 const INSTR_ALL=[
  {sym:'NQ',  rk:1,nm:'Nasdaq 100',sub:'Technologie américaine · long = hausse de la tech US',            grp:'Actions', sig:0.22, s:0.50, c:0.55, b:[ 0.62,-0.34, 0.16, 0.58], mg:0.08},
@@ -2819,6 +2819,9 @@ function riskShown(w){
    discrétionnaire. Un ordre préparé revient à environ 5 pb du notionnel traité, davantage
    sur les marchés étroits (émergents, crypto, volatilité, carbone, fret). */
 const TCK=3;
+/* lot 232 : exposant d'impact 0,8 au lieu de 0,5, calé sur l'encours de départ (S.aum0) */
+const IMPEXP=0.8;
+function impScale(A){const a0=(S&&S.aum0)||0.1;return Math.pow(Math.max(0.05,(A===undefined?S.nav:A)/a0),IMPEXP-0.5)}
 function tcost(dk,i){
  if(Math.abs(dk)<1e-9)return {cost:0,bp:0,bn:0};
  const x=INSTR[i],bn=Math.abs(dk*U/x.sig*S.nav);
@@ -2827,7 +2830,7 @@ function tcost(dk,i){
  let bp=x.s+x.c*Math.pow(bn,pw)*(pw===0.5?1:Math.pow(bn,0.5-pw)*0+1);
  const Z=SIZES.find(z=>z.id===S.size)||SIZES[1];
  const bnE=bn*(Z.capX||1)*capFactor();
- bp=(x.s+x.c*Math.pow(bnE,pw)*(pw===0.5?1:1.9)*depthMult(x,bn))*TCK;
+ bp=(x.s+x.c*Math.pow(bnE,pw)*(pw===0.5?1:1.9)*depthMult(x,bn)*impScale())*TCK;   /* lot 232 */
  let m=execMot()*desk.mult(x)*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult;
  if(S.leak&&Math.abs(S.k[i])>2)m*=1.45;
  if((S.stars||[]).includes(INSTR[i].grp))m*=0.5;
@@ -3411,7 +3414,7 @@ function screenSetup(){
  </div></details>
  <details class="wire" style="margin-top:14px"><summary>Comment ça marche sous le capot</summary>
   <p class="note">Les rendements des marchés sont engendrés par quatre facteurs orthonormés plus une part propre : r<sub>i</sub> = σ<sub>i</sub>(Σ<sub>k</sub> b<sub>ik</sub>f<sub>k</sub> + e<sub>i</sub>z<sub>i</sub>) — croissance, inflation, liquidité (l'inverse du dollar), appétit pour le risque, avec Σ<sub>k</sub> b<sub>ik</sub>² + e<sub>i</sub>² = 1, ce qui rend la matrice de covariance semi-définie positive par construction. Le régime macro du trimestre fixe la moyenne et la volatilité des facteurs ; il suit une chaîne de Markov à sept états. S'y ajoutent, par marché, des dérives de tendance, de portage et de valeur.</p>
-  <p class="note">Une unité de position vaut 2,5 % de volatilité standalone, dimensionnée en inverse de la vol du marché ; le notionnel correspondant s'affiche à côté de chaque ordre. La vol ex-ante du book est √(wᵀΣw). Chaque changement de position paie une demi-fourchette plus un impact en racine carrée du notionnel, multiplié par le budget desk, l'organisation, la liquidité du régime et le taux au jour le jour.</p>
+  <p class="note">Une unité de position vaut 2,5 % de volatilité standalone, dimensionnée en inverse de la vol du marché ; le notionnel correspondant s'affiche à côté de chaque ordre. La vol ex-ante du book est √(wᵀΣw). Chaque changement de position paie une demi-fourchette plus un impact qui croît en racine carrée du notionnel, puis de plus en plus vite quand l'encours dépasse celui du départ (puissance 0,8), multiplié par le budget desk, l'organisation, la liquidité du régime et le taux au jour le jour.</p>
   <p class="note">Les sources disent vrai avec la probabilité de leur classe de fiabilité ; une source vraie est tirée parmi celles dont l'impact prétendu s'aligne sur les facteurs réalisés. Le rapport final calcule le Sharpe probabiliste de Bailey et López de Prado, qui vous dira si deux ans suffisent à distinguer la compétence de la chance. Ils ne suffisent presque jamais.</p>
  </details>
  <div id="picks"></div>
@@ -3480,7 +3483,7 @@ function factorExpo(w){return FACT.map((f,k)=>{let e=0;for(let i=0;i<N;i++)e+=w[
 const RIVBP=[15,18,31,53,119,233,419];   /* lot 92 : ancien barème des concurrents, figé */
 function rivalCostQ(rv){const L=(rv&&rv.bl)||3;return (RIVBP[L]+16)*1e-4}
 /* lot 193 : équipe figée sur l'encours de départ, facture d'ordres (16 pb) sur l'encours du moment */
-function rivalCostAmt(rv,A){const L=(rv&&rv.bl)||3;return RIVBP[L]*1e-4*(S.aum0||A)+16e-4*A}
+function rivalCostAmt(rv,A){const L=(rv&&rv.bl)||3;return RIVBP[L]*1e-4*(S.aum0||A)+16e-4*A*impScale(A)}   /* lot 232 : ordres au même frein que le joueur */
 /* lot 79 : surcroît de rendement trimestriel d'un concurrent selon son cran de budget (les trois postes au même cran) */
 const RIVBRET=[0,0,0,0,0.008,0.014,0.018];
 function rivBudget(rv){
@@ -4071,7 +4074,7 @@ function rivRamp(q){return RIVB.ramp[Math.min(RIVB.ramp.length-1,Math.max(0,q))]
 /* book du concurrent j au trimestre q (pleine vol × montée en charge) ; même graine que rivalE */
 function rivBookQ(rv,j,q){const x=rivFx(rv,j),w=INSTR.map(m=>m.b.reduce((a,b,k)=>a+b*x[k],0)/m.sig),v=pvol(w);const a=v>1e-9?rivV(rv)*rivRamp(q-(rv.q0||0))/v:0;return w.map(z=>z*a)}
 /* coût de rotation du book, en fraction d'encours : barème du joueur, salle de marché pleine */
-function rivTurn(w,w0){let c=0;INSTR.forEach((x,i)=>{const d=Math.abs(w[i]-((w0&&w0[i])||0));if(d>1e-9){const bn=d*S.nav;c+=d*(x.s+x.c*Math.sqrt(bn))*TCK*RIVB.exec*1e-4}});return c}
+function rivTurn(w,w0){let c=0;INSTR.forEach((x,i)=>{const d=Math.abs(w[i]-((w0&&w0[i])||0));if(d>1e-9){const bn=d*S.nav;c+=d*(x.s+x.c*Math.sqrt(bn)*impScale())*TCK*RIVB.exec*1e-4}});return c}   /* lot 232 */
 function rivBookRet(j,q){const rv=S.rivals[j];if(!S.rBase)return 0;
  if(!rv._bk||rv._bkq!==q){rv._bk=rivBookQ(rv,j,q);rv._bkq=q;rv._bkc=rivTurn(rv._bk,rv.wPrev)}
  let g=0;rv._bk.forEach((w,i)=>g+=w*(S.rBase[i]||0));return {g,c:rv._bkc}}
@@ -4314,7 +4317,7 @@ const IMPK=2.4,IMPMAX=0.015;
 function execImpactF(m,leak){return Math.pow(Math.max(0.3,Math.min(3,m||1)),-1.2)*(leak?1.6:1)}
 function execImpactAmt(bill,m,leak){
  if(!(bill>0))return 0;
- return -Math.min(IMPK*bill*execImpactF(m,leak),IMPMAX*S.nav);
+ return -IMPK*bill*execImpactF(m,leak);   /* lot 232 : plafond de 1,5 % de l'encours retiré */
 }
 /* Écart à une exécution standard : ce que ce choix coûte (ou épargne) au fonds en plus. */
 function execImpactDelta(bill,m,leak){return execImpactAmt(bill,m,leak)-execImpactAmt(bill,1,false)}
