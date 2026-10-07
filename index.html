@@ -6831,7 +6831,7 @@ function screenDebrief(o){
    document.getElementById('quitok').onclick=()=>{document.getElementById('modal').style.display='none';S.over='quit';save('screenDebrief');screenFinal();window.scrollTo(0,0)}}}};
  const showPg=k=>{
   app.innerHTML=statusBar(true)+`<div class="fade"><div class="pnlhead"><div class="q">FIN DU TRIMESTRE ${S.q} · ${k+2}/${PGS.length+1}</div>
-   <div class="regime">${PGS[k][0]}</div></div><div class="thold">${PGS[k][1]}</div>
+   <div class="regime">${PGS[k][0]}</div></div><div>${PGS[k][1]}</div>
    <button class="cta" id="nx">${k<PGS.length-1?'Suite · '+PGS[k+1][0]:lastLab}</button></div>`;
   wire();window.scrollTo(0,0);
   if(k<PGS.length-1)document.getElementById('nx').onclick=()=>showPg(k+1);
