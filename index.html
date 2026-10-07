@@ -2820,9 +2820,10 @@ function riskShown(w){
    sur les marchés étroits (émergents, crypto, volatilité, carbone, fret). */
 const TCK=3;
 /* lot 235 : impact ×1,5 ; facture × (encours / encours de départ)^0,35 au-dessus de l'encours de départ */
-const IMPC=1.5;
+const IMPC=1;   /* lot 236 : sans multiplicateur */
+const BRK0=0.2;   /* lot 236 : seuil du frein, 200 M$ */
 let BRK=0.35;
-function brake(A){const a0=(S&&S.aum0)||0.1;return Math.pow(Math.max(1,(A===undefined?S.nav:A)/a0),BRK)}
+function brake(A){return Math.pow(Math.max(1,(A===undefined?S.nav:A)/BRK0),BRK)}
 function tcost(dk,i){
  if(Math.abs(dk)<1e-9)return {cost:0,bp:0,bn:0};
  const x=INSTR[i],bn=Math.abs(dk*U/x.sig*S.nav);
