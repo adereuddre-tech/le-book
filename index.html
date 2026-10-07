@@ -2991,7 +2991,7 @@ function planQuarter(){
  const lastQ=(S.rets&&S.rets.length)?S.rets[S.rets.length-1]:0,preOk=g=>(!g.rs||rivSty(g.rs))&&(!g.sym||IDX[g.sym]!==undefined)&&(!g.cls||INSTR.some(x=>x.grp===g.cls))&&(!g.pre||(g.pre==='never'?false:g.pre==='rank2'?S.q>=1&&rivalRank()>=2:g.pre==='rank3'?S.q>=1&&rivalRank()>=3:g.pre==='loss'?lastQ<0:lastQ>0));   /* lot 89 : marchés et classes ouverts */
  const gav=QGOALS.filter(g=>g.qn===S.q+1&&preOk(g));   /* lot 210 : trimestres 1 et 2 seulement */
  S.goal=S.q<2&&gav.length?pick(gav):null;if(S.goal)S.usedGoals.push(S.goal.id||S.goal.nm);
- S.qReactW=0;S.qContraW=0;
+ S.qReactW=0;S.qContraW=0;S.qEvLp=0;
  if(S.redNext){S.redC=typeof S.redNext==='object'?S.redNext:{id:'cap',nm:'Plafond de position',t:'±2 unités au plus sur chaque marché'};S.redNext=false;S.redOn=true}
  else if(S.redOn){S.redOn=false;S.redC=null}
  S.maxk=S.capK||5;if(redOn('cap'))S.maxk=Math.min(S.maxk,2);   /* lot 58 : plafond de base ±3, ±4, ±5 */
@@ -5657,7 +5657,7 @@ function screenMacroEvent(ev){
  if(mh>0.8){const m0=S.mgMult||1;S.mgMult=Math.min(1.5,m0*(1+0.04*mh));toast(`Le prime broker relève ses marges : ×${dec(m0,2)} → ×${dec(S.mgMult,2)}`)}   /* lot 100 */
  /* on retient le total explicitement : le relire dans le journal par décalage d'indice
     donnait la nervosité seule et faisait perdre des points sur une dépêche gagnante */
- S.evImmG={lp:g.lp+gn.lp,rc:g.rc+gn.rc};
+ S.evImmG={lp:g.lp+gn.lp,rc:g.rc+gn.rc};S.evImmP=g.lp;   /* lot 237 : part P&L seule (sans la nervosité) */
  /* suite du mouvement : binaire, poursuite (p) ou retournement (1−p), tirée maintenant, révélée après */
  if(!S.sc||!S.sc.m||S.sc.m.length!==2){
   reseed('sc'+S.evIdx);   /* un canal par dépêche : son issue ne dépend pas du reste */
@@ -5800,6 +5800,7 @@ function resolveEvent(ev,touched,o,imm,navB){
  if(Math.abs(tg.lp)>=0.05||Math.abs(tg.rc)>=0.05)S.lastG={lp:tg.lp,rc:tg.rc,lp0:g0.lp,rc0:g0.rc};
  S.evG0=null;
  S.evLog.push({t:ev.t,pnl:total,m:total*navB,lp:ev0.lp+g.lp+gr.lp,rc:ev0.rc+g.rc+gr.rc});
+ S.qEvLp=(S.qEvLp||0)+(S.evImmP||0)+g.lp+(o.gz[si].fl||0);S.evImmP=0;   /* lot 237 : part P&L de la dépêche (immédiat + suite), déjà répercutée en séance */
  const flav=pk(EVFLAV,S.q*3+S.evIdx);
  const UE=pickU([imm*navB,resid*navR,cost,total*navB]);
  const scName=['Le mouvement s\'est poursuivi.','Le mouvement s\'est retourné.'][si];
@@ -6192,13 +6193,14 @@ function resolveQuarter(){
  /* jauges */
  const sp=pvol(wFin),vd=varDecomp(wFin),fmax=Math.max(...vd.fv)/vd.tot;
  const med=(()=>{const v=S.rivals.map(x=>x.last).sort((a,b)=>a-b),n=v.length;return n%2?v[n>>1]:(v[n/2-1]+v[n/2])/2})();   /* vraie médiane, quel que soit le nombre de concurrents */
- const lpD=[['Performance des positions sur le trimestre (hors dépêches déjà comptées)',net>0?260*net:200*net]];
+ const lpD=[['Performance du trimestre, tout compris',qTotal>0?260*qTotal:200*qTotal]];   /* lot 237 */
+ if(Math.abs(S.qEvLp||0)>=0.05)lpD.push(['Dépêches : déjà répercutées en séance',-(S.qEvLp||0)]);
  if(qTotal>VOL().goal/4)lpD.push(['Objectif du mandat atteint ce trimestre',5]);else if(qTotal<0)lpD.push(['Trimestre négatif tout compris',-3]);
  if(S.nav>=S.hwm-1e-9)lpD.push(['Nouveau plus haut historique',3]);
 
  else if(S.comm&&S.comm.id==='none'&&S.comm.lose.lp)lpD.push(['Aucune communication ce trimestre',S.comm.lose.lp]);
  if(dd>0.10)lpD.push(['Repli au-delà de 10 %',-(dd-0.10)*70]);
- lpD.push(['Écart à la médiane des concurrents',(net-med)*85]);
+ lpD.push(['Écart à la médiane des concurrents',(qTotal-med)*85]);   /* lot 237 : tout compris */
  if(S.budBp>70)lpD.push(['Facture d\'exploitation jugée lourde',-1.5]);
  if(S.leakQ)lpD.push(['Vos positions ont circulé sur le marché',-2.5]);
  if(S.execSlipQ<-0.0035*S.navQ0)lpD.push(['Impact de marché lourd sur les ordres',-2]);
