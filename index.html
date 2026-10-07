@@ -204,6 +204,13 @@ em{font-style:italic;color:var(--txt)}
 .opayev{font-family:var(--mono);font-size:16px;font-weight:600;white-space:nowrap}
 .opayev em{display:block;font-style:normal;font-size:10px;font-weight:400;color:var(--dimmer);text-align:right;letter-spacing:.04em}
 .choice.evopt .evs{display:block;color:var(--dim);font-size:12.5px}
+.evdock{position:sticky;bottom:0;z-index:5;background:var(--ink);padding:8px 0 10px;margin-top:8px;border-top:1px solid var(--line);box-shadow:0 -10px 18px rgba(0,0,0,.35)}
+.evdet{min-height:3.2em;margin-top:4px}
+.evdk{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:12.5px}
+.dkh{display:flex;justify-content:space-between;gap:8px;margin-bottom:4px}.dkh b{color:var(--txt)}.dkh span{font-family:var(--mono);white-space:nowrap}
+.dkr{display:grid;grid-template-columns:1.3fr 1fr .8fr;gap:6px;font-family:var(--mono);font-size:12px;color:var(--dim);white-space:nowrap}
+.dkr span:nth-child(2),.dkr span:nth-child(3){text-align:right}
+.dkm{grid-template-columns:1fr 1fr;margin-top:3px;padding-top:3px;border-top:1px solid var(--line)}
 .choice .ptab{display:grid;grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(0,1fr));gap:2px 8px;margin-top:9px;padding-top:7px;border-top:1px solid var(--line);font-size:12px;color:var(--txt);align-items:baseline}
 .choice .ptab span{font-size:12px;color:var(--txt)}
 .choice .ptab .ph{font-size:10.5px;color:var(--dimmer)}
@@ -5751,17 +5758,23 @@ function screenMacroEvent(ev){
    <p class="note" style="margin:0 0 6px">Confiance avant votre décision : <b>${Math.round(S.lp)}</b>. Chaque issue donne la confiance à la fin de la dépêche.</p>
    ${(()=>{const NO=plan.findIndex(o=>o.n===0);
      /* lot 207 : un cran, un panneau ; le bouton « Valider » joue le cran affiché */
-     return `<div class="evpan" id="evpan"></div>
+     return `<div id="evdet" class="evdet"></div><div class="evdock"><div class="evpan" id="evpan"></div>
      <div class="evsel">${plan.map((o,i)=>[o,i]).reverse().map(([o,i])=>{const ban=o.trades.length&&(redOn('risk')||redOn('noadd'))&&o.v1>o.v0+1e-9;o.ban=ban;
        return `<button class="evstep${o.n>0?' up':o.n<0?' dn':' zr'}${i===NO?' on':''}" data-i="${i}"${ban||(!o.trades.length&&o.n!==0)?' disabled':''}><b>${o.n>0?'+':o.n<0?'−':''}${Math.abs(o.n)}</b><small>${o.n>0?'renforcer':o.n<0?'contrer':'rien'}</small></button>`}).join('')}</div>
-     <button class="cta" id="evok" style="margin-top:10px">Valider</button>`})()}
+     <button class="cta" id="evok" style="margin-top:8px">Valider</button></div>`})()}
    <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion ; votre desk n'est en place qu'à ${(capNow()*100).toFixed(0)} % quand le marché repart sur cette dépêche (de ${Math.round(prof.capture*70)} à ${Math.min(100,Math.round(prof.capture*130))} % selon les dépêches pour votre style), c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
   </div>
  </div>`;
  const go=i=>{clearTimer();resolveEvent(ev,touched,plan[i],imm,navB)};
  const NO=plan.findIndex(o=>o.n===0);let sel=NO;
- document.getElementById('evpan').innerHTML=plan.map((o,i)=>`<div class="pcell" data-p="${i}"><div class="choice evopt" data-i="${i}" style="cursor:default"><b>${o.b}</b><span class="evs">${o.s}${o.n!==0&&o.trades.length&&o.t?bkD(o.t,0,false):''}${o.ban?' <b class="neg-g">interdit par le comité (carton rouge)</b>':''}</span>${ptab(o)}</div></div>`).join('');   /* lot 224 */
+ /* lot 244 : résumé compact dans le dock, détail au-dessus */
+ const R0=riskShown(weights(S.k)).total,P0=profitBook(S.k);
+ const sline=(o,s)=>`<div class="dkr"><span>${['Poursuite','Retournement'][s]} <b>${Math.round(PR[s]*100)} %</b></span><span class="${o.pay[s]>0?'pos-g':o.pay[s]<0?'neg-g':'dim-g'}">${uNum(o.pay[s]*S.nav,UM)} ${unitLab}</span><span>conf. ${gcell(o.gz[s].lp)}</span></div>`;
+ document.getElementById('evpan').innerHTML=plan.map((o,i)=>{const dp=o.n!==0&&o.trades.length?profitBook(o.t)-P0:0,dr=o.n!==0&&o.trades.length?(riskShown(weights(o.t)).total-R0)*100:0;
+   return `<div class="pcell" data-p="${i}"><div class="evopt evdk" data-i="${i}"><div class="dkh"><b>${o.b}</b><span class="${o.cost>0?'neg-g':'dim-g'}">${o.n===0?'aucun ordre':o.trades.length?'ordres −'+mm(o.cost):'aucun ordre possible'}</span></div>
+    ${sline(o,0)}${sline(o,1)}<div class="dkr dkm"><span>rentabilité ${pc2(dp)}</span><span>risque <b class="${dr>0.05?'neg-g':dr<-0.05?'pos-g':'dim-g'}">${dr>=0?'+':'−'}${dec(Math.abs(dr),1)} pt</b></span>${o.ban?'<span class="neg-g">carton rouge : interdit</span>':''}</div></div></div>`}).join('');
  const pan=i=>{app.querySelectorAll('#evpan>.pcell').forEach(c=>c.classList.toggle('on',+c.dataset.p===i));
+  {const o=plan[i];document.getElementById('evdet').innerHTML=`<p class="note" style="margin:0"><b>${o.b}</b> · ${o.s}</p>${o.n!==0&&o.trades.length&&o.t?bkD(o.t,0,false):''}`}
   app.querySelectorAll('.evstep').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));sel=i};
  pan(NO);
  app.querySelectorAll('.evstep').forEach(b=>b.onclick=()=>{if(!b.disabled)pan(+b.dataset.i)});
