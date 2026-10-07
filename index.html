@@ -3009,7 +3009,7 @@ function planQuarter(){
  const cashCo=Math.max(0,mgrCash());   /* lot 98 : co-investissement en % de la trésorerie après bonus */
  S.qMgmtM=VOL().mgmt*S.nav;S.nav-=S.qMgmtM;S.mgrFees+=S.qMgmtM;S.cMgmt=(S.cMgmt||0)+S.qMgmtM;refreshGain();
  {if(S.coinvIn&&!S.coinvLock){S.nav-=S.coinvIn;S.navQ0-=S.coinvIn;S.coinvIn=0}   /* reprise d'une sauvegarde d'avant le lot 90 */
-  const tg=S.q>=1?coinvPct()*cashCo:0;   /* lot 94 : rien au premier trimestre */
+  const tg=0;   /* lot 240 : placement choisi après le book (screenCoinv) */
  S.nav+=tg;S.navQ0+=tg;S.coinvBase=tg;S.coinvIn=tg;S.coinvLock=tg}S.lpQ0=S.lp;   /* lot 84 : la part placée entre dans l'encours */   /* lot 81-82 : part co-investie fixée à l'ouverture */
 }
 const EVFV=[[/programme d'achats|assouplissement|achats illimités|anti-fragmentation|injecte|baisse (surprise )?(de )?ses taux|baisse ses taux|baisse des taux|coupe ses taux|relance budgétaire/i,[1,1,-2,2]],
@@ -3817,7 +3817,8 @@ function coinvLocked(){return S&&S.coinvLock?S.coinvLock*(1+((S.phase==='events'
 function mgrCash(){return mgrNet()-coinvLocked()}
 /* lot 98 : au débriefing, la trésorerie affichée déduit déjà le bonus d'équipe choisi puis la part co-investie */
 function bonPend(){if(!S||S.phase!=='debrief'||S.over||S.q>=QT())return 0;const pf=(S.mgrQ&&S.mgrQ.perf)||0;return pf>0?Math.min(bonRate(S.bonI==null?MOT.i0:S.bonI)*pf,Math.max(0,mgrCash())):0}
-function coPend(){if(!S||S.phase!=='debrief'||S.over||S.q>=QT())return 0;return coinvPct()*Math.max(0,mgrCash()-bonPend())}
+function coPend(){return 0;   /* lot 240 */
+ if(!S||S.phase!=='debrief'||S.over||S.q>=QT())return 0;return coinvPct()*Math.max(0,mgrCash()-bonPend())}
 function cashView(){return mgrCash()-bonPend()-coPend()}   /* lot 63 : pas de capital de départ, trésorerie = gains nets */
 function liveTC(){let tot=0;const k0=S.k0||S.k;for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}return tot}
 function costsNow(){
@@ -4697,7 +4698,7 @@ function loadGame(){
   if(S.goal&&S.goal.nm)S.goal=QGOALS.find(g=>(S.goal.id&&g.id===S.goal.id)||g.nm===S.goal.nm)||null;
   S.evQueue=(d.evQ||[]).map(evFromTag).filter(Boolean);S.preDesk=evFromTag(d.preD);
   const P={phaseOpen:()=>phaseOpen(),screenBudget:()=>screenBudget(),phaseDesk:()=>phaseDesk(),screenPlay:()=>screenPlay(),
-   screenComm:()=>screenComm(),phaseExec:()=>screenExec(),screenExec:()=>screenExec(),phaseLive:()=>phaseLive(),
+   screenComm:()=>screenComm(),screenCoinv:()=>screenCoinv(),phaseExec:()=>screenExec(),screenExec:()=>screenExec(),phaseLive:()=>phaseLive(),
    stepEvents:()=>stepEvents(),phaseClose:()=>screenDebrief(S.resumeO),screenDebrief:()=>screenDebrief(S.resumeO),
    screenFinal:()=>screenFinal(),screenBoard:()=>screenBoard()};
   (P[S.resume]||P.phaseOpen)();window.scrollTo(0,0);return true;
@@ -4898,7 +4899,7 @@ function screenPlay(){
  document.getElementById('send').onclick=()=>{
    const c=liveTC();
    if(redBlock()){refreshSend();toast(redBlock());return}
-   commitOrders();screenComm();window.scrollTo(0,0);
+   commitOrders();screenCoinv();window.scrollTo(0,0);
  };
 }
 /* Les ordres sortent de la poche du gérant : le bouton reste bloqué tant que la caisse ne suit
@@ -5484,6 +5485,25 @@ function hint(id){
   const b=document.getElementById('tutooff');
   if(b)b.onclick=()=>{S.tuto=99;TUTO=false;SHOWHINTS=false;markTutoSeen();const m=document.getElementById('modal');if(m)m.remove();toast('Info-bulles désactivées.')};
  },420);
+}
+/* lot 240 : co-investissement, après le book */
+function screenCoinv(){
+ if(S.q<1||S.coinvQ===S.q){screenComm();return}
+ save('screenCoinv');
+ const cash=Math.max(0,mgrCash()),pb=profitBook(S.k),sg=riskShown(weights(S.k)).total;
+ const amt=p=>p*cash;
+ app.innerHTML=statusBar()+`<div class="fade"><div class="pnlhead"><div class="q">TRIMESTRE ${S.q+1} · CO-INVESTISSEMENT</div>
+  <div class="regime">Votre argent dans le fonds</div></div>
+  <div class="block"><div class="attr"><span class="an">Rentabilité estimée du book</span><span class="av">${pc2(pb)}</span></div>
+   <div class="attr"><span class="an">Risque du book (annualisé)</span><span class="av">${dec(sg*100,1)} %</span></div>
+   <div class="attr"><span class="an">Trésorerie disponible, ordres payés</span><span class="av"><b class="gold-g">${mm(cash)}</b></span></div>
+   <p class="note">Part de votre trésorerie placée dans le fonds pour ce trimestre : elle suit son résultat net, gains comme pertes, et vous revient à la clôture. Bloquée tout le trimestre, elle ne paie ni budget, ni imprévus. 25 % au moins.</p>
+   <div class="cisel">${COINVS.map(p=>`<button class="cip${Math.abs(p-coinvPct())<1e-9?' on':''}" data-p="${p}">${Math.round(p*100)} %</button>`).join('')}</div>
+   <p class="note" id="cinote"></p></div>
+  <button class="cta" id="ok">Placer et continuer</button></div>`;
+ const note=()=>{const p=coinvPct(),r=amt(p);document.getElementById('cinote').innerHTML=`${mm(r)} placés · à rentabilité estimée, ${pb>=0?'+':'−'}${mm(Math.abs(r*pb))} pour vous ce trimestre ; reste en trésorerie ${mm(cash-r)}.`};note();
+ app.querySelectorAll('.cip').forEach(b=>b.onclick=()=>{S.coinvPct=+b.dataset.p;app.querySelectorAll('.cip').forEach(x=>x.classList.toggle('on',x===b));note();refreshGain()});
+ document.getElementById('ok').onclick=()=>{const tg=amt(coinvPct());S.nav+=tg;S.navQ0+=tg;S.coinvBase=tg;S.coinvIn=tg;S.coinvLock=tg;S.coinvQ=S.q;refreshGain();screenComm();window.scrollTo(0,0)};
 }
 function screenComm(){
  hint('comm');save('screenComm');S.commPick=S.commPick||'prud';
@@ -6698,11 +6718,7 @@ function screenDebrief(o){
   <p class="note" style="margin-top:0">${mm(invDue())} d'avis de rachat tombent à la prochaine clôture, ${dec(invDue()/Math.max(1e-9,extNav())*100,1)} % de l'encours. La gate limite les paiements à ${Math.round(INVP.gate*100)} % de l'encours, au prorata ; le reste est reporté d'un trimestre. Prix : confiance ${INVP.gateLp}, et pas deux trimestres de suite.</p>
   <div class="cisel"><button class="gtp${S.gateNext?'':' on'}" data-g="0">Payer à l'échéance</button><button class="gtp${S.gateNext?' on':''}" data-g="1">Activer la gate</button></div></div>`;
  const lmSel='';   /* lot 239 : la négociation se fait au début du trimestre, page du book */
- const coSel=(S.over||S.q>=QT())?'':`<div class="block"><div class="blockhead"><h2>Co-investissement</h2><span class="hint">trimestre prochain</span></div>
-  <p class="note" style="margin-top:0">Part de votre trésorerie placée dans le fonds : elle suit son résultat net, gains comme pertes, et reste comptée dans la trésorerie à sa valeur du moment. 25 % au moins.</p>
-  <div class="cisel">${COINVS.map(p=>`<button class="cip${Math.abs(p-coinvPct())<1e-9?' on':''}" data-p="${p}">${Math.round(p*100)} %</button>`).join('')}</div>
-  <p class="note" id="cinote">${mm(coPend())} placés au prochain trimestre, calculés après le bonus d'équipe.</p>
-  <p class="note" style="margin-top:2px">Bloquée dans le fonds tout le trimestre, cette somme sort de votre trésorerie : elle ne paie ni budget, ni ordres, ni imprévus. Elle vous revient à la clôture, avec son résultat.</p></div>`;
+ const coSel='';   /* lot 240 : le co-investissement se choisit après le book */
  /* lot 238 : pages suivantes */
  const PGS=[];if(gtSel)PGS.push(['Gate',gtSel]);PGS.push(['Trésorerie du gérant',tresSel+lmSel+coSel]);if(bnSel)PGS.push(["Bonus d'équipe",bnSel]);
  const lastLab=S.over?'Voir le rapport final':(S.q>=QT()?`Clôturer les ${DUR().ans} an${DUR().ans>1?'s':''}`:'Trimestre suivant');
