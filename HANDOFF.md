@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 246.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 247.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -269,6 +269,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **244** : réaction aux dépêches — dock collé en bas de l'écran (`.evdock`, sticky) : résumé du cran en trois lignes (ordres et coût ; poursuite et retournement : probabilité, P&L, confiance ; rentabilité et risque), crans et « Valider » ; texte complet et ordres au-dessus (`#evdet`). Rivalité et accident gardent l'ancien panneau.
 - **245** : `#evdet` en grille : le détail de chaque cran est empilé (`.pcell`, un seul visible), hauteur constante ; « Ne pas réagir » affiche « Aucun ordre : le book reste inchangé. »
 - **246** : fin de trimestre — les pages Gate, Trésorerie et Bonus d'équipe ne sont plus retenues par `.thold` (3 s) : affichage immédiat.
+- **247** : collatéral — 10 placements renommés (T-bills, monétaire prime, repo tripartite, AAA de CLO, prêt de titres réinvesti, dette émergente locale, HY court, prêts cov-lite, AT1, dollar synthétique crypto) ; profils variés (fréquent/léger, rare/lourd) ; dispersion du surcroît `v` par placement (colY) ; net y−p·l relevé (0,26 → 1,8 %/trim.), plus aucun placement à espérance négative.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
