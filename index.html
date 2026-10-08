@@ -3776,24 +3776,24 @@ function budgetBp(){return BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK()
 /* budget si l'on basculait un seul poste sur un autre niveau */
 /* lot 58 : placement du collatéral. Le surcroît de rendement est acquis au fil du trimestre ;
    la perte, de probabilité et de montant annoncés, tombe à la clôture (tirage pur). */
-/* lot 248 : écarts-types l·√(p(1−p)) échelonnés 0 · 0,5 · 1 · 1,5 · 2 · 2,5 · 3 · 4 · 5 · 6 % par trimestre, classés ;
-   Sharpe constant : surcroît net y − p·l = 0,30 × écart-type */
+/* lot 249 : écarts-types l·√(p(1−p)) de 0 à 4,5 % par trimestre, pas de 0,5, classés ; pertes des trois
+   derniers entre 8 et 10 %, probabilités déduites ; Sharpe constant : surcroît net y − p·l = 0,35 × écart-type */
 const COLL=[
- {id:'tres',nm:'Bons du Trésor à 3 mois',ico:'🏛️',y:0,p:0,l:0,d:"Le taux sans risque, rien de plus, rien de moins."},
- {id:'mmf',nm:'Fonds monétaire « prime »',ico:'💧',y:0.00238,p:0.03,l:0.0293,d:"Du papier commercial et des certificats de dépôt bien notés. Rarement un problème, mais un fonds de ce type a déjà « cassé le dollar »."},
- {id:'repo',nm:'Repo tripartite contre crédit',ico:'🔁',y:0.00669,p:0.12,l:0.0308,d:"Vous prêtez du cash contre des obligations d'entreprises. Les décotes bougent souvent, rarement beaucoup."},
- {id:'clo',nm:'Tranches AAA de CLO',ico:'🧱',y:0.00756,p:0.04,l:0.0765,d:"Le haut de la pile d'une titrisation de prêts aux entreprises. Le défaut est quasi impossible ; la chute de prix en crise, non."},
- {id:'em',nm:'Dette émergente en devise locale',ico:'🌍',y:0.02233,p:0.4,l:0.0408,d:"Des emprunts d'État à haut rendement, non couverts en change. Le coupon est solide ; la devise décroche souvent, d'un coup."},
- {id:'secl',nm:'Prêt de titres, cash réinvesti',ico:'⛓️',y:0.01800,p:0.15,l:0.0700,d:"Vos titres sont prêtés, le cash reçu en garantie est replacé en papier plus long et moins liquide. C'est ce qui a coulé la branche prêt de titres d'un assureur en 2008."},
- {id:'hy',nm:'High yield court terme',ico:'☠️',y:0.02306,p:0.18,l:0.0781,d:"Des obligations sous la catégorie investissement, à moins de trois ans. Le coupon est superbe tant que personne ne fait défaut."},
- {id:'lev',nm:'Prêts à levier « cov-lite »',ico:'🏗️',y:0.02677,p:0.12,l:0.1231,d:"Des prêts syndiqués aux rachats d'entreprises, sans clauses de protection. Taux variable, liquidité de week-end."},
- {id:'at1',nm:'Dette bancaire AT1 (CoCos)',ico:'🏦',y:0.02974,p:0.08,l:0.1843,d:"Des obligations bancaires que le régulateur peut convertir ou effacer. Calmes pendant des années, puis une émission rayée en un week-end."},
- {id:'stab',nm:'Dollar synthétique crypto',ico:'🪙',y:0.05264,p:0.25,l:0.1386,d:"Un dollar numérique tenu par une position de base sur les dérivés crypto. Le rendement suit le financement des perpétuels ; stable, sauf le jour où il ne l'est pas."},
+ {id:'tres',nm:'3-month T-bills',ico:'🏛️',y:0,p:0,l:0,d:"Le taux sans risque, rien de plus, rien de moins."},
+ {id:'mmf',nm:'Commercial paper (A-1/P-1)',ico:'💧',y:0.00263,p:0.03,l:0.0293,d:"Des billets de trésorerie d'entreprises de premier rang, à quelques semaines. Rarement un problème, mais un émetteur a déjà fait défaut du jour au lendemain."},
+ {id:'repo',nm:'Tri-party repo (credit collateral)',ico:'🔁',y:0.00719,p:0.12,l:0.0308,d:"Vous prêtez du cash contre des obligations d'entreprises. Les décotes bougent souvent, rarement beaucoup."},
+ {id:'clo',nm:'AAA CLO tranches',ico:'🧱',y:0.00831,p:0.04,l:0.0765,d:"Le haut de la pile d'une titrisation de prêts aux entreprises. Le défaut est quasi impossible ; la chute de prix en crise, non."},
+ {id:'em',nm:'Local-currency EM debt',ico:'🌍',y:0.02333,p:0.4,l:0.0408,d:"Des emprunts d'État à haut rendement, non couverts en change. Le coupon est solide ; la devise décroche souvent, d'un coup."},
+ {id:'secl',nm:'Sec-lending cash reinvestment',ico:'⛓️',y:0.01925,p:0.15,l:0.0700,d:"Vos titres sont prêtés, le cash reçu en garantie est replacé en papier plus long et moins liquide. C'est ce qui a coulé la branche prêt de titres d'un assureur en 2008."},
+ {id:'hy',nm:'Short-duration high yield',ico:'☠️',y:0.02456,p:0.18,l:0.0781,d:"Des obligations sous la catégorie investissement, à moins de trois ans. Le coupon est superbe tant que personne ne fait défaut."},
+ {id:'lev',nm:'Cov-lite leveraged loans',ico:'🏗️',y:0.03288,p:0.2579,l:0.0800,d:"Des prêts syndiqués aux rachats d'entreprises, sans clauses de protection. Taux variable, liquidité de week-end."},
+ {id:'at1',nm:'Bank AT1 CoCos',ico:'🏦',y:0.03838,p:0.2709,l:0.0900,d:"Des obligations bancaires que le régulateur peut convertir ou effacer. Le marché les solde à la moindre rumeur sur une banque."},
+ {id:'stab',nm:'Synthetic dollar (crypto basis)',ico:'🪙',y:0.04396,p:0.2821,l:0.1000,d:"Un dollar numérique tenu par une position de base sur les dérivés crypto. Le rendement suit le financement des perpétuels ; stable, sauf le jour où il ne l'est pas."},
 ];
 function colOpt(){return COLL[(S&&S.col)||0]||COLL[0]}
-/* lot 248 : surcroît du trimestre = moyenne ± 10 % du net attendu (y − p·l), tirage pur par trimestre et par placement :
-   le net reste positif et croît avec le risque dans 99 % des trimestres */
-function colY(o){if(!o.y)return 0;const u=prng32(hash32('coly'+o.id+'_'+S.q,S.seed))();return o.y+0.2*(u-0.5)*(o.y-o.p*o.l)}
+/* lot 249 : surcroît du trimestre = moyenne ± 8 % du net attendu (y − p·l), tirage pur par trimestre et par placement :
+   le net reste positif et croît avec le risque sur toute l'échelle dans 95 % des trimestres */
+function colY(o){if(!o.y)return 0;const u=prng32(hash32('coly'+o.id+'_'+S.q,S.seed))();return o.y+0.16*(u-0.5)*(o.y-o.p*o.l)}
 function mgShare(){return (S&&S.k&&N)?Math.min(1,marginPct(S.k)):0}   /* lot 100 : part de l'encours déposée en marge */
 function colYield(){const b=(S.rate||0)/4,m=mgShare(),bm=Math.max(0,(S.rate||0)-0.001)/4;return redOn('collat')?b*0.6:m*bm+(1-m)*(b+colY(colOpt()))}
 function drawColl(){
