@@ -3776,8 +3776,8 @@ function budgetBp(){return BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0)+DESK()
 /* budget si l'on basculait un seul poste sur un autre niveau */
 /* lot 58 : placement du collatéral. Le surcroît de rendement est acquis au fil du trimestre ;
    la perte, de probabilité et de montant annoncés, tombe à la clôture (tirage pur). */
-/* lot 249 : écarts-types l·√(p(1−p)) de 0 à 4,5 % par trimestre, pas de 0,5, classés ; pertes des trois
-   derniers entre 8 et 10 %, probabilités déduites ; Sharpe constant : surcroît net y − p·l = 0,35 × écart-type */
+/* lot 249 : écarts-types l·√(p(1−p)) de 0 à 4,5 % par trimestre, pas de 0,5, classés ; pertes déduites
+   des probabilités, sauf AT1 (perte 18 %) et dollar synthétique (10 %) ; lot 250 : cov-lite à 40 %, AT1 à 18 % ; Sharpe constant : surcroît net y − p·l = 0,35 × écart-type */
 const COLL=[
  {id:'tres',nm:'3-month T-bills',ico:'🏛️',y:0,p:0,l:0,d:"Le taux sans risque, rien de plus, rien de moins."},
  {id:'mmf',nm:'Commercial paper (A-1/P-1)',ico:'💧',y:0.00263,p:0.03,l:0.0293,d:"Des billets de trésorerie d'entreprises de premier rang, à quelques semaines. Rarement un problème, mais un émetteur a déjà fait défaut du jour au lendemain."},
@@ -3786,8 +3786,8 @@ const COLL=[
  {id:'em',nm:'Local-currency EM debt',ico:'🌍',y:0.02333,p:0.4,l:0.0408,d:"Des emprunts d'État à haut rendement, non couverts en change. Le coupon est solide ; la devise décroche souvent, d'un coup."},
  {id:'secl',nm:'Sec-lending cash reinvestment',ico:'⛓️',y:0.01925,p:0.15,l:0.0700,d:"Vos titres sont prêtés, le cash reçu en garantie est replacé en papier plus long et moins liquide. C'est ce qui a coulé la branche prêt de titres d'un assureur en 2008."},
  {id:'hy',nm:'Short-duration high yield',ico:'☠️',y:0.02456,p:0.18,l:0.0781,d:"Des obligations sous la catégorie investissement, à moins de trois ans. Le coupon est superbe tant que personne ne fait défaut."},
- {id:'lev',nm:'Cov-lite leveraged loans',ico:'🏗️',y:0.03288,p:0.2579,l:0.0800,d:"Des prêts syndiqués aux rachats d'entreprises, sans clauses de protection. Taux variable, liquidité de week-end."},
- {id:'at1',nm:'Bank AT1 CoCos',ico:'🏦',y:0.03838,p:0.2709,l:0.0900,d:"Des obligations bancaires que le régulateur peut convertir ou effacer. Le marché les solde à la moindre rumeur sur une banque."},
+ {id:'lev',nm:'Cov-lite leveraged loans',ico:'🏗️',y:0.04083,p:0.4,l:0.0714,d:"Des prêts syndiqués aux rachats d'entreprises, sans clauses de protection. Taux variable, liquidité de week-end."},
+ {id:'at1',nm:'Bank AT1 CoCos',ico:'🏦',y:0.02338,p:0.0521,l:0.1800,d:"Des obligations bancaires que le régulateur peut convertir ou effacer. Calmes pendant des années, puis une émission rayée en un week-end."},
  {id:'stab',nm:'Synthetic dollar (crypto basis)',ico:'🪙',y:0.04396,p:0.2821,l:0.1000,d:"Un dollar numérique tenu par une position de base sur les dérivés crypto. Le rendement suit le financement des perpétuels ; stable, sauf le jour où il ne l'est pas."},
 ];
 function colOpt(){return COLL[(S&&S.col)||0]||COLL[0]}
