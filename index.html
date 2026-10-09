@@ -5066,7 +5066,7 @@ const STRESS=[
  {id:'souverain',nm:'Défaut souverain émergent',ext:1,sh:[-1.0,0,1.5,-2.0],x:{MXP:-3.0,MXEF:-2.0},p:"Un grand émetteur émergent suspend ses paiements. Les capitaux fuient toute la classe d'actifs."},
  {id:'contrepartie',nm:'Défaut d\'une contrepartie',ext:1,tgt:'otc',H:3.0,sh:[0,0,0,-0.5],p:"La banque en face de vos forwards et de vos swaps fait défaut. Vos positions de gré à gré sont remplacées au pire prix."},
  {id:'rogue',nm:'Trader non autorisé',ext:1,tgt:'rogue',H:5.0,sh:[0,0,0,0],p:"Des opérations cachées doublaient votre plus grosse ligne. Le marché sent la position et va contre elle."},
- {id:'crowding',nm:'Tout le monde a le même book',ext:1,tgt:'crowd',H:1.5,sh:[0,0,0,-0.5],p:"Les grands fonds macro portaient les mêmes positions que vous. L'un d'eux réduit ; toutes vos lignes partent contre vous."},
+ {id:'crowding',nm:'Tout le monde a le même book',ext:1,tgt:'crowd',H:2.5,sh:[0,0,0,-0.5],p:"Les grands fonds macro réduisent tous en même temps. Ce qu'ils détenaient en masse se retourne : leurs achats chutent, leurs ventes remontent. Ceux qui étaient avec eux paient ; ceux qui étaient à contre-courant encaissent."},
  {id:'cyber',nm:'Cyberattaque sur les bourses',ext:1,sh:[-0.5,0,0.5,-1.5],liq:2.0,mg:1.2,p:"Les systèmes d'une grande place de cotation tombent pendant deux séances. Personne ne sait plus où est le prix."},
  {id:'crypto',nm:'Effondrement d\'une plateforme crypto',ext:1,x:{BTC:-3.5},sh:[0,0,0,-1.0],p:"La plus grande plateforme d'échange gèle les retraits. Le bitcoin perd un tiers en un week-end."},
  {id:'secheresse',nm:'Sécheresse historique',ext:1,x:{NRAM:-3.0,ZW:2.5,KC:2.5},sh:[0,0.5,0,0],p:"Trois mois sans pluie sur les grandes plaines et au Brésil. Les récoltes fondent, les prix agricoles flambent."}];
@@ -5074,7 +5074,7 @@ const STRESSK=0.32,STRGAP=0.28;
 function stressGap(k,sc){const w=weights(k);let g=0;for(let i=0;i<N;i++)g+=Math.abs(w[i])*INSTR[i].sigQ;return STRGAP*g*(sc&&sc.ext?2:1)*crowd(riskShown(w).total)}
 function stressHit(sc,k){k=k||S.k;const h={},K=STRESSK*(sc.ext?2:1);INSTR.forEach((x,i)=>{let v=0;for(let f=0;f<4;f++)v+=x.b[f]*(sc.sh?sc.sh[f]:0);v*=K;if(sc.x&&sc.x[x.sym])v+=sc.x[x.sym]*K*1.5;
   if(sc.tgt==='otc'&&x.pt==='otc'&&k[i])v-=Math.sign(k[i])*sc.H;
-  if(sc.tgt==='crowd'&&k[i])v-=Math.sign(k[i])*sc.H;
+  if(sc.tgt==='crowd')v-=((S&&S.crowd&&S.crowd[i])||0)*sc.H;   /* lot 258 : la foule se déboucle — chaque marché recule du positionnement des autres fonds */
   if(Math.abs(v)>=0.03)h[x.sym]=+v.toFixed(3)});
  if(sc.tgt==='short'||sc.tgt==='rogue'){let bi=-1,bv=0;for(let i=0;i<N;i++){const a=sc.tgt==='short'?-k[i]:Math.abs(k[i]);if(a>bv){bv=a;bi=i}}
   if(bi>=0){const sy=INSTR[bi].sym;h[sy]=+((h[sy]||0)-Math.sign(k[bi])*sc.H).toFixed(3)}}
