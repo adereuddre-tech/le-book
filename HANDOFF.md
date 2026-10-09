@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 263.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 264.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -286,6 +286,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **261** : contrer ×1 (dépêche) et ×1,5 (extrême) ; le trader multiplie tout coût d'urgence par 2/3 (et non plus le seul surcoût) : contrer une dépêche ×0,67, suivre ×1,67, extrême ×2,67 / ×1, accident ×2, rivalité ×1, stop ×0,87, appel de marge ×0,87 / ×1,2.
 - **262** : décote à contre-sens (`REB`) — sur un cran « contrer », coût × urgence moins k × √(unités) pb du notionnel, plafonnée : dépêche 2,5 pb (6 au plus), extrême 15 pb (40 au plus). Mesure : contrer à fond un extrême rapporte dans 71 % des cas (médiane −16 pb de l'encours) ; contrer une dépêche reste presque toujours payant. Dock et texte : « rabais +… ». `urgF` : stop et appel de marge jamais sous ×1, même avec trader.
 - **263** : revue des textes — styles (lecture des signaux tendance/portage/valeur par style, doublon incidents du flux retiré), difficultés (indulgence/sévérité du comité, pertes moins mal vécues en facile), durées (express), « sous le capot » (frein dès 100 M$ à la puissance 0,35, courtier ×2, surcoût d'urgence et contre-pied).
+- **264** : extrêmes fusionnés — les dépêches x:1 deviennent des scénarios du catalogue STRESS (`mac:1`, x = h / (STRESSK × 1,5), même choc) : calcul sur le book, back office, foule, veille, protection identiques. Un seul tirage par trimestre : `xProbTot` = 1 − (1 − stressP)(1 − XPROB) ; famille tirée au prorata, scénarios macro sans répétition (S.usedX) ; `xScP` = probabilité de chaque scénario (prime, affichage).
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
