@@ -2848,9 +2848,10 @@ const BRK0=0.1;   /* lot 236 : seuil du frein ; lot 259 : 100 M$ (200 avant) */
 let BRK=0.35;
 function brake(A){return Math.pow(Math.max(1,(A===undefined?S.nav:A)/BRK0),BRK)}
 /* lot 260 : surcoût d'urgence en cours de trimestre. Dépêche : suivre le mouvement (prendre la liquidité) ×2,5,
-   le contrer (la fournir) ×1,5 ; extrême (les deux familles) : ×4 et ×2. Un trader sur la classe réduit le surcoût d'un tiers. */
-const URG={ev:{f:2.5,c:1.5},x:{f:4,c:2},tail:3};
-function urgM(m,i){return covered(INSTR[i].grp)?1+(m-1)*2/3:m}
+   le contrer (la fournir) ×1,5 ; extrême (les deux familles) : ×4 et ×2. Un trader sur la classe réduit le surcoût d'un tiers.
+   lot 261 : contrer ×1 (dépêche) et ×1,5 (extrême) ; le trader multiplie le coût par 2/3 (contrer une dépêche : ×0,67). */
+const URG={ev:{f:2.5,c:1},x:{f:4,c:1.5},tail:3};
+function urgM(m,i){return covered(INSTR[i].grp)?m*2/3:m}
 function tcost(dk,i){
  if(Math.abs(dk)<1e-9)return {cost:0,bp:0,bn:0};
  const x=INSTR[i],bn=Math.abs(dk*U/x.sig*S.nav);
@@ -5849,7 +5850,7 @@ function screenMacroEvent(ev){
      <div class="evsel">${plan.map((o,i)=>[o,i]).reverse().map(([o,i])=>{const ban=o.trades.length&&(redOn('risk')||redOn('noadd'))&&o.v1>o.v0+1e-9;o.ban=ban;
        return `<button class="evstep${o.n>0?' up':o.n<0?' dn':' zr'}${i===NO?' on':''}" data-i="${i}"${ban||(!o.trades.length&&o.n!==0)?' disabled':''}><b>${o.n>0?'+':o.n<0?'−':''}${Math.abs(o.n)}</b><small>${o.n>0?'renforcer':o.n<0?'contrer':'rien'}</small></button>`}).join('')}</div>
      <button class="cta" id="evok" style="margin-top:8px">Valider</button></div>`})()}
-   <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion. Ces ordres d'urgence coûtent plus cher que ceux du début de trimestre : suivre le mouvement, c'est acheter ce que tout le monde achète (×2,5, ×4 sur un extrême) ; le contrer, c'est fournir la liquidité dont les autres ont besoin (×1,5, ×2 sur un extrême) ; un trader sur la classe retire un tiers de ce surcoût ; votre desk n'est en place qu'à ${(capNow()*100).toFixed(0)} % quand le marché repart sur cette dépêche (de ${Math.round(prof.capture*70)} à ${Math.min(100,Math.round(prof.capture*130))} % selon les dépêches pour votre style), c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
+   <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion. Ces ordres d'urgence coûtent plus cher que ceux du début de trimestre : suivre le mouvement, c'est acheter ce que tout le monde achète (×2,5, ×4 sur un extrême) ; le contrer, c'est fournir la liquidité dont les autres ont besoin (×1, ×1,5 sur un extrême) ; un trader sur la classe retire un tiers du coût (contrer une dépêche : ×0,67) ; votre desk n'est en place qu'à ${(capNow()*100).toFixed(0)} % quand le marché repart sur cette dépêche (de ${Math.round(prof.capture*70)} à ${Math.min(100,Math.round(prof.capture*130))} % selon les dépêches pour votre style), c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
   </div>
  </div>`;
  const go=i=>{clearTimer();resolveEvent(ev,touched,plan[i],imm,navB)};
