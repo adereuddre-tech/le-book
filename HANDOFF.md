@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 269.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 270.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -292,6 +292,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **267** : glossaire au toucher (`GLOSS`, 16 termes ; `glossMark` via MutationObserver sur #app : première occurrence par note soulignée `.gl`, toucher = définition en modale ; jamais dans un bouton ou une carte).
 - **268** : correctif — la classe du glossaire devient `.glo` (`.gl` servait déjà aux étiquettes des jauges).
 - **269** : pouvoirs de l'équipe (`PW`, bloc `#pwblk` sur la page du book, `pwUse`, `pwOn(id)` = joué ce trimestre, S.pw). Jean-Kevin ±10 % sur tous les coûts (S.pwJK) ; Dwight : actions sans impact (tcost) ; Ingrid / Tuco : sens du marché de taux / de matière première le plus parlant (S.rBase, juste 75 / 80 %, S.pwTips) ; Boris : surcoût d'urgence ÷2 en devises (urgM) ; Winnie : capture 100 % sur les dépêches Asie/exotiques ; Sœur Marie-Alpha : book recalé sur S.tgt (pvol) et ordres du début de trimestre −25 % ; Onésime : confiance +5, fuite ; Gontran : option « passer l'écriture » sur l'incident (moitié, sans confiance) ; Josiane : aucune fuite ; Firmin : contrôle +3 ; Mireille : un jaune effacé par mandat (S.pwMi) ; Solange : choc d'extrême −20 %, cyber nul.
+- **270** : 4e style `rv` (valeur relative) — paires (`pairDraw` après drawReturns : deux couples même classe, facteurs corrélés > 0,6 ; l'écart se referme de PAIRA 0,30 σ par jambe dans S.rBase, fait de marché pour tous ; `pairAlpha` dans expRet pour rv seul) ; décote de liquidité ×2 dans les extrêmes (stressGap) ; paramètres : vol ×0,8, coûts ×0,8, capture 0,55, nervosité ×0,85, équipe ×1,10, perf +2, seed 0,5 M$, lecture portage ×0,3, veille 0,20/0,30. Bloc `#stypw` (`styDraw`, crochets `styDrawX`/`styWire` pour les styles suivants). Écran d'accueil « 1 sur N ».
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
