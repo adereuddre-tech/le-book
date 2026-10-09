@@ -205,6 +205,7 @@ em{font-style:italic;color:var(--txt)}
 .opayev em{display:block;font-style:normal;font-size:10px;font-weight:400;color:var(--dimmer);text-align:right;letter-spacing:.04em}
 .choice.evopt .evs{display:block;color:var(--dim);font-size:12.5px}
 .evdock{position:sticky;bottom:0;z-index:5;background:var(--ink);padding:8px 0 10px;margin-top:8px;border-top:1px solid var(--line);box-shadow:0 -10px 18px rgba(0,0,0,.35)}
+.pwl{display:grid;gap:6px}.pwb{text-align:left;padding:8px 10px;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-size:12.5px}.pwb small{display:block;color:var(--dim);font-size:11.5px;margin-top:2px}.pwb.on{border-color:var(--gold)}.pwb[disabled]{opacity:.55}
 .glo{border-bottom:1px dotted var(--gold);cursor:help}
 .csum{font-size:12.5px;line-height:1.45;margin-top:6px;text-align:left}.csum .cpw{color:var(--gold);margin-bottom:2px}.csum .g{color:var(--long)}.csum .b{color:var(--short)}
 .qline{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:6px;display:flex;flex-wrap:wrap;gap:2px 6px;align-items:baseline}.qline i{font-style:normal;color:var(--dimmer)}
@@ -2854,7 +2855,7 @@ function brake(A){return Math.pow(Math.max(1,(A===undefined?S.nav:A)/BRK0),BRK)}
    le contrer (la fournir) ×1,5 ; extrême (les deux familles) : ×4 et ×2. Un trader sur la classe réduit le surcoût d'un tiers.
    lot 261 : contrer ×1 (dépêche) et ×1,5 (extrême) ; le trader multiplie le coût par 2/3 (contrer une dépêche : ×0,67). */
 const URG={ev:{f:2.5,c:1},x:{f:4,c:1.5},tail:3};
-function urgM(m,i){return covered(INSTR[i].grp)?m*2/3:m}
+function urgM(m,i){if(pwOn('bo')&&INSTR[i].grp==='Devises'&&m>1)m=1+(m-1)/2;return covered(INSTR[i].grp)?m*2/3:m}   /* lot 268 : Boris */
 /* lot 262 : à contre-sens, on fournit la liquidité et le marché cède une décote, croissante avec la taille de l'ordre :
    k × √(unités) pb du notionnel, plafonnée — dépêche 2,5 pb (6 pb au plus), extrême 15 pb (40 pb au plus). Les coûts
    normaux sont de 2 à 4 pb du notionnel : un gros ordre à contre-sens dans un extrême coûte moins que rien. */
@@ -2872,9 +2873,11 @@ function tcost(dk,i){
  let m=execMot()*desk.mult(x)*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult;
  if(S.leak&&Math.abs(S.k[i])>2)m*=1.45;
  if((S.stars||[]).includes(INSTR[i].grp))m*=0.5;
+ if(pwOn('jk'))m*=S.pwJK||1;if(pwOn('ma')&&S.phase==='book')m*=0.75;   /* lot 268 : Jean-Kevin, Sœur Marie-Alpha */
  if(!covered(x.grp))m*=NOTRD;   /* lot 92 : sans trader, le courtier */   /* lot 70 : recrues gardées jusqu'à la fin, ÷2 sur leur classe (sans cumul) */
  bp*=m;
  const cost=bn*bp*1e-4,spr=Math.min(cost,bn*x.s*TCK*m*brake()*1e-4);
+ if(pwOn('dw')&&x.grp==='Actions')return {cost:spr,bp:spr/bn*1e4,bn,spr,imp:0};   /* lot 268 : Dwight, sans impact */
  return {cost,bp,bn,spr,imp:cost-spr};
 }
 /* Fin de partie : l'encours sous 5 % de son niveau de départ (−95 %). */
@@ -4954,6 +4957,7 @@ function screenPlay(){
    ${redNote()}
    <details style="margin:0 0 8px"${S.maxk>3?'':' hidden'}><summary>Le surlevier, au-delà de ±3</summary><p class="note">Au-delà de ±3 vous entrez dans le surlevier : le notionnel dépasse ce que le mandat imagine, le comité le voit, les investisseurs aussi — dans un sens comme dans l'autre.</p></details>
    <div id="rows"></div></div>
+  <div class="block" id="pwblk"></div>
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Risque ex-ante du book</summary>
    <div class="wire" id="risk" style="margin-top:8px"></div></details></div>
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Coût des ordres à passer</summary>
@@ -4973,7 +4977,44 @@ function screenPlay(){
    if(redBlock()){refreshSend();toast(redBlock());return}
    commitOrders();screenCoinv();window.scrollTo(0,0);
  };
+ pwDraw();   /* lot 268 */
 }
+/* lot 268 : un coup de pouce par personne et par trimestre (Mireille : une fois par mandat). Effets lus ailleurs par S.pw[id]===S.q. */
+const PW=[
+ {id:'jk',fo:0,ic:'🐣',nm:'Jean-Kevin',t:"Le tableur à couleurs",d:"Il « optimise » vos ordres : une chance sur deux de −10 % sur tous les coûts du trimestre, une sur deux de +10 % (bug)."},
+ {id:'dw',fo:1,ic:'📞',nm:'Dwight',t:"Un bloc à la voix",d:"Vos ordres sur les actions passent sans impact de marché tout le trimestre : seule la fourchette est due."},
+ {id:'ig',fo:2,ic:'🏦',nm:'Ingrid',t:"Lire l'adjudication",d:"Elle vous dit dans quel sens finira le marché de taux le plus parlant ce trimestre. Juste trois fois sur quatre."},
+ {id:'bo',fo:3,ic:'🤖',nm:'Boris',t:"L'algorithme en urgence",d:"Surcoût d'urgence divisé par deux sur les devises ce trimestre (dépêches, extrêmes, rivalités)."},
+ {id:'tu',fo:4,ic:'🛢️',nm:'Tuco',t:"Les cuves de Rotterdam",d:"Il vous dit dans quel sens finira la matière première la plus parlante ce trimestre. Juste quatre fois sur cinq : les cuves ne mentent pas."},
+ {id:'wi',fo:5,ic:'🐉',nm:'Winnie',t:"Hong Kong d'abord",d:"Sur les dépêches qui touchent l'Asie ou les exotiques, vous captez 100 % du mouvement ce trimestre : elle a exécuté avant l'ouverture européenne."},
+ {id:'ma',fo:6,ic:'📿',nm:'Sœur Marie-Alpha',t:"Le rééquilibrage béni",d:"Elle recale votre book sur le risque cible, ligne par ligne, et les ordres du début de trimestre coûtent 25 % de moins."},
+ {id:'on',fo:7,ic:'🎓',nm:'Onésime',t:"Un plateau télé",d:"Confiance des investisseurs +5 tout de suite. Mais il parle trop : vos grosses lignes fuitent ce trimestre (coûts ×1,45)."},
+ {id:'go',bo:1,ic:'🧮',nm:'Gontran',t:"Passer l'écriture",d:"Si un incident tombe ce trimestre, il le rattrape : le fonds n'en paie que la moitié, sans perte de confiance. Se joue sur l'écran de l'incident."},
+ {id:'jo',bo:2,ic:'🗂️',nm:'Josiane',t:"Tout rapprocher",d:"Aucune fuite de vos positions ce trimestre, quoi qu'il arrive — même si Onésime passe à la télé."},
+ {id:'fi',bo:3,ic:'🔎',nm:'Firmin',t:"Un audit propre",d:"Le rapport d'audit tombe à point : contrôle des risques +3."},
+ {id:'mi',bo:4,ic:'⚖️',nm:'Mireille',t:"Plaider devant le comité",d:"Une fois par mandat, elle fait effacer un carton jaune."},
+ {id:'so',bo:5,ic:'🛡️',nm:'Solange',t:"Exercice de crise",d:"Ce trimestre, le choc immédiat d'un événement extrême est réduit de 20 %, et une cyberattaque ne vous touche pas."}];
+function pwHere(o){return o.fo!=null?(o.fo===0||here(o.fo)):(S.bud&&S.bud.bo>=o.bo)}
+function pwOn(id){return !!(S&&S.pw&&S.pw[id]===S.q)}
+function pwOk(o){if(!pwHere(o))return false;if(o.id==='mi')return !(S.pwMi)&&S.cards&&S.cards.y>0;return !pwOn(o.id)}
+function pwTip(cls,rel,who){const c=[];for(let i=0;i<N;i++)if(mktOpen(i)&&INSTR[i].grp===cls)c.push(i);if(!c.length)return null;
+ const i=c.sort((a,b)=>Math.abs(expRet(b).m)-Math.abs(expRet(a).m))[0],u=prng32(hash32('pw'+who+S.q,S.seed))(),up=(S.rBase[i]>0)===(u<rel);return {who,sym:INSTR[i].sym,nm:INSTR[i].nm,up}}
+function pwUse(id){const o=PW.find(x=>x.id===id);if(!o||!pwOk(o))return;S.pw=S.pw||{};S.pw[id]=S.q;let msg='';
+ if(id==='jk'){const g=prng32(hash32('jk'+S.q,S.seed))()<0.5;S.pwJK=g?0.9:1.1;msg=g?'Le tableur marche : coûts −10 % ce trimestre.':'Le tableur plante : coûts +10 % ce trimestre.'}
+ if(id==='ig'||id==='tu'){const t=pwTip(id==='ig'?'Taux':'Matières premières',id==='ig'?0.75:0.8,o.nm);if(t){(S.pwTips=S.pwTips||[]).push(Object.assign(t,{q:S.q}));msg=`${o.nm} : ${t.nm} finira le trimestre en ${t.up?'hausse':'baisse'}.`}}
+ if(id==='ma'){const sp=pvol(weights(S.k));if(sp>1e-6){const a=S.tgt/sp;S.k=S.k.map((v,i)=>clampK(i,Math.round(v*a)));drawRows();renderRisk();refreshSend();refreshGain()}msg='Book recalé sur la cible ; ordres du début de trimestre −25 %.'}
+ if(id==='on'){gauge(5,0,'Onésime sur un plateau télé');if(!pwOn('jo'))S.leakQ=true;msg='Confiance +5. Vos lignes circulent sur le marché.'}
+ if(id==='jo'){S.leakQ=false;msg='Aucune fuite possible ce trimestre.'}
+ if(id==='fi'){gauge(0,3,"Audit propre de Firmin");msg='Contrôle des risques +3.'}
+ if(id==='mi'){S.pwMi=1;S.cards.y=Math.max(0,S.cards.y-1);(S.cards.log=S.cards.log||[]).push({q:S.q,c:'effacé',why:'Mireille plaide devant le comité'});msg='Un carton jaune effacé.'}
+ if(['dw','bo','wi','go','so'].includes(id))msg=o.d;
+ toast(`${o.ic} <b>${o.nm}</b> · ${msg}`);refreshStatus();renderTC&&renderTC();pwDraw()}
+function pwDraw(){const el=document.getElementById('pwblk');if(!el)return;const L=PW.filter(pwHere);
+ const tips=(S.pwTips||[]).filter(t=>t.q===S.q);
+ el.innerHTML=`<div class="blockhead"><h2>Votre équipe</h2><span class="hint">un coup de pouce chacun par trimestre</span></div>
+  ${tips.map(t=>`<div class="flag" style="margin:0 0 8px"><span>📌 <b>${t.who}</b> : ${t.nm} finira le trimestre en <b>${t.up?'hausse':'baisse'}</b>.</span></div>`).join('')}
+  <div class="pwl">${L.map(o=>{const on=pwOn(o.id)||(o.id==='mi'&&S.pwMi),ok=pwOk(o);return `<button class="pwb${on?' on':''}" data-pw="${o.id}"${ok?'':' disabled'}><b>${o.ic} ${o.nm} · ${o.t}</b><small>${o.d}${on?' <i>· joué</i>':''}</small></button>`}).join('')}</div>`;
+ el.querySelectorAll('.pwb[data-pw]').forEach(b=>b.onclick=()=>pwUse(b.dataset.pw))}
 /* Les ordres sortent de la poche du gérant : le bouton reste bloqué tant que la caisse ne suit
    pas. Un book inchangé ne coûte rien et n'est donc jamais bloqué — pas d'impasse possible. */
 function refreshSend(){
@@ -5766,7 +5807,7 @@ function screenExec(){
    else if(e.safePnl){R.rk.safe=e.safePnl;S.nav*=(1+e.safePnl);S.qEvM+=e.safePnl*navB0;e._hit=true;msg.push(e.safeTxt)}}
   if(e.invert){const i=IDX[e.invert];S.k[i]=-S.k[i];msg.push(`Position sur ${e.invert} inversée pour le trimestre.`)}
   if(e.cap2){for(let i=0;i<N;i++)if(Math.abs(S.k[i])===3){const d=S.k[i]>0?-1:1;const t=tcost(d,i);S.k[i]+=d;S.pendingTC-=t.cost*0.8/S.nav;msg.push(`${INSTR[i].sym} ramené à ${S.k[i]>0?'+':''}${S.k[i]}.`)}}
-  if(e.leakQ)S.leakQ=true;
+  if(e.leakQ&&!pwOn('jo'))S.leakQ=true;
   if(e.poach)S.poachBoost+=e.poach;
   if(e.cash){R.cash=e.cash*S.nav;S.nav*=(1+e.cash);S.qEvM+=e.cash*navB0;msg.push(`Encours du fonds ${sgn(e.cash,1)}.`)}
   if(e.opex){const a=e.opex*S.aum0;R.op=a;S.mgrCosts-=a;refreshGain();msg.push(`${a>=0?'+':'−'}${mm(Math.abs(a))} pour votre société de gestion.`)}   /* lot 222 */
@@ -5841,6 +5882,7 @@ function screenMacroEvent(ev){
  for(const sym in ev.hit){const i=IDX[sym];const r=0.5*ev.hit[sym]*INSTR[i].sigQ;imm+=w[i]*r;touched.push(i)}
  if(ev.stress){imm*=0.5+0.5*(TAILM[S.bud.risk]||1);if(imm<0)imm*=crowd(riskShown(w).total);imm-=stressGap(S.k,STRESS.find(x=>x.id===ev.stress))*(0.5+0.5*(TAILM[S.bud.risk]||1));(S.tails=S.tails||[]).push({q:S.q,t:ev.t,f:-imm,id:'stress'});xRivHit(ev.stress)}   /* lot 101 : le back office amortit le choc */
  let hgB=0;if(ev.x&&S.hedgeQ===S.q&&imm<0){hgB=-imm*HEDGE.h;imm+=hgB}   /* lot 253 : protection */
+ if(ev.stress&&pwOn('so')&&imm<0)imm*=ev.stress==='cyber'?0:0.8;   /* lot 268 : Solange */
  const navB=S.nav;S.nav*=(1+imm);S.qEvM+=imm*navB;
  if(ev.liq)S.liq*=ev.liq;
  const prof=PROF();
@@ -5862,6 +5904,7 @@ function screenMacroEvent(ev){
   S.sc.ph=ver?S.sc.p:Math.max(0.10,Math.min(0.80,S.sc.p+sh+sd*gauss()));   /* lot 217 : 80 % au plus */S.sc.ver=ver;
   S.sc.cap=Math.min(1,pr.capture*(0.7+0.6*rng()))}   /* lot 225 : capture tirée, ±30 % autour du taux du style */
  const SC=S.sc;if(SC.ph===undefined)SC.ph=SC.p;
+ if(pwOn('wi')&&touched.some(i=>INSTR[i].grp==='Exotiques'||['TOPX','JGB','JPY','MXEF'].includes(INSTR[i].sym)))SC.cap=1;   /* lot 268 : Winnie */
  const PR=[SC.ph,1-SC.ph];
  const chips=Object.keys(ev.hit).map(sy=>{const m=ev.hit[sy]*INSTR[IDX[sy]].sigQ;return `<span style="color:${m>0?'var(--long)':'var(--short)'}">${sy} ${sgn(m,1)}</span>`}).join('');
  const shutL=(ev.shut||[]).filter(sy=>IDX[sy]!==undefined&&mktOpen(IDX[sy]));
@@ -6109,7 +6152,7 @@ function screenTraderEvent(ev,next){
   if(e.flighty)S.flighty=true;
   if(e.stopQ)S.stopQ=true;
   if(e.noAddQ)S.noAddQ=true;
-  if(e.leakQ)S.leakQ=true;
+  if(e.leakQ&&!pwOn('jo'))S.leakQ=true;
   if(e.carry)S.carry=true;   /* book de portage : le moteur le lit, personne ne le posait */
   if(e.leak)S.leak=true;     /* positions publiées : idem */
   if(e.execBoost)S.execPenalty=Math.max(0.7,S.execPenalty*e.execBoost);
@@ -6122,7 +6165,7 @@ function screenTraderEvent(ev,next){
   if(e.kContra){const i=IDX[e.kContra];setK(i,S.k[i]+(S.lastR[i]>=0?-1:1))}
   if(e.gamble2){const win=rng()<pAdj(e.gamble2[0],e.gamble2[1]>=0);const r=win?e.gamble2[1]:e.gamble2[2];pnl+=r;msg.push(`${win?(e.winTxt||'Le pari était bon'):(e.loseTxt||'Le pari était mauvais')} : ${sgn(r,1)}.`)}
   if(e.cutTop2){const w=weights(S.k),rc=riskContrib(w);rc.map((v,i)=>({v:Math.abs(v),i})).sort((a,b)=>b.v-a.v).slice(0,2).forEach(o=>{if(S.k[o.i]!==0)setK(o.i,S.k[o.i]-Math.sign(S.k[o.i]))})}
-  if(e.risk){if(rng()<pAdj(e.risk[0],riskGood(e))){pnl+=e.risk[1];if(e.riskRc||e.riskLp)gauge(e.riskLp||0,e.riskRc||0,e.riskMsg||'Incident');if(e.leakQ)S.leakQ=true;msg.push(`${e.riskMsg||'Mauvaise surprise'} : ${sgn(e.risk[1],1)}.`)}else msg.push(e.safeTxt||"Tout s'est bien passé.")}
+  if(e.risk){if(rng()<pAdj(e.risk[0],riskGood(e))){pnl+=e.risk[1];if(e.riskRc||e.riskLp)gauge(e.riskLp||0,e.riskRc||0,e.riskMsg||'Incident');if(e.leakQ&&!pwOn('jo'))S.leakQ=true;msg.push(`${e.riskMsg||'Mauvaise surprise'} : ${sgn(e.risk[1],1)}.`)}else msg.push(e.safeTxt||"Tout s'est bien passé.")}
   if(e.tcMultQ)S.tcMultQ=e.tcMultQ;
   if(e.cash){pnl+=e.cash;msg.push(`Encours du fonds ${sgn(e.cash,1)} (${(e.cash*1e4).toFixed(0)} pb).`)}
   if(e.opex){const a=e.opex*S.aum0;S.mgrCosts-=a;refreshGain();msg.push(`${a>=0?'+':'−'}${mm(Math.abs(a))} pour votre société de gestion.`)}   /* lot 222 */
@@ -6287,11 +6330,12 @@ function screenIncident(){
  /* lot 84 : deux maux — réparer tout et payer de sa poche, ou contenir et le payer en confiance */
  const O=[{b:"Tout réparer, tout de suite",s:"Le fonds paie la facture entière, vous indemnisez les clients sur votre trésorerie ; la transparence rassure.",f:loss,m:0.6*loss,lp:inc.lp*sev*0.3,rc:inc.rc*sev*0.3},
   {b:"Contenir et communiquer plus tard",s:"Le fonds n'absorbe que la moitié. Quand l'affaire sort, la confiance le paie cher.",f:0.5*loss,m:0,lp:inc.lp*sev*2.2-4,rc:inc.rc*sev*2}];
+ if(pwOn('go')&&S.pwGo!==S.q)O.push({b:"Gontran passe l'écriture",s:"Il rattrape l'erreur dans les comptes : le fonds n'en paie que la moitié, et personne n'en entend parler.",f:0.5*loss,m:0,lp:0,rc:0,go:1});   /* lot 268 */
  O.forEach(o=>o.cf=cf(o.lp,o.rc));
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard bad">${evHead(inc.who,'risk')}<h3>${inc.t}</h3><p>${inc.p}</p>${evTimerHTML}</div>
   ${O.map((o,i)=>{const ko=false;return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${o.b}</b><span>${o.s}<span class="stks"><span class="stk">fonds <em class="neg-g">−${mm(o.f*navB)}</em></span>${o.m?`<span class="stk">vous <em class="neg-g">−${mm(o.m*navB)}</em></span>`:''}<span class="stk">confiance <em class="${o.cf<0?'neg-g':'dim-g'}">${sd1(o.cf)}</em></span></span>${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
- const pickI=k=>{clearTimer();const o=O[k];S.nav*=(1-o.f);S.qIncM-=o.f*navB;if(o.m){S.mgrCosts+=o.m*navB;refreshGain()}
+ const pickI=k=>{clearTimer();const o=O[k];if(o.go)S.pwGo=S.q;S.nav*=(1-o.f);S.qIncM-=o.f*navB;if(o.m){S.mgrCosts+=o.m*navB;refreshGain()}
   const g=gauge(o.lp,o.rc,inc.t);const loss=o.f;
   S.incidents.push({t:inc.t,loss});S.evLog.push({t:inc.t,pnl:-loss,m:-loss*navB,lp:g.lp,rc:g.rc});
  app.innerHTML=statusBar()+`<div class="evwrap fade">
