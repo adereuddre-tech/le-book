@@ -136,7 +136,7 @@ function playGame(o){
       else bi=Math.floor(Math.random()*chs.length);
       click(chs[bi]);continue}
     const cc=d.querySelectorAll('.card.commgo');
-    if(cc.length){click(cc[0]);continue}   /* annonce standard (lot 89 : premier cran) : un clic vaut validation */
+    if(cc.length){click(cc[1]||cc[0]);continue}   /* annonce standard (lot 89 ; lot 256 : 2e carte, après « Pas de chiffre ») : un clic vaut validation */
     if(o.bon!=null&&$('#nx')){const b=$('.bnp[data-i="'+o.bon+'"]');if(b&&!b.classList.contains('on'))click(b)}
     let hit=false;for(const id of ['#ok','#go2','#rgo','#pgo','#nx','#go']){const b=$(id);if(b&&!b.disabled){click(b);hit=true;break}}
     if(hit)continue;
