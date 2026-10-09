@@ -2852,6 +2852,11 @@ function brake(A){return Math.pow(Math.max(1,(A===undefined?S.nav:A)/BRK0),BRK)}
    lot 261 : contrer ×1 (dépêche) et ×1,5 (extrême) ; le trader multiplie le coût par 2/3 (contrer une dépêche : ×0,67). */
 const URG={ev:{f:2.5,c:1},x:{f:4,c:1.5},tail:3};
 function urgM(m,i){return covered(INSTR[i].grp)?m*2/3:m}
+/* lot 262 : à contre-sens, on fournit la liquidité et le marché cède une décote, croissante avec la taille de l'ordre :
+   k × √(unités) pb du notionnel, plafonnée — dépêche 2,5 pb (6 pb au plus), extrême 15 pb (40 pb au plus). Les coûts
+   normaux sont de 2 à 4 pb du notionnel : un gros ordre à contre-sens dans un extrême coûte moins que rien. */
+const REB={ev:{k:2.5,cap:6},x:{k:15,cap:40}};
+function urgF(m,i){return Math.max(1,urgM(m,i))}   /* coupes forcées (stop, appel de marge) : jamais sous le tarif normal */
 function tcost(dk,i){
  if(Math.abs(dk)<1e-9)return {cost:0,bp:0,bn:0};
  const x=INSTR[i],bn=Math.abs(dk*U/x.sig*S.nav);
@@ -5850,7 +5855,7 @@ function screenMacroEvent(ev){
      <div class="evsel">${plan.map((o,i)=>[o,i]).reverse().map(([o,i])=>{const ban=o.trades.length&&(redOn('risk')||redOn('noadd'))&&o.v1>o.v0+1e-9;o.ban=ban;
        return `<button class="evstep${o.n>0?' up':o.n<0?' dn':' zr'}${i===NO?' on':''}" data-i="${i}"${ban||(!o.trades.length&&o.n!==0)?' disabled':''}><b>${o.n>0?'+':o.n<0?'−':''}${Math.abs(o.n)}</b><small>${o.n>0?'renforcer':o.n<0?'contrer':'rien'}</small></button>`}).join('')}</div>
      <button class="cta" id="evok" style="margin-top:8px">Valider</button></div>`})()}
-   <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion. Ces ordres d'urgence coûtent plus cher que ceux du début de trimestre : suivre le mouvement, c'est acheter ce que tout le monde achète (×2,5, ×4 sur un extrême) ; le contrer, c'est fournir la liquidité dont les autres ont besoin (×1, ×1,5 sur un extrême) ; un trader sur la classe retire un tiers du coût (contrer une dépêche : ×0,67) ; votre desk n'est en place qu'à ${(capNow()*100).toFixed(0)} % quand le marché repart sur cette dépêche (de ${Math.round(prof.capture*70)} à ${Math.min(100,Math.round(prof.capture*130))} % selon les dépêches pour votre style), c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
+   <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion. Ces ordres d'urgence coûtent plus cher que ceux du début de trimestre : suivre le mouvement, c'est acheter ce que tout le monde achète (×2,5, ×4 sur un extrême) ; le contrer, c'est fournir la liquidité dont les autres ont besoin : coût ×1 (×1,5 sur un extrême), moins une décote que le marché vous cède, d'autant plus forte que l'ordre est gros (jusqu'à 6 pb du notionnel sur une dépêche, 40 pb sur un extrême) — un gros ordre à contre-sens dans un extrême vous rapporte ; un trader sur la classe retire un tiers des surcoûts ; votre desk n'est en place qu'à ${(capNow()*100).toFixed(0)} % quand le marché repart sur cette dépêche (de ${Math.round(prof.capture*70)} à ${Math.min(100,Math.round(prof.capture*130))} % selon les dépêches pour votre style), c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
   </div>
  </div>`;
  const go=i=>{clearTimer();resolveEvent(ev,touched,plan[i],imm,navB)};
@@ -5859,7 +5864,7 @@ function screenMacroEvent(ev){
  const R0=riskShown(weights(S.k)).total,P0=profitBook(S.k);
  const sline=(o,s)=>`<div class="dkr"><span>${['Poursuite','Retournement'][s]} <b>${Math.round(PR[s]*100)} %</b></span><span class="${o.pay[s]>0?'pos-g':o.pay[s]<0?'neg-g':'dim-g'}">${uNum(o.pay[s]*S.nav,UM)} ${unitLab}</span><span>conf. ${gcell(o.gz[s].lp)}</span></div>`;
  document.getElementById('evpan').innerHTML=plan.map((o,i)=>{const dp=o.n!==0&&o.trades.length?profitBook(o.t)-P0:0,dr=o.n!==0&&o.trades.length?(riskShown(weights(o.t)).total-R0)*100:0;
-   return `<div class="pcell" data-p="${i}"><div class="evopt evdk" data-i="${i}"><div class="dkh"><b>${o.b}</b><span class="${o.cost>0?'neg-g':'dim-g'}">${o.n===0?'aucun ordre':o.trades.length?'ordres −'+mm(o.cost):'aucun ordre possible'}</span></div>
+   return `<div class="pcell" data-p="${i}"><div class="evopt evdk" data-i="${i}"><div class="dkh"><b>${o.b}</b><span class="${o.cost>0?'neg-g':o.cost<0?'pos-g':'dim-g'}">${o.n===0?'aucun ordre':o.trades.length?(o.cost<0?'rabais +'+mm(-o.cost):'ordres −'+mm(o.cost)):'aucun ordre possible'}</span></div>
     ${sline(o,0)}${sline(o,1)}<div class="dkr dkm"><span>rentabilité ${pc2(dp)}</span><span>risque <b class="${dr>0.05?'neg-g':dr<-0.05?'pos-g':'dim-g'}">${dr>=0?'+':'−'}${dec(Math.abs(dr),1)} pt</b></span>${o.ban?'<span class="neg-g">carton rouge : interdit</span>':''}</div></div></div>`}).join('');
  /* lot 245 : tous les détails empilés, hauteur constante quel que soit le cran */
  document.getElementById('evdet').innerHTML=plan.map((o,i)=>{const d=o.n!==0&&o.trades.length&&o.t?bkD(o.t,0,false):'';
@@ -5882,7 +5887,8 @@ function evPlans(ev,touched){
  touched.forEach(i=>{const sh=Math.sign(ev.hit[INSTR[i].sym]);
   if(ev.shut&&ev.shut.includes(INSTR[i].sym))return;   /* lot 58 : cotation suspendue */
   const tg=clampK(i,S.k[i]+sh*a),d=tg-S.k[i];if(!d)return;
-  const tc=tcost(d,i);const c=tc.cost*urgM((ev.x?URG.x:URG.ev)[a>0?'f':'c'],i)*S.tcMultQ*(S.leakQ?1.45:1);   /* lot 260 */
+  const tc=tcost(d,i),um=urgM((ev.x?URG.x:URG.ev)[a>0?'f':'c'],i)*S.tcMultQ*(S.leakQ?1.45:1),RB=ev.x?REB.x:REB.ev;   /* lot 260 */
+  const c=tc.cost*um-(a<0?Math.min(RB.cap,RB.k*Math.sqrt(Math.abs(d)))*1e-4*tc.bn:0);   /* lot 262 : à contre-sens, décote cédée par le marché */
   cost+=c;drift+=Math.abs(d);t[i]=tg;kE[i]=S.k[i]+capNow()*d;
   trades.push({i,from:S.k[i],to:tg,bn:tc.bn,c})});
  const free=cost>0&&!ev.stress&&(prof.freeAdj||S.freeAdjB>0)&&!S.freeAdjUsed;
@@ -5902,7 +5908,7 @@ function evPlans(ev,touched){
   return {lp:c,rc,pnl:a}});
  const syms=trades.map(x=>INSTR[x.i].sym).join(', ');
  const fS=!trades.length?(a<0?'Aucun ordre possible sur les marchés touchés (limite de position ou cotation suspendue).':'Déjà au maximum autorisé sur les marchés touchés : aucun ordre possible.')
-  :`${syst?'Dérogation au modèle : ':''}${a>0?'+':'−'}${Math.abs(a)} unité${Math.abs(a)>1?'s':''} ${a>0?'dans le sens du choc':'contre le choc'} sur ${syms}. ${free?`Coût ${nb(mm(cost))} offert par le desk`:`Coût ${nb(mm(cost))} à votre charge`} · vol ex-ante ${pctc(v0)} → ${pctc(v1)}${S.noAddQ?' · interdit par le comité':''}.`;
+  :`${syst?'Dérogation au modèle : ':''}${a>0?'+':'−'}${Math.abs(a)} unité${Math.abs(a)>1?'s':''} ${a>0?'dans le sens du choc':'contre le choc'} sur ${syms}. ${free?`Coût ${nb(mm(cost))} offert par le desk`:cost<0?`Rabais de ${nb(mm(-cost))} pour votre société de gestion : vous fournissez la liquidité que les autres cherchent`:`Coût ${nb(mm(cost))} à votre charge`} · vol ex-ante ${pctc(v0)} → ${pctc(v1)}${S.noAddQ?' · interdit par le comité':''}.`;
   const AID={2:'follow',1:'half','-1':'chalf','-2':'contra'},ALAB={2:'Renforcer au maximum',1:'Renforcer à moitié','-1':'Contrer à moitié','-2':'Contrer au maximum'};
  return {a:AID[a],n:a,b:ALAB[a],s:fS,t,kE,trades,cost:costP,costRaw:cost,free,pay:payF,gz:gzF,fixRc,v0,v1};
  };
@@ -6207,10 +6213,10 @@ function mgPlan(){const nav=S.nav,mgu=marginPct(S.k),req=mgu*nav,tg=MGC.back;
  const inj=Math.max(0,req/(MGC.thr*0.98)-nav);
  /* coupe choisie : on retire d'abord les unités qui consomment le plus de marge, au coût d'urgence ×1,3 */
  const k=[...S.k];let c1=0;for(let g=0;g<60&&marginPct(k)>tg;g++){let bi=-1,bv=0;for(let i=0;i<N;i++){if(!k[i])continue;const v=Math.abs(notionalBn(1,i))*mgRate(i);if(v>bv){bv=v;bi=i}}
-  if(bi<0)break;const d=-Math.sign(k[bi]);c1+=tcost(d,bi).cost*urgM(1.3,bi);k[bi]+=d}
- const f=Math.max(0.05,Math.min(0.9,1-tg/mgu)),k2=S.k.map(v=>Math.trunc(v*(1-f)));let c2=0;for(let i=0;i<N;i++){const d=k2[i]-S.k[i];if(d)c2+=tcost(d,i).cost*urgM(MGC.crisis,i)}
+  if(bi<0)break;const d=-Math.sign(k[bi]);c1+=tcost(d,bi).cost*urgF(1.3,bi);k[bi]+=d}
+ const f=Math.max(0.05,Math.min(0.9,1-tg/mgu)),k2=S.k.map(v=>Math.trunc(v*(1-f)));let c2=0;for(let i=0;i<N;i++){const d=k2[i]-S.k[i];if(d)c2+=tcost(d,i).cost*urgF(MGC.crisis,i)}
  return {mgu,inj,k1:k,c1,k2,c2,f}}
-function screenStopQ(){S.stopQn=S.q;const r=liveRet(),ls=limStop(),k1=S.k.map(v=>Math.trunc(v/2));let c=0;for(let i=0;i<N;i++){const d=k1[i]-S.k[i];if(d)c+=tcost(d,i).cost*urgM(1.3,i)}
+function screenStopQ(){S.stopQn=S.q;const r=liveRet(),ls=limStop(),k1=S.k.map(v=>Math.trunc(v/2));let c=0;for(let i=0;i<N;i++){const d=k1[i]-S.k[i];if(d)c+=tcost(d,i).cost*urgF(1.3,i)}
  const O=[{id:'cut',b:"Couper le book de moitié",s:`Ordres au tarif d'urgence : ${mm(c)} à votre charge. Pas de carton.`},
   {id:'keep',b:"Passer outre",s:"Le book reste en place ; le comité consigne un carton jaune à la clôture."}];
  app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard bad">${evHead('Comité des risques · stop trimestriel','risk')}<h3>Trimestre à ${sgnp(r,1)} : le stop de −${dec(ls*100,1)} % est franchi</h3>
