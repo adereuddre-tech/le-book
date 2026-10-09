@@ -865,6 +865,11 @@ const PROFILES=[
   p:"Vous ne prédisez rien : vous écoutez le marché. Votre avantage se joue sur les dépêches : vous lisez mieux que les autres la probabilité qu'un mouvement continue ou se retourne, vous en captez 85 % quand vous le suivez, et un ajustement par trimestre est gratuit. Le revers : un book plus chargé, des investisseurs qui suivent votre courbe au jour le jour, une équipe plus chère. Si vous suivez quand il fallait laisser passer, vous payez deux fois — les ordres et le retournement.",
   ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, le sens d'un facteur macro avant tout le monde, juste quatre fois sur cinq"],['g',"veille des extrêmes : vous sentez venir l'orage mieux que personne (33 à 95 %), sans trop savoir lequel (5 à 45 %)"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous lisez la tendance trois fois plus nettement (bruit ×0,3) ; portage et valeur moins bien (×1,3)"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"votre desk vise 24 % de vol : plus de rendement, plus de secousses"],['b',"aucune source supplémentaire : vous n'en demandez pas"],['b',"incidents plus fréquents (×1,70) et presque trois fois plus chers : un desk qui va vite casse plus de vaisselle"],['g',"commission de performance +5 pts : l'aura du prophète — vos investisseurs paient plus cher pour être du bon côté de celui qui « sent » le marché, et aucun ne veut être celui qui est parti juste avant le grand coup"],['g',"capital de départ +0,5 M$"],['b',"équipe 35 % plus chère"]],
   sigBonus:0,capture:0.85,tcMult:1.00,rumBonus:0.05,lpMult:1.20,ddMax:0.22,modelScale:1.20,incMult:1.70,incSev:2.8,numeric:false,freeAdj:true,hunch:true}
+,
+ {id:'rv',sum:{pw:"les paires : chaque trimestre, deux couples de marchés mal pricés que vous seul voyez",f:["coûts d'exécution −20 %","investisseurs 15 % moins nerveux","le portage lu trois fois plus nettement"],w:["un extrême fait diverger les paires : décote de liquidité ×2","vol cible 16 % : de petits gains, beaucoup de levier"]},lvl:'Expert',who:"« Je ne parie pas sur le marché, je parie sur l'écart »",nm:"Gérant de valeur relative",
+  p:"Deux marchés qui devraient se tenir la main se sont lâchés : vous achetez l'un, vendez l'autre, et attendez qu'ils se retrouvent. Des gains réguliers, peu de risque apparent, beaucoup de levier. Jusqu'au jour où tout le monde sort en même temps et où les écarts, au lieu de se refermer, explosent.",
+  ef:[['g',"<b>Pouvoir propre — les paires</b> : chaque trimestre, deux couples de marchés proches dont l'écart s'est ouvert ; jouer les deux jambes (long l'un, court l'autre) rapporte la convergence, que votre attendu intègre"],['g',"veille des extrêmes modeste : 20 à 80 % sentis, 30 à 70 % identifiés"],['g',"vous lisez le portage trois fois plus nettement (bruit ×0,3) ; tendance et valeur moins bien (×1,3)"],['g',"coûts de transaction −20 % : vous traitez des écarts, pas des directions"],['g',"investisseurs 15 % moins nerveux : la courbe est lisse"],['b',"votre desk vise 16 % de vol : de petits écarts, qu'il faut beaucoup de levier pour rendre rentables"],['b',"dans un événement extrême, vos paires divergent : décote de liquidité doublée (LTCM, 1998)"],['b',"capture 55 % d'un mouvement en cours de trimestre"],['g',"commission de performance +2 pts ; capital de départ +0,5 M$"],['b',"équipe 10 % plus chère : il faut des docteurs en mathématiques"]],
+  sigBonus:0,capture:0.55,tcMult:0.80,rumBonus:0.05,lpMult:0.85,modelScale:0.80,incMult:1.0,incSev:1.0,numeric:false,pairs:true}
 ];
 /* figés depuis le retrait de ces deux choix de l'écran d'accueil */
 const RISKARCH=[{id:'std',nm:"Contrôle des risques standard",band:0.30,incMult:1.0,sev:1.0,stop:false,lp0:0}];
@@ -897,8 +902,8 @@ const UNIVS=[
 const RECO={prof:'flux',arch:'std',desk:'inhouse',size:'mid',univ:'com',vol:'std',dur:'normal'};
 function SIZE(){return SIZES.find(x=>x.id===S.size)||SIZES[1]}
 /* commission de performance : fixée par la difficulté (15 / 20 / 30 %), plus le style */
-const STYPERF={syst:0,fonda:0.03,flux:0.05};   /* lot 125 : le style expert touche 5 pts de commission de plus */
-const STYSEED={syst:0.0005,fonda:0,flux:0.0005};   /* lot 205 */
+const STYPERF={syst:0,fonda:0.03,flux:0.05,rv:0.02};   /* lot 125 : le style expert touche 5 pts de commission de plus */
+const STYSEED={syst:0.0005,fonda:0,flux:0.0005,rv:0.0005};   /* lot 205 */
 function perfFee(){return ((S&&SIZE().perf)||0.20)+((S&&STYPERF[S.prof])||0)}
 function UNIV(){return UNIVS.find(x=>x.id===(S&&S.univ))||UNIVS[1]}
 const VOLP=[
@@ -2885,7 +2890,7 @@ const NAVEND=0.05;
 /* lot 82-83 : le fonds ferme sous 40 M$ d'encours (rachats compris) ou à 50 % de perte depuis le plus haut (hors rachats) */
 const FUNDMIN=0.04,DDEND=0.50;   /* lot 83 : 40 M$ ; lot 104 : plus lus pour la fin de partie */
 const FUNDEMPTY=0.01;   /* lot 104 : fonds vidé */
-const STYCOST={syst:0.85,fonda:1,flux:1.35};   /* lot 122 */
+const STYCOST={syst:0.85,fonda:1,flux:1.35,rv:1.10};   /* lot 122 */
 const BUDK=0.90;   /* lot 123 : toutes les équipes 20 % moins chères */
 function budNav(){return (S.aum0||0.1)*((SIZE()&&SIZE().costM)||1)*(STYCOST[S.prof]||1)*BUDK}   /* lot 176 : base fixe, l'encours de départ */   /* lot 104 : salaires et loyer ne suivent pas l'encours à la baisse */
 function ddMax(){return (S&&PROF().ddMax)||0.28}
@@ -3016,6 +3021,7 @@ function planQuarter(){
  {const c=INSTR.map((x,i)=>i).filter(i=>mktOpen(i)&&Math.abs(S.tcv.v[i])>=1);
   S.cat=c.map(i=>({i,u:prng32(hash32('cat'+i+'_'+S.q,S.seed))()})).sort((a,b)=>a.u-b.u).slice(0,3).map(o=>o.i)}
  S.rBase=drawReturns();
+ pairDraw();   /* lot 270 */
  /* le concurrent qui a eu raison : une fois sur deux, une dépêche de rivalité */
  reseed('riv');
  if(rng()<0.55){
@@ -3077,6 +3083,8 @@ const STYLEW={
   txt:"Votre desk pèse d'abord les sources macro et géopolitiques et la cherté des marchés. Il ne regarde presque pas la tendance ni le portage : ce n'est pas votre métier."},
  flux:{F:0.70,T:1.25,C:0.95,V:0.10,X:0.55,macro:0.35,mkt:1.35,
   txt:"Votre desk pèse d'abord les rumeurs de marché, la tendance, le portage et le positionnement des autres fonds. La valeur de long terme ne l'intéresse pas."},
+ rv:{F:0.55,T:0.30,C:1.10,V:0.90,X:0.30,macro:0.8,mkt:1.0,
+  txt:"Votre desk pèse d'abord le portage et la valeur relative entre marchés voisins ; les sources macro servent à éviter les mauvaises surprises, pas à parier."},
  syst:{F:0.85,T:0.45,C:0.45,V:0.45,X:0,macro:1.0,mkt:1.0,
   txt:"Le modèle pondère l'ensemble des signaux — toutes les sources, la tendance, le portage et la valeur — sans privilégier aucune famille."}
 };
@@ -3457,8 +3465,8 @@ function feeLine(){
  const z=SIZES.find(x=>x.id===setup.size)||SIZES[1];
  return `Le fonds vous verse <strong>2 % de gestion</strong> par an et <strong>${(z.perf*100).toFixed(0)} % de sa performance</strong> au-dessus de son plus haut historique. Votre société paie l'équipe, les ordres et les bonus.`;
 }
-function styTable(){const P=PROFILES,f=(x,d=2)=>'×'+dec(x,d),pw={syst:"le modèle : book entier en facile, six convictions en moyen et difficile",fonda:"sources vérifiées : une probabilité sûre par trimestre",flux:"intuition : le sens d'un facteur, juste 4 fois sur 5"};
- const XR={syst:"20–85 % · 45–85 %",fonda:"10–75 % · 60–95 %",flux:"33–95 % · 5–45 %"};
+function styTable(){const P=PROFILES,f=(x,d=2)=>'×'+dec(x,d),pw={rv:"les paires : deux écarts à refermer par trimestre",tail:"la protection au juste prix, et qui rend plus que le choc",act:"une attaque de monnaie par an",syst:"le modèle : book entier en facile, six convictions en moyen et difficile",fonda:"sources vérifiées : une probabilité sûre par trimestre",flux:"intuition : le sens d'un facteur, juste 4 fois sur 5"};
+ const XR={rv:"20–80 % · 30–70 %",tail:"30–95 % · 45–90 %",act:"25–90 % · 50–95 %",syst:"20–85 % · 45–85 %",fonda:"10–75 % · 60–95 %",flux:"33–95 % · 5–45 %"};
  const R=[["Pouvoir",p=>pw[p.id]],["Extrêmes : sentir · identifier",p=>XR[p.id]],["Capital de départ",p=>STYSEED[p.id]?'+'+dec(STYSEED[p.id]*1000,2)+' M$':'—'],["Commission de performance",p=>STYPERF[p.id]?'+'+Math.round(STYPERF[p.id]*100)+' pts':'—'],
   ["Coût de l'équipe",p=>f(STYCOST[p.id])],["Coûts d'exécution",p=>f(p.tcMult)],["Book visé",p=>f(p.modelScale)+' la vol cible'],["Nervosité des investisseurs",p=>f(p.lpMult)],["Incidents : fréquence · coût",p=>f(p.incMult)+' · '+f(p.incSev||1,1)],["Mouvement capté sur les dépêches",p=>Math.round(p.capture*100)+' %']];
  return `<details class="wire" style="margin-top:10px"><summary>Les trois styles en un tableau</summary><div style="overflow-x:auto"><table class="qt" style="margin-top:8px;font-size:12px"><thead><tr><th style="text-align:left"></th>${P.map(p=>`<th>${({syst:'Quant',fonda:'Fondamental',flux:'Flux'})[p.id]}</th>`).join('')}</tr></thead><tbody>${R.map(([l,fn])=>`<tr><td style="text-align:left">${l}</td>${P.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`}
@@ -3505,7 +3513,7 @@ function screenSetup(){
 /* lot 266 : fiche courte — un pouvoir, trois forces, deux faiblesses ; le reste replié */
 function cardSum(m){return `<div class="csum"><div class="cpw">✦ ${m.pw}</div>${m.f.map(x=>`<div class="g">+ ${x}</div>`).join('')}${m.w.map(x=>`<div class="b">− ${x}</div>`).join('')}</div>`}
 function renderPicks(){
- const ICO={prof:{fonda:'📚',flux:'⚡',syst:'🤖'},arch:{light:'🪶',std:'⚖️',inst:'🛡️'},
+ const ICO={prof:{fonda:'📚',flux:'⚡',syst:'🤖',rv:'🔗',tail:'🦢',act:'🦅'},arch:{light:'🪶',std:'⚖️',inst:'🛡️'},
   desk:{inhouse:'🏛️',broker:'🤝',algo:'💻'},size:{small:'🎯',mid:'⚔️',mega:'🔥'},univ:{fin:'🏦',com:'🛢️',ext:'🌐'},dur:{express:'⏱️',normal:'📅',saison:'🗓️'},
   vol:{prud:'🧊',std:'🎯',risk:'🔥'}};
  const grp=(title,hint,arr,key)=>`<div class="pickgrp">
@@ -3518,7 +3526,7 @@ function renderPicks(){
    </div>`).join('')}
   </div>`;
  document.getElementById('picks').innerHTML=
-   grp("Votre style de gestion","1 sur 3",PROFILES,'prof')+styTable()+
+   grp("Votre style de gestion",`1 sur ${PROFILES.length}`,PROFILES,'prof')+styTable()+
    grp("La difficulté","1 sur 3 · la place, le comité, les investisseurs",SIZES,'size')+
    grp("La durée du mandat","1 sur 3 · le nombre de trimestres",DUREES,'dur');
  app.querySelectorAll('[data-hintq]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();
@@ -4957,6 +4965,7 @@ function screenPlay(){
    ${redNote()}
    <details style="margin:0 0 8px"${S.maxk>3?'':' hidden'}><summary>Le surlevier, au-delà de ±3</summary><p class="note">Au-delà de ±3 vous entrez dans le surlevier : le notionnel dépasse ce que le mandat imagine, le comité le voit, les investisseurs aussi — dans un sens comme dans l'autre.</p></details>
    <div id="rows"></div></div>
+  <div class="block" id="stypw"${PROF().pairs||PROF().atk||PROF().tailH?'':' hidden'}></div>
   <div class="block" id="pwblk"></div>
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Risque ex-ante du book</summary>
    <div class="wire" id="risk" style="margin-top:8px"></div></details></div>
@@ -4977,7 +4986,7 @@ function screenPlay(){
    if(redBlock()){refreshSend();toast(redBlock());return}
    commitOrders();screenCoinv();window.scrollTo(0,0);
  };
- pwDraw();   /* lot 268 */
+ pwDraw();styDraw();   /* lot 268 ; lot 270 */
 }
 /* lot 268 : un coup de pouce par personne et par trimestre (Mireille : une fois par mandat). Effets lus ailleurs par S.pw[id]===S.q. */
 const PW=[
@@ -4994,6 +5003,12 @@ const PW=[
  {id:'fi',bo:3,ic:'🔎',nm:'Firmin',t:"Un audit propre",d:"Le rapport d'audit tombe à point : contrôle des risques +3."},
  {id:'mi',bo:4,ic:'⚖️',nm:'Mireille',t:"Plaider devant le comité",d:"Une fois par mandat, elle fait effacer un carton jaune."},
  {id:'so',bo:5,ic:'🛡️',nm:'Solange',t:"Exercice de crise",d:"Ce trimestre, le choc immédiat d'un événement extrême est réduit de 20 %, et une cyberattaque ne vous touche pas."}];
+function styDraw(){const el=document.getElementById('stypw');if(!el)return;const P=PROF();let h='';
+ if(P.pairs&&S.pairs&&S.pairs.length)h=`<div class="blockhead"><h2>Les paires du trimestre</h2><span class="hint">vous seul les voyez</span></div>
+  ${S.pairs.map(p=>`<div class="kv"><span>🔗 long <b>${INSTR[p.l].sym}</b> · court <b>${INSTR[p.s].sym}</b> <span class="dim-g">(${INSTR[p.l].nm} / ${INSTR[p.s].nm})</span></span><b class="pos-g">+${dec(PAIRA*100/100*2,2)} σ</b></div>`).join('')}
+  <p class="note" style="margin:4px 0 0">L'écart s'est ouvert ; il se referme d'environ ${dec(PAIRA,2)} σ par jambe ce trimestre. Jouez les deux jambes à risque égal : le pari porte sur l'écart, pas sur la direction. Votre attendu par marché l'intègre déjà.</p>`;
+ if(typeof styDrawX==='function')h+=styDrawX();
+ el.innerHTML=h;el.hidden=!h;if(typeof styWire==='function')styWire(el)}
 function pwHere(o){return o.fo!=null?(o.fo===0||here(o.fo)):(S.bud&&S.bud.bo>=o.bo)}
 function pwOn(id){return !!(S&&S.pw&&S.pw[id]===S.q)}
 function pwOk(o){if(!pwHere(o))return false;if(o.id==='mi')return !(S.pwMi)&&S.cards&&S.cards.y>0;return !pwOn(o.id)}
@@ -5058,7 +5073,7 @@ const CSYM={'Actions':'📜','Taux':'%','Devises':'💱','Matières premières':
 const EXPVF=1.15;   /* variance résiduelle d'un facteur une fois les sources lues (calibrée) */
 const SIGW={t:0.12,c:0.10,v:0.10},CATM=3;
 /* le signal que chaque style lit le mieux */
-const STYLESIG={syst:'c',flux:'t',fonda:'v'},SIGNM={t:'Tendance',c:'Portage',v:'Valeur'};
+const STYLESIG={syst:'c',flux:'t',fonda:'v',rv:'c'},SIGNM={t:'Tendance',c:'Portage',v:'Valeur'};
 function sigNoise(key){const e=TCVQ[S.bud.exec]*(S.tcvPerm?0.33:1);return e*(S.prof==='syst'?0.6:(typeof STYLESIG!=='undefined'&&STYLESIG[S.prof]===key)?0.3:(typeof STYLESIG!=='undefined'?1.3:1))}
 function vixCarry(x,a){if(x.sym!=='VX'||!x.drift)return x.drift||0;return x.drift*Math.max(0,Math.min(1,1+a/1.5))}   /* lot 168 : a = appétit (σ) ; −1,5 σ ⇒ portage nul */
 function expRet(i){
@@ -5067,6 +5082,7 @@ function expRet(i){
  let v=0;for(let k=0;k<K;k++)v+=x.b[k]*x.b[k]*EXPVF;
  if(e){const cv=(S.prof==='fonda'&&S.cat&&S.cat.includes(i))?CATM:1;   /* seul le discrétionnaire connaît ses catalyseurs */
   z+=(SIGW.t*e.t[i]+SIGW.c*e.c[i]+SIGW.v*cv*e.v[i])*(UNIV().edge||1);
+  z+=pairAlpha(i);   /* lot 270 */
   v+=SIGW.t**2*(sigNoise('t')**2+0.1)+SIGW.c**2*(sigNoise('c')**2+0.1)+SIGW.v**2*(sigNoise('v')**2+0.1)}
  v+=(x.idio||0)**2;
  return {m:x.sigQ*z+vixCarry(x,f[3]||0)+(PREM[x.grp]||0),s:x.sigQ*Math.sqrt(v)};
@@ -5161,7 +5177,17 @@ function xProbTot(){return 1-(1-stressP())*(1-((S&&S.q>=1)?XPROB:0))}
 function xScP(sc){const pS=stressP(),pX=(S&&S.q>=1)?XPROB:0,T=xProbTot();if(!sc||T<=0)return 0;
  if(sc.mac)return T*pX/(pS+pX)/Math.max(1,STRESS.filter(x=>x.mac).length);
  const C=STRESS.filter(x=>!x.mac),tw=C.reduce((a,x)=>a+(x.ext?1/3:1),0);return T*pS/(pS+pX)*(sc.ext?1/3:1)/tw}
-function stressGap(k,sc){const w=weights(k);let g=0;for(let i=0;i<N;i++)g+=Math.abs(w[i])*INSTR[i].sigQ;return STRGAP*g*(sc&&sc.ext?2:1)*crowd(riskShown(w).total)}
+function stressGap(k,sc){const w=weights(k);let g=0;for(let i=0;i<N;i++)g+=Math.abs(w[i])*INSTR[i].sigQ;return STRGAP*g*(sc&&sc.ext?2:1)*crowd(riskShown(w).total)*(S&&S.prof==='rv'?2:1)}   /* lot 270 : les paires divergent */
+/* lot 270 : deux paires par trimestre — même classe, facteurs les plus proches ; l'écart se referme de PAIRA σ par jambe */
+const PAIRA=0.30;
+function pairDraw(){const u=prng32(hash32('pair'+S.q,S.seed));S.pairs=[];const used=new Set();const C=[];
+ for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){if(!mktOpen(i)||!mktOpen(j)||INSTR[i].grp!==INSTR[j].grp)continue;const a=INSTR[i].b,b=INSTR[j].b;let d=0,na=0,nb=0;for(let k=0;k<K;k++){d+=a[k]*b[k];na+=a[k]*a[k];nb+=b[k]*b[k]}
+  const c=d/Math.sqrt(Math.max(1e-9,na*nb));if(c>0.6)C.push({i,j,c,r:u()})}
+ C.sort((x,y)=>(y.c+0.6*y.r)-(x.c+0.6*x.r));
+ for(const o of C){if(S.pairs.length>=2)break;if(used.has(o.i)||used.has(o.j))continue;used.add(o.i);used.add(o.j);
+  const sg=u()<0.5?1:-1,L=sg>0?o.i:o.j,Sh=sg>0?o.j:o.i;S.pairs.push({l:L,s:Sh});
+  S.rBase[L]+=PAIRA*INSTR[L].sigQ;S.rBase[Sh]-=PAIRA*INSTR[Sh].sigQ}}
+function pairAlpha(i){if(!S||S.prof!=='rv'||!S.pairs)return 0;let z=0;S.pairs.forEach(p=>{if(p.l===i)z+=PAIRA;if(p.s===i)z-=PAIRA});return z}
 function stressHit(sc,k){k=k||S.k;const h={},K=STRESSK*(sc.ext?2:1);INSTR.forEach((x,i)=>{let v=0;for(let f=0;f<4;f++)v+=x.b[f]*(sc.sh?sc.sh[f]:0);v*=K;if(sc.x&&sc.x[x.sym])v+=sc.x[x.sym]*K*1.5;
   if(sc.tgt==='otc'&&x.pt==='otc'&&k[i])v-=Math.sign(k[i])*sc.H;
   if(sc.tgt==='crowd')v-=((S&&S.crowd&&S.crowd[i])||0)*sc.H;   /* lot 258 : la foule se déboucle — chaque marché recule du positionnement des autres fonds */
@@ -5175,7 +5201,7 @@ function stressEv(id){const sc=STRESS.find(x=>x.id===id);if(!sc)return null;retu
    un trimestre sans extrême (fa = 15 % × (1 − s)). Facteurs repris : fiabilité des sources selon la recherche (RESREL, front office),
    contrôle des risques (cran du back office), lecture des dépêches selon le bonus (BONREAD). Bases par style :
    le flux sent le mieux et identifie le moins, le fondamental l'inverse, le quant entre les deux. */
-const XSB={syst:{s:0.27,i:0.50},fonda:{s:0.175,i:0.65},flux:{s:0.40,i:0.10}};
+const XSB={syst:{s:0.27,i:0.50},fonda:{s:0.175,i:0.65},flux:{s:0.40,i:0.10},rv:{s:0.20,i:0.30}};
 function xWatch(){const P=PROF(),B=XSB[P.id]||XSB.fonda,bd=S.bud||{},f=((RESREL[bd.res]??0)+0.08)/0.19,r=Math.min(1,(bd.bo||0)/5),b=(1.25-(BONREAD[bonEff()]||1))/0.5;
  const sv=Math.max(0.10,Math.min(0.95,B.s+0.30*f+0.20*r+0.15*(b-0.5))),iv=Math.max(0.05,Math.min(0.95,B.i+0.30*f+0.10*(b-0.5)));
  return {s:sv,i:iv,fa:0.15*(1-sv)}}
