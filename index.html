@@ -592,8 +592,8 @@ body.tmron #app{padding-bottom:150px}
 .evhead .evico{font-size:34px;width:46px;height:46px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid var(--gold);background:var(--panel2);margin-right:8px}
 .evhead .pic{font-size:26px;margin:0 6px 0 -4px;align-self:center}
 .sect .trd{margin-left:8px;font-size:12px;color:var(--gold);font-weight:600;letter-spacing:0}
-.cisel .lmp,.cisel .gtp{flex:1;padding:8px 4px;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-size:12.5px}
-.cisel .lmp.on,.cisel .gtp.on{border:2px solid var(--gold);color:var(--gold);background:rgba(214,178,94,.12)}.cisel .cip{flex:1;padding:9px 0;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-family:var(--mono);font-size:13px}.cisel .cip.on{border-color:var(--gold);color:var(--gold)}
+.cisel .lmp,.cisel .gtp,.cisel .hgp{flex:1;padding:8px 4px;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-size:12.5px}
+.cisel .lmp.on,.cisel .gtp.on,.cisel .hgp.on{border:2px solid var(--gold);color:var(--gold);background:rgba(214,178,94,.12)}.cisel .cip{flex:1;padding:9px 0;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-family:var(--mono);font-size:13px}.cisel .cip.on{border-color:var(--gold);color:var(--gold)}
 .cisel .bnp,.cisel .bnw{flex:1;padding:8px 4px;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-size:12.5px}.cisel .bnp small{color:var(--dim);font-size:10.5px}.cisel .bnw{flex:0 0 auto;padding:6px 9px}.cisel .bnp.on,.cisel .bnw.on{border-color:var(--gold);color:var(--gold)}
 .ess .attr .av{text-align:right}
 </style>
@@ -5074,7 +5074,7 @@ function xHintDraw(){const u=prng32(hash32('xhint'+S.q,S.seed)),W=xWatch(),src=P
  else if(c<W.fa)S.xHint=b<W.i?{src,id:STRESS[Math.floor(d*STRESS.length)].id,fake:1}:{src,fake:1}}
 /* mouvement complet d'une dépêche extrême sur le book k (lecture, comme stressLoss) */
 function xEvLoss(k,t){const e=MACROEV.find(x=>x.t===t);if(!e)return 0;const w=weights(k);let v=0;for(const sy in e.hit){const i=IDX[sy];if(i!==undefined)v+=w[i]*e.hit[sy]*INSTR[i].sigQ}
- return v<0?v*crowd(riskShown(w).total):v}
+ return v}
 function xHintLoss(k){const h=S&&S.xHint;if(!h||!k)return null;if(h.id){const sc=STRESS.find(x=>x.id===h.id);return sc?stressLoss(k,sc):null}if(h.t)return xEvLoss(k,h.t);return null}
 function xHintName(){const h=S&&S.xHint;if(!h)return '';if(h.id){const sc=STRESS.find(x=>x.id===h.id);return sc?sc.nm.charAt(0).toLowerCase()+sc.nm.slice(1):''}
  return h.t?h.t.charAt(0).toLowerCase()+h.t.slice(1):''}
@@ -5508,24 +5508,47 @@ function hint(id){
  },420);
 }
 /* lot 240 : co-investissement, après le book */
+/* lot 253 : protection contre les extrêmes, achetée en début de trimestre, ordres passés. Prime fixe payée par le fonds ;
+   elle rend une part du choc immédiat de tout événement extrême du trimestre (STRESS et dépêches x:1), back office compris. */
+const HEDGE={c:0.010,h:0.70};
+function xImmEst(){const k=S.k,bo=0.5+0.5*(TAILM[S.bud.risk]||1),h=S.xHint;
+ if(h&&h.t)return {nm:xHintName(),v:0.5*xEvLoss(k,h.t),sig:1};
+ let sc=h&&h.id?STRESS.find(x=>x.id===h.id):null;const sig=!!sc;
+ if(!sc){let bv=1e9;STRESS.forEach(x=>{const v=stressLoss(k,x);if(v<bv){bv=v;sc=x}})}
+ return {nm:sc.nm.charAt(0).toLowerCase()+sc.nm.slice(1),v:0.5*bo*stressLoss(k,sc),sig}}
+function hedgeBlock(){const e=xImmEst(),pX=1-(1-stressP())*(1-(S.q>=1?XPROB:0)),c=HEDGE.c*S.nav,on=S.hedgeQ===S.q||S.hedgePick===S.q;
+ return `<div class="block"><div class="blockhead"><h2>Protection contre les extrêmes</h2><span class="hint">payée par le fonds</span></div>
+  ${S.xHint?`<div class="flag xh" style="margin:0 0 8px"><span>${xHintTxt(S.k)}</span></div>`:''}
+  <p class="note" style="margin:0 0 6px">Un événement extrême frappe ce trimestre avec une probabilité d'environ ${Math.round(pX*100)} %. ${xWatchTxt()}</p>
+  <div class="attr"><span class="an">Prime, ${dec(HEDGE.c*100,0)} % de l'encours</span><span class="av"><b class="neg-g">−${mm(c)}</b></span></div>
+  <div class="attr"><span class="an">${e.sig?'Extrême signalé':'Pire extrême pour votre book'} : ${e.nm} · choc immédiat</span><span class="av"><b class="${e.v<0?'neg-g':'pos-g'}">${sgnp(e.v,1)} · ${mm(Math.abs(e.v)*S.nav)}</b></span></div>
+  <div class="attr"><span class="an">Rendu par la protection (${Math.round(HEDGE.h*100)} % du choc immédiat)</span><span class="av"><b class="pos-g">${e.v<0?'+'+mm(-e.v*HEDGE.h*S.nav):'—'}</b></span></div>
+  <p class="note">La protection rend ${Math.round(HEDGE.h*100)} % du choc immédiat de tout événement extrême du trimestre ; la suite du mouvement reste à votre charge, comme pour une dépêche. Sans extrême, la prime est perdue.</p>
+  <div class="cisel"><button class="hgp${on?'':' on'}" data-h="0">Sans protection</button><button class="hgp${on?' on':''}" data-h="1">Protéger · −${mm(c)}</button></div></div>`}
 function screenCoinv(){
- if(S.q<1||S.coinvQ===S.q){screenComm();return}
+ const hAsk=S.hedgeAsk!==S.q,cAsk=S.q>=1&&S.coinvQ!==S.q;
+ if(!hAsk&&!cAsk){screenComm();return}
  save('screenCoinv');
  const cash=Math.max(0,mgrCash()),pb=profitBook(S.k),sg=riskShown(weights(S.k)).total;
  const amt=p=>p*cash;
- app.innerHTML=statusBar()+`<div class="fade"><div class="pnlhead"><div class="q">TRIMESTRE ${S.q+1} · CO-INVESTISSEMENT</div>
-  <div class="regime">Votre argent dans le fonds</div></div>
-  <div class="block"><div class="attr"><span class="an">Rentabilité estimée du book</span><span class="av">${pc2(pb)}</span></div>
+ app.innerHTML=statusBar()+`<div class="fade"><div class="pnlhead"><div class="q">TRIMESTRE ${S.q+1} · ${hAsk&&cAsk?'PROTECTION ET CO-INVESTISSEMENT':hAsk?'PROTECTION':'CO-INVESTISSEMENT'}</div>
+  <div class="regime">${hAsk&&cAsk?'Couvrir le fonds, y placer votre argent':hAsk?'Couvrir le fonds':'Votre argent dans le fonds'}</div></div>
+  ${hAsk?hedgeBlock():''}
+  ${cAsk?`<div class="block"><div class="blockhead"><h2>Co-investissement</h2><span class="hint">votre trésorerie</span></div><div class="attr"><span class="an">Rentabilité estimée du book</span><span class="av">${pc2(pb)}</span></div>
    <div class="attr"><span class="an">Risque du book (annualisé)</span><span class="av">${dec(sg*100,1)} %</span></div>
    <div class="attr"><span class="an">Trésorerie disponible, ordres payés</span><span class="av"><b class="gold-g">${mm(cash)}</b></span></div>
    <p class="note">Part de votre trésorerie placée dans le fonds pour ce trimestre : elle suit son résultat net, gains comme pertes, et vous revient à la clôture. Bloquée tout le trimestre, elle ne paie ni budget, ni imprévus. 25 % au moins.</p>
    <div class="cisel">${COINVS.map(p=>`<button class="cip${Math.abs(p-coinvPct())<1e-9?' on':''}" data-p="${p}">${Math.round(p*100)} %</button>`).join('')}</div>
-   <p class="note" id="cinote"></p></div>
-  <button class="cta" id="ok">Placer et continuer</button></div>`;
+   <p class="note" id="cinote"></p></div>`:''}
+  <button class="cta" id="ok">${cAsk?'Placer et continuer':'Continuer'}</button></div>`;
+ app.querySelectorAll('.hgp').forEach(b=>b.onclick=()=>{S.hedgePick=+b.dataset.h?S.q:-1;app.querySelectorAll('.hgp').forEach(x=>x.classList.toggle('on',x===b))});
+ if(!cAsk){document.getElementById('ok').onclick=()=>{hedgeApply();screenComm();window.scrollTo(0,0)};return}
  const note=()=>{const p=coinvPct(),r=amt(p);document.getElementById('cinote').innerHTML=`${mm(r)} placés · à rentabilité estimée, ${pb>=0?'+':'−'}${mm(Math.abs(r*pb))} pour vous ce trimestre ; reste en trésorerie ${mm(cash-r)}.`};note();
  app.querySelectorAll('.cip').forEach(b=>b.onclick=()=>{S.coinvPct=+b.dataset.p;app.querySelectorAll('.cip').forEach(x=>x.classList.toggle('on',x===b));note();refreshGain()});
- document.getElementById('ok').onclick=()=>{const tg=amt(coinvPct());S.nav+=tg;S.navQ0+=tg;S.coinvBase=tg;S.coinvIn=tg;S.coinvLock=tg;S.coinvQ=S.q;refreshGain();screenComm();window.scrollTo(0,0)};
+ document.getElementById('ok').onclick=()=>{if(hAsk)hedgeApply();const tg=amt(coinvPct());S.nav+=tg;S.navQ0+=tg;S.coinvBase=tg;S.coinvIn=tg;S.coinvLock=tg;S.coinvQ=S.q;refreshGain();screenComm();window.scrollTo(0,0)};
 }
+function hedgeApply(){if(S.hedgeAsk===S.q)return;S.hedgeAsk=S.q;if(S.hedgePick!==S.q)return;
+ const c=HEDGE.c*S.nav;S.nav-=c;S.qEvM=(S.qEvM||0)-c;S.hedgeQ=S.q;S.evLog.push({t:'Protection contre les extrêmes',pnl:-HEDGE.c,m:-c,lp:0,rc:0});try{refreshGain()}catch(e){}}
 function screenComm(){
  hint('comm');save('screenComm');S.commPick=S.commPick||'prud';
  const w=weights(S.k),sp=pvol(w),gk=goalK(),g=0.03*gk;
@@ -5727,6 +5750,7 @@ function screenMacroEvent(ev){
  let imm=0;const touched=[];
  for(const sym in ev.hit){const i=IDX[sym];const r=0.5*ev.hit[sym]*INSTR[i].sigQ;imm+=w[i]*r;touched.push(i)}
  if(ev.stress){imm*=0.5+0.5*(TAILM[S.bud.risk]||1);if(imm<0)imm*=crowd(riskShown(w).total);imm-=stressGap(S.k,STRESS.find(x=>x.id===ev.stress))*(0.5+0.5*(TAILM[S.bud.risk]||1));(S.tails=S.tails||[]).push({q:S.q,t:ev.t,f:-imm,id:'stress'});xRivHit(ev.stress)}   /* lot 101 : le back office amortit le choc */
+ let hgB=0;if(ev.x&&S.hedgeQ===S.q&&imm<0){hgB=-imm*HEDGE.h;imm+=hgB}   /* lot 253 : protection */
  const navB=S.nav;S.nav*=(1+imm);S.qEvM+=imm*navB;
  if(ev.liq)S.liq*=ev.liq;
  const prof=PROF();
@@ -5762,7 +5786,7 @@ function screenMacroEvent(ev){
   ${['Poursuite','Retournement'].map((nm,s)=>`<span class="pl">${nm}</span><span class="pn">${Math.round(PR[s]*100)} %</span><span class="pn" style="color:${o.pay[s]>0?'var(--long)':o.pay[s]<0?'var(--short)':'var(--dim)'}">${uNum(o.pay[s]*S.nav,UM)}</span>${gcell(o.gz[s].lp)}`).join('')}</span>`;
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard${ev.x?' xtr':''}">${ev.x?'<div class="xtag">⚠ ÉVÉNEMENT EXTRÊME</div>':''}${evHead(ev.who,'news')}<h3>${ev.t}</h3><p>${ev.p}</p>
-   <div class="shock">${chips}</div>${shutL.length?`<p class="note" style="margin:8px 0 0">🔒 Cotation suspendue : ${shutL.join(', ')} — aucun ordre possible jusqu'à la clôture, et fermés au fonds le trimestre prochain.</p>`:''}${evTimerHTML}</div>
+   <div class="shock">${chips}</div>${shutL.length?`<p class="note" style="margin:8px 0 0">🔒 Cotation suspendue : ${shutL.join(', ')} — aucun ordre possible jusqu'à la clôture, et fermés au fonds le trimestre prochain.</p>`:''}${hgB?`<p class="note" style="margin:8px 0 0">🛡 Votre protection rend <b class="pos-g">${mm(hgB*navB)}</b> sur le choc immédiat.</p>`:''}${evTimerHTML}</div>
   <div class="wire" style="margin-top:12px">
    <div class="kv nowrp"><span>P&amp;L immédiat</span><b>${sgn(imm,1)} · ${mn(imm*navB)}</b></div>
    ${(Math.abs(S.evImmG.lp||0)>=0.05||false)?`<div class="kv nowrp"><span>Effets</span><b>${gz(S.evImmG.lp,0)}</b></div>`:''}
