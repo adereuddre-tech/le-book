@@ -987,6 +987,21 @@ function execMot(i){return EXECM[i==null?S.bud.exec:i]*BONFX[bonEff()].c}
 function poachNow(){return Math.min(0.95,BONFX[bonEff()].p*(S.bonCutQ===S.q?BONCUT:1))}
 function bonCands(){const c=[];for(let p=FOP.length-1;p>=0;p--)if(here(p))c.push(p);return c}
 function bonTxt(){return `<br>Bonus au taux de ${dec(bonRate(bonEff())*100,1)} % : coûts d'exécution ×${dec(BONFX[bonEff()].c,2)} · lecture des dépêches ×${dec(BONREAD[bonEff()],2)} · chances des anecdotes ${bonD()>=0?'+':'−'}${Math.round(Math.abs(bonD())*100)} pts (effets du seul bonus) · risque de débauchage ${Math.round(poachNow()*100)} % ce trimestre${S.qBonT>0?` · bonus versé ${mm(S.qBonT)}`:''}${S.bonCutQ===S.q?' · <span class="neg-g">baisse du taux : débauchage ×1,5 ce trimestre</span>':''}.`}
+/* lot 255 : page « pas de bonus » — aucune commission de performance ce trimestre, le desk joue le trimestre suivant au cran minimal */
+function noBonusPage(cur,qT){const sv=S.bonEff,r={};[['now',0],['had',cur]].forEach(([k,i])=>{S.bonEff=i;r[k]=xWatch()});S.bonEff=sv;
+ const F0=BONFX[0],Fc=BONFX[cur],eq=cur===0,row=(a,b,c)=>`<tr><td style="color:var(--txt)">${a}</td>${eq?'':`<td>${b}</td>`}<td class="neg-g">${c}</td></tr>`;
+ const why=qT>0?`Le trimestre est positif, mais le fonds reste sous son plus haut historique : pas de commission de performance tant que les pertes passées ne sont pas effacées.`:`Le trimestre ${qT<0?'est négatif':'est nul'} : pas de commission de performance, donc rien à partager.`;
+ return `<div class="block"><div class="blockhead"><h2>Pas de bonus ce trimestre</h2><span class="hint">aucune commission de performance</span></div>
+  <p class="note" style="margin-top:0">${why} Le bonus d'équipe est une part de cette commission : il n'y a rien à verser, et le desk le sait. ${eq?'Votre taux est au minimum : rien ne change, mais rien ne motive non plus.':`Votre taux de ${dec(bonRate(cur)*100,1)} % reste acquis pour le prochain trimestre gagnant.`}</p>
+  <p class="note">Le trimestre prochain, le desk travaille comme au cran minimal :</p>
+  <table class="qt"><thead><tr><th>Effet</th>${eq?'':'<th>Avec votre taux</th>'}<th>Sans bonus</th></tr></thead><tbody>
+   ${row("Coûts d'exécution",'×'+dec(Fc.c,2),'×'+dec(F0.c,2))}
+   ${row('Bruit sur la lecture des dépêches','×'+dec(BONREAD[cur],2),'×'+dec(BONREAD[0],2))}
+   ${row('Chances des anecdotes du desk',(BONWIN[cur]>=0?'+':'−')+Math.round(Math.abs(BONWIN[cur])*100)+' pts','−'+Math.round(Math.abs(BONWIN[0])*100)+' pts')}
+   ${row('Extrêmes sentis · identifiés',Math.round(r.had.s*100)+' % · '+Math.round(r.had.i*100)+' %',Math.round(r.now.s*100)+' % · '+Math.round(r.now.i*100)+' %')}
+   ${row('Risque de débauchage',Math.round(Fc.p*100)+' %',Math.round(F0.p*100)+' %')}
+  </tbody></table>
+  <p class="note">Ces effets durent un trimestre : le bonus revient dès qu'une commission de performance est versée.</p></div>`}
 function payBonus(){S.qBonT=0;S.bonWhoQ=null;if(S.q<1)return;const perf=(S.mgrQ&&S.mgrQ.perf)||0;
  if(S.bonI==null)S.bonI=MOT.i0;const i=S.bonI,p=S.bonPrev==null?MOT.i0:S.bonPrev,d=i-p;
  const amt=Math.min(bonRate(i)*Math.max(0,perf),Math.max(0,mgrCash()));
@@ -6806,6 +6821,7 @@ function screenDebrief(o){
     <tr class="me"><td style="text-align:left"><b>Fin du trimestre</b></td><td><b class="gold-g">${mm(T1)}</b></td></tr></tbody></table>`})()}
  </div>`;   /* lot 238 */
  const bnSel=(S.over||S.q>=QT())?'':(()=>{const pf=Math.max(0,(S.mgrQ&&S.mgrQ.perf)||0),cur=S.bonI==null?MOT.i0:S.bonI,prev=S.bonPrev==null?MOT.i0:S.bonPrev,e=EXECM[S.bud.exec];
+  if(!(pf>0))return noBonusPage(cur,o.qTotal);   /* lot 255 : sans commission de performance, pas de choix du bonus */
   return `<div class="block"><div class="blockhead"><h2>Taux de bonus d'équipe</h2><span class="hint">versé à l'ouverture</span></div>
   <p class="note" style="margin-top:0">Une part de votre commission de performance${pf>0?` (${mm(pf)} ce trimestre)`:' — aucune ce trimestre : rien ne sera versé, et le desk se comporte comme au cran minimal'}. Le minimum vaut 10 fois le coût de votre salle de marché sur 100 M$ (${dec(bonBase()*100,1)} % aujourd'hui) ; chaque cran ajoute 2,5, 5, 10 ou 15 points. Le taux fixe quatre choses, directement : un multiplicateur sur tous vos coûts d'exécution, fourchette et impact de marché compris (×1,35 au minimum, ×0,70 au cran le plus haut), la précision de la lecture des dépêches (bruit ×1,25 à ×0,75), les chances de gagner des anecdotes du desk (−8 à +8 points) et le risque de débauchage. Baisser le taux multiplie le débauchage par 1,5 le trimestre de la baisse.</p>
   <div class="cisel">${BONOFF.map((o,i)=>{const p=bonRate(i),F=BONFX[pf>0?i:0],c=F.c;return `<button class="bnp${i===cur?' on':''}" data-i="${i}">${dec(p*100,Number.isInteger(Math.round(p*1000)/10)?0:1)} %<br><small>${mm(p*pf)} · coûts ×${dec(c,2)} · lecture ×${dec(BONREAD[pf>0?i:0],2)} · anecdotes ${BONWIN[pf>0?i:0]>=0?'+':'−'}${Math.round(Math.abs(BONWIN[pf>0?i:0])*100)} pts · débauche ${Math.round(Math.min(0.95,F.p*(i<prev?BONCUT:1))*100)} %</small></button>`}).join('')}</div></div>`})();
@@ -6815,7 +6831,7 @@ function screenDebrief(o){
  const lmSel='';   /* lot 239 : la négociation se fait au début du trimestre, page du book */
  const coSel='';   /* lot 240 : le co-investissement se choisit après le book */
  /* lot 238 : pages suivantes */
- const PGS=[];if(gtSel)PGS.push(['Gate',gtSel]);PGS.push(['Trésorerie du gérant',tresSel+lmSel+coSel]);if(bnSel)PGS.push(["Bonus d'équipe",bnSel]);
+ const PGS=[];if(gtSel)PGS.push(['Gate',gtSel]);PGS.push(['Trésorerie du gérant',tresSel+lmSel+coSel]);if(bnSel)PGS.push([((S.mgrQ&&S.mgrQ.perf)||0)>0?"Bonus d'équipe":'Pas de bonus',bnSel]);
  const lastLab=S.over?'Voir le rapport final':(S.q>=QT()?`Clôturer les ${DUR().ans} an${DUR().ans>1?'s':''}`:'Trimestre suivant');
  app.innerHTML=statusBar(true)+`<div class="fade">
   <div class="pnlhead"><div class="q">RÉSULTAT DU TRIMESTRE ${S.q} · TOUT COMPRIS</div>
