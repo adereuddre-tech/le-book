@@ -850,8 +850,8 @@ const SIG=[
 /* ════════════════════ 2. CHOIX D'OUVERTURE ════════════════════ */
 const PROFILES=[
  {id:'syst',lvl:'Débutant',who:"« Le modèle ne lit pas les journaux, et il dort très bien »",nm:"Gérant quantitatif systématique",
-  p:"Pas d'opinion : un modèle. Il lit tous les signaux, pèse toutes les sources et vous propose un book d'un bouton. Vous ne savez pas toujours pourquoi il est long du yen. Lui, si.",
-  ef:[['g',"<b>Pouvoir propre — le book du modèle</b> : un portefeuille optimisé sur toutes les sources et tous les signaux, appliqué d'un bouton ; le modèle de risque annonce parfois l'événement extrême et chiffre sa perte"],['g',"il lit tendance, portage et valeur plus nettement que les autres styles"],['g',"investisseurs 25 % moins nerveux"],['b',"le modèle vise 18 % de vol : régulier, mais il laisse du rendement"],['g',"incidents opérationnels −40 % : tout est automatisé, journalisé, horodaté"],['g',"le modèle recale vite : 50 % du mouvement capté après un ajustement"],['b',"le modèle aime la tendance : il surestime de 4 pts la probabilité qu'une dépêche se prolonge"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"],['g',"capital de départ +0,5 M$ ; équipe 15 % moins chère"],['g',"coûts de transaction −28 % : le modèle exécute sans état d'âme"],['b',"aucune intuition : ce que le modèle n'a pas mesuré n'existe pas"]],
+  p:"Pas d'opinion : un modèle. Il lit tous les signaux, pèse toutes les sources et, en niveau facile, vous propose un book d'un bouton. Vous ne savez pas toujours pourquoi il est long du yen. Lui, si.",
+  ef:[['g',"<b>Pouvoir propre — le modèle de risque</b> : il annonce parfois l'événement extrême et chiffre sa perte ; en niveau facile, le book du modèle, optimisé sur toutes les sources et tous les signaux, s'applique d'un bouton (comme pour tous les styles)"],['g',"il lit tendance, portage et valeur plus nettement que les autres styles"],['g',"investisseurs 25 % moins nerveux"],['b',"le modèle vise 18 % de vol : régulier, mais il laisse du rendement"],['g',"incidents opérationnels −40 % : tout est automatisé, journalisé, horodaté"],['g',"le modèle recale vite : 50 % du mouvement capté après un ajustement"],['b',"le modèle aime la tendance : il surestime de 4 pts la probabilité qu'une dépêche se prolonge"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"],['g',"capital de départ +0,5 M$ ; équipe 15 % moins chère"],['g',"coûts de transaction −28 % : le modèle exécute sans état d'âme"],['b',"aucune intuition : ce que le modèle n'a pas mesuré n'existe pas"]],
   sigBonus:0,capture:0.50,tcMult:0.72,rumBonus:0.05,lpMult:0.75,modelScale:0.90,ddMax:0.40,incMult:0.60,numeric:true,noAdj:true},
  {id:'fonda',lvl:'Normal',who:"« Je peux avoir raison plus longtemps que le marché ne peut rester solvable »",nm:"Gérant fondamental discrétionnaire",
   p:"Une vue du monde, construite ligne par ligne, et défendue contre tous. Vous avez passé trois nuits sur la balance courante d'un pays que personne ne regarde. Vous aurez raison — reste à savoir si votre mandat tiendra jusque-là.",
@@ -868,7 +868,7 @@ const DESKS=[{id:'inhouse',nm:"Desk d'exécution intégré",mult:()=>1.00,fixed:
 const SIZES=[
  {id:'small',lvl:'Débutant',nav:0.1,capX:1,perf:0.15,nm:"Facile — 15 % de performance",who:"« Des concurrents à votre portée »",
   p:"Des concurrents battables, des investisseurs qui pardonnent un mauvais trimestre, une équipe bon marché. Vous touchez 15 % de la performance.",
-  ef:[["g","capital de départ : 1 M$, plus celui de votre style"],["g","équipe 15 % moins chère"],["g","concurrents moins adroits et peu capitalisés (0,25 M$ de trésorerie, équipe standard)"],["g","investisseurs patients : confiance de départ +8, rachats 25 % plus petits"],["b","commission de performance : 15 %"],["b","souscriptions 40 % plus petites"]],
+  ef:[["g","capital de départ : 1 M$, plus celui de votre style"],["g","le book que votre desk construirait, proposé chaque trimestre et applicable d'un bouton, quel que soit votre style"],["g","équipe 15 % moins chère"],["g","concurrents moins adroits et peu capitalisés (0,25 M$ de trésorerie, équipe standard)"],["g","investisseurs patients : confiance de départ +8, rachats 25 % plus petits"],["b","commission de performance : 15 %"],["b","souscriptions 40 % plus petites"]],
   rivSkill:0.050,rivVol:0.95,rivSeed:0.00025,lpNeg:0.60,rcNeg:0.75,lp0:8,flowMult:0.75,flowIn:0.60,goalMult:1,costM:0.85,seed:0.001},
  {id:'mid',lvl:'Normal',nav:0.1,capX:1,perf:0.20,nm:"Moyen — 20 % de performance",who:"« La place telle qu'elle est »",
   p:"Trois très bons concurrents, des investisseurs qui comparent, le tarif habituel du métier : 20 % de la performance.",
@@ -3107,7 +3107,7 @@ function renderNews(){
  if(rs&&S.xHint)rs.innerHTML+=`<p class="note" style="margin:8px 0 0">${xHintTxt()}</p>`;   /* lot 106 */
  if(rs&&S.hunch)rs.innerHTML+=`<p class="note" style="margin:8px 0 0">🫀 <b>Votre intuition</b> : <b>${FACT[S.hunch.k].nm.toLowerCase()}</b> va surprendre ${(S.hunch.up===(FSG[S.hunch.k]>0))?'à la hausse':'à la baisse'} ce trimestre.</p>`;
  const fe=document.getElementById('factest');
- if(fe&&PROF().id==='syst'){   /* le book du modèle est le pouvoir propre du quant */
+ if(fe&&S.size==='small'){   /* lot 251 : le book du desk, offert à tous les styles en niveau facile, retiré en moyen et difficile */
   const R=recoBook();
   const reco=R.k.map((k,i)=>({i,k})).filter(o=>o.k!==0).sort((a,b)=>Math.abs(b.k)-Math.abs(a.k));
   S.modelK=R.k;
@@ -3395,7 +3395,7 @@ function feeLine(){
  const z=SIZES.find(x=>x.id===setup.size)||SIZES[1];
  return `Le fonds vous verse <strong>2 % de gestion</strong> par an et <strong>${(z.perf*100).toFixed(0)} % de sa performance</strong> au-dessus de son plus haut historique. Votre société paie l'équipe, les ordres et les bonus.`;
 }
-function styTable(){const P=PROFILES,f=(x,d=2)=>'×'+dec(x,d),pw={syst:"book du modèle, en un bouton ; signaux lus plus nettement",fonda:"sources vérifiées : une probabilité sûre par trimestre",flux:"intuition : le sens d'un facteur, juste 4 fois sur 5"};
+function styTable(){const P=PROFILES,f=(x,d=2)=>'×'+dec(x,d),pw={syst:"modèle de risque : l'événement extrême annoncé et chiffré ; signaux lus plus nettement",fonda:"sources vérifiées : une probabilité sûre par trimestre",flux:"intuition : le sens d'un facteur, juste 4 fois sur 5"};
  const R=[["Pouvoir",p=>pw[p.id]],["Capital de départ",p=>STYSEED[p.id]?'+'+dec(STYSEED[p.id]*1000,2)+' M$':'—'],["Commission de performance",p=>STYPERF[p.id]?'+'+Math.round(STYPERF[p.id]*100)+' pts':'—'],
   ["Coût de l'équipe",p=>f(STYCOST[p.id])],["Coûts d'exécution",p=>f(p.tcMult)],["Book visé",p=>f(p.modelScale)+' la vol cible'],["Nervosité des investisseurs",p=>f(p.lpMult)],["Incidents : fréquence · coût",p=>f(p.incMult)+' · '+f(p.incSev||1,1)],["Mouvement capté sur les dépêches",p=>Math.round(p.capture*100)+' %']];
  return `<details class="wire" style="margin-top:10px"><summary>Les trois styles en un tableau</summary><div style="overflow-x:auto"><table class="qt" style="margin-top:8px;font-size:12px"><thead><tr><th style="text-align:left"></th>${P.map(p=>`<th>${({syst:'Quant',fonda:'Fondamental',flux:'Flux'})[p.id]}</th>`).join('')}</tr></thead><tbody>${R.map(([l,fn])=>`<tr><td style="text-align:left">${l}</td>${P.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`}
@@ -4875,7 +4875,7 @@ function screenPlay(){
   <div class="block"><div class="blockhead"><h2>Bruits de salle et rumeurs</h2><span class="hint">T${S.q+1} · ${S.rumors.length} sources</span></div>
    ${S.rupture?`<div class="flag" style="margin:0 0 10px"><span><b>Rupture factorielle sur ${INSTR[S.rupture.i].sym}</b> — sa sensibilité au facteur « ${FACT[S.rupture.k].nm.toLowerCase()} » passe de ${S.rupture.old*FSG[S.rupture.k]>=0?'+':'−'}${dec(Math.abs(S.rupture.old),2)} à ${S.rupture.nw*FSG[S.rupture.k]>=0?'+':'−'}${dec(Math.abs(S.rupture.nw),2)} : ${S.rupture.why}.</span></div>`:''}
    <div class="wire" id="news"></div>
-   ${PROF().numeric?`<div class="wire" style="margin:10px 0 8px"><div class="kv" style="padding-bottom:6px"><span><b>Le book que le modèle construirait</b></span></div><div id="factest"></div></div>`:''}
+   ${S.size==='small'?`<div class="wire" style="margin:10px 0 8px"><div class="kv" style="padding-bottom:6px"><span><b>Le book que ${PROF().numeric?'le modèle':'le desk'} construirait</b></span></div><div id="factest"></div></div>`:''}
    <details style="margin-top:8px"><summary>Sous le capot · sources, avis du desk, matrice</summary>
     <div class="kicker" style="margin:10px 0 4px">LIRE LES SOURCES</div>
     <p class="note">Chaque source prétend un effet sur les quatre facteurs — croissance, inflation, liquidité, appétit pour le risque — de ▼▼ à ▲▲. La <em>fiabilité</em> est la probabilité que la source dise vrai : faible ≈ ${Math.round((RELP.faible+RESREL[S.bud.res])*100)} %, moyenne ≈ ${Math.round((RELP.moyenne+RESREL[S.bud.res])*100)} %, forte ≈ ${Math.round((RELP.forte+RESREL[S.bud.res])*100)} % au niveau de recherche choisi. Une pré-annonce concerne un événement qui peut survenir en cours de trimestre — ou pas.</p>
