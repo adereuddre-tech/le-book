@@ -2847,6 +2847,10 @@ const IMPC=1;   /* lot 236 : sans multiplicateur */
 const BRK0=0.1;   /* lot 236 : seuil du frein ; lot 259 : 100 M$ (200 avant) */
 let BRK=0.35;
 function brake(A){return Math.pow(Math.max(1,(A===undefined?S.nav:A)/BRK0),BRK)}
+/* lot 260 : surcoût d'urgence en cours de trimestre. Dépêche : suivre le mouvement (prendre la liquidité) ×2,5,
+   le contrer (la fournir) ×1,5 ; extrême (les deux familles) : ×4 et ×2. Un trader sur la classe réduit le surcoût d'un tiers. */
+const URG={ev:{f:2.5,c:1.5},x:{f:4,c:2},tail:3};
+function urgM(m,i){return covered(INSTR[i].grp)?1+(m-1)*2/3:m}
 function tcost(dk,i){
  if(Math.abs(dk)<1e-9)return {cost:0,bp:0,bn:0};
  const x=INSTR[i],bn=Math.abs(dk*U/x.sig*S.nav);
@@ -5845,7 +5849,7 @@ function screenMacroEvent(ev){
      <div class="evsel">${plan.map((o,i)=>[o,i]).reverse().map(([o,i])=>{const ban=o.trades.length&&(redOn('risk')||redOn('noadd'))&&o.v1>o.v0+1e-9;o.ban=ban;
        return `<button class="evstep${o.n>0?' up':o.n<0?' dn':' zr'}${i===NO?' on':''}" data-i="${i}"${ban||(!o.trades.length&&o.n!==0)?' disabled':''}><b>${o.n>0?'+':o.n<0?'−':''}${Math.abs(o.n)}</b><small>${o.n>0?'renforcer':o.n<0?'contrer':'rien'}</small></button>`}).join('')}</div>
      <button class="cta" id="evok" style="margin-top:8px">Valider</button></div>`})()}
-   <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion ; votre desk n'est en place qu'à ${(capNow()*100).toFixed(0)} % quand le marché repart sur cette dépêche (de ${Math.round(prof.capture*70)} à ${Math.min(100,Math.round(prof.capture*130))} % selon les dépêches pour votre style), c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
+   <details style="margin-top:8px"><summary>Comment lire ces chiffres</summary><p class="note">La moitié du choc est déjà dans les prix : c'est le P&amp;L immédiat, acquis quel que soit votre choix. Le reste du mouvement se poursuit ou se retourne. La probabilité affichée est la lecture de votre desk : plus la recherche est fournie, plus elle est juste ; le gérant de flux lit mieux le carnet d'ordres, le modèle du quant surestime un peu la poursuite, et le fondamental obtient une fois par trimestre une probabilité vérifiée. Les montants portent sur votre book entier, hors coûts d'ajustement, que paie votre société de gestion. Ces ordres d'urgence coûtent plus cher que ceux du début de trimestre : suivre le mouvement, c'est acheter ce que tout le monde achète (×2,5, ×4 sur un extrême) ; le contrer, c'est fournir la liquidité dont les autres ont besoin (×1,5, ×2 sur un extrême) ; un trader sur la classe retire un tiers de ce surcoût ; votre desk n'est en place qu'à ${(capNow()*100).toFixed(0)} % quand le marché repart sur cette dépêche (de ${Math.round(prof.capture*70)} à ${Math.min(100,Math.round(prof.capture*130))} % selon les dépêches pour votre style), c'est aussi déduit. Les jauges comptent le résultat, l'écart au book de départ et la réaction du comité à une prise de position en cours de trimestre.</p></details>
   </div>
  </div>`;
  const go=i=>{clearTimer();resolveEvent(ev,touched,plan[i],imm,navB)};
@@ -5877,7 +5881,7 @@ function evPlans(ev,touched){
  touched.forEach(i=>{const sh=Math.sign(ev.hit[INSTR[i].sym]);
   if(ev.shut&&ev.shut.includes(INSTR[i].sym))return;   /* lot 58 : cotation suspendue */
   const tg=clampK(i,S.k[i]+sh*a),d=tg-S.k[i];if(!d)return;
-  const tc=tcost(d,i);const c=tc.cost*(ev.stress?5:2)*S.tcMultQ*(S.leakQ?1.45:1);
+  const tc=tcost(d,i);const c=tc.cost*urgM((ev.x?URG.x:URG.ev)[a>0?'f':'c'],i)*S.tcMultQ*(S.leakQ?1.45:1);   /* lot 260 */
   cost+=c;drift+=Math.abs(d);t[i]=tg;kE[i]=S.k[i]+capNow()*d;
   trades.push({i,from:S.k[i],to:tg,bn:tc.bn,c})});
  const free=cost>0&&!ev.stress&&(prof.freeAdj||S.freeAdjB>0)&&!S.freeAdjUsed;
@@ -5992,15 +5996,15 @@ function screenRivalEvent(e){
   <div class="evsel">${[['fade','−','contrer'],['dhalf','−½','contrer'],['none','0','rien'],['fhalf','+½','suivre'],['follow','+','suivre']].map(([a,l,c])=>{const off=a!=='none'&&RT[a]===S.k[i];
     return `<button class="evstep rvstep ${a==='follow'||a==='fhalf'?'up':a==='none'?'zr':'dn'}${a==='none'?' on':''}" data-a="${a}"${off?' disabled':''}><b>${l}</b><small>${c}</small></button>`}).join('')}</div>
   <button class="cta" id="rvok" style="margin-top:10px">Valider</button></div>`;
- const RP={follow:`<b>Suivre ${rv.boss} : passer ${x.sym} à ${nk>0?'+':''}${nk}</b><span>Coût ${mm(tcost(nk-S.k[i],i).cost*1.5*S.tcMultQ)}, à votre charge, dans un marché qui a déjà bougé. La suite du mouvement vaut en moyenne un tiers de ce qui a été fait, avec beaucoup de bruit. Si ça continue, la presse parle d'un rattrapage ; sinon, d'un gérant qui court après les autres.${bkD(S.k.map((v,m)=>m===i?nk:v),0,false)}</span>`,
-  fhalf:`<b>Suivre à moitié : ${x.sym} à ${hF>0?'+':''}${hF}</b><span>Coût ${mm(tcost(hF-S.k[i],i).cost*1.5*S.tcMultQ)}, à votre charge. La moitié du pari, la moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hF:v),0,false)}</span>`,
+ const RP={follow:`<b>Suivre ${rv.boss} : passer ${x.sym} à ${nk>0?'+':''}${nk}</b><span>Coût ${mm(tcost(nk-S.k[i],i).cost*urgM(1.5,i)*S.tcMultQ)}, à votre charge, dans un marché qui a déjà bougé. La suite du mouvement vaut en moyenne un tiers de ce qui a été fait, avec beaucoup de bruit. Si ça continue, la presse parle d'un rattrapage ; sinon, d'un gérant qui court après les autres.${bkD(S.k.map((v,m)=>m===i?nk:v),0,false)}</span>`,
+  fhalf:`<b>Suivre à moitié : ${x.sym} à ${hF>0?'+':''}${hF}</b><span>Coût ${mm(tcost(hF-S.k[i],i).cost*urgM(1.5,i)*S.tcMultQ)}, à votre charge. La moitié du pari, la moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hF:v),0,false)}</span>`,
   none:`<b>Ne pas répondre à la presse</b><span>Vous ne changez rien. Confiance −1,5 de plus : vos investisseurs voulaient une réaction.</span>`,
-  dhalf:`<b>Contrer à moitié : ${x.sym} à ${hD>0?'+':''}${hD}</b><span>Vous pariez, sans tout miser, que ${rv.boss} a tort de rester. Coût ${mm(tcost(hD-S.k[i],i).cost*1.5*S.tcMultQ)}. La moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hD:v),0,false)}</span>`,
-  fade:`<b>Prendre le contre-pied : ${x.sym} à ${(-nk)>0?'+':''}${-nk}</b><span>Vous pariez que ${rv.boss} a tort de rester. Coût ${mm(tcost(-nk-S.k[i],i).cost*1.5*S.tcMultQ)}, même bruit, gloire ou ridicule.${bkD(S.k.map((v,m)=>m===i?-nk:v),0,false)}</span>`};
+  dhalf:`<b>Contrer à moitié : ${x.sym} à ${hD>0?'+':''}${hD}</b><span>Vous pariez, sans tout miser, que ${rv.boss} a tort de rester. Coût ${mm(tcost(hD-S.k[i],i).cost*urgM(1.5,i)*S.tcMultQ)}. La moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hD:v),0,false)}</span>`,
+  fade:`<b>Prendre le contre-pied : ${x.sym} à ${(-nk)>0?'+':''}${-nk}</b><span>Vous pariez que ${rv.boss} a tort de rester. Coût ${mm(tcost(-nk-S.k[i],i).cost*urgM(1.5,i)*S.tcMultQ)}, même bruit, gloire ou ridicule.${bkD(S.k.map((v,m)=>m===i?-nk:v),0,false)}</span>`};
  const pickR=a=>{clearTimer();const navB=S.nav;let msg=[],cost=0,pnl=0;
   if(a==='none'){const g=gauge(-1.5,0,"Silence face à la presse");S.evLog.push({t:t1,pnl:0,m:0,lp:g0.lp+g.lp,rc:g0.rc+g.rc});
     resultCard(`RIVALITÉ · ${rv.nm.toUpperCase()}`,"Vous laissez dire",[`${rv.boss} a eu ses colonnes. Vous gardez votre book.`],[['Confiance',`<span class="${cls(gcf(g0,g))}">${sd1(gcf(g0,g))}</span>`]],"Continuer le trimestre",stepEvents);return}
-  const dA=(a==='follow'||a==='fhalf')?'follow':'fade',hs=(a==='fhalf'||a==='dhalf')?0.5:1,target=RT[a];   /* lot 208 */const tt=tcost(target-S.k[i],i);cost=tt.cost*1.5*S.tcMultQ;S.k[i]=target;S.pendingTC+=cost/S.nav;S.totalTC+=cost;
+  const dA=(a==='follow'||a==='fhalf')?'follow':'fade',hs=(a==='fhalf'||a==='dhalf')?0.5:1,target=RT[a];   /* lot 208 */const tt=tcost(target-S.k[i],i);cost=tt.cost*urgM(1.5,i)*S.tcMultQ;S.k[i]=target;S.pendingTC+=cost/S.nav;S.totalTC+=cost;
   const resid=r*(0.17+0.45*gauss());const w=weights(S.k);pnl=w[i]*resid;
   S.nav*=(1+pnl);S.qEvM+=pnl*navB;
   const total=pnl;   /* lot 59 : coût payé par le gérant seul */
@@ -6137,7 +6141,7 @@ function tailDraw(){
  if(u()>=tailP(sp))return null;
  const wantMg=u()<TAILMG,pool=TAILEV.map((e,j)=>j).filter(j=>!!TAILEV[j].mg===wantMg),i=pool[Math.floor(u()*pool.length)],ev=TAILEV[i],
   L=Math.min(ev.mg?0.60:0.55,(ev.sev[0]+(ev.sev[1]-ev.sev[0])*u())*tailL(sp)),good=u()<0.5;
- let imp=0;for(let m=0;m<N;m++){const d=Math.trunc(S.k[m]/2)-S.k[m];if(d)imp+=tcost(d,m).cost*5}
+ let imp=0;for(let m=0;m<N;m++){const d=Math.trunc(S.k[m]/2)-S.k[m];if(d)imp+=tcost(d,m).cost*urgM(URG.tail,m)}   /* lot 260 : ×3 (×5 avant) */
  return {i,sp,L,good,imp:imp/S.nav};
 }
 /* lot 209 (lot C) : accident de levier et appel de marge — part du book coupée sur 5 crans (0, 25, 50, 75, 100 %),
@@ -6202,10 +6206,10 @@ function mgPlan(){const nav=S.nav,mgu=marginPct(S.k),req=mgu*nav,tg=MGC.back;
  const inj=Math.max(0,req/(MGC.thr*0.98)-nav);
  /* coupe choisie : on retire d'abord les unités qui consomment le plus de marge, au coût d'urgence ×1,3 */
  const k=[...S.k];let c1=0;for(let g=0;g<60&&marginPct(k)>tg;g++){let bi=-1,bv=0;for(let i=0;i<N;i++){if(!k[i])continue;const v=Math.abs(notionalBn(1,i))*mgRate(i);if(v>bv){bv=v;bi=i}}
-  if(bi<0)break;const d=-Math.sign(k[bi]);c1+=tcost(d,bi).cost*1.3;k[bi]+=d}
- const f=Math.max(0.05,Math.min(0.9,1-tg/mgu)),k2=S.k.map(v=>Math.trunc(v*(1-f)));let c2=0;for(let i=0;i<N;i++){const d=k2[i]-S.k[i];if(d)c2+=tcost(d,i).cost*MGC.crisis}
+  if(bi<0)break;const d=-Math.sign(k[bi]);c1+=tcost(d,bi).cost*urgM(1.3,bi);k[bi]+=d}
+ const f=Math.max(0.05,Math.min(0.9,1-tg/mgu)),k2=S.k.map(v=>Math.trunc(v*(1-f)));let c2=0;for(let i=0;i<N;i++){const d=k2[i]-S.k[i];if(d)c2+=tcost(d,i).cost*urgM(MGC.crisis,i)}
  return {mgu,inj,k1:k,c1,k2,c2,f}}
-function screenStopQ(){S.stopQn=S.q;const r=liveRet(),ls=limStop(),k1=S.k.map(v=>Math.trunc(v/2));let c=0;for(let i=0;i<N;i++){const d=k1[i]-S.k[i];if(d)c+=tcost(d,i).cost*1.3}
+function screenStopQ(){S.stopQn=S.q;const r=liveRet(),ls=limStop(),k1=S.k.map(v=>Math.trunc(v/2));let c=0;for(let i=0;i<N;i++){const d=k1[i]-S.k[i];if(d)c+=tcost(d,i).cost*urgM(1.3,i)}
  const O=[{id:'cut',b:"Couper le book de moitié",s:`Ordres au tarif d'urgence : ${mm(c)} à votre charge. Pas de carton.`},
   {id:'keep',b:"Passer outre",s:"Le book reste en place ; le comité consigne un carton jaune à la clôture."}];
  app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard bad">${evHead('Comité des risques · stop trimestriel','risk')}<h3>Trimestre à ${sgnp(r,1)} : le stop de −${dec(ls*100,1)} % est franchi</h3>
