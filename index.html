@@ -2944,7 +2944,6 @@ function planQuarter(){
  if(tav.length){const te=pick(tav);S.usedTrader.push(te.t);S.evQueue.splice(Math.floor(rng()*(S.evQueue.length+1)),0,{trader:true,...te})}
  {const u=prng32(hash32('stress'+S.q,S.seed));S.stressQ=null;if(u()<stressP()){const wt=STRESS.map(x=>x.ext?1/3:1),tw=wt.reduce((a,b)=>a+b,0);let r=u()*tw,si=0;while(si<STRESS.length-1&&r>=wt[si]){r-=wt[si];si++}
    const sc=STRESS[si],ev=stressEv(sc.id);if(ev){S.stressQ=sc.id;S.evQueue.splice(1+Math.floor(u()*S.evQueue.length),0,ev)}}}   /* lot 101 */
-  xHintDraw();   /* lot 106 */
  S.usedStake=S.usedStake||[];
  const nStake=1+(rng()<0.5?1:0);
  for(let n=0;n<nStake;n++){
@@ -2956,6 +2955,7 @@ function planQuarter(){
  if(S.q>=1){const u=prng32(hash32('xev'+S.q,S.seed));
   if(u()<XPROB){S.usedX=S.usedX||[];let av=MACROEV.filter(e=>e.x&&!S.usedX.includes(e.t));if(!av.length){S.usedX=[];av=MACROEV.filter(e=>e.x)}
    if(av.length){const e=av[Math.floor(u()*av.length)];S.usedX.push(e.t);S.evQueue.splice(Math.floor(u()*(S.evQueue.length+1)),0,e)}}}
+ xHintDraw();   /* lot 106 ; lot 252 : après les deux tirages d'extrêmes */
  S.preDesk=null;
  if(rng()<0.45){const sav=STAKE.filter(e=>!S.usedStake.includes(e.t)&&!STAKE_POS.has(e.t));if(sav.length){const se=pick(sav);S.usedStake.push(se.t);S.preDesk={trader:true,stake:true,...se}}}
  S.stopQ=false;S.noAddQ=false;
@@ -3418,7 +3418,7 @@ function screenSetup(){
   <div class="rule"><b>Frais</b><span id="feeline">${feeLine()}</span></div>
   <div class="rule"><b>Investisseurs</b><span>Chacun son critère : la régularité, l'objectif annoncé, la performance absolue, la moyenne des concurrents. La confiance décide du montant de leurs rachats et de leurs souscriptions.</span></div>
   <div class="rule"><b>Comité</b><span>Trois limites affichées sur le book : risque ex ante, concentration, stop trimestriel. Les franchir coûte un carton ; deux jaunes font un rouge, et un rouge impose des contraintes.</span></div>
-  <div class="rule"><b>Chocs</b><span>Le prime broker vérifie la marge après chaque événement. Des événements extrêmes peuvent frapper chaque trimestre ; une rumeur, ou le pouvoir de votre style, les annonce parfois.</span></div>
+  <div class="rule"><b>Chocs</b><span>Le prime broker vérifie la marge après chaque événement. Des événements extrêmes peuvent frapper chaque trimestre ; votre veille les sent venir de 10 à 95 % des fois, selon votre style, vos équipes et leur bonus, et une protection s'achète en début de trimestre.</span></div>
   <div class="rule"><b>Le piège</b><span>Vingt-cinq marchés, quatre forces derrière eux : croissance, inflation, liquidité, appétit pour le risque. Un book qui semble diversifié peut n'être qu'un seul pari.</span></div>
  </div></details>
  <details class="wire" style="margin-top:14px"><summary>Comment ça marche sous le capot</summary>
@@ -5059,20 +5059,31 @@ function stressHit(sc,k){k=k||S.k;const h={},K=STRESSK*(sc.ext?2:1);INSTR.forEac
   if(bi>=0){const sy=INSTR[bi].sym;h[sy]=+((h[sy]||0)-Math.sign(k[bi])*sc.H).toFixed(3)}}
  return h}
 function stressEv(id){const sc=STRESS.find(x=>x.id===id);if(!sc)return null;return {stress:id,t:`Événement extrême : ${sc.nm.charAt(0).toLowerCase()+sc.nm.slice(1)}`,who:sc.ext?'Événement extrême · le plus rare':'Événement extrême',x:true,p:sc.p,hit:stressHit(sc),...(sc.liq?{liq:sc.liq}:{}),...(sc.shut?{shut:sc.shut}:{}),...(sc.mg?{mg:sc.mg}:{})}}
-/* lot 106 : l'événement extrême s'annonce parfois. Rumeur : 5 % (loyer) à 65 % (recherche maximale) s'il arrive,
-   fausse alerte 6 % sinon. Fondamental : source vérifiée qui le nomme, une fois sur deux. Quant : le modèle de risque le
-   nomme et chiffre la perte, six fois sur dix. Flux : sent toujours qu'un choc arrive (sans le nommer), jamais à tort. */
-const XH={rum:[0.05,0.10,0.20,0.35,0.45,0.55,0.65],fals:0.06,fonda:0.5,syst:0.6};
-function xHintDraw(){const u=prng32(hash32('xhint'+S.q,S.seed)),P=PROF(),sc=S.stressQ?STRESS.find(x=>x.id===S.stressQ):null;S.xHint=null;
- const a=u(),b=u(),c=u(),d=u();
- if(sc){if(P.verified&&a<XH.fonda)S.xHint={src:'fonda',id:sc.id};else if(P.id==='syst'&&a<XH.syst)S.xHint={src:'syst',id:sc.id};
-  else if(P.hunch)S.xHint={src:'flux'};else if(b<(XH.rum[S.bud.res]||0.35))S.xHint={src:'rum',id:sc.id}}
- else if(!P.hunch&&c<XH.fals)S.xHint={src:'rum',id:STRESS[Math.floor(d*STRESS.length)].id,fake:1}}
-function xHintTxt(k){const h=S&&S.xHint;if(!h)return '';const sc=h.id?STRESS.find(x=>x.id===h.id):null,nm=sc?sc.nm.charAt(0).toLowerCase()+sc.nm.slice(1):'';
- if(h.src==='fonda')return `🔴 <b>Source vérifiée</b> : ${nm}, ce trimestre. C'est certain.`;
- if(h.src==='syst')return `🔴 <b>Le modèle de risque</b> signale un événement extrême probable : ${nm}. Perte du book sur le mouvement complet : ${k?sgnp(stressLoss(k,sc),1)+' · '+moneyB(Math.abs(stressLoss(k,sc))*S.nav):'à lire sur le book'}.`;
- if(h.src==='flux')return `🔴 <b>Votre intuition</b> : un choc extrême se prépare ce trimestre. Vous ne sauriez pas dire lequel.`;
- return `🔴 <b>Rumeur</b> : on parle d'un événement extrême — ${nm}. Rien de vérifié.`}
+/* lot 252 : veille des extrêmes, graduée de 10 à 95 %. Elle couvre les deux familles d'extrêmes (STRESS, calculés sur le book,
+   et dépêches x:1). Trois probabilités : sentir l'extrême qui vient (s), l'identifier une fois senti (i), fausse alerte
+   un trimestre sans extrême (fa = 15 % × (1 − s)). Facteurs repris : fiabilité des sources selon la recherche (RESREL, front office),
+   contrôle des risques (cran du back office), lecture des dépêches selon le bonus (BONREAD). Bases par style :
+   le flux sent le mieux et identifie le moins, le fondamental l'inverse, le quant entre les deux. */
+const XSB={syst:{s:0.27,i:0.50},fonda:{s:0.175,i:0.65},flux:{s:0.40,i:0.10}};
+function xWatch(){const P=PROF(),B=XSB[P.id]||XSB.fonda,bd=S.bud||{},f=((RESREL[bd.res]??0)+0.08)/0.19,r=Math.min(1,(bd.bo||0)/5),b=(1.25-(BONREAD[bonEff()]||1))/0.5;
+ const sv=Math.max(0.10,Math.min(0.95,B.s+0.30*f+0.20*r+0.15*(b-0.5))),iv=Math.max(0.05,Math.min(0.95,B.i+0.30*f+0.10*(b-0.5)));
+ return {s:sv,i:iv,fa:0.15*(1-sv)}}
+function xHintDraw(){const u=prng32(hash32('xhint'+S.q,S.seed)),W=xWatch(),src=PROF().id,a=u(),b=u(),c=u(),d=u();S.xHint=null;
+ const sc=S.stressQ?STRESS.find(x=>x.id===S.stressQ):null,mx=sc?null:(S.evQueue||[]).find(e=>e.x&&!e.stress);
+ if(sc||mx){if(a<W.s)S.xHint=b<W.i?(sc?{src,id:sc.id}:{src,t:mx.t}):{src}}
+ else if(c<W.fa)S.xHint=b<W.i?{src,id:STRESS[Math.floor(d*STRESS.length)].id,fake:1}:{src,fake:1}}
+/* mouvement complet d'une dépêche extrême sur le book k (lecture, comme stressLoss) */
+function xEvLoss(k,t){const e=MACROEV.find(x=>x.t===t);if(!e)return 0;const w=weights(k);let v=0;for(const sy in e.hit){const i=IDX[sy];if(i!==undefined)v+=w[i]*e.hit[sy]*INSTR[i].sigQ}
+ return v<0?v*crowd(riskShown(w).total):v}
+function xHintLoss(k){const h=S&&S.xHint;if(!h||!k)return null;if(h.id){const sc=STRESS.find(x=>x.id===h.id);return sc?stressLoss(k,sc):null}if(h.t)return xEvLoss(k,h.t);return null}
+function xHintName(){const h=S&&S.xHint;if(!h)return '';if(h.id){const sc=STRESS.find(x=>x.id===h.id);return sc?sc.nm.charAt(0).toLowerCase()+sc.nm.slice(1):''}
+ return h.t?h.t.charAt(0).toLowerCase()+h.t.slice(1):''}
+function xHintTxt(k){const h=S&&S.xHint;if(!h)return '';const nm=xHintName(),L=xHintLoss(k);
+ const who={syst:'<b>Le modèle de risque</b> signale',fonda:'<b>Votre réseau</b> annonce',flux:'<b>Votre intuition</b> :'}[h.src]||'<b>Rumeur</b> :';
+ const what=nm?`un événement extrême ce trimestre : ${nm}.`:`un choc extrême se prépare ce trimestre. ${h.src==='flux'?'Vous ne sauriez pas dire lequel.':'Lequel, personne ne le sait.'}`;
+ const ch=h.src==='syst'&&nm&&L!=null?` Perte du book sur le mouvement complet : ${sgnp(L,1)} · ${moneyB(Math.abs(L)*S.nav)}.`:'';
+ return `🔴 ${who} ${what}${ch}`}
+function xWatchTxt(){const W=xWatch();return `Votre veille sent venir <b>${Math.round(W.s*100)} %</b> des extrêmes et en identifie <b>${Math.round(W.i*100)} %</b> ; fausse alerte ${Math.round(W.fa*100)} % des trimestres calmes.`}
 function stressP(){return Math.min(0.32,0.10+0.20*Math.max(0,((S&&S.liq)||1)-0.9)/0.6)}   /* lue sur la liquidité affichée au desk */
 function crowd(sp){return Math.min(2.5,1+2.5*Math.max(0,sp-0.20)/0.10)}
 function stressLoss(k,sc){const w=weights(k),h=stressHit(sc,k);let v=0;INSTR.forEach((x,i)=>{if(h[x.sym])v+=w[i]*h[x.sym]*x.sigQ});return (v<0?v*crowd(riskShown(w).total):v)-2*stressGap(k,sc)}   /* mouvement complet */
@@ -5446,7 +5457,7 @@ function renderRisk(){
   ${limRows(S.k)}
   <div class="kv"><span>Perte à −2 σ trimestriels</span><b class="neg-g">${sgn(-sp)} · ${moneyB(sp*S.nav)}</b></div>
   ${S.xHint?`<div class="flag xh"><span>${xHintTxt(S.k)}</span></div>`:''}
-  <div style="margin-top:8px"><div class="kv"><span><b>Événements extrêmes</b> · l'un d'eux frappe ce trimestre avec une probabilité de ${Math.round(stressP()*100)} %</span><b></b></div>${(()=>{const L=STRESS.map(sc=>({sc,v:stressLoss(S.k,sc)})).sort((a,b)=>a.v-b.v),row=o=>[o.sc.nm+(o.sc.ext?' <span class="dim-g">· extrême</span>':''),`<b class="${o.v>=0?'pos-g':'neg-g'}">${sgn(o.v,1)} · ${moneyB(Math.abs(o.v)*S.nav)}</b>`];return tbl(L.slice(0,6).map(row),['Les six pires pour votre book','Mouvement complet'])+`<details><summary>Les ${L.length-6} autres événements</summary>${tbl(L.slice(6).map(row))}</details>`})()}<p class="note" style="margin-top:4px">Au-delà de 20 % de risque annuel, les pertes sont amplifiées : un gros book se vend mal quand tout le monde réduit (×${dec(crowd(RS.total),1)} pour le vôtre). La moitié du choc tombe tout de suite ; la suite dépend de votre réaction, comme pour une dépêche. Le prime broker relève ensuite ses marges.</p></div>
+  <div style="margin-top:8px"><div class="kv"><span><b>Événements extrêmes</b> · l'un d'eux frappe ce trimestre avec une probabilité de ${Math.round(stressP()*100)} %</span><b></b></div><p class="note" style="margin:2px 0 4px">${xWatchTxt()}</p>${(()=>{const L=STRESS.map(sc=>({sc,v:stressLoss(S.k,sc)})).sort((a,b)=>a.v-b.v),row=o=>[o.sc.nm+(o.sc.ext?' <span class="dim-g">· extrême</span>':''),`<b class="${o.v>=0?'pos-g':'neg-g'}">${sgn(o.v,1)} · ${moneyB(Math.abs(o.v)*S.nav)}</b>`];return tbl(L.slice(0,6).map(row),['Les six pires pour votre book','Mouvement complet'])+`<details><summary>Les ${L.length-6} autres événements</summary>${tbl(L.slice(6).map(row))}</details>`})()}<p class="note" style="margin-top:4px">Au-delà de 20 % de risque annuel, les pertes sont amplifiées : un gros book se vend mal quand tout le monde réduit (×${dec(crowd(RS.total),1)} pour le vôtre). La moitié du choc tombe tout de suite ; la suite dépend de votre réaction, comme pour une dépêche. Le prime broker relève ensuite ses marges.</p></div>
   ${fb}
   ${top.length?`<div class="kv" style="margin-top:8px"><span>Principaux contributeurs au risque</span><b>${top.map(o=>INSTR[o.i].sym+' '+(o.v/sp*100).toFixed(0)+'%').join(' · ')}</b></div>`:''}
   ${flags}${limNegBlock()}`;
