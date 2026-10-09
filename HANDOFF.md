@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 255.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 257.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -278,6 +278,8 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **253** : protection (`HEDGE` c 1 % de l'encours, payée par le fonds, comptée dans qEvM et evLog ; h 70 % du choc immédiat de tout extrême du trimestre). Bloc sur la page co-investissement (après les ordres), page présente dès le 1er trimestre (« Protection » seule au T1). `S.hedgePick/hedgeAsk/hedgeQ`. Estimation du choc immédiat (`xImmEst`) : extrême signalé ou pire STRESS. Espérance sans signal légèrement négative (≈ −0,25 %/trim.), nettement positive avec un signal fiable.
 - **254** : quant en moyen/difficile : « La lecture du modèle » (six convictions, sens et rang, sans tailles ni bouton). Fiches des styles et styTable (ligne « Extrêmes : sentir · identifier ») : quant 20–85 · 45–85, fonda 10–75 · 60–95, flux 33–95 · 5–45.
 - **255** : fin de trimestre sans commission de performance (trimestre nul, négatif, ou positif sous le plus haut historique) : la page « Bonus d'équipe » devient « Pas de bonus » (`noBonusPage`) — pas de choix, explication, et tableau des effets au trimestre suivant (cran minimal : coûts, lecture des dépêches, anecdotes, veille des extrêmes, débauchage) comparés au taux choisi ; S.bonI conservé.
+- **256** : « Ce que vous annoncez » — 4 options à seuils fixes (plus de goalK) : Pas de chiffre (confiance −2 si trimestre négatif), 2 % (+5/−4), 5 % (+14/−7 ; tenu : souscriptions ×1,2 au trimestre suivant), 10 % (+30/−8, comité −3 si manqué ; souscriptions ×1,5 / ×0,7). `commP` : chance affichée calée sur 195 trimestres (0,65 × attendu − 3 pts, dispersion ×1,25). `commClose` : série S.commStr (+1 par promesse tenue, plafond +5 ; manquée après 2 tenues : perte doublée), « tenu de justesse » (< 1 pt) : gain moitié ; S.commFx appliqué dans invInF. Presse : justesse, plateau télé, mème, série. Bot : 2e carte (standard).
+- **257** : protection — prime = max(0,5 %, 2 × hedgeEV) ; hedgeEV = 70 % × choc immédiat attendu aux probabilités du marché (STRESS pondérés, dépêches x:1 uniformes), sans la veille. Affichage : espérance, prime, pire extrême avec sa probabilité de marché (`xMktP`). Couverture permanente : environ 1,3 à 2,6 pts de performance par an pour un book médian.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
