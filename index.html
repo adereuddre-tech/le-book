@@ -2968,8 +2968,11 @@ function planQuarter(){
  }
  const tav=TRADER_MID.filter(e=>!S.usedTrader.includes(e.t)&&persoOk(e)&&!(e.who.startsWith('Sœur')&&S.prof!=='syst'));
  if(tav.length){const te=pick(tav);S.usedTrader.push(te.t);S.evQueue.splice(Math.floor(rng()*(S.evQueue.length+1)),0,{trader:true,...te})}
- {const u=prng32(hash32('stress'+S.q,S.seed));S.stressQ=null;if(u()<stressP()){const wt=STRESS.map(x=>x.ext?1/3:1),tw=wt.reduce((a,b)=>a+b,0);let r=u()*tw,si=0;while(si<STRESS.length-1&&r>=wt[si]){r-=wt[si];si++}
-   const sc=STRESS[si],ev=stressEv(sc.id);if(ev){S.stressQ=sc.id;S.evQueue.splice(1+Math.floor(u()*S.evQueue.length),0,ev)}}}   /* lot 101 */
+ {const u=prng32(hash32('stress'+S.q,S.seed));S.stressQ=null;if(u()<xProbTot()){   /* lot 264 : un seul tirage, un seul catalogue */
+   const pS=stressP(),pX=S.q>=1?XPROB:0,mac=u()<pX/(pS+pX);let sc=null;
+   if(mac){S.usedX=S.usedX||[];let av=STRESS.filter(x=>x.mac&&!S.usedX.includes(x.id));if(!av.length){S.usedX=[];av=STRESS.filter(x=>x.mac)}sc=av[Math.floor(u()*av.length)];S.usedX.push(sc.id)}
+   else{const C=STRESS.filter(x=>!x.mac),wt=C.map(x=>x.ext?1/3:1),tw=wt.reduce((a,b)=>a+b,0);let r=u()*tw,si=0;while(si<C.length-1&&r>=wt[si]){r-=wt[si];si++}sc=C[si]}
+   const ev=stressEv(sc.id);if(ev){S.stressQ=sc.id;S.evQueue.splice(1+Math.floor(u()*S.evQueue.length),0,ev)}}}   /* lot 101 */
  S.usedStake=S.usedStake||[];
  const nStake=1+(rng()<0.5?1:0);
  for(let n=0;n<nStake;n++){
@@ -2977,10 +2980,6 @@ function planQuarter(){
    if(!sav.length)break;const se=pick(sav);S.usedStake.push(se.t);
    S.evQueue.splice(Math.floor(rng()*(S.evQueue.length+1)),0,{trader:true,stake:true,...se});
  }
- /* lot 58 : un événement extrême, une fois tous les six ou sept trimestres (tirage pur, aucun flux déplacé) */
- if(S.q>=1){const u=prng32(hash32('xev'+S.q,S.seed));
-  if(u()<XPROB){S.usedX=S.usedX||[];let av=MACROEV.filter(e=>e.x&&!S.usedX.includes(e.t));if(!av.length){S.usedX=[];av=MACROEV.filter(e=>e.x)}
-   if(av.length){const e=av[Math.floor(u()*av.length)];S.usedX.push(e.t);S.evQueue.splice(Math.floor(u()*(S.evQueue.length+1)),0,e)}}}
  xHintDraw();   /* lot 106 ; lot 252 : après les deux tirages d'extrêmes */
  S.preDesk=null;
  if(rng()<0.45){const sav=STAKE.filter(e=>!S.usedStake.includes(e.t)&&!STAKE_POS.has(e.t));if(sav.length){const se=pick(sav);S.usedStake.push(se.t);S.preDesk={trader:true,stake:true,...se}}}
@@ -5082,6 +5081,14 @@ const STRESS=[
  {id:'crypto',nm:'Effondrement d\'une plateforme crypto',ext:1,x:{BTC:-3.5},sh:[0,0,0,-1.0],p:"La plus grande plateforme d'échange gèle les retraits. Le bitcoin perd un tiers en un week-end."},
  {id:'secheresse',nm:'Sécheresse historique',ext:1,x:{NRAM:-3.0,ZW:2.5,KC:2.5},sh:[0,0.5,0,0],p:"Trois mois sans pluie sur les grandes plaines et au Brésil. Les récoltes fondent, les prix agricoles flambent."}];
 const STRESSK=0.32,STRGAP=0.28;
+/* lot 264 : les dépêches extrêmes rejoignent le catalogue ; même calcul sur le book, même veille, même protection */
+MACROEV.filter(e=>e.x).forEach((e,j)=>{const x={};for(const sy in e.hit)x[sy]=e.hit[sy]/(STRESSK*1.5);
+ STRESS.push({id:'mx'+j,mac:1,nm:e.t,t0:e.t,who:e.who,x,sh:[0,0,0,0],p:e.p,...(e.liq?{liq:e.liq}:{}),...(e.shut?{shut:e.shut}:{})})});
+/* probabilité qu'un extrême frappe ce trimestre, et celle de chaque scénario */
+function xProbTot(){return 1-(1-stressP())*(1-((S&&S.q>=1)?XPROB:0))}
+function xScP(sc){const pS=stressP(),pX=(S&&S.q>=1)?XPROB:0,T=xProbTot();if(!sc||T<=0)return 0;
+ if(sc.mac)return T*pX/(pS+pX)/Math.max(1,STRESS.filter(x=>x.mac).length);
+ const C=STRESS.filter(x=>!x.mac),tw=C.reduce((a,x)=>a+(x.ext?1/3:1),0);return T*pS/(pS+pX)*(sc.ext?1/3:1)/tw}
 function stressGap(k,sc){const w=weights(k);let g=0;for(let i=0;i<N;i++)g+=Math.abs(w[i])*INSTR[i].sigQ;return STRGAP*g*(sc&&sc.ext?2:1)*crowd(riskShown(w).total)}
 function stressHit(sc,k){k=k||S.k;const h={},K=STRESSK*(sc.ext?2:1);INSTR.forEach((x,i)=>{let v=0;for(let f=0;f<4;f++)v+=x.b[f]*(sc.sh?sc.sh[f]:0);v*=K;if(sc.x&&sc.x[x.sym])v+=sc.x[x.sym]*K*1.5;
   if(sc.tgt==='otc'&&x.pt==='otc'&&k[i])v-=Math.sign(k[i])*sc.H;
@@ -5090,7 +5097,7 @@ function stressHit(sc,k){k=k||S.k;const h={},K=STRESSK*(sc.ext?2:1);INSTR.forEac
  if(sc.tgt==='short'||sc.tgt==='rogue'){let bi=-1,bv=0;for(let i=0;i<N;i++){const a=sc.tgt==='short'?-k[i]:Math.abs(k[i]);if(a>bv){bv=a;bi=i}}
   if(bi>=0){const sy=INSTR[bi].sym;h[sy]=+((h[sy]||0)-Math.sign(k[bi])*sc.H).toFixed(3)}}
  return h}
-function stressEv(id){const sc=STRESS.find(x=>x.id===id);if(!sc)return null;return {stress:id,t:`Événement extrême : ${sc.nm.charAt(0).toLowerCase()+sc.nm.slice(1)}`,who:sc.ext?'Événement extrême · le plus rare':'Événement extrême',x:true,p:sc.p,hit:stressHit(sc),...(sc.liq?{liq:sc.liq}:{}),...(sc.shut?{shut:sc.shut}:{}),...(sc.mg?{mg:sc.mg}:{})}}
+function stressEv(id){const sc=STRESS.find(x=>x.id===id);if(!sc)return null;return {stress:id,t:sc.mac?sc.t0:`Événement extrême : ${sc.nm.charAt(0).toLowerCase()+sc.nm.slice(1)}`,who:sc.mac?sc.who:sc.ext?'Événement extrême · le plus rare':'Événement extrême',x:true,p:sc.p,hit:stressHit(sc),...(sc.liq?{liq:sc.liq}:{}),...(sc.shut?{shut:sc.shut}:{}),...(sc.mg?{mg:sc.mg}:{})}}
 /* lot 252 : veille des extrêmes, graduée de 10 à 95 %. Elle couvre les deux familles d'extrêmes (STRESS, calculés sur le book,
    et dépêches x:1). Trois probabilités : sentir l'extrême qui vient (s), l'identifier une fois senti (i), fausse alerte
    un trimestre sans extrême (fa = 15 % × (1 − s)). Facteurs repris : fiabilité des sources selon la recherche (RESREL, front office),
@@ -5489,7 +5496,7 @@ function renderRisk(){
   ${limRows(S.k)}
   <div class="kv"><span>Perte à −2 σ trimestriels</span><b class="neg-g">${sgn(-sp)} · ${moneyB(sp*S.nav)}</b></div>
   ${S.xHint?`<div class="flag xh"><span>${xHintTxt(S.k)}</span></div>`:''}
-  <div style="margin-top:8px"><div class="kv"><span><b>Événements extrêmes</b> · l'un d'eux frappe ce trimestre avec une probabilité de ${Math.round(stressP()*100)} %</span><b></b></div><p class="note" style="margin:2px 0 4px">${xWatchTxt()}</p>${(()=>{const L=STRESS.map(sc=>({sc,v:stressLoss(S.k,sc)})).sort((a,b)=>a.v-b.v),row=o=>[o.sc.nm+(o.sc.ext?' <span class="dim-g">· extrême</span>':''),`<b class="${o.v>=0?'pos-g':'neg-g'}">${sgn(o.v,1)} · ${moneyB(Math.abs(o.v)*S.nav)}</b>`];return tbl(L.slice(0,6).map(row),['Les six pires pour votre book','Mouvement complet'])+`<details><summary>Les ${L.length-6} autres événements</summary>${tbl(L.slice(6).map(row))}</details>`})()}<p class="note" style="margin-top:4px">Au-delà de 20 % de risque annuel, les pertes sont amplifiées : un gros book se vend mal quand tout le monde réduit (×${dec(crowd(RS.total),1)} pour le vôtre). La moitié du choc tombe tout de suite ; la suite dépend de votre réaction, comme pour une dépêche. Le prime broker relève ensuite ses marges.</p></div>
+  <div style="margin-top:8px"><div class="kv"><span><b>Événements extrêmes</b> · l'un d'eux frappe ce trimestre avec une probabilité de ${Math.round(xProbTot()*100)} %</span><b></b></div><p class="note" style="margin:2px 0 4px">${xWatchTxt()}</p>${(()=>{const L=STRESS.map(sc=>({sc,v:stressLoss(S.k,sc)})).sort((a,b)=>a.v-b.v),row=o=>[o.sc.nm+(o.sc.ext?' <span class="dim-g">· extrême</span>':''),`<b class="${o.v>=0?'pos-g':'neg-g'}">${sgn(o.v,1)} · ${moneyB(Math.abs(o.v)*S.nav)}</b>`];return tbl(L.slice(0,6).map(row),['Les six pires pour votre book','Mouvement complet'])+`<details><summary>Les ${L.length-6} autres événements</summary>${tbl(L.slice(6).map(row))}</details>`})()}<p class="note" style="margin-top:4px">Au-delà de 20 % de risque annuel, les pertes sont amplifiées : un gros book se vend mal quand tout le monde réduit (×${dec(crowd(RS.total),1)} pour le vôtre). La moitié du choc tombe tout de suite ; la suite dépend de votre réaction, comme pour une dépêche. Le prime broker relève ensuite ses marges.</p></div>
   ${fb}
   ${top.length?`<div class="kv" style="margin-top:8px"><span>Principaux contributeurs au risque</span><b>${top.map(o=>INSTR[o.i].sym+' '+(o.v/sp*100).toFixed(0)+'%').join(' · ')}</b></div>`:''}
   ${flags}${limNegBlock()}`;
@@ -5544,19 +5551,16 @@ function hint(id){
    elle rend une part du choc immédiat de tout événement extrême du trimestre (STRESS et dépêches x:1), back office compris. */
 const HEDGE={h:0.70,load:2,min:0.005};   /* lot 257 : prime actuarielle = 2 × ce que la protection rend en moyenne, 0,5 % au moins */
 /* ce que la protection rendrait en moyenne ce trimestre, aux probabilités du marché (la veille du desk n'entre pas dans le prix) */
-function hedgeEV(){const k=S.k,bo=0.5+0.5*(TAILM[S.bud.risk]||1),wt=STRESS.map(x=>x.ext?1/3:1),tw=wt.reduce((a,b)=>a+b,0),pS=stressP(),pX=S.q>=1?XPROB:0;
- let e=0;STRESS.forEach((x,j)=>{e+=pS*wt[j]/tw*Math.max(0,-0.5*bo*stressLoss(k,x))});
- const xs=MACROEV.filter(m=>m.x);xs.forEach(m=>{e+=pX/xs.length*Math.max(0,-0.5*xEvLoss(k,m.t))});return HEDGE.h*e}
+function hedgeEV(){const k=S.k,bo=0.5+0.5*(TAILM[S.bud.risk]||1);let e=0;STRESS.forEach(x=>{e+=xScP(x)*Math.max(0,-0.5*bo*stressLoss(k,x))});return HEDGE.h*e}   /* lot 264 */
 function hedgeCost(){return Math.max(HEDGE.min,HEDGE.load*hedgeEV())}
 /* probabilité du marché pour un extrême donné (STRESS : par son poids ; dépêche x:1 : uniforme) */
-function xMktP(e){if(e.t){const n=MACROEV.filter(m=>m.x).length;return (S.q>=1?XPROB:0)/Math.max(1,n)}
- const wt=STRESS.map(x=>x.ext?1/3:1),tw=wt.reduce((a,b)=>a+b,0),j=STRESS.findIndex(x=>x.id===e.id);return j<0?0:stressP()*wt[j]/tw}
+function xMktP(e){return xScP(STRESS.find(x=>x.id===e.id))}   /* lot 264 */
 function xImmEst(){const k=S.k,bo=0.5+0.5*(TAILM[S.bud.risk]||1),h=S.xHint;
  if(h&&h.t)return {nm:xHintName(),v:0.5*xEvLoss(k,h.t),sig:1,p:xMktP({t:h.t})};
  let sc=h&&h.id?STRESS.find(x=>x.id===h.id):null;const sig=!!sc;
  if(!sc){let bv=1e9;STRESS.forEach(x=>{const v=stressLoss(k,x);if(v<bv){bv=v;sc=x}})}
  return {nm:sc.nm.charAt(0).toLowerCase()+sc.nm.slice(1),v:0.5*bo*stressLoss(k,sc),sig,p:xMktP({id:sc.id})}}
-function hedgeBlock(){const e=xImmEst(),pX=1-(1-stressP())*(1-(S.q>=1?XPROB:0)),ev=hedgeEV(),cr=hedgeCost(),c=cr*S.nav,on=S.hedgeQ===S.q||S.hedgePick===S.q;
+function hedgeBlock(){const e=xImmEst(),pX=xProbTot(),ev=hedgeEV(),cr=hedgeCost(),c=cr*S.nav,on=S.hedgeQ===S.q||S.hedgePick===S.q;
  return `<div class="block"><div class="blockhead"><h2>Protection contre les extrêmes</h2><span class="hint">payée par le fonds</span></div>
   ${S.xHint?`<div class="flag xh" style="margin:0 0 8px"><span>${xHintTxt(S.k)}</span></div>`:''}
   <p class="note" style="margin:0 0 6px">Un événement extrême frappe ce trimestre avec une probabilité d'environ ${Math.round(pX*100)} %. ${xWatchTxt()}</p>
