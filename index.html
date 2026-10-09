@@ -5610,9 +5610,11 @@ if(typeof document!=='undefined')document.addEventListener('click',e=>{const b=e
  renderRisk();try{refreshStatus()}catch(err){}try{cardWarnUpdate()}catch(err){}});
 function mgLineDraw(){const el=document.getElementById('mgline');if(!el)return;const A=accP(S.k),m=A.mgu;
  const msg=m>=MGC.thr?"au-dessus du seuil : l'appel de marge tombera à la première dépêche":m>=MGC.warn?"le prime broker appelle deux fois par jour":m>=MGZ.watch?"le prime broker vous surveille":"tranquille";
+ const V=visList(S.k),pv=visP(S.k);
  el.innerHTML=`<div class="kv"><span><b>Levier</b> · marge utilisée <b style="color:${mgCol(m)}">${Math.round(m*100)} %</b> de l'encours <span class="dim-g">(surveillance ${Math.round(MGZ.watch*100)} % · appel ${Math.round(MGC.thr*100)} %)</span></span><b style="color:${A.p>0.15?'var(--short)':A.p>0.03?'var(--warn)':'var(--dim)'}">accident ${Math.round(A.p*100)} %</b></div>
   <span class="mgbar${m>=MGC.warn?' hot':''}" style="height:7px"><i style="width:${Math.min(100,m/0.6*100).toFixed(0)}%;background:${mgCol(m)}"></i><em style="left:${(MGZ.watch/0.6*100).toFixed(0)}%"></em><em style="left:${(MGC.thr/0.6*100).toFixed(0)}%" class="thr"></em></span>
-  <p class="note" style="margin:4px 0 0">${msg[0].toUpperCase()+msg.slice(1)}. Probabilité d'un accident de levier ce trimestre : ${Math.round(A.p*100)} %, nulle sous ${Math.round(MGZ.watch*100)} % de marge, ${Math.round(MGZ.pmax*100)} % au seuil d'appel. Pour la faire baisser : moins de notionnel, surtout sur les marchés à forte marge (actions, matières premières, crypto).</p>`}
+  <p class="note" style="margin:4px 0 0">${msg[0].toUpperCase()+msg.slice(1)}. Probabilité d'un accident de levier ce trimestre : ${Math.round(A.p*100)} %, nulle sous ${Math.round(MGZ.watch*100)} % de marge, ${Math.round(MGZ.pmax*100)} % au seuil d'appel. Pour la faire baisser : moins de notionnel, surtout sur les marchés à forte marge (actions, matières premières, crypto).</p>
+  ${V.length?`<div class="kv" style="margin-top:6px"><span><b>👁 Positions visibles du marché</b></span><b style="color:var(--short)">accident ${Math.round(pv*100)} %</b></div>${V.map(v=>`<p class="note" style="margin:2px 0 0">${v.kind==='short'?'Vente déclarée':'Achat à crédit repéré'} · <b>${INSTR[v.i].sym}</b> ${S.k[v.i]>0?'+':''}${S.k[v.i]} — ${dec(v.f*100,1)} % du carnet : ${v.kind==='short'?'short squeeze':'liquidation forcée'} ${Math.round(v.p*100)} %</p>`).join('')}<p class="note" style="margin:4px 0 0">Une ligne devient visible au-delà de ${Math.round(VIS.thr*100)} % de la profondeur de son carnet (les marchés étroits d'abord, et tous quand le fonds grossit). Une vente est alors déclarée ; un achat, vu du prime broker dès ${Math.round(MGZ.watch*100)} % de marge.</p>`:''}`}
 function renderRisk(){
  mgLineDraw();   /* lot 274 */
  const w=weights(S.k),sp=pvol(w),vd=varDecomp(w),rc=riskContrib(w);
@@ -6294,8 +6296,26 @@ function screenMidMark(){
   [['Confiance',`<span class="${cls(gcf(g))}">${sd1(gcf(g))}</span>`]],
   "Poursuivre le trimestre",stepEvents,Object.assign(midTape(),S.prof==='flux'?{top:fluxMid()}:{}));
 }
+/* lot 275 : visibilité. L'empreinte d'une ligne est son notionnel rapporté à la profondeur du carnet. Au-delà de 1 % :
+   une vente à découvert est déclarée (publique) — risque de short squeeze ; un achat avec plus de 20 % de marge utilisée
+   est vu du prime broker — risque de liquidation forcée (Archegos, 2021). Probabilité par ligne : 4 % + l'empreinte, plafonnée. */
+const VIS={thr:0.01,p0:0.04,pk:1.0,pmax:0.35,Hs:2.5,Hl:2.0};
+function footprint(i,k){const d=DEPTH[INSTR[i].sym];return d?Math.abs(notionalBn((k||S.k)[i],i))/d:0}
+function visList(k){k=k||S.k;const m=marginPct(k),L=[];for(let i=0;i<N;i++){if(!k[i])continue;const f=footprint(i,k);if(f<VIS.thr)continue;
+  if(k[i]<0)L.push({i,f,kind:'short',p:Math.min(VIS.pmax,VIS.p0+VIS.pk*f)});
+  else if(m>MGZ.watch)L.push({i,f,kind:'long',p:Math.min(VIS.pmax,(VIS.p0+VIS.pk*f)*Math.min(2.5,m/MGZ.watch))})}return L}
+function visP(k){return 1-visList(k).reduce((a,v)=>a*(1-v.p),1)}
+const VISEV={short:{t:"Short squeeze : votre vente déclarée devient une cible",who:"Desk · alerte",vis:1,sev:[1,1],
+  p:"Votre position vendeuse est publique depuis sa déclaration. Des acheteurs coordonnés l'ont repérée ; chaque hausse force d'autres vendeurs à racheter, et le prix s'envole contre vous.",
+  o:["Tenir la ligne et attendre que la fièvre retombe","Racheter la moitié dans la tempête","Acheter des options d'achat pour plafonner la perte"]},
+ long:{t:"Liquidation forcée : le prime broker vend votre ligne",who:"Prime broker · appel urgent",vis:1,mg:1,sev:[1,1],
+  p:"Le prime broker a vu votre position acheteuse, grosse et financée à crédit. Le prix a baissé : il exige des garanties tout de suite, et commence à vendre lui-même — au pire prix, devant tout le marché.",
+  o:["Apporter du collatéral et laisser faire","Vendre vous-même la moitié avant lui","Négocier un délai contre une commission"]}};
 /* lot 66 : accident de levier. Tout est tiré avant l'affichage : les montants des boutons sont appliqués tels quels. */
 function tailDraw(){
+ {const V=visList(S.k),u=prng32(hash32('vis'+S.q,S.seed));for(const v of V){if(u()<v.p){const w=weights(S.k),i=v.i,H=v.kind==='short'?VIS.Hs:VIS.Hl,
+   L=Math.min(0.6,Math.abs(w[i])*INSTR[i].sigQ*H*crowd(riskShown(w).total)),d=Math.trunc(S.k[i]/2)-S.k[i],imp=d?tcost(d,i).cost*urgM(URG.tail,i):0;
+   return {i:0,ev:Object.assign({},VISEV[v.kind],{t:VISEV[v.kind].t+` · ${INSTR[i].sym}`}),pos:i,vis:v.kind,fp:v.f,sp:riskShown(w).total,L,good:u()<0.5,imp:imp/S.nav,mgu:marginPct(S.k)}}}}   /* lot 275 */
  const A=accP(S.k),sp=A.sp,u=prng32(hash32('tail'+S.q,S.seed));
  if(u()>=A.p)return null;
  const byMg=u()<A.m/Math.max(1e-9,A.r+A.m);   /* lot 274 : l'accident vient de la marge ou du risque, au prorata */
@@ -6319,10 +6339,10 @@ function tailOpts(te){const L=te.L,hA=0.5*L,hB=1.8*L,c50=0.8*L+Math.min(0.08,te.
   {id:'hedge',x:0,fA:0.5*L,fB:0.5*L,cA:-3,cB:-3,m:0.30*L}]
   .map(o=>Object.assign(o,{f:G?o.fA:o.fB,c:G?o.cA:o.cB,fE:(o.fA+o.fB)/2}))}
 function screenTail(te){
- const ev=TAILEV[te.i]||TAILEV[0],O=tailOpts(te),nav=S.nav,L=te.L;
+ const ev=te.ev||TAILEV[te.i]||TAILEV[0],O=tailOpts(te),nav=S.nav,L=te.L;
  const row=(a,b)=>`<div class="gzr"><span>${a}</span>${b}</div>`;
- const LAB={hold:ev.o[0],cut25:'Couper un quart du book',cut:ev.o[1],cut75:'Couper les trois quarts du book',cut100:'Tout solder',hedge:ev.o[2]};
- const kOf=o=>S.k.map(v=>o.x===0.5||o.x===1?Math.trunc(v*(1-o.x)):Math.sign(v)*Math.round(Math.abs(v)*(1-o.x)));   /* 50 % : règle d'avant ; 25 et 75 % : au plus proche */
+ const LAB={hold:ev.o[0],cut25:te.pos!=null?'Couper un quart de la ligne':'Couper un quart du book',cut:ev.o[1],cut75:te.pos!=null?'Couper les trois quarts de la ligne':'Couper les trois quarts du book',cut100:te.pos!=null?'Solder la ligne':'Tout solder',hedge:ev.o[2]};
+ const kOf=o=>S.k.map((v,j)=>te.pos!=null&&j!==te.pos?v:(o.x===0.5||o.x===1?Math.trunc(v*(1-o.x)):Math.sign(v)*Math.round(Math.abs(v)*(1-o.x))));   /* lot 275 : accident sur une ligne */   /* 50 % : règle d'avant ; 25 et 75 % : au plus proche */
  const body=o=>(o.fA!==o.fB||o.cA!==o.cB
    ?row('50 % de chances',`<b class="neg-g">−${mm(o.fA*nav)} · confiance ${sd1(o.cA)}</b>`)+row('50 % de chances',`<b class="neg-g">−${mm(o.fB*nav)} · confiance ${sd1(o.cB)}</b>`)
    :row('fonds',`<b class="neg-g">−${mm(o.f*nav)} · ${sgnp(-o.f,1)}</b>`)+row('confiance',`<b class="${cls(o.c)}">${o.c?sd1(o.c):'inchangée'}</b>`))
@@ -6331,7 +6351,7 @@ function screenTail(te){
  const CUT=O.findIndex(o=>o.id==='cut');
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard bad">${evHead(ev.who,'risk')}<h3>${ev.t}</h3><p>${ev.p}</p>
-   <p class="note">${te.byMg?`Appel de marge : votre marge utilisée atteint ${Math.round(te.mgu*100)} % de l'encours. En dessous de ${Math.round(MGZ.watch*100)} %, il ne serait pas arrivé.`:`Accident de levier : votre book tourne à ${pct(RQ(te.sp))} de risque. En dessous de ${dec(TAIL.x0*50,0)} %, il ne serait pas arrivé.`}</p></div>
+   <p class="note">${te.vis?(te.vis==='short'?`Votre vente sur ${INSTR[te.pos].nm} pèse ${dec(te.fp*100,1)} % de la profondeur du carnet : au-delà de ${Math.round(VIS.thr*100)} %, elle est déclarée et tout le marché la voit.`:`Votre achat sur ${INSTR[te.pos].nm} pèse ${dec(te.fp*100,1)} % de la profondeur du carnet, avec ${Math.round(te.mgu*100)} % de marge utilisée : le prime broker l'a dans le collimateur.`):te.byMg?`Appel de marge : votre marge utilisée atteint ${Math.round(te.mgu*100)} % de l'encours. En dessous de ${Math.round(MGZ.watch*100)} %, il ne serait pas arrivé.`:`Accident de levier : votre book tourne à ${pct(RQ(te.sp))} de risque. En dessous de ${dec(TAIL.x0*50,0)} %, il ne serait pas arrivé.`}</p></div>
   <p class="note" style="margin:12px 0 0">Part du book que vous coupez, ou couverture payée par votre trésorerie :</p>
   <div class="evpan" id="tlpan"></div>
   <div class="evsel" style="grid-template-columns:repeat(6,1fr)">${O.map((o,k)=>`<button class="evstep tlstep ${o.id==='hedge'?'zr':o.x===0?'up':'dn'}${k===CUT?' on':''}" data-t="${k}"><b>${o.id==='hedge'?'🛡':Math.round(o.x*100)}</b><small>${o.id==='hedge'?'couvrir':o.x===0?'tenir':'% coupé'}</small></button>`).join('')}</div>
