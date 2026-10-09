@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 251.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 254.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -274,6 +274,9 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **249** : collatéral — noms en anglais (T-bills, Commercial paper, Tri-party repo, AAA CLO, Sec-lending cash reinvestment, Local-currency EM debt, Short-duration HY, Cov-lite leveraged loans, Bank AT1 CoCos, Synthetic dollar) ; σ de 0 à 4,5 % par pas de 0,5 ; pertes des trois derniers 8 / 9 / 10 %, probabilités déduites (26 / 27 / 28 %) ; Sharpe 0,35 ; `colY` ± 8 % du net (ordre croissant sur toute l'échelle dans 95 % des trimestres).
 - **250** : collatéral — cov-lite p 40 %, perte 7,1 % ; AT1 perte 18 %, p 5,2 % (σ, Sharpe 0,35 et variation inchangés).
 - **251** : « Le book que le desk/modèle construirait » (`#factest`, recoBook, « Appliquer ce book ») affiché pour tous les styles en niveau facile (S.size==='small'), retiré en moyen et difficile, quant compris. Pouvoir propre du quant renommé « modèle de risque » (fiche, styTable) ; ligne ajoutée à la carte Facile. Le bot quant continue d'appeler recoBook directement : la campagne ne mesure pas cette perte pour un joueur humain.
+- **252** : veille des extrêmes (`xWatch`, `xHintDraw`) — couvre STRESS et dépêches x:1 (tirage déplacé après XPROB). s = base style (quant 0,27 · fonda 0,175 · flux 0,40) + 0,30 × recherche (RESREL normalisé) + 0,20 × back office (bo/5) + 0,15 × (bonus BONREAD normalisé − 0,5), borné 10–95 % ; identification i = base (0,50 · 0,65 · 0,10) + 0,30 × recherche + 0,10 × (bonus − 0,5), bornée 5–95 % ; fausse alerte 15 % × (1 − s). Plus de canal « rumeur » séparé. Ligne « Votre veille… » sous les extrêmes du book ; le quant chiffre la perte de l'extrême identifié.
+- **253** : protection (`HEDGE` c 1 % de l'encours, payée par le fonds, comptée dans qEvM et evLog ; h 70 % du choc immédiat de tout extrême du trimestre). Bloc sur la page co-investissement (après les ordres), page présente dès le 1er trimestre (« Protection » seule au T1). `S.hedgePick/hedgeAsk/hedgeQ`. Estimation du choc immédiat (`xImmEst`) : extrême signalé ou pire STRESS. Espérance sans signal légèrement négative (≈ −0,25 %/trim.), nettement positive avec un signal fiable.
+- **254** : quant en moyen/difficile : « La lecture du modèle » (six convictions, sens et rang, sans tailles ni bouton). Fiches des styles et styTable (ligne « Extrêmes : sentir · identifier ») : quant 20–85 · 45–85, fonda 10–75 · 60–95, flux 33–95 · 5–45.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
