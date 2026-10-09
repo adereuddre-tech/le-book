@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 250.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 251.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -273,6 +273,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **248** : collatéral — écarts-types trimestriels l·√(p(1−p)) échelonnés 0 / 0,5 / 1 / 1,5 / 2 / 2,5 / 3 / 4 / 5 / 6 %, placements classés par écart-type ; probabilités inchangées, pertes recalculées (max 18,4 % pour AT1) ; Sharpe constant 0,30 par trimestre (net = 0,3 σ) ; `colY` = y ± 10 % du net (le net reste croissant avec le risque dans 99 % des trimestres, toujours positif). Champ `v` supprimé.
 - **249** : collatéral — noms en anglais (T-bills, Commercial paper, Tri-party repo, AAA CLO, Sec-lending cash reinvestment, Local-currency EM debt, Short-duration HY, Cov-lite leveraged loans, Bank AT1 CoCos, Synthetic dollar) ; σ de 0 à 4,5 % par pas de 0,5 ; pertes des trois derniers 8 / 9 / 10 %, probabilités déduites (26 / 27 / 28 %) ; Sharpe 0,35 ; `colY` ± 8 % du net (ordre croissant sur toute l'échelle dans 95 % des trimestres).
 - **250** : collatéral — cov-lite p 40 %, perte 7,1 % ; AT1 perte 18 %, p 5,2 % (σ, Sharpe 0,35 et variation inchangés).
+- **251** : « Le book que le desk/modèle construirait » (`#factest`, recoBook, « Appliquer ce book ») affiché pour tous les styles en niveau facile (S.size==='small'), retiré en moyen et difficile, quant compris. Pouvoir propre du quant renommé « modèle de risque » (fiche, styTable) ; ligne ajoutée à la carte Facile. Le bot quant continue d'appeler recoBook directement : la campagne ne mesure pas cette perte pour un joueur humain.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
