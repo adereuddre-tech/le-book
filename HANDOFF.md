@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 273.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 274.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -296,6 +296,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **271** : 5e style `tail` (chasseur de queues) — `hH()`/`hL()` : protection rendant 120 % du choc immédiat, au juste prix (1 × l'espérance) ; « Encore un trimestre à payer l'assurance » −2 de confiance si couvert sans extrême ; bruit ×1 sur les trois signaux ; nervosité ×1,25 ; perf +3 ; incidents ×0,9 ; veille 0,32/0,45 (25–90 % · 40–80 %). Fourchettes de veille du style rv corrigées (12–78 % · 25–65 %).
 - **272** : 6e style `act` (macro activiste) — l'attaque (`ATK` : mise 5/10/15 % de l'encours sur une devise ouverte, p = 0,25 + 0,10 × mise + 0,10 si expRet < 0 ; gain 1,2 × mise ; une par 4 trimestres, S.atk/S.atkLast) choisie sur la page du book (`styDrawX`, `styWire`), comité −2 au lancement ; `atkClose` en tête de resolveQuarter (P&L dans qEvM, evLog) ; confiance +15 / −10, comité −5 si ratée, presse. Paramètres : vol ×1,15, coûts ×1,2, capture 0,75, nervosité ×1,1, incidents ×1,2 / ×1,3, équipe ×1,2, perf +5, seed 1 M$, valeur ×0,3, veille 0,25/0,60.
 - **273** : épilogue « Que sont-ils devenus ? » au rapport final (`epilogue(rank,tot)`) : vous (selon fin de partie, rang, performance), chaque trader présent, deux débauchés, le back office, le meilleur et le dernier concurrent.
+- **274** : la marge fait les accidents de levier — NB : depuis le lot 101, `tailP(sp)` sans `std` vaut 0 (les accidents par le risque étaient éteints). `levAccP(mgu)` : 0 sous MGZ.watch 20 % de marge, puis 40 % × ((mgu − 20 %)/30 %)^1,3 au seuil d'appel ; `accP(k)` combine ; `tailDraw` tire l'accident (pool mg si dû à la marge, perte sur un risque équivalent 20 % + ½ (mgu − 20 %)). Jauge de marge dans la tuile Trésorerie (`.mgbar`, repères 20 % et 50 %, clignote dès 40 %) ; ligne « Levier » toujours visible sur la page du book (`#mgline`, `mgLineDraw` appelé par renderRisk). Mesure bots : marge médiane 13 %, q90 25 %.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
