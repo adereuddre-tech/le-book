@@ -6328,7 +6328,7 @@ function footprint(i,k){const d=DEPTH[INSTR[i].sym];return d?Math.abs(notionalBn
 function visList(k){k=k||S.k;const m=marginPct(k),L=[];for(let i=0;i<N;i++){if(!k[i])continue;const f=footprint(i,k);if(f<VIS.thr)continue;
   if(k[i]<0)L.push({i,f,kind:'short',p:Math.min(VIS.pmax,VIS.p0+VIS.pk*f)});
   else if(m>MGZ.watch)L.push({i,f,kind:'long',p:Math.min(VIS.pmax,(VIS.p0+VIS.pk*f)*Math.min(2.5,m/MGZ.watch))})}return L}
-function visP(k){return 1-visList(k).reduce((a,v)=>a*(1-v.p),1)}
+function visP(k){const L=visList(k);return Math.min(0.6,Math.sqrt(L.reduce((a,v)=>a+v.p*v.p,0)))}   /* lot 277 : en racine — quatre lignes visibles pèsent deux fois une seule */
 const VISEV={short:{t:"Short squeeze : votre vente déclarée devient une cible",who:"Desk · alerte",vis:1,sev:[1,1],
   p:"Votre position vendeuse est publique depuis sa déclaration. Des acheteurs coordonnés l'ont repérée ; chaque hausse force d'autres vendeurs à racheter, et le prix s'envole contre vous.",
   o:["Tenir la ligne et attendre que la fièvre retombe","Racheter la moitié dans la tempête","Acheter des options d'achat pour plafonner la perte"]},
@@ -6337,7 +6337,7 @@ const VISEV={short:{t:"Short squeeze : votre vente déclarée devient une cible"
   o:["Apporter du collatéral et laisser faire","Vendre vous-même la moitié avant lui","Négocier un délai contre une commission"]}};
 /* lot 66 : accident de levier. Tout est tiré avant l'affichage : les montants des boutons sont appliqués tels quels. */
 function tailDraw(){
- {const V=visList(S.k),u=prng32(hash32('vis'+S.q,S.seed));for(const v of V){if(u()<v.p){const w=weights(S.k),i=v.i,H=v.kind==='short'?VIS.Hs:VIS.Hl,
+ {const V=visList(S.k),u=prng32(hash32('vis'+S.q,S.seed)),PT=visP(S.k);if(V.length&&u()<PT){let r=u()*V.reduce((a,v)=>a+v.p,0),v=V[0];for(const x of V){if(r<x.p){v=x;break}r-=x.p}{const w=weights(S.k),i=v.i,H=v.kind==='short'?VIS.Hs:VIS.Hl,
    L=Math.min(0.6,Math.abs(w[i])*INSTR[i].sigQ*H*crowd(riskShown(w).total)),d=Math.trunc(S.k[i]/2)-S.k[i],imp=d?tcost(d,i).cost*urgM(URG.tail,i):0;
    return {i:0,ev:Object.assign({},VISEV[v.kind],{t:VISEV[v.kind].t+` · ${INSTR[i].sym}`}),pos:i,vis:v.kind,fp:v.f,sp:riskShown(w).total,L,good:u()<0.5,imp:imp/S.nav,mgu:marginPct(S.k)}}}}   /* lot 275 */
  const A=accP(S.k),sp=A.sp,u=prng32(hash32('tail'+S.q,S.seed));
