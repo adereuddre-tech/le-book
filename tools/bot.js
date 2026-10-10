@@ -66,7 +66,7 @@ function playGame(o){
         const best=raw=>{let bk=null,bu=-1e9;for(let a=0.1;a<=4.01;a+=0.1){const k=raw.map(z=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(z*a))));
           const sg=riskShown(weights(k)).total,u=profitBook(k)-(${o.av===undefined?1:o.av}>0?0.5*sg*sg/4+tailExp(sg):0)-${o.av===undefined?1:o.av}*0.5*sg*sg/4;if(${o.lim===false?'false':'true'}&&typeof limVol==='function'&&pvol(weights(k))>limVol()*0.97&&bk)continue;if(u>bu){bu=u;bk=k}}return bk};
         if(!smart){const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));return}
-        if(S.prof==='syst'&&S.size==='small'){const R=recoBook();const mx=Math.max(1e-9,...R.k.map(Math.abs));S.k=best(R.k.map(v=>v/mx));return}
+        if(S.size==='small'){   /* lot 286 : en facile, tous les styles ont le book du desk */const R=recoBook();const mx=Math.max(1e-9,...R.k.map(Math.abs));S.k=best(R.k.map(v=>v/mx));return}
         if(S.prof==='syst'){const R=recoBook(),top=R.sc.filter(o=>mktOpen(o.i)&&Math.abs(o.v)>1e-6).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,6);const raw=INSTR.map(()=>0);top.forEach((o,r)=>raw[o.i]=Math.sign(o.v)*(6-r)/6);S.k=best(raw);return}   /* lot 282 : en moyen et difficile, le quant n'a que les six convictions (sens et rang) */
         const {W,f:f0}=styleEst();const f=[...f0];
         if(S.hunch)f[S.hunch.k]+=(S.hunch.up?1:-1)*1.03;   /* lot 118 : intuition juste 80 % du temps (1,2 à 85 %) */
