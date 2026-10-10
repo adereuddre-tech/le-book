@@ -55,6 +55,9 @@ function playGame(o){
         if(e&&!e.classList.contains('on')){click(e);ch=true}});
       if(ch)continue}
     if($('#send')){
+      /* lot 281 : le macro activiste attaque la devise que son desk lit la plus faible, mise moyenne, si la lecture est alignée */
+      w.eval(`(()=>{if(typeof atkReady!=='function'||!atkReady())return;const D=INSTR.map((x,i)=>i).filter(i=>INSTR[i].grp==='Devises'&&mktOpen(i));if(!D.length)return;
+        const i=D.sort((a,b)=>expRet(a).m-expRet(b).m)[0];if(expRet(i).m>=0)return;S.atkSel=i;S.atkM=2;styDraw();const g=document.getElementById('atkgo');if(g)g.click()})()`);
       w.eval(`(()=>{const smart=${smart};
         if(${dumb}){S.k=S.k.map((v,i)=>mktOpen(i)?Math.round((Math.random()*2-1)*Math.min(3,S.maxk)):0);return}
         /* lot 67 : plus de cible de volatilité — le bot intelligent choisit l'échelle de son book qui maximise
@@ -68,7 +71,7 @@ function playGame(o){
         if(S.hunch)f[S.hunch.k]+=(S.hunch.up?1:-1)*1.03;   /* lot 118 : intuition juste 80 % du temps (1,2 à 85 %) */
         const sc=INSTR.map((x,i)=>{let v=0;for(let k=0;k<K;k++)v+=x.b[k]*f[k]*Math.max(W.F,0.5);
           if(S.tcvEst)v+=0.24*W.T*S.tcvEst.t[i]+0.20*W.C*S.tcvEst.c[i]+0.18*W.V*S.tcvEst.v[i]*((S.prof==='fonda'&&S.cat&&S.cat.includes(i))?(typeof CATM!=='undefined'?CATM:2):1);
-          v+=W.X*0.30*S.crowd[i];return v});
+          v+=W.X*0.30*S.crowd[i];if(typeof pairAlpha==='function')v+=2*pairAlpha(i);return v});   /* lot 281 : le bot joue les paires */
         const mx=Math.max(0.001,...sc.map(Math.abs));const raw=sc.map(v=>v/mx*3);
         S.k=best(raw.map(z=>z/3));})()`);
       /* lot 199 : plancher de trésorerie après book (risque de faillite). Le bot retire des ordres, les plus chers d'abord,
@@ -138,6 +141,8 @@ function playGame(o){
     const cc=d.querySelectorAll('.card.commgo');
     if(cc.length){click(cc[1]||cc[0]);continue}   /* annonce standard (lot 89 ; lot 256 : 2e carte, après « Pas de chiffre ») : un clic vaut validation */
     if(o.bon!=null&&$('#nx')){const b=$('.bnp[data-i="'+o.bon+'"]');if(b&&!b.classList.contains('on'))click(b)}
+    /* lot 281 : protection — sur un signal de la veille, ou toujours pour le chasseur de queues quand un extrême est assez probable */
+    {const hb=$('.hgp[data-h="1"]');if(hb&&!hb.classList.contains('on')&&w.eval(`!!S.xHint||(S.prof==='tail'&&xProbTot()>0.18)`))click(hb)}
     let hit=false;for(const id of ['#ok','#go2','#rgo','#pgo','#nx','#go']){const b=$(id);if(b&&!b.disabled){click(b);hit=true;break}}
     if(hit)continue;
     const any=[...d.querySelectorAll('button.cta,button.buy')].filter(b=>!b.disabled);
