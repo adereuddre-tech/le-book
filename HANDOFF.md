@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 288.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 289.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -311,6 +311,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **286** : la vol cible disparaît pour le joueur — `cruise()` = deux tiers de la limite du comité (limVol, varie avec le back office) : échelle du book du desk, Sœur Marie-Alpha, plafonds des cartons rouges « risque » et « gel », repère du graphe de risque ; couleur de la tuile de risque lue sur la limite (vert < 2/3, ocre jusqu'à la limite, brique au-delà). Fiches : « vise X % du risque de croisière ». Quant présélectionné (RECO). Bot : en facile, tous les styles appliquent le book du desk. S.tgt ne sert plus qu'au ruban (tapeVol) et à des calculs internes inutilisés (riskGauge).
 - **287** : le book du desk (recoBook) intègre ce que sait le style — intuition du flux (+1,03 sur le facteur), catalyseurs du fondamental (valeur ×CATM), paires (2 × pairAlpha) ; poids des sources au moins 0,5. Campagne 288 parties (mêmes 16 graines ; bot : book du desk pour tous en facile) : survie quant 77 %, chasseur de queues 56 %, fondamental 52 %, valeur relative 52 %, flux 44 %, activiste 35 % ; facile 61 %, moyen 55 %, difficile 42 %. Le book du desk n'aide pas le flux et l'activiste en facile (leurs pouvoirs jouent ailleurs) : flux 38 % en facile contre 50 % en moyen (16 parties par case, ±12 pts).
 - **288** : calage du book du desk seulement (aucun mécanisme changé) — `deskScale` : flux 0,6 et activiste 0,75 du risque de croisière (au lieu de 1,2 et 1,15). Bot : en facile, le book du desk est appliqué tel quel (le bouton). Survie en facile (16 graines) : quant 100 %, chasseur de queues 75 %, fondamental 75 %, valeur relative 62 %, activiste 56 %, flux 50 % (moyen : 81 / 56 / 62 / 50 / 31 / 50).
+- **289** : textes — fiches du flux et de l'activiste (book du desk prudent en facile), ligne « Book du desk (facile) » du tableau des styles.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
