@@ -646,7 +646,7 @@ const CLASSES=['Actions','Taux','Devises','Matières premières','Exotiques'];
 /* lot 100 : type de produit. Les devises se traitent en forwards, le fret et la pluie en swaps : gré à gré, marge ×1,3. */
 const PTYPE={fut:{nm:'future coté',m:1.0},otc:{nm:'gré à gré (forward, swap)',m:1.3}};
 INSTR_ALL.forEach(x=>{x.pt=['EUR','JPY','GBP','AUD','MXP','BDI','NRAM'].includes(x.sym)?'otc':'fut'});
-function mgRate(i){const x=INSTR[i];return x.mg*((PTYPE[x.pt]||PTYPE.fut).m)*((S&&S.mgMult)||1)}
+function mgRate(i){const x=INSTR[i];return x.mg*((PTYPE[x.pt]||PTYPE.fut).m)*((S&&S.mgMult)||1)*(boH(10)?0.85:1)}   /* lot 279 : Octave */
 /* taille du fonds → nombre de marchés ouverts par classe ; univers → nombre de classes */
 const MKPERCL={small:3,mid:3,mega:3};   /* lot 49 : un seul départ, les marchés se gagnent */
 const NCLASS={fin:3,com:4,ext:5};
@@ -942,16 +942,28 @@ const FOP=[
  {who:"Boris",hi:"Mon algorithme a déjà réservé votre bureau.",full:"Boris « Black Box » Rasoumovsky",role:"trader devises, expert exécution et algorithmes",ic:"🤖",bp:45,cls:'Devises'},
  {who:"Tuco",hi:"J'apporte mes cigares et mes contacts à Rotterdam.",full:"Bartolomeo « Tuco » Ossobuco",role:"trader matières premières, un cigare par cargaison",ic:"🛢️",bp:70,cls:'Matières premières'},
  {who:"Winnie",hi:"Hong Kong ouvre dans six heures. J'y suis déjà.",full:"Wing-Fat « Winnie » Leung",role:"trader exotiques, vit à l'heure de Hong Kong",ic:"🐉",bp:100,cls:'Exotiques',g:'f'},
- {who:"Sœur Marie-Alpha",hi:"Le modèle est juste. Ce sont les hommes qui pèchent.",full:"Sœur Marie-Alpha « Sister Sharpe »",role:"stratégiste quantitative, prie pour la normalité des rendements",ic:"📿",bp:150},
- {who:"Le professeur Onésime",hi:"Je ne prévois pas la récession. Je la commente avant tout le monde.",full:"Pr Onésime « The Oracle »",role:"économiste en chef, une prévision par plateau télé",ic:"🎓",bp:250}];
+ {who:"Sœur Marie-Alpha",hi:"Le modèle est juste. Ce sont les hommes qui pèchent.",full:"Sœur Marie-Alpha « Sister Sharpe »",role:"stratégiste quantitative, prie pour la normalité des rendements",ic:"📿",bp:140},
+ {who:"Le professeur Onésime",hi:"Je ne prévois pas la récession. Je la commente avant tout le monde.",full:"Pr Onésime « The Oracle »",role:"économiste en chef, une prévision par plateau télé",ic:"🎓",bp:190},
+ {who:"Priya",hi:"Les satellites voient les parkings pleins avant les résultats.",full:"Priya « Pixel » Raman",role:"données alternatives, images satellites et cartes bancaires",ic:"🛰️",bp:250,g:'f',pw:"bruit des signaux tendance, portage et valeur ×0,75"},
+ {who:"Sir Mervyn",hi:"J'ai écrit ce communiqué il y a dix ans. Ils n'ont changé que la date.",full:"Sir Mervyn « Forward Guidance » Hale",role:"ancien banquier central",ic:"🏛️",bp:320,pw:"sur les dépêches de banques centrales et de taux, la probabilité de suite est donnée exacte"},
+ {who:"Kenji",hi:"Je connais leur book par cœur. Je l'ai construit.",full:"Kenji « Le Transfuge » Ota",role:"gérant star débauché chez un concurrent",ic:"🥷",bp:400,pw:"le meilleur concurrent perd 20 % d'adresse ; un deuxième signal lu aussi bien que le vôtre"},
+ {who:"Pr Ada",hi:"Le marché est efficient. Sauf quand je le regarde.",full:"Pr Ada « Nobel » Lindqvist",role:"prix Nobel d'économie, une conférence par mois",ic:"🏅",bp:490,g:'f',pw:"lecture des dépêches 30 % plus précise, confiance +2 par trimestre ; mais 10 % de risque de fuite par trimestre"},
+ {who:"Victoria",hi:"Le ministre m'appelle encore. Pour avoir mon avis.",full:"Victoria « Black Book » Ashworth",role:"ancienne directrice de cabinet d'un ministre des Finances",ic:"📒",bp:590,g:'f',pw:"chaque trimestre, le sens du facteur macro le plus fort, juste neuf fois sur dix"}];
 const BOP=[
- {who:"Le loyer",full:"Le loyer",role:"bureaux, écrans, électricité, et rien d'autre",ic:"🏢",bp:5},
- {who:"Gontran Report-à-Nouveau",hi:"Tout finit au report à nouveau, même vos erreurs.",full:"Gontran Report-à-Nouveau",role:"expert-comptable",ic:"🧮",bp:10},
- {who:"Josiane Suspens",hi:"Aucun ordre ne sort d'ici sans être rapproché.",full:"Josiane Suspens",role:"responsable du back office",ic:"🗂️",bp:20},
- {who:"Firmin Tatillon",hi:"Faites comme si je n'étais pas là. Je note tout.",full:"Firmin Tatillon",role:"conformité et audit interne",ic:"🔎",bp:32}   /* lot 202 : 30 → 40 ; lot 213 : 32 */,
- {who:"Mireille",hi:"Je ne dis pas non. Je dis : justifiez.",full:"Mireille Cauchemar",role:"directrice des risques",ic:"⚖️",bp:55},
- {who:"Solange Pare-Feu",hi:"Personne n'entre. Surtout pas vos erreurs.",full:"Solange Pare-Feu",role:"sécurité, continuité d'activité, cyber",ic:"🛡️",bp:100}];
-const BOMAP=[0,1,3,4,5,6],NOTRD=2,   /* lot 259 : courtier ×2 (×4 avant) */
+ {who:"Le loyer",full:"Le loyer",role:"bureaux, écrans, électricité, et rien d'autre",ic:"🏢",bp:0},
+ {who:"Gontran Report-à-Nouveau",hi:"Tout finit au report à nouveau, même vos erreurs.",full:"Gontran Report-à-Nouveau",role:"expert-comptable",ic:"🧮",bp:5},
+ {who:"Josiane Suspens",hi:"Aucun ordre ne sort d'ici sans être rapproché.",full:"Josiane Suspens",role:"responsable du back office",ic:"🗂️",bp:12},
+ {who:"Firmin Tatillon",hi:"Faites comme si je n'étais pas là. Je note tout.",full:"Firmin Tatillon",role:"conformité et audit interne",ic:"🔎",bp:22}   /* lot 202 : 30 → 40 ; lot 213 : 32 */,
+ {who:"Mireille",hi:"Je ne dis pas non. Je dis : justifiez.",full:"Mireille Cauchemar",role:"directrice des risques",ic:"⚖️",bp:35},
+ {who:"Solange Pare-Feu",hi:"Personne n'entre. Surtout pas vos erreurs.",full:"Solange Pare-Feu",role:"sécurité, continuité d'activité, cyber",ic:"🛡️",bp:50},
+ {who:"Margaux",hi:"Un investisseur qui comprend est un investisseur qui reste.",full:"Margaux « Sourire » Delacroix",role:"relations investisseurs",ic:"🤝",bp:70,pw:"rachats −30 % ; une gate ne coûte plus que la moitié de la confiance"},
+ {who:"Maître Fourche",hi:"Tout est négociable, surtout ce qui est écrit.",full:"Maître Aurélien Fourche",role:"juriste, contentieux et contrats",ic:"📜",bp:95,pw:"incidents 40 % moins chers"},
+ {who:"Lord Basil",hi:"Bruxelles est un village. Washington aussi.",full:"Lord Basil Lobbington",role:"affaires publiques, Bruxelles et Washington",ic:"🎖️",bp:125,pw:"contrôle des risques +2 par trimestre ; les extrêmes sentis sont identifiés 15 pts plus souvent"},
+ {who:"Cassandra",hi:"Je ne prédis pas les crises. Je les tarife.",full:"Cassandra « Black Swan » Mehta",role:"cheffe des risques extrêmes",ic:"🦢",bp:160,pw:"protection contre les extrêmes 30 % moins chère ; veille +15 pts"},
+ {who:"Octave",hi:"Votre marge était trop chère. Je l'ai renégociée pendant votre réunion.",full:"Octave « Repo » Mercier",role:"trésorier, financement et collatéral",ic:"💱",bp:200,pw:"marge exigée −15 % sur tout le book"},
+ {who:"Hugo",hi:"Deux prime brokers valent mieux qu'un seul qui vous lâche.",full:"Hugo « Two Banks » Ravel",role:"responsable des contreparties",ic:"🏦",bp:245,pw:"accidents de levier par la marge ÷2 ; lignes visibles 30 % moins exposées"},
+ {who:"Dr Anouk",hi:"Un trader qui dort bien ne fait pas de fat finger.",full:"Dr Anouk Ferreira",role:"psychologue de la salle des marchés",ic:"🧘",bp:295,pw:"débauchage ÷2 ; incidents −20 %"}];
+const BOMAP=[0,1,3,4,5,6,6,6,6,6,6,6,6],NOTRD=2,   /* lot 259 : courtier ×2 (×4 avant) */
  TRD={'Actions':1,'Taux':2,'Devises':3,'Matières premières':4,'Exotiques':5};
 const BUDGET=[
  {id:'fo',ico:'📈',nm:"Front office",
@@ -995,7 +1007,7 @@ function cast(ev){if(ev&&ev.hunt&&S&&S.bud){const c=huntCands();if(c.length){con
   if(Array.isArray(o.ch))o.ch=deepCast(o.ch,c)});
  return o}
 const BONOFF=[0,0.025,0.05,0.10,0.15],POACHP=0.5,MOT={i0:0};
-function bonBase(){if(!S||!S.bud)return 0;const p=Math.min(S.bud.fo,FOP.length-1);return p>=0?10*FOP[p].bp*1e-4:0}   /* lot 179 */
+function bonBase(){if(!S||!S.bud)return 0;const p=Math.min(S.bud.fo,7);   /* lot 279 : base plafonnée au cran d'Onésime */return p>=0?10*FOP[p].bp*1e-4:0}   /* lot 179 */
 function bonRate(i){return bonBase()+BONOFF[i]}
 /* lot 115 : effet direct du cran de bonus versé — g : part de la baisse des coûts du budget salle de marché que le desk livre ;
    p : risque de débauchage par trimestre ; ×1,5 le trimestre d'une baisse de taux */
@@ -1006,7 +1018,7 @@ function riskGood(e){const v=e.risk[1];return v>0||(v===0&&((e.riskRc||0)+(e.ris
 function pAdj(p,good){return Math.max(0.02,Math.min(0.98,p+(good?1:-1)*bonD()))}
 function bonEff(){return S&&S.bonEff!=null?S.bonEff:MOT.i0}
 function execMot(i){return EXECM[i==null?S.bud.exec:i]*BONFX[bonEff()].c}
-function poachNow(){return Math.min(0.95,BONFX[bonEff()].p*(S.bonCutQ===S.q?BONCUT:1)*offFx('poach'))}
+function poachNow(){return Math.min(0.95,BONFX[bonEff()].p*(S.bonCutQ===S.q?BONCUT:1)*offFx('poach')*(boH(12)?0.5:1))}
 function bonCands(){const c=[];for(let p=FOP.length-1;p>=0;p--)if(here(p))c.push(p);return c}
 function bonTxt(){return `<br>Bonus au taux de ${dec(bonRate(bonEff())*100,1)} % : coûts d'exécution ×${dec(BONFX[bonEff()].c,2)} · lecture des dépêches ×${dec(BONREAD[bonEff()],2)} · chances des anecdotes ${bonD()>=0?'+':'−'}${Math.round(Math.abs(bonD())*100)} pts (effets du seul bonus) · risque de débauchage ${Math.round(poachNow()*100)} % ce trimestre${S.qBonT>0?` · bonus versé ${mm(S.qBonT)}`:''}${S.bonCutQ===S.q?' · <span class="neg-g">baisse du taux : débauchage ×1,5 ce trimestre</span>':''}.`}
 /* lot 255 : page « pas de bonus » — aucune commission de performance ce trimestre, le desk joue le trimestre suivant au cran minimal */
@@ -1031,6 +1043,7 @@ function payBonus(){S.qBonT=0;S.bonWhoQ=null;if(S.q<1)return;const perf=(S.mgrQ&
  S.bonEff=perf>0?i:0;
  if(d<0)S.bonCutQ=S.q;S.bonPrev=i}
 function covered(g){const p=TRD[g];return p===undefined||here(p)}
+function boH(n){return !!(S&&S.bud&&S.bud.bo>=n)}   /* lot 279 : back office au cran n ou plus */
 function cntOn(){return S&&S.cntQ===S.q?(S.cntBp||0):0}
 function sevRaw(){const P=S.budPrev;if(!P)return 0;return 0.5*BUDGET.reduce((a,b)=>a+Math.max(0,b.lv[P[b.id]].bp-b.lv[S.bud[b.id]].bp),0)}   /* lot 117 : un demi-trimestre de salaire */
 /* budget du trimestre + bonus versés aux partants, plafonnées à ce qui reste en caisse : baisser un cran ne bloque jamais */
@@ -1067,7 +1080,8 @@ function budEf0(id,i){
  return `${RESN[i]} sources · fiabilité des sources ${Math.abs(RESREL[i])<0.005?'de référence':(RESREL[i]>0?'+':'−')+Math.round(Math.abs(RESREL[i])*100)+' pts'} · pré-annonces ${Math.round(RESR[i]*100)} % · lecture des dépêches ±${Math.round(RESPH[i]*100)} pts`;
 }
 /* lot 82 : ce que veulent dire les chiffres de chaque budget, au cran choisi */
-function budEf(id,i){if(id==='fo')return budEf0('exec',Math.min(i,7))+' · '+budEf0('res',Math.min(i,7));if(id==='bo')return budEf0('risk',BOMAP[i]);return budEf0(id,i)}
+function budEf(id,i){const X=L=>L.slice(0,i+1).filter(l=>l.pw).map(l=>`<br>${l.ic} <b>${l.who}</b> : ${l.pw}`).join('');   /* lot 279 */
+ if(id==='fo')return budEf0('exec',Math.min(i,7))+' · '+budEf0('res',Math.min(i,7))+X(FOP);if(id==='bo')return budEf0('risk',BOMAP[i])+X(BOP);return budEf0(id,i)}
 function budExpl(id){if(id==='fo')return budExpl0('exec',Math.min(S.bud.fo,7))+budExpl0('res',Math.min(S.bud.fo,7));if(id==='bo')return budExpl0('risk',BOMAP[S.bud.bo]);return budExpl0(id,S.bud[id])}
 function budExpl0(id,i){
  if(id==='exec')return `<p class="note"><b>Coûts</b> : chaque ordre coûte ${dec(EXECM[i],2)} fois le tarif de référence. <b>Indicateurs</b> : les tuiles tendance, portage et valeur affichent le vrai signal plus un bruit d'écart-type ${dec(TCVQ[i],2)} σ (standard ${dec(TCVQ[3],2)}, sans limite ${dec(TCVQ[7],2)}).</p>`;
@@ -3013,7 +3027,7 @@ function planQuarter(){
  S.tailEv=null;S.tailDone=false;S.tailQ=null;S._kLast=null;S._kGhost=null;S.huntP=null;
  /* incident opérationnel */
  const desk=DESKS.find(d=>d.id===S.desk);
- let pInc=0.09*ARCH().incMult*RISKM[S.bud.risk]*PROF().incMult*offFx('inc')+(desk.algo?0.03:0);
+ let pInc=0.09*ARCH().incMult*RISKM[S.bud.risk]*PROF().incMult*offFx('inc')*(boH(12)?0.8:1)+(desk.algo?0.03:0);
  S.incidentDue=rng()<pInc;
  /* évolution de la matrice factorielle — le chemin de marché proprement dit */
  reseed('mat');
@@ -3222,7 +3236,7 @@ function genRumors(){
  /* estimations trend / carry / value avec bruit selon la recherche */
  const e=TCVQ[S.bud.exec]*(S.tcvPerm?0.33:1);   /* le modèle de nowcast acheté sert tout le mandat */
  /* lot 52 : chaque style lit son signal avec un bruit ×0,3, les deux autres ×1,3 */
- const mine=STYLESIG[S.prof],ne=kk=>e*(S.prof==='syst'?0.6:S.prof==='tail'?1:(kk===mine?0.3:1.3));
+ const mine=STYLESIG[S.prof],ne=kk=>e*(here(8)?0.75:1)*(here(10)&&kk===SIG2[S.prof]?0.3:S.prof==='syst'?0.6:S.prof==='tail'?1:(kk===mine?0.3:1.3));
  S.tcvEst={t:S.tcv.t.map(z=>quant(z+ne('t')*gauss())),c:S.tcv.c.map(z=>quant(z+ne('c')*gauss())),v:S.tcv.v.map(z=>quant(z+ne('v')*gauss()))};
 }
 /* rendements du trimestre */
@@ -3706,7 +3720,7 @@ function invVerdict(id,H){const n=H.length,L=H[n-1];if(!n)return 0;
  if(id==='ff')return L.rel<-INVP.rel?-1:L.rel>INVP.rel?1:0;
  if(id==='fs')return L.ok?1:-1;
  if(n<2)return 0;const a=H[n-2];return a.r<0&&L.r<0?-1:a.r>0&&L.r>0?1:0}
-function invOutF(D){return Math.min(1,D.out*2*(1-S.lp/100)*(SIZE().flowMult||1)*offFx('out'))}
+function invOutF(D){return Math.min(1,D.out*2*(1-S.lp/100)*(SIZE().flowMult||1)*offFx('out')*(boH(6)?0.7:1))}
 function invInF(D){return D.inn*S.lp/50*(SIZE().flowIn||1)*Math.max(0,1-capStress())*(S.commFx&&S.commFx.q===S.q?S.commFx.m:1)*offFx('subs')}   /* lot 256 ; lot 276 */
 function invClose(o){const I=invs(),E0=Math.max(1e-9,extNav());
  const tg=S.comm&&S.comm.ret!=null?S.comm.ret:0.03*goalK();   /* l'annonce standard (objectif entier) est choisie par défaut */
@@ -3715,7 +3729,7 @@ function invClose(o){const I=invs(),E0=Math.max(1e-9,extNav());
  const R=I.map(v=>{const r={id:v.id,vd:v.id==='roy'?vdMin:invVerdict(v.id,S.invH),h0:v.w*E0,pay:0,ntc:0,sub:0,cancel:false,gated:0};
   if(v.ntc>0){if(r.vd>0||(v.id==='cr'&&o.r>0)){r.cancel=true;v.ntc=0}else{r.pay=v.ntc*v.w*E0;due+=r.pay}}return r});
  let gf=1;S.qGate=false;
- if(S.gateNext&&due>INVP.gate*E0){gf=INVP.gate*E0/due;S.gateUsed=S.q;S.qGate=true;S.gates=(S.gates||0)+1;S.lp=Math.max(0,S.lp+INVP.gateLp);S.lpD.push(['Gate activée : rachats limités à '+Math.round(INVP.gate*100)+' % de l\'encours',INVP.gateLp])}
+ if(S.gateNext&&due>INVP.gate*E0){gf=INVP.gate*E0/due;S.gateUsed=S.q;S.qGate=true;S.gates=(S.gates||0)+1;S.lp=Math.max(0,S.lp+INVP.gateLp*(boH(6)?0.5:1));S.lpD.push(['Gate activée : rachats limités à '+Math.round(INVP.gate*100)+' % de l\'encours',INVP.gateLp*(boH(6)?0.5:1)])}
  S.gateNext=false;
  R.forEach((r,j)=>{const v=I[j];if(r.pay>0){const p=r.pay*gf;r.gated=r.pay-p;r.pay=-invFlow(v,-p);
   v.ntc=r.gated>1e-12&&v.w*extNav()>1e-12?Math.min(1,r.gated/(v.w*extNav())):0}});
@@ -4931,9 +4945,13 @@ function ecoBoost(){return;   /* lot 197 : coup de pouce retiré, Onésime est u
  S.ecoTxt=t;toast(`🎓 <b>Le professeur Onésime</b> : ${t}.`)}
 function planSignalsAfterBudget(){
  ecoBoost();   /* lot 96 */
+ if(here(11)&&!pwOn('jo')&&prng32(hash32('ada'+S.q,S.seed))()<0.10){S.leakQ=true;toast("🏅 Le Pr Ada a cité vos positions en conférence : elles circulent ce trimestre.")}   /* lot 279 */
+ if(here(12)&&S.f){let k=0;for(let j=1;j<K;j++)if(Math.abs(S.f[j])>Math.abs(S.f[k]))k=j;const ok=prng32(hash32('vic'+S.q,S.seed))()<0.9,up=(S.f[k]>0)===ok;
+  (S.pwTips=S.pwTips||[]).push({who:'Victoria',nm:`Le facteur « ${FACT[k].nm.toLowerCase()} »`,up:up===(FSG[k]>0),q:S.q})}
+ if(here(10)&&!S.kenjiDone){const R=(S.rivals||[]).filter(r=>!r.closed).sort((a,b)=>(b.cum||0)-(a.cum||0))[0];if(R){R.skill=(R.skill||0.7)*0.8;S.kenjiDone=1;toast(`🥷 Kenji arrive de chez ${R.nm} : ils perdent 20 % d'adresse.`)}}
  /* la recherche et le contrôle sont choisis avant la publication des rumeurs et des signaux */
  genRumors();
- let pInc=0.09*ARCH().incMult*RISKM[S.bud.risk]*PROF().incMult*offFx('inc')+(DESK().algo?0.03:0);
+ let pInc=0.09*ARCH().incMult*RISKM[S.bud.risk]*PROF().incMult*offFx('inc')*(boH(12)?0.8:1)+(DESK().algo?0.03:0);
  S.incidentDue=rng()<pInc;
  /* trader star */
  S.star=-1;S.stars=S.stars||[];
@@ -5133,7 +5151,8 @@ const EXPVF=1.15;   /* variance résiduelle d'un facteur une fois les sources lu
 const SIGW={t:0.12,c:0.10,v:0.10},CATM=3;
 /* le signal que chaque style lit le mieux */
 const STYLESIG={syst:'c',flux:'t',fonda:'v',rv:'c',act:'v'},SIGNM={t:'Tendance',c:'Portage',v:'Valeur'};
-function sigNoise(key){const e=TCVQ[S.bud.exec]*(S.tcvPerm?0.33:1);return e*(S.prof==='syst'?0.6:S.prof==='tail'?1:(typeof STYLESIG!=='undefined'&&STYLESIG[S.prof]===key)?0.3:(typeof STYLESIG!=='undefined'?1.3:1))}
+const SIG2={syst:'t',fonda:'c',flux:'c',rv:'v',tail:'t',act:'c'};   /* lot 279 : le deuxième signal de Kenji */
+function sigNoise(key){const e=TCVQ[S.bud.exec]*(S.tcvPerm?0.33:1)*(here(8)?0.75:1);if(here(10)&&key===SIG2[S.prof])return e*0.3;return e*(S.prof==='syst'?0.6:S.prof==='tail'?1:(typeof STYLESIG!=='undefined'&&STYLESIG[S.prof]===key)?0.3:(typeof STYLESIG!=='undefined'?1.3:1))}
 function vixCarry(x,a){if(x.sym!=='VX'||!x.drift)return x.drift||0;return x.drift*Math.max(0,Math.min(1,1+a/1.5))}   /* lot 168 : a = appétit (σ) ; −1,5 σ ⇒ portage nul */
 function expRet(i){
  const x=INSTR[i],f=S.factEst||[0,0,0,0],e=S.tcvEst;
@@ -5262,7 +5281,7 @@ function stressEv(id){const sc=STRESS.find(x=>x.id===id);if(!sc)return null;retu
    le flux sent le mieux et identifie le moins, le fondamental l'inverse, le quant entre les deux. */
 const XSB={syst:{s:0.27,i:0.50},fonda:{s:0.175,i:0.65},flux:{s:0.40,i:0.10},rv:{s:0.20,i:0.30},tail:{s:0.32,i:0.45},act:{s:0.25,i:0.60}};
 function xWatch(){const P=PROF(),B=XSB[P.id]||XSB.fonda,bd=S.bud||{},f=((RESREL[bd.res]??0)+0.08)/0.19,r=Math.min(1,(bd.bo||0)/5),b=(1.25-(BONREAD[bonEff()]||1))/0.5;
- const sv=Math.max(0.10,Math.min(0.95,B.s+0.30*f+0.20*r+0.15*(b-0.5)+offFx('watch',0))),iv=Math.max(0.05,Math.min(0.95,B.i+0.30*f+0.10*(b-0.5)));
+ const sv=Math.max(0.10,Math.min(0.95,B.s+0.30*f+0.20*r+0.15*(b-0.5)+offFx('watch',0)+(boH(9)?0.15:0))),iv=Math.max(0.05,Math.min(0.95,B.i+0.30*f+0.10*(b-0.5)+(boH(8)?0.15:0)));
  return {s:sv,i:iv,fa:0.15*(1-sv)}}
 function xHintDraw(){const u=prng32(hash32('xhint'+S.q,S.seed)),W=xWatch(),src=PROF().id,a=u(),b=u(),c=u(),d=u();S.xHint=null;
  const sc=S.stressQ?STRESS.find(x=>x.id===S.stressQ):null,mx=sc?null:(S.evQueue||[]).find(e=>e.x&&!e.stress);
@@ -5290,7 +5309,7 @@ const TAILSEV=(()=>{const m=a=>a.reduce((s,e)=>s+(e.sev[0]+e.sev[1])/2,0)/Math.m
 /* lot 274 : la marge fait aussi les accidents — au-delà de 20 % de l'encours, le prime broker regarde ;
    la probabilité monte jusqu'à 40 % au seuil d'appel (50 %) */
 const MGZ={watch:0.20,pmax:0.40,pow:1.3};
-function levAccP(mgu){return mgu<=MGZ.watch?0:Math.min(0.6,MGZ.pmax*Math.pow((mgu-MGZ.watch)/(MGC.thr-MGZ.watch),MGZ.pow))}
+function levAccP(mgu){return (mgu<=MGZ.watch?0:Math.min(0.6,MGZ.pmax*Math.pow((mgu-MGZ.watch)/(MGC.thr-MGZ.watch),MGZ.pow)))*(boH(11)?0.5:1)}
 function accP(k){const sp=riskShown(weights(k)).total,a=tailP(sp),b=levAccP(marginPct(k));return {p:1-(1-a)*(1-b),r:a,m:b,sp,mgu:marginPct(k)}}
 function mgCol(m){return m>=MGC.thr?'var(--short)':m>=MGC.warn?'#E08A3C':m>=MGZ.watch?'var(--warn)':'var(--long)'}
 const TAIL={x0:0.20,w:0.30,p:0.60},TAILM=[2.5,1.4,1.4,1.00,0.8,0.65,0.5];
@@ -5724,7 +5743,7 @@ const HEDGE={h:0.70,load:2,min:0.005};   /* lot 257 : prime actuarielle = 2 × c
 /* ce que la protection rendrait en moyenne ce trimestre, aux probabilités du marché (la veille du desk n'entre pas dans le prix) */
 function hedgeEV(){const k=S.k,bo=0.5+0.5*(TAILM[S.bud.risk]||1);let e=0;STRESS.forEach(x=>{e+=xScP(x)*Math.max(0,-0.5*bo*stressLoss(k,x))});return hH()*e}   /* lot 264 */
 function hH(){return S&&S.prof==='tail'?1.2:HEDGE.h}function hL(){return S&&S.prof==='tail'?1:HEDGE.load}   /* lot 271 */
-function hedgeCost(){return Math.max(HEDGE.min,hL()*hedgeEV())}
+function hedgeCost(){return Math.max(HEDGE.min,hL()*hedgeEV())*(boH(9)?0.7:1)}
 /* probabilité du marché pour un extrême donné (STRESS : par son poids ; dépêche x:1 : uniforme) */
 function xMktP(e){return xScP(STRESS.find(x=>x.id===e.id))}   /* lot 264 */
 function xImmEst(){const k=S.k,bo=0.5+0.5*(TAILM[S.bud.risk]||1),h=S.xHint;
@@ -5998,8 +6017,9 @@ function screenMacroEvent(ev){
   reseed('sc'+S.evIdx);   /* un canal par dépêche : son issue ne dépend pas du reste */
   S.sc=ev.stress?{p:0.35+0.30*rng(),m:[0.25+0.30*rng(),-(0.45+0.40*rng())]}:{p:0.40+0.40*rng(),m:[0.45+0.40*rng(),-(0.30+0.40*rng())]};   /* poursuite dans [0,40 ; 0,80] (lot 217) */
   /* ce que le desk lit : précision selon la recherche, le style, et la source vérifiée du fondamental */
-  const pr=PROF(),sd=RESPH[S.bud.res]*(pr.id==='flux'?0.6:1)*(BONREAD[bonEff()]||1);   /* lot 223 */
-  const ver=(pr.id==='fonda'||(S.ecoB==='ver'&&S.ecoQ===S.q))&&!S.evVerified;if(ver)S.evVerified=true;
+  const pr=PROF(),sd=RESPH[S.bud.res]*(pr.id==='flux'?0.6:1)*(BONREAD[bonEff()]||1)*(here(11)?0.7:1);   /* lot 223 */
+  const cb=here(9)&&/banque centrale|Fed\b|BCE|BoE|BoJ|taux directeur|gouverneur|Réserve fédérale/i.test((ev.t||'')+' '+(ev.who||''));   /* lot 279 : Sir Mervyn */
+  const ver=cb||((pr.id==='fonda'||(S.ecoB==='ver'&&S.ecoQ===S.q))&&!S.evVerified);if(ver&&!cb)S.evVerified=true;
   const sh=pr.id==='syst'?0.04:0;   /* le modèle suit la tendance : il surestime un peu la poursuite */
   S.sc.ph=ver?S.sc.p:Math.max(0.10,Math.min(0.80,S.sc.p+sh+sd*gauss()));   /* lot 217 : 80 % au plus */S.sc.ver=ver;
   S.sc.cap=Math.min(1,pr.capture*(0.7+0.6*rng()))}   /* lot 225 : capture tirée, ±30 % autour du taux du style */
@@ -6326,8 +6346,8 @@ function screenMidMark(){
 const VIS={thr:0.01,p0:0.04,pk:1.0,pmax:0.35,Hs:2.5,Hl:2.0};
 function footprint(i,k){const d=DEPTH[INSTR[i].sym];return d?Math.abs(notionalBn((k||S.k)[i],i))/d:0}
 function visList(k){k=k||S.k;const m=marginPct(k),L=[];for(let i=0;i<N;i++){if(!k[i])continue;const f=footprint(i,k);if(f<VIS.thr)continue;
-  if(k[i]<0)L.push({i,f,kind:'short',p:Math.min(VIS.pmax,VIS.p0+VIS.pk*f)});
-  else if(m>MGZ.watch)L.push({i,f,kind:'long',p:Math.min(VIS.pmax,(VIS.p0+VIS.pk*f)*Math.min(2.5,m/MGZ.watch))})}return L}
+  if(k[i]<0)L.push({i,f,kind:'short',p:Math.min(VIS.pmax,VIS.p0+VIS.pk*f)*(boH(11)?0.7:1)});
+  else if(m>MGZ.watch)L.push({i,f,kind:'long',p:Math.min(VIS.pmax,(VIS.p0+VIS.pk*f)*Math.min(2.5,m/MGZ.watch))*(boH(11)?0.7:1)})}return L}
 function visP(k){const L=visList(k);return Math.min(0.6,Math.sqrt(L.reduce((a,v)=>a+v.p*v.p,0)))}   /* lot 277 : en racine — quatre lignes visibles pèsent deux fois une seule */
 const VISEV={short:{t:"Short squeeze : votre vente déclarée devient une cible",who:"Desk · alerte",vis:1,sev:[1,1],
   p:"Votre position vendeuse est publique depuis sa déclaration. Des acheteurs coordonnés l'ont repérée ; chaque hausse force d'autres vendeurs à racheter, et le prix s'envole contre vous.",
@@ -6446,7 +6466,7 @@ function screenIncident(){
  let pool=INCIDENTS.filter(x=>!x.algoOnly||desk.algo);
  const inc=pick(pool);
  const sev=ARCH().sev*RISKS[S.bud.risk]*(PROF().incSev||1);
- const loss=uni(inc.loss[0],inc.loss[1])*sev,navB=S.nav;
+ const loss=uni(inc.loss[0],inc.loss[1])*sev*(boH(7)?0.6:1),navB=S.nav;
  /* lot 84 : deux maux — réparer tout et payer de sa poche, ou contenir et le payer en confiance */
  const O=[{b:"Tout réparer, tout de suite",s:"Le fonds paie la facture entière, vous indemnisez les clients sur votre trésorerie ; la transparence rassure.",f:loss,m:0.6*loss,lp:inc.lp*sev*0.3,rc:inc.rc*sev*0.3},
   {b:"Contenir et communiquer plus tard",s:"Le fonds n'absorbe que la moitié. Quand l'affaire sort, la confiance le paie cher.",f:0.5*loss,m:0,lp:inc.lp*sev*2.2-4,rc:inc.rc*sev*2}];
@@ -6569,6 +6589,7 @@ function resolveQuarter(){
  lpD.push(['Écart à la médiane des concurrents',(qTotal-med)*85]);   /* lot 237 : tout compris */
  if(S.budBp>70)lpD.push(['Facture d\'exploitation jugée lourde',-1.5]);
  if(offFx('lp',0))lpD.push([`Les locaux : ${OFF().nm}`,offFx('lp',0)]);   /* lot 276 */
+ if(here(11))lpD.push(["La conférence du Pr Ada",2]);   /* lot 279 */
  if(S.prof==='tail'&&S.hedgeQ===S.q&&!S.stressQ)lpD.push(["Encore un trimestre à payer l'assurance",-2]);   /* lot 271 */
  if(S.atkRes)lpD.push([S.atkRes.ok?`L'attaque sur ${S.atkRes.nm} a réussi : la banque centrale a cédé`:`L'attaque sur ${S.atkRes.nm} a échoué : la banque centrale a tenu`,S.atkRes.ok?15:-10]);   /* lot 272 */
  if(S.leakQ)lpD.push(['Vos positions ont circulé sur le marché',-2.5]);
@@ -6583,7 +6604,7 @@ function resolveQuarter(){
  const clo0={lp0:S.lp,rc0:S.rc};
  S.lp=Math.max(0,Math.min(100,S.lp+dlpC));
  const band=bandNow(),dev=Math.abs(sp-S.tgt)/S.tgt;
- const rcD=[];if(offFx('rc',0))rcD.push([`Les locaux : ${OFF().nm}`,offFx('rc',0)]);   /* lot 276 */
+ const rcD=[];if(boH(8))rcD.push(["Lord Basil a déjeuné avec le régulateur",2]);if(offFx('rc',0))rcD.push([`Les locaux : ${OFF().nm}`,offFx('rc',0)]);   /* lot 276 */
  if(Math.abs(RISKRC[S.bud.risk])>=0.05)rcD.push([RISKRC[S.bud.risk]>0?'Contrôle des risques renforcé : rapports rassurants':'Contrôle des risques réduit : le comité s\'inquiète',RISKRC[S.bud.risk]]);
  if(S.atkRes&&!S.atkRes.ok)rcD.push(['Attaque ratée : le comité demande des comptes',-5]);   /* lot 272 */
  if(S.commRes&&S.commRes.rc)rcD.push([S.commRes.lab+(S.comm.id==='gourou'&&!S.commRes.ok?' : « qui a validé ce chiffre ? »':''),S.commRes.rc]);
