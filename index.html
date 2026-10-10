@@ -3949,7 +3949,7 @@ function coinvLocked(){return S&&S.coinvLock?S.coinvLock*(1+((S.phase==='events'
 function mgrCash(){return mgrNet()-coinvLocked()}
 /* lot 98 : au débriefing, la trésorerie affichée déduit déjà le bonus d'équipe choisi puis la part co-investie */
 function bonPend(){if(!S||S.phase!=='debrief'||S.over||S.q>=QT())return 0;const pf=(S.mgrQ&&S.mgrQ.perf)||0;return pf>0?Math.min(bonRate(S.bonI==null?MOT.i0:S.bonI)*pf,Math.max(0,mgrCash())):0}
-function coPend(){return 0;   /* lot 240 */
+function coPend(){if(S&&S.coinvScr===S.q&&S.coinvQ!==S.q)return coinvPct()*Math.max(0,mgrCash());return 0;   /* lot 240 ; lot 293 : en temps réel sur l'écran du co-investissement */
  if(!S||S.phase!=='debrief'||S.over||S.q>=QT())return 0;return coinvPct()*Math.max(0,mgrCash()-bonPend())}
 function cashView(){return mgrCash()-bonPend()-coPend()}   /* lot 63 : pas de capital de départ, trésorerie = gains nets */
 function liveTC(){let tot=0;const k0=S.k0||S.k;for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}return tot}
@@ -5780,7 +5780,7 @@ function screenCoinv(){
  const hAsk=S.hedgeAsk!==S.q,cAsk=S.q>=1&&S.coinvQ!==S.q;
  if(!hAsk&&!cAsk){screenComm();return}
  save('screenCoinv');
- const cash=Math.max(0,mgrCash()),pb=profitBook(S.k),sg=riskShown(weights(S.k)).total;
+ const cash=Math.max(0,mgrCash()),pb=profitBook(S.k),sg=riskShown(weights(S.k)).total;S.coinvScr=cAsk?S.q:-1;
  const amt=p=>p*cash;
  app.innerHTML=statusBar()+`<div class="fade"><div class="pnlhead"><div class="q">TRIMESTRE ${S.q+1} · ${hAsk&&cAsk?'PROTECTION ET CO-INVESTISSEMENT':hAsk?'PROTECTION':'CO-INVESTISSEMENT'}</div>
   <div class="regime">${hAsk&&cAsk?'Couvrir le fonds, y placer votre argent':hAsk?'Couvrir le fonds':'Votre argent dans le fonds'}</div></div>

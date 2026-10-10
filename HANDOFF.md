@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 292.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 293.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -315,6 +315,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **290** : pouvoirs de l'équipe une fois par an et par personne (Mireille : une fois par mandat), effets renforcés. Pouvoirs d'action armés/désarmables jusqu'à « Passer les ordres » (`pwCommit`, `S.pwLast`, revient 4 trimestres plus tard) ; Marie-Alpha restaure le book au désarmement ; Ingrid/Tuco : confirmation en deux touches ; Gontran se joue sur l'écran d'incident (fonds paie 25 %). Jean-Kevin ±20 %, Boris ÷3, Marie-Alpha −40 %, Onésime +8, Firmin +5, Solange −35 %, Winnie 100 %.
 - **291** : chasseur de queue — la prime de protection est celle d'une protection à 100 % du choc (`hedgeCost` × min(1,hH)/hH) : le surplus de 20 % est offert, espérance positive. Solange s'applique avant la protection, qui rend sur le choc brut : les deux s'additionnent (chasseur de queue avec Solange : +0,55 × choc). Textes du style mis à jour.
 - **292** : Victoria Ashworth devient ancienne ministre des Finances (rôle, réplique).
+- **293** : co-investissement : la part choisie sort de la trésorerie affichée en temps réel sur l'écran (`coPend`, `S.coinvScr`).
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
