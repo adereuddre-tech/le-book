@@ -1,0 +1,23 @@
+p='index.html';s=open(p,encoding='utf-8').read()
+def rep(o,n,k=1):
+    global s;c=s.count(o);assert c==k,(o[:60],c);s=s.replace(o,n)
+# textes : effets lus sur le moral
+rep("""function bonTxt(){return `<br>Bonus au taux de ${dec(bonRate(bonEff())*100,1)} % : coûts d'exécution ×${dec(BONFX[bonEff()].c,2)} · lecture des dépêches ×${dec(BONREAD[bonEff()],2)} · chances des anecdotes ${bonD()>=0?'+':'−'}${Math.round(Math.abs(bonD())*100)} pts (effets du seul bonus) · risque de débauchage ${Math.round(poachNow()*100)} % ce trimestre${S.qBonT>0?` · bonus versé ${mm(S.qBonT)}`:''}${S.bonCutQ===S.q?' · <span class="neg-g">baisse du taux : débauchage ×1,5 ce trimestre</span>':''}.`}""",
+"""function bonTxt(){return `<br>Bonus au taux de ${dec(bonRate(bonEff())*100,1)} %${S.qBonT>0?` · versé ${mm(S.qBonT)}`:''}. Moral du desk ${Math.round(motV())} : coûts d'exécution ×${dec(motC(),2)} · lecture des dépêches ×${dec(motR(),2)} · chances des anecdotes ${bonD()>=0?'+':'−'}${Math.round(Math.abs(bonD())*100)} pts · risque de débauchage ${Math.round(poachNow()*100)} % ce trimestre.`}""")
+rep("""function noBonusPage(cur,qT){const sv=S.bonEff,r={};[['now',0],['had',cur]].forEach(([k,i])=>{S.bonEff=i;r[k]=xWatch()});S.bonEff=sv;
+ const F0=BONFX[0],Fc=BONFX[cur],eq=cur===0,""",
+"""function noBonusPage(cur,qT){const sv=S.mot,mN=motNext(0),mH=motNext(cur),r={};[['now',mN],['had',mH]].forEach(([k,m])=>{S.mot=m;r[k]=xWatch()});S.mot=sv;   /* lot 296 : projections du moral */
+ const F0={c:motC(mN),p:motP(mN)},Fc={c:motC(mH),p:motP(mH)},eq=cur===0,""")
+rep("""  <p class="note">Le trimestre prochain, le desk travaille comme au cran minimal :</p>""",
+    """  <p class="note">Sans bonus, le moral du desk glisse de ${Math.round(motV())} vers ${Math.round(mN)}${eq?'':` (il serait monté ou resté vers ${Math.round(mH)} avec votre taux)`} :</p>""")
+rep("""   ${row('Bruit sur la lecture des dépêches','×'+dec(BONREAD[cur],2),'×'+dec(BONREAD[0],2))}
+   ${row('Chances des anecdotes du desk',(BONWIN[cur]>=0?'+':'−')+Math.round(Math.abs(BONWIN[cur])*100)+' pts','−'+Math.round(Math.abs(BONWIN[0])*100)+' pts')}""",
+"""   ${row('Bruit sur la lecture des dépêches','×'+dec(motR(mH),2),'×'+dec(motR(mN),2))}
+   ${row('Chances des anecdotes du desk',(motW(mH)>=0?'+':'−')+Math.round(Math.abs(motW(mH))*100)+' pts',(motW(mN)>=0?'+':'−')+Math.round(Math.abs(motW(mN))*100)+' pts')}""")
+rep("""  <p class="note">Ces effets durent un trimestre : le bonus revient dès qu'une commission de performance est versée.</p></div>`}""",
+    """  <p class="note">Le moral a de la mémoire : il remonte de moitié vers la cible de votre taux dès qu'une commission de performance est versée.</p></div>`}""")
+rep("""Le taux fixe quatre choses, directement : un multiplicateur sur tous vos coûts d'exécution, fourchette et impact de marché compris (×1,35 au minimum, ×0,70 au cran le plus haut), la précision de la lecture des dépêches (bruit ×1,25 à ×0,75), les chances de gagner des anecdotes du desk (−8 à +8 points) et le risque de débauchage. Baisser le taux multiplie le débauchage par 1,5 le trimestre de la baisse.</p>""",
+"""Le taux nourrit le moral du desk (${Math.round(motV())} aujourd'hui) : chaque trimestre, le moral fait la moitié du chemin vers la cible de votre taux (35 au minimum, 75 au cran le plus haut, plus ou moins selon vos locaux), et une baisse de taux coûte 5 points par cran. Le moral fixe quatre choses : un multiplicateur sur tous vos coûts d'exécution, fourchette et impact de marché compris, la précision de la lecture des dépêches, les chances de gagner des anecdotes du desk et le risque de débauchage. Sous 20, le desk peut partir en groupe ; au-dessus de 80, il peut refuser toutes les offres.</p>""")
+rep("""<div class="cisel">${BONOFF.map((o,i)=>{const p=bonRate(i),F=BONFX[pf>0?i:0],c=F.c;return `<button class="bnp${i===cur?' on':''}" data-i="${i}">${dec(p*100,Number.isInteger(Math.round(p*1000)/10)?0:1)} %<br><small>${mm(p*pf)} · coûts ×${dec(c,2)} · lecture ×${dec(BONREAD[pf>0?i:0],2)} · anecdotes ${BONWIN[pf>0?i:0]>=0?'+':'−'}${Math.round(Math.abs(BONWIN[pf>0?i:0])*100)} pts · débauche ${Math.round(Math.min(0.95,F.p*(i<prev?BONCUT:1))*100)} %</small></button>`}).join('')}</div>""",
+"""<div class="cisel">${BONOFF.map((o,i)=>{const p=bonRate(i),m=motNext(i,prev);return `<button class="bnp${i===cur?' on':''}" data-i="${i}">${dec(p*100,Number.isInteger(Math.round(p*1000)/10)?0:1)} %<br><small>${mm(p*pf)} · moral → ${Math.round(m)} · coûts ×${dec(motC(m),2)} · lecture ×${dec(motR(m),2)} · anecdotes ${motW(m)>=0?'+':'−'}${Math.round(Math.abs(motW(m))*100)} pts · débauche ${Math.round(Math.min(0.95,motP(m)*(boH(12)?0.5:1))*100)} %</small></button>`}).join('')}</div>""")
+open(p,'w',encoding='utf-8').write(s)

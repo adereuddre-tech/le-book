@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 295.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 296.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -318,6 +318,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **293** : co-investissement : la part choisie sort de la trésorerie affichée en temps réel sur l'écran (`coPend`, `S.coinvScr`).
 - **294** : barre d'état : marge en pourcentage au bout de sa jauge sous la trésorerie ; carton du comité au bout de la jauge de confiance (plus de tuile dédiée) ; confiance sur une ligne quand la largeur le permet.
 - **295** : valeur relative — le bloc « Les paires du trimestre » passe au-dessus du book (les autres styles gardent leur bloc sous le book).
+- **296** : moral du desk (`MORAL`, `S.mot`, 0–100) : ne dépend que de l'argent et des égards. Cible = 35 + 10 × cran de bonus effectif + locaux (−25 × (fx poach − 1) : garage −5 … yacht +8) ; la moitié de l'écart se referme à chaque `payBonus` ; baisse de taux −5 par cran ; anecdotes `e.poach` → moral −20 × poach (textes « moral ±N »). Les quatre effets (coûts `motC`, lecture `motR`, anecdotes `motW`, débauchage `motP`) interpolent BONFX/BONREAD/BONWIN sur le cran équivalent (M−35)/10, extrapolés et bornés : à cran constant, mêmes effets qu'avant. `poachBoost` et BONCUT ne servent plus. Seuils : sous 20, départ en groupe (proba ((20−M)/20)²) ; au-dessus de 80, le desk refuse toutes les offres et coûts −8 % (proba ((M−80)/20)²), tirage séparé `prng32('mot'+q)`. Page du bonus : moral projeté par cran (`motNext`).
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
