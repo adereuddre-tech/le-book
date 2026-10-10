@@ -5018,11 +5018,12 @@ function screenPlay(){
     <p class="note">Chargements b<sub>ik</sub> de chaque marché sur les quatre facteurs. La matrice dérive lentement d'un trimestre à l'autre ; ↑↓ signale un changement supérieur à 0,10 depuis le trimestre précédent. Le point coloré à droite de chaque marché donne le positionnement des autres fonds : vert, le monde est long ; rouge, le monde est court.</p>
    </details>
   </div>
+  ${PROF().pairs?'<div class="block" id="stypw"></div>':''}
   <div class="block"><div class="blockhead"><h2>Le book</h2><span class="hint">unités de risque, de −${S.maxk} à +${S.maxk}</span></div>
    ${redNote()}
    <details style="margin:0 0 8px"${S.maxk>3?'':' hidden'}><summary>Le surlevier, au-delà de ±3</summary><p class="note">Au-delà de ±3 vous entrez dans le surlevier : le notionnel dépasse ce que le mandat imagine, le comité le voit, les investisseurs aussi — dans un sens comme dans l'autre.</p></details>
    <div id="rows"></div></div>
-  <div class="block" id="stypw"${PROF().pairs||PROF().atk||PROF().tailH?'':' hidden'}></div>
+  ${PROF().pairs?'':`<div class="block" id="stypw"${PROF().atk||PROF().tailH?'':' hidden'}></div>`}   <!-- lot 295 : les paires au-dessus du book -->
   <div class="block" id="pwblk"></div>
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Risque ex-ante du book</summary>
    <div class="wire" id="risk" style="margin-top:8px"></div></details></div>
