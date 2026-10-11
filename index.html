@@ -881,9 +881,9 @@ const PROFILES=[
   ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, le sens d'un facteur macro avant tout le monde, juste quatre fois sur cinq"],['g',"veille des extrêmes : vous sentez venir l'orage mieux que personne (33 à 95 %), sans trop savoir lequel (5 à 45 %)"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous lisez la tendance trois fois plus nettement (bruit ×0,3) ; portage et valeur moins bien (×1,3)"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"en facile, votre desk propose un book prudent (60 % du risque de croisière) : à vous d'oser plus"],['b',"aucune source supplémentaire : vous n'en demandez pas"],['b',"incidents plus fréquents (×1,70) et plus de deux fois plus chers : un desk qui va vite casse plus de vaisselle"],['g',"commission de performance +5 pts : l'aura du prophète — vos investisseurs paient plus cher pour être du bon côté de celui qui « sent » le marché, et aucun ne veut être celui qui est parti juste avant le grand coup"],['g',"capital de départ +0,5 M$"],['b',"équipe 20 % plus chère"]],
   sigBonus:0,capture:0.85,tcMult:1.00,rumBonus:0.05,lpMult:1.20,ddMax:0.22,modelScale:1.20,incMult:1.70,incSev:2.2,numeric:false,freeAdj:true,hunch:true,deskScale:0.6}
 ,
- {id:'act',sum:{pw:"la manœuvre : une fois par an, un corner ou un squeeze qui force le marché dans votre sens",f:["identifie presque toujours les extrêmes","la valeur lue trois fois plus nettement","commission de performance +5 pts : la légende se paie"],w:["coûts d'exécution +30 %, incidents plus fréquents et plus chers","investisseurs 10 % plus nerveux, comité sur ses gardes"]},lvl:'Expert',who:"« Quand on a raison, on n'en a jamais assez »",nm:"Macro activiste",
+ {id:'act',sum:{pw:"le livre noir : chaque trimestre, un corner ou un squeeze hors du book — et, après trois réussites, le coup du siècle",f:["identifie presque toujours les extrêmes","la valeur lue trois fois plus nettement","commission de performance +5 pts : la légende se paie"],w:["coûts d'exécution +30 %, incidents plus fréquents et plus chers","investisseurs 10 % plus nerveux, comité sur ses gardes"]},lvl:'Expert',who:"« Quand on a raison, on n'en a jamais assez »",nm:"Macro activiste",
   p:"Vous ne suivez pas le marché : vous le faites. Une monnaie tenue à bout de bras par sa banque centrale, des réserves qui fondent, et vous qui pariez assez gros pour précipiter la chute. Ça a fait des fortunes, et des faillites. Le reste du temps, un macro discrétionnaire très convaincu.",
-  ef:[['g',"<b>Pouvoir propre — la manœuvre</b> : une fois par an, dès le premier trimestre, une position de ±3, ±4 ou ±5 sur l'un des trois marchés au signal le plus net, à la hausse (corner, short squeeze) ou à la baisse (long squeeze, attaque contre une banque centrale). À la clôture, un événement spécial : réussie (55 à 75 %, +10 pts dans le sens du signal), le marché finit dans votre sens, renforcé de 1,2 σ ou retourné ; ratée, il vous résiste d'une demi-σ, et le comité est furieux"],['g',"veille des extrêmes : 18 à 83 % sentis, presque toujours identifiés (55 à 95 %)"],['g',"vous lisez la valeur trois fois plus nettement (bruit ×0,3) ; tendance et portage moins bien (×1,3)"],['b',"en facile, votre desk propose un book prudent (75 % du risque de croisière) : les convictions massives, c'est vous"],['b',"coûts de transaction +30 % : vous bougez le marché, il vous le rend"],['b',"incidents ×1,2, gravité ×1,3"],['b',"investisseurs 10 % plus nerveux"],['g',"commission de performance +5 pts ; capital de départ +1 M$"],['b',"équipe 20 % plus chère ; capture 75 %"]],
+  ef:[['g',"<b>Pouvoir propre — le livre noir</b> : chaque trimestre, trois occasions sur des marchés que le book ne touche pas (roupie, bonos argentins, cacao, Volkswagen, GameStop…). Mise de 1 à 5 % de l'encours, réussite de 45 à 65 %, gain de 1,6 à 2,2 fois la mise, sans peser sur le risque ni la marge. Trois réussites d'affilée à mises croissantes : le coup du siècle, jusqu'à 15 % de l'encours pour huit fois la mise"],['g',"veille des extrêmes : 18 à 83 % sentis, presque toujours identifiés (55 à 95 %)"],['g',"vous lisez la valeur trois fois plus nettement (bruit ×0,3) ; tendance et portage moins bien (×1,3)"],['b',"en facile, votre desk propose un book prudent (75 % du risque de croisière) : les convictions massives, c'est vous"],['b',"coûts de transaction +30 % : vous bougez le marché, il vous le rend"],['b',"incidents ×1,2, gravité ×1,3"],['b',"investisseurs 10 % plus nerveux"],['g',"commission de performance +5 pts ; capital de départ +1 M$"],['b',"équipe 20 % plus chère ; capture 75 %"]],
   sigBonus:2,capture:0.75,tcMult:1.30,rumBonus:0.12,lpMult:1.10,modelScale:1.15,incMult:1.2,incSev:1.3,numeric:false,atk:true,deskScale:0.75}
 ];
 /* figés depuis le retrait de ces deux choix de l'écran d'accueil */
@@ -3101,7 +3101,7 @@ const DEPTH={ES:60,NQ:30,ESTX:20,TOPX:15,MXEF:8,TN:80,GBL:40,JGB:25,R:20,OAT:15,
 function depthMult(x,bn){const d=DEPTH[x.sym];return d?Math.sqrt(1+bn/(d*((S&&S.capBoost)||1))):1}
 /* Un marché fermé ne prend aucune position ; un marché ouvert, le mandat. */
 function mktOpen(i){const x=INSTR[i];return !!x&&x.rk<=OPENRK&&(x.grp!=='Exotiques'||!!(S&&S.exoOpen))&&!(S&&S.shut&&S.shut[x.sym]===S.q)}
-function kCap(i){return mktOpen(i)?Math.max((S&&S.maxk)||5,(S&&S.atk&&S.atk.q===S.q&&S.atk.i===i)?S.atk.m:0):0}   /* lot 303 */
+function kCap(i){return mktOpen(i)?((S&&S.maxk)||5):0}
 function clampK(i,v){const c=kCap(i);return Math.max(-c,Math.min(c,v))}
 /* Encours auquel s'ouvre le rang rk, pour la taille de départ : ×1,4 puis ×2. */
 function unlockNav(rk){const per=MKPERCL[S.size]||4,j=rk-per;return j<=0?0:S.aum0*([1.4,2.0][j-1]||99)}
@@ -3678,7 +3678,7 @@ function feeLine(){
  const z=SIZES.find(x=>x.id===setup.size)||SIZES[1];
  return `Le fonds vous verse <strong>2 % de gestion</strong> par an et <strong>${(z.perf*100).toFixed(0)} % de sa performance</strong> au-dessus de son plus haut historique. Votre société paie l'équipe, les ordres et les bonus.`;
 }
-function styTable(){const P=PROFILES,f=(x,d=2)=>'×'+dec(x,d),pw={rv:"les paires : deux écarts à refermer par trimestre",tail:"la protection au prix du choc, et qui rend plus que le choc",act:"une manœuvre par an : corner ou squeeze sur n'importe quel marché",syst:"le modèle : book entier en facile, six convictions en moyen et difficile",fonda:"sources vérifiées : une probabilité sûre par trimestre",flux:"intuition : le sens d'un facteur, juste 4 fois sur 5"};
+function styTable(){const P=PROFILES,f=(x,d=2)=>'×'+dec(x,d),pw={rv:"les paires : deux écarts à refermer par trimestre",tail:"la protection au prix du choc, et qui rend plus que le choc",act:"le livre noir : un corner ou un squeeze par trimestre, hors du book",syst:"le modèle : book entier en facile, six convictions en moyen et difficile",fonda:"sources vérifiées : une probabilité sûre par trimestre",flux:"intuition : le sens d'un facteur, juste 4 fois sur 5"};
  const XR={rv:"12–78 % · 25–65 %",tail:"25–90 % · 40–80 %",act:"18–83 % · 55–95 %",syst:"20–85 % · 45–85 %",fonda:"10–75 % · 60–95 %",flux:"33–95 % · 5–45 %"};
  const R=[["Pouvoir",p=>pw[p.id]],["Extrêmes : sentir · identifier",p=>XR[p.id]],["Capital de départ",p=>STYSEED[p.id]?'+'+dec(STYSEED[p.id]*1000,2)+' M$':'—'],["Commission de performance",p=>STYPERF[p.id]?'+'+Math.round(STYPERF[p.id]*100)+' pts':'—'],
   ["Coût de l'équipe",p=>f(STYCOST[p.id])],["Coûts d'exécution",p=>f(p.tcMult)],["Book du desk (facile)",p=>f(p.deskScale||p.modelScale)+' le risque de croisière'],["Nervosité des investisseurs",p=>f(p.lpMult)],["Incidents : fréquence · coût",p=>f(p.incMult)+' · '+f(p.incSev||1,1)],["Mouvement capté sur les dépêches",p=>Math.round(p.capture*100)+' %']];
@@ -5268,43 +5268,162 @@ function styDraw(){const el=document.getElementById('stypw');if(!el)return;const
    (long squeeze, attaque contre une banque centrale). Une fois par an, dès le premier trimestre : position de ±3, ±4 ou ±5
    sur l'un des trois marchés au signal le plus net. À la clôture, un événement spécial : réussi, le marché finit dans votre sens
    (mouvement renforcé de 1,2 σ, ou retourné s'il partait contre vous) ; raté, il vous résiste d'une demi-σ. */
-const ATK={p0:0.55,pm:0.05,read:0.10,A:1.2,back:0.5};
-function atkReady(){return PROF().atk&&!(S.atk&&S.atk.q===S.q)&&(S.atkLast==null||S.q-S.atkLast>=4)}
-function atkCands(){return INSTR.map((x,i)=>i).filter(i=>mktOpen(i)).sort((a,b)=>Math.abs(expRet(b).m)/INSTR[b].sigQ-Math.abs(expRet(a).m)/INSTR[a].sigQ).slice(0,3)}
-function atkP(i,d,m){return Math.min(0.9,ATK.p0+ATK.pm*(m-3)+(Math.sign(expRet(i).m)===d?ATK.read:0))}
-function atkKind(i,d){const g=INSTR[i].grp;return d>0?(g==='Matières premières'?'corner':'short squeeze'):(g==='Devises'||g==='Taux'?'attaque contre la banque centrale':'long squeeze')}
-function atkGain(i,d,m){return m*U/INSTR[i].sig*ATK.A*INSTR[i].sigQ}   /* ordre de grandeur du gain de la manœuvre seule, en part de l'encours */
-function styDrawX(){const P=PROF();if(!P.atk)return '';
- if(S.atk&&S.atk.q===S.q){const a=S.atk;return `<div class="blockhead"><h2>La manœuvre</h2><span class="hint">lancée</span></div><p class="note" style="margin:0">🦅 ${atkKind(a.i,a.d)[0].toUpperCase()+atkKind(a.i,a.d).slice(1)} sur <b>${INSTR[a.i].nm}</b> : position ${a.d>0?'+':'−'}${a.m}. Réussite ${Math.round(a.p*100)} % ; verdict à la clôture, lors d'un événement spécial.</p>`}
- if(!atkReady())return `<div class="blockhead"><h2>La manœuvre</h2><span class="hint">une par an</span></div><p class="note" style="margin:0">Prochaine manœuvre possible au trimestre ${(S.atkLast||0)+5}.</p>`;
- const C=atkCands();if(!C.length)return '';if(!C.includes(S.atkSel))S.atkSel=C[0];const i=S.atkSel;
- if(S.atkD==null||S.atkSelD!==i){S.atkD=Math.sign(expRet(i).m)||1;S.atkSelD=i}S.atkM=S.atkM||4;const d=S.atkD,m=S.atkM,p=atkP(i,d,m),g=atkGain(i,d,m);
- return `<div class="blockhead"><h2>La manœuvre</h2><span class="hint">une par an · votre pouvoir</span></div>
-  <p class="note" style="margin:0 0 6px">Les trois marchés où votre desk lit le signal le plus net. Prenez position : à la clôture, vous pesez sur le marché pour qu'il finisse dans votre sens. Plus la position est grosse, plus la manœuvre a de chances de réussir ; dans le sens du signal, +10 pts.</p>
-  <div class="cisel">${C.map(j=>{const e=expRet(j).m;return `<button class="hgp${j===i?' on':''}" data-atk="${j}">${INSTR[j].sym} ${e>=0?'▲':'▼'}</button>`}).join('')}</div>
-  <div class="cisel" style="margin-top:6px"><button class="hgp${d>0?' on':''}" data-atd="1">▲ ${atkKind(i,1)}</button><button class="hgp${d<0?' on':''}" data-atd="-1">▼ ${atkKind(i,-1)}</button></div>
-  <div class="cisel" style="margin-top:6px">${[3,4,5].map(k=>`<button class="hgp${k===m?' on':''}" data-atm="${k}">${d>0?'+':'−'}${k}</button>`).join('')}</div>
-  <div class="attr"><span class="an">Position ${d>0?'+':'−'}${m} sur ${INSTR[i].nm} · réussite ${Math.round(p*100)} %</span><span class="av"><b class="pos-g">≈ +${mm(g*S.nav)}</b> / <b class="neg-g">≈ −${mm(g*ATK.back/ATK.A*S.nav)}</b></span></div>
-  <p class="note" style="margin:2px 0 0">En plus du mouvement propre du marché. La ligne remplace votre position actuelle sur ${INSTR[i].sym} et reste verrouillée jusqu'à la clôture ; réussie, le marché finit dans votre sens, ratée, il finit contre vous. Le comité apprend la manœuvre (contrôle −2).</p>
-  <button class="buy" id="atkgo" style="margin-top:6px"${S.phase==='book'?'':' disabled'}>Lancer : ${atkKind(i,d)} sur ${INSTR[i].sym}</button>`}
-function styWire(el){el.querySelectorAll('[data-atk]').forEach(b=>b.onclick=()=>{S.atkSel=+b.dataset.atk;styDraw()});el.querySelectorAll('[data-atd]').forEach(b=>b.onclick=()=>{S.atkD=+b.dataset.atd;styDraw()});el.querySelectorAll('[data-atm]').forEach(b=>b.onclick=()=>{S.atkM=+b.dataset.atm;styDraw()});
- const g=el.querySelector('#atkgo');if(g)g.onclick=()=>{if(!atkReady()||S.phase!=='book')return;const i=S.atkSel,d=S.atkD,m=S.atkM;S.atk={q:S.q,i,d,m,p:atkP(i,d,m)};S.atkLast=S.q;S.k[i]=d*m;
-  gauge(0,-2,"Le comité apprend votre manœuvre");toast(`🦅 Manœuvre lancée : ${atkKind(i,d)} sur <b>${INSTR[i].nm}</b>`);
-  try{drawRows();renderRisk();refreshSend();refreshGain();renderTC&&renderTC()}catch(e){}styDraw()}}
-/* l'événement spécial, à la clôture, après les dépêches */
-function atkResolve(){const a=S.atk;if(!a||a.q!==S.q||S.atkRes)return;const i=a.i,d=a.d,sq=INSTR[i].sigQ,mv=(S.qMv&&S.qMv[i])||0,o=S.rBase[i],P=o+mv;
- if(d*S.k[i]<=0){S.atkRes={ok:false,vd:true,x:0,nm:INSTR[i].nm,sym:INSTR[i].sym,kind:atkKind(i,d),o:P,n:P};return}   /* lot 308 : plus de position dans le sens de la manœuvre */
- const ok=prng32(hash32('atk'+S.q,S.seed))()<a.p,P2=ok?d*(Math.max(0,d*P)+ATK.A*sq):d*Math.min(d*P-ATK.back*sq,-ATK.back*sq),n=P2-mv;   /* lot 308 : ratée, le marché finit contre vous */
- S.rBase[i]=n;const x=weights(S.k)[i]*(n-o);
- S.atkRes={ok,x,nm:INSTR[i].nm,sym:INSTR[i].sym,kind:atkKind(i,d),o:P,n:P2,rev:(ok?d*P<0:d*P>0)};if(ok)S.atkWins=(S.atkWins||0)+1}
-function screenAtk(){atkResolve();const R=S.atkRes,K=R.kind[0].toUpperCase()+R.kind.slice(1);
- app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard${R.ok?'':' bad'}">${evHead('Votre desk · clôture','news')}<h3>🦅 Manœuvre sur ${R.nm} : ${R.ok?'réussie':'ratée'}</h3><p class="note" style="margin:0 0 6px">${K}</p>
-  <p>${R.vd?`Votre position sur ${R.sym} n'est plus dans le sens de la manœuvre : elle tombe à plat, le marché finit à ${sgn(R.n,1)}.`:R.ok?(R.rev?`Le marché partait contre vous (${sgn(R.o,1)} sur le trimestre, dépêches comprises) : votre manœuvre le retourne, il finit à ${sgn(R.n,1)}.`:`Le marché allait déjà dans votre sens : votre manœuvre l'emballe, il finit à ${sgn(R.n,1)} au lieu de ${sgn(R.o,1)} (dépêches comprises).`):(R.rev?`Les contreparties ont tenu et retournent le marché contre vous : ${R.sym} finit à ${sgn(R.n,1)} au lieu de ${sgn(R.o,1)} (dépêches comprises).`:`Les contreparties ont tenu et enfoncent le clou : ${R.sym} finit à ${sgn(R.n,1)} au lieu de ${sgn(R.o,1)} (dépêches comprises).`)}</p>
-  <div class="gzr"><span>effet de la manœuvre sur le fonds</span><b class="${cls(R.x)}">${R.x>=0?'+':'−'}${mm(Math.abs(R.x)*S.nav)} · ${sgnp(R.x,2)}</b></div></div>
+/* lot 312 : le livre noir de l'activiste — marchés hors du book. [code, nom, famille, contexte] ; familles : fx, dt (dette), ix (indice), sk (action), cm (matière), od (divers) */
+const BKCAT=[
+ ['INR','Roupie indienne','fx',"La banque centrale indienne défend la roupie à coups de réserves ; on dit qu'elles fondent."],
+ ['BRL','Real brésilien','fx',"Brasília promet un budget équilibré. Personne ne la croit, et le real tient à un fil."],
+ ['ZAR','Rand sud-africain','fx',"Délestages électriques, ministre des Finances limogé : le rand est la devise préférée des vendeurs à découvert."],
+ ['TRY','Livre turque','fx',"La banque centrale baisse ses taux avec 60 % d'inflation. Les ménages achètent de l'or."],
+ ['ARS','Peso argentin','fx',"Le taux officiel et le taux « blue » divergent de 120 %. Un nouveau contrôle des changes est attendu."],
+ ['NGN','Naira nigérian','fx',"La banque centrale unifie les taux de change, ou fait semblant. Le pétrole ne suffit plus."],
+ ['IDR','Roupie indonésienne','fx',"Les étrangers détiennent 40 % de la dette locale. Ils regardent la porte."],
+ ['HUF','Forint hongrois','fx',"Budapest se dispute avec Bruxelles sur les fonds européens. Le forint en fait les frais."],
+ ['PLN','Zloty polonais','fx',"Varsovie dépense pour sa défense comme jamais ; le zloty hésite entre la croissance et le déficit."],
+ ['NOK','Couronne norvégienne','fx',"Le fonds souverain vend des couronnes chaque jour. Le marché le sait, et le devance."],
+ ['SEK','Couronne suédoise','fx',"En 1992, la Riksbank avait monté son taux à 500 % pour défendre la couronne. Elle avait cédé quatre jours plus tard."],
+ ['NZD','Dollar néo-zélandais','fx',"Le kiwi, devise de portage par excellence : tout le monde est long, personne ne sait pourquoi."],
+ ['KRW','Won coréen','fx',"Les exportateurs de puces rapatrient leurs dollars, ou pas. Séoul intervient en silence."],
+ ['THB','Baht thaïlandais','fx',"En juillet 1997, Bangkok avait abandonné l'ancrage au dollar. Le baht avait perdu la moitié de sa valeur."],
+ ['MYR','Ringgit malaisien','fx',"Kuala Lumpur avait instauré le contrôle des capitaux en 1998. Les traders s'en souviennent."],
+ ['CLP','Peso chilien','fx',"Le peso suit le cuivre comme son ombre — avec un peu d'avance quand on sait regarder."],
+ ['COP','Peso colombien','fx',"Le nouveau gouvernement veut arrêter l'exploration pétrolière. Le peso en tremble."],
+ ['EGP','Livre égyptienne','fx',"Le Caire négocie avec le FMI ; la quatrième dévaluation en deux ans se prépare."],
+ ['HKD','Dollar de Hong Kong','fx',"L'ancrage au dollar tient depuis 1983. Certains fonds parient chaque année qu'il cèdera."],
+ ['DKK','Couronne danoise','fx',"L'ancrage à l'euro est le plus ancien d'Europe. Copenhague a des réserves pour tenir un siècle."],
+ ['UAH','Hryvnia ukrainienne','fx',"La banque centrale assouplit l'ancrage de guerre. Le marché noir donne déjà le prix."],
+ ['KZT','Tenge kazakh','fx',"Le pays dépend du pétrole et de son voisin du nord. Le tenge vit au rythme des deux."],
+ ['VND','Dong vietnamien','fx',"Hanoï laisse filer le dong pour soutenir ses exportateurs, un demi-pour cent à la fois."],
+ ['PKR','Roupie pakistanaise','fx',"Islamabad a trois semaines d'importations en réserves. Le FMI attend une dévaluation."],
+ ['GHS','Cedi ghanéen','fx',"Le Ghana a fait défaut sur sa dette extérieure ; le cedi cherche un plancher."],
+ ['CNH','Yuan offshore','fx',"Pékin fixe le cours chaque matin à 9 h 15. Le marché offshore teste la ligne l'après-midi."],
+ ['SAR','Riyal saoudien','fx',"L'ancrage au dollar tient depuis 1986. Quand le baril s'effondre, les options sur le riyal s'envolent."],
+ ['ISK','Couronne islandaise','fx',"En 2008, la couronne avait perdu 80 % en quelques semaines. Les banques locales ont regrossi."],
+ ['ARG30','Bonos argentins 2030','dt',"Neuvième défaut de l'histoire du pays ? Le marché cote déjà le taux de récupération."],
+ ['GRE10','Obligations grecques','dt',"Athènes a retrouvé la note d'investissement. Les fonds vautours ont vendu avec une plus-value."],
+ ['BTP30','BTP italiens à 30 ans','dt',"Rome dépense le plan de relance ; l'écart avec le Bund s'élargit à chaque budget."],
+ ['JGB30','JGB à 30 ans','dt',"La Banque du Japon détient la moitié du marché. Le jour où elle arrête d'acheter, qui achète ?"],
+ ['UKR','Dette ukrainienne','dt',"Restructurée en pleine guerre. Les porteurs parient sur la reconstruction."],
+ ['VEN','Dette vénézuélienne','dt',"En défaut depuis 2017, cotée à 10 cents. La moindre rumeur de levée des sanctions la fait doubler."],
+ ['SRI','Dette sri-lankaise','dt',"Colombo a fait défaut en 2022 ; l'accord avec les créanciers chinois se fait attendre."],
+ ['EVG','Obligations d\'un promoteur chinois','dt',"Le promoteur doit 300 milliards de dollars. Les obligations cotent 2 cents, les rumeurs de sauvetage valent de l'or."],
+ ['ZMB','Dette zambienne','dt',"Premier défaut africain de l'ère du Covid ; le cuivre pourrait tout racheter."],
+ ['LEB','Eurobonds libanais','dt',"En défaut depuis 2020, la livre a perdu 98 %. Les obligations cotent 6 cents."],
+ ['ECU','Dette équatorienne','dt',"Le pays est dollarisé : impossible de dévaluer, seulement de faire défaut."],
+ ['ATX','CoCos bancaires européens','dt',"Une banque suisse avait vu ses obligations convertibles effacées en 2023. Les autres paient 9 %."],
+ ['TRK','Eurobonds turcs','dt',"Ankara emprunte en dollars à 9 %. Les fonds macro regardent les réserves nettes, négatives."],
+ ['CSI','Actions chinoises (CSI 300)','ix',"Pékin promet un plan de relance chaque trimestre. L'équipe nationale achète les jours de baisse."],
+ ['HSTECH','Hang Seng Tech','ix',"Les géants de l'internet chinois cotent à huit fois leurs bénéfices. Les régulateurs dorment, ou pas."],
+ ['SENSEX','Sensex indien','ix',"Les particuliers indiens versent 2 milliards par mois dans les fonds. La bourse ne sait plus baisser."],
+ ['IBOV','Bovespa brésilien','ix',"Les étrangers sont partis ; il ne reste que les fonds de pension locaux, et ils vendent."],
+ ['TASI','Tadawul saoudien','ix',"Le fonds souverain soutient la bourse avant chaque introduction en bourse géante."],
+ ['KOSPI','Kospi coréen','ix',"La « décote coréenne » : des conglomérats familiaux qui ne versent pas de dividendes."],
+ ['TAIEX','Taiex taïwanais','ix',"Un fondeur de puces pèse 30 % de l'indice. Le détroit pèse le reste."],
+ ['MERV','Merval argentin','ix',"La bourse la plus volatile du monde : +100 % ou −50 % selon le candidat élu."],
+ ['BIST','Bourse d\'Istanbul','ix',"En livres turques, l'indice bat des records. En dollars, il n'a pas bougé en dix ans."],
+ ['JSE','Bourse de Johannesburg','ix',"Les mines de platine font l'indice ; les délestages électriques le défont."],
+ ['FTSEMIB','FTSE MIB italien','ix',"Les banques italiennes pèsent 40 % de l'indice. La taxe sur les superprofits revient chaque été."],
+ ['ATHEX','Bourse d\'Athènes','ix',"Le marché est repassé de « frontière » à « émergent ». Il manque encore la liquidité."],
+ ['VNI','VN-Index vietnamien','ix',"Les particuliers vietnamiens font 80 % des volumes, à crédit."],
+ ['VW','Volkswagen','sk',"En octobre 2008, un constructeur allemand avait détenu 74 % du capital en secret : l'action avait quintuplé en deux jours et brièvement fait de VW la plus grosse capitalisation du monde."],
+ ['GME','GameStop','sk',"En janvier 2021, des particuliers avaient acheté des options d'achat par millions : les teneurs de marché, forcés de se couvrir, avaient fait monter l'action de 1 700 %."],
+ ['AMC','AMC Entertainment','sk',"Une chaîne de cinémas endettée, chouchou des forums : 80 % du flottant vendu à découvert."],
+ ['TSLA','Tesla','sk',"L'action la plus vendue à découvert de la décennie — et la plus rachetée en catastrophe."],
+ ['NVDA','Nvidia','sk',"Chaque publication de résultats déplace 200 milliards de capitalisation en une nuit."],
+ ['WDI','Wirecard','sk',"1,9 milliard d'euros de trésorerie introuvables. Les vendeurs à découvert l'avaient écrit, le régulateur les avait poursuivis."],
+ ['HLF','Herbalife','sk',"En 2013, deux milliardaires s'étaient affrontés en direct à la télévision : l'un à découvert, l'autre acheteur."],
+ ['PAH3','Porsche SE','sk',"La holding qui contrôle le constructeur : une décote de 50 % sur ses actifs, que des fonds activistes veulent forcer."],
+ ['LK','Luckin Coffee','sk',"Un concurrent chinois de Starbucks avait inventé 300 millions de ventes ; l'action avait perdu 90 %."],
+ ['BBBY','Bed Bath & Beyond','sk',"Un distributeur en faillite que les forums ont fait monter de 400 % en trois semaines."],
+ ['HTZ','Hertz','sk',"En 2020, le loueur en faillite avait failli émettre des actions nouvelles… que les particuliers achetaient."],
+ ['NKLA','Nikola','sk',"Un camion électrique filmé en descente, moteur coupé. Un rapport de vendeur à découvert l'avait révélé."],
+ ['VRX','Valeant','sk',"Un laboratoire qui rachetait des médicaments pour en multiplier le prix par dix. L'action avait perdu 95 %."],
+ ['VIAC','ViacomCBS','sk',"En 2021, un family office à crédit total avait détenu des positions géantes via des swaps ; sa liquidation avait fait chuter le titre de 50 % en une semaine."],
+ ['SMCI','Super Micro Computer','sk',"Le serveur de l'intelligence artificielle, l'auditeur démissionnaire, l'action qui triple puis divise par trois."],
+ ['MSTR','MicroStrategy','sk',"Une société de logiciels qui emprunte pour acheter du bitcoin. La prime sur ses avoirs atteint 200 %."],
+ ['ARM','Arm Holdings','sk',"10 % du capital flottant, un récit d'intelligence artificielle : les squeezes y sont mécaniques."],
+ ['PLAT','Platine','cm',"La production sud-africaine baisse, les catalyseurs à hydrogène arrivent. Le marché tient dans un mouchoir."],
+ ['PALL','Palladium','cm',"Russie et Afrique du Sud font 80 % de l'offre. Un seul embargo, et le prix double."],
+ ['RHOD','Rhodium','cm',"Le métal le plus cher du monde : 30 tonnes par an, quelques négociants. En 2021, il avait valu 29 000 dollars l'once."],
+ ['COCOA','Cacao','cm',"En 2024, le cacao avait quadruplé en un an : récoltes ivoiriennes et ghanéennes en berne, stocks de Londres au plus bas."],
+ ['OJ','Jus d\'orange concentré','cm',"Ouragans en Floride, maladie du verdissement au Brésil : le contrat le plus étroit de New York."],
+ ['URAN','Uranium','cm',"Un fonds physique achète tout l'uranium disponible au comptant. Les centrales signent pour dix ans."],
+ ['NICK','Nickel au LME','cm',"En mars 2022, le nickel avait été multiplié par 3 en deux jours : un groupe chinois était massivement vendeur, et la bourse de Londres avait annulé les transactions."],
+ ['LITH','Lithium','cm',"Le prix avait été multiplié par dix en deux ans, puis divisé par cinq. Les mines australiennes ferment."],
+ ['COB','Cobalt','cm',"La République démocratique du Congo fait 70 % de l'offre et vient d'interdire les exportations."],
+ ['TIN','Étain','cm',"Le plus petit marché des métaux de base. Un seul négociant peut le tenir — c'est déjà arrivé."],
+ ['SUG','Sucre roux','cm',"La mousson indienne décide ; le Brésil arbitre entre sucre et éthanol."],
+ ['COT','Coton','cm',"Les fonds systématiques sont tous acheteurs ; la récolte texane s'annonce record."],
+ ['OATS','Avoine','cm',"Un marché si petit qu'une seule céréalière canadienne peut le faire monter de 30 %."],
+ ['RICE','Riz','cm',"L'Inde a interdit les exportations de riz blanc. La moitié de l'Asie retient son souffle."],
+ ['VAN','Vanille','cm',"Madagascar fait 80 % de l'offre ; un cyclone, et la vanille vaut plus cher que l'argent."],
+ ['LUMB','Bois de construction','cm',"Le contrat de Chicago avait quadruplé en 2021 : scieries fermées, Américains en travaux."],
+ ['TTF','Gaz européen (TTF)','cm',"Les stocks européens à 60 % en novembre ; une vague de froid suffit."],
+ ['PWDE','Électricité allemande','cm',"Le prix est négatif les dimanches ensoleillés et à 800 euros les soirs sans vent."],
+ ['REE','Terres rares','cm',"Pékin contrôle 90 % du raffinage et vient d'instaurer des licences d'exportation."],
+ ['SILV','Argent','cm',"En 1980, deux frères texans avaient tenté d'acheter tout l'argent du monde. Le métal avait atteint 50 dollars, puis s'était effondré."],
+ ['DOGE','Dogecoin','od',"Une cryptomonnaie née d'une blague, qui monte à chaque message d'un milliardaire."],
+ ['LUNA','Stablecoin algorithmique','od',"En mai 2022, un stablecoin avait perdu son ancrage au dollar ; 40 milliards avaient disparu en une semaine."],
+ ['ETH','Ether','od',"Le jour de la mise à jour du réseau, les options implicites doublent."],
+ ['WINE','Grands crus de Bordeaux (Liv-ex)','od',"Les acheteurs asiatiques ont disparu ; les caves des négociants débordent."],
+ ['WATCH','Montres de collection','od',"Les modèles en acier se revendaient deux fois leur prix catalogue. Les listes d'attente fondent."],
+ ['POKE','Cartes Pokémon rares','od',"Une carte de 1999 en parfait état s'est vendue 5 millions. Les fonds de collection arrivent."],
+ ['PARM','Meules de parmesan','od',"Une banque d'Émilie accepte les meules en garantie de prêt. Le prix fait les taux."],
+ ['CAT','Obligations catastrophe','od',"Un ouragan de catégorie 5 sur Miami efface le capital ; sinon, 12 % par an."],
+ ['TULIP','Bulbes de tulipe','od',"En 1637, un bulbe valait une maison sur un canal d'Amsterdam. Un fonds néerlandais veut recréer le marché."],
+ ['ART','Art contemporain','od',"Une banane scotchée au mur s'est vendue 6 millions. L'indice des enchères new-yorkaises cherche un plancher."],
+ ['SAFF','Safran','od',"L'Iran fait 90 % de l'offre, sous sanctions. Le gramme vaut plus que l'or."],
+ ['EGG','Œufs (États-Unis)','od',"La grippe aviaire a décimé les élevages ; la douzaine a triplé en six mois."]];
+/* coups du siècle : proposés après trois manœuvres réussies d'affilée à mises croissantes */
+const BKCDS=[
+ ['HKD','Faire sauter l\'ancrage du dollar de Hong Kong',-1,"Quarante ans d'ancrage, 400 milliards de réserves. Vous misez qu'ils ne suffiront pas."],
+ ['SAR','Briser l\'ancrage du riyal',-1,"Le baril à 40 dollars, le déficit à 15 % : le royaume pourrait laisser filer sa monnaie."],
+ ['CHF','Le plancher du franc suisse',1,"En janvier 2015, la Banque nationale suisse avait abandonné son plancher en un communiqué : +30 % en vingt minutes. Elle en a remis un."],
+ ['NICK','Le corner du nickel',1,"Un négociant chinois est vendeur de 200 000 tonnes. Vous achetez tout le stock disponible au LME."],
+ ['COCOA','Le corner du cacao',1,"Vous achetez les deux tiers des stocks certifiés de Londres avant la mauvaise récolte."],
+ ['GME','Le gamma squeeze du siècle',1,"140 % du flottant vendu à découvert. Vous achetez les options d'achat de toute une échéance."],
+ ['VW','Le piège de Volkswagen',1,"Vous détenez en secret, via des options, les trois quarts du capital. Les vendeurs à découvert ne le savent pas."],
+ ['DKK','L\'ancrage danois',-1,"Copenhague n'a jamais cédé. Vous pariez la maison qu'il y a une première fois."],
+ ['SILV','Le corner de l\'argent',1,"Vous rachetez tout l'argent physique des coffres de New York, comme les frères Hunt en 1979."],
+ ['JGB30','Le pari contre la Banque du Japon',-1,"La « veuve noire » : tout le monde a perdu en vendant les JGB depuis trente ans. Sauf peut-être cette fois."]];
+
+/* lot 312 : la manœuvre de l'activiste se joue hors du book, chaque trimestre. Trois occasions du livre noir, mise de 1 à 5 %
+   de l'encours, probabilité et multiple affichés ; verdict à la clôture. Trois réussites d'affilée à mises croissantes
+   ouvrent le coup du siècle : mise de 5 à 15 %, gain jusqu'à huit fois la mise. */
+const BK={stakes:[0.01,0.02,0.03,0.04,0.05],cds:[0.05,0.10,0.15],W:8,pCds:0.45,rec:12};
+const ATK={};
+function bkKind(f,d){return {fx:d>0?'short squeeze':'attaque contre la banque centrale',dt:d>0?'short squeeze':'attaque de la dette',ix:d>0?'short squeeze':'raid baissier',sk:d>0?'gamma squeeze':'raid baissier',cm:d>0?'corner':'long squeeze',od:d>0?'corner':'long squeeze'}[f]||'manœuvre'}
+function atkReady(){return PROF().atk&&!(S.atk&&S.atk.q===S.q)}
+function bkOffers(){if(S.bkOff&&S.bkOff.q===S.q)return S.bkOff.L;const u=prng32(hash32('bk'+S.q,S.seed)),rec=S.bkRec||[],C=BKCAT.filter(x=>!rec.includes(x[0])),L=[];
+ while(L.length<3&&C.length){const x=C.splice(Math.floor(u()*C.length),1)[0];L.push({c:x[0],nm:x[1],f:x[2],ctx:x[3],d:u()<0.5?1:-1,p:Math.round((0.45+0.20*u())*20)/20,W:Math.round((1.6+0.6*u())*10)/10})}
+ if((S.bkStreak||0)>=3){const x=BKCDS[Math.floor(u()*BKCDS.length)];L.unshift({c:x[0],nm:x[1],f:'cds',ctx:x[3],d:x[2],p:BK.pCds,W:BK.W,cds:1})}
+ S.bkOff={q:S.q,L};return L}
+function styDrawX(){const P=PROF();if(!P.atk)return '';const st=S.bkStreak||0,ser=st>=3?'<b class="gold-g">le coup du siècle est sur la table</b>':`série : ${st} réussite${st>1?'s':''} à mises croissantes — ${3-st} de plus pour le coup du siècle`;
+ if(S.atk&&S.atk.q===S.q){const a=S.atk;return `<div class="blockhead"><h2>Le livre noir</h2><span class="hint">manœuvre lancée</span></div><p class="note" style="margin:0">${a.cds?`👑 <b>Coup du siècle</b> : ${a.nm}`:`🦅 ${a.kind} sur <b>${a.nm}</b>`}, ${Math.round(a.st*100)} % de l'encours en jeu. Réussite ${Math.round(a.p*100)} %, gain ${dec(a.W,1)} fois la mise ; verdict à la clôture. ${ser}.</p>`}
+ const L=bkOffers();if(S.bkSel==null||S.bkSel>=L.length)S.bkSel=0;const o=L[S.bkSel],SK=o.cds?BK.cds:BK.stakes;if(!SK.includes(S.bkSt))S.bkSt=SK[o.cds?0:2];const sk=S.bkSt;
+ return `<div class="blockhead"><h2>Le livre noir</h2><span class="hint">une manœuvre par trimestre · hors du book</span></div>
+  <p class="note" style="margin:0 0 6px">Des marchés que votre book ne touche pas : votre desk y repère trois occasions. La manœuvre ne pèse ni sur le risque, ni sur la marge du book ; seul le résultat compte, à la clôture. ${ser}.</p>
+  ${L.map((x,j)=>`<button class="pwb${j===S.bkSel?' on':''}" data-bk="${j}"><b>${x.cds?`👑 Coup du siècle · ${x.nm}`:`${x.d>0?'▲':'▼'} ${x.nm} · ${bkKind(x.f,x.d)}`}</b><small>${x.ctx} <i>· réussite ${Math.round(x.p*100)} % · gain ${dec(x.W,1)} × la mise</i></small></button>`).join('')}
+  <div class="cisel" style="margin-top:6px">${SK.map(k=>`<button class="hgp${k===sk?' on':''}" data-bks="${k}">${Math.round(k*100)} %</button>`).join('')}</div>
+  <div class="attr"><span class="an">Mise ${mm(sk*S.nav)} · réussite ${Math.round(o.p*100)} %</span><span class="av"><b class="pos-g">+${mm(o.W*sk*S.nav)}</b> / <b class="neg-g">−${mm(sk*S.nav)}</b></span></div>
+  <button class="buy" id="atkgo" style="margin-top:6px"${S.phase==='book'?'':' disabled'}>${o.cds?'👑 Lancer le coup du siècle':`Lancer : ${bkKind(o.f,o.d)} sur ${o.nm}`}</button>`}
+function styWire(el){el.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{S.bkSel=+b.dataset.bk;styDraw()});el.querySelectorAll('[data-bks]').forEach(b=>b.onclick=()=>{S.bkSt=+b.dataset.bks;styDraw()});
+ const g=el.querySelector('#atkgo');if(g)g.onclick=()=>{if(!atkReady()||S.phase!=='book')return;const o=bkOffers()[S.bkSel||0],st=S.bkSt;
+  S.atk={q:S.q,c:o.c,nm:o.nm,d:o.d,p:o.p,W:o.W,st,cds:!!o.cds,kind:o.cds?o.nm:bkKind(o.f,o.d)};(S.bkRec=S.bkRec||[]).push(o.c);S.bkRec=S.bkRec.slice(-BK.rec);
+  gauge(0,o.cds?-3:-1,"Le comité apprend votre manœuvre");toast(`🦅 ${o.cds?'Coup du siècle lancé':'Manœuvre lancée'} : <b>${o.nm}</b>`);styDraw()}}
+function atkResolve(){const a=S.atk;if(!a||a.q!==S.q||(S.atkRes&&S.atkRes.q===S.q))return;   /* un résultat par trimestre (le précédent restait affiché) */const ok=prng32(hash32('atk'+S.q,S.seed))()<a.p,x=ok?a.W*a.st:-a.st,nb=S.nav;
+ S.nav*=(1+x);S.qEvM=(S.qEvM||0)+x*nb;S.evLog.push({t:`${a.cds?'Coup du siècle':'Manœuvre'} : ${a.nm}`,pnl:x,m:x*nb,lp:0,rc:0});
+ if(a.cds)S.bkStreak=0;else if(ok){S.bkStreak=(S.bkStreak||0)>0&&a.st>(S.bkLast||0)?S.bkStreak+1:1;S.bkLast=a.st}else{S.bkStreak=0;S.bkLast=0}
+ S.atkRes={q:S.q,ok,x,nm:a.nm,sym:a.c,kind:a.kind,cds:a.cds,st:a.st};if(ok)S.atkWins=(S.atkWins||0)+1}
+function screenAtk(){S.atkRes=null;atkResolve();const R=S.atkRes,a=S.atk;
+ app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard${R.ok?'':' bad'}">${evHead('Votre desk · clôture','news')}<h3>${R.cds?`👑 ${R.nm} : ${R.ok?'réussi !':'raté'}`:`🦅 Manœuvre sur ${R.nm} : ${R.ok?'réussie':'ratée'}`}</h3>
+  <p class="note" style="margin:0 0 6px">${R.cds?'Le coup du siècle':R.kind[0].toUpperCase()+R.kind.slice(1)} · ${Math.round(R.st*100)} % de l'encours en jeu</p>
+  <p>${R.ok?(R.cds?`On en parlera dans les manuels : les contreparties capitulent les unes après les autres, et le marché cède d'un coup. Le fonds encaisse ${dec(a.W,1)} fois la mise.`:`Les contreparties cèdent avant la clôture : le marché ${a.d>0?'s’envole':'décroche'} et vous sortez au meilleur moment.`):(R.cds?`Les autorités tiennent, et le marché vous broie. La mise est perdue ; la légende attendra.`:`Les contreparties ont tenu : le marché ${a.d>0?'retombe':'rebondit'}, et la mise est perdue.`)}</p>
+  <div class="gzr"><span>effet sur le fonds</span><b class="${cls(R.x)}">${R.x>=0?'+':'−'}${mm(Math.abs(R.x)*S.nav/(1+R.x))} · ${sgnp(R.x,2)}</b></div>
+  ${!R.cds&&R.ok&&(S.bkStreak||0)>=3?'<p class="note" style="margin:6px 0 0">👑 Trois réussites d’affilée à mises croissantes : le coup du siècle vous sera proposé au prochain trimestre.</p>':''}</div>
   <button class="cta" id="ok">Continuer</button></div>`;
  document.getElementById('ok').onclick=()=>{stepEvents();window.scrollTo(0,0)}}
-function atkLocked(i){return !!(S&&S.atk&&S.atk.q===S.q&&S.atk.i===i)}
-function atkClose(){if(!(S.atk&&S.atk.q===S.q))S.atkRes=null;else atkResolve()}   /* lot 303 : la manœuvre se joue sur son écran ; filet si l'écran n'a pas été vu */
+function atkLocked(i){return false}   /* lot 312 : plus de ligne dans le book */
+function atkClose(){if(!(S.atk&&S.atk.q===S.q))S.atkRes=null;else atkResolve()}   /* filet si l'écran n'a pas été vu */
 function pwHere(o){return o.fo!=null?(o.fo===0||here(o.fo)):boH(o.bo)}   /* lot 304 */
 function pwOn(id){return !!(S&&S.pw&&S.pw[id]===S.q)}
 function pwBack(id){const l=S.pwLast&&S.pwLast[id];return l==null?0:l+(id==='jk'?1:4)}   /* lot 302 : Jean-Kevin chaque trimestre */
@@ -5938,7 +6057,6 @@ function renderTC(){
   <p class="note">Multiplicateur d'exécution appliqué : ×${dec((execMot()*DESK().mult(INSTR[0])*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult),2)} sur les actions (budget desk, organisation, liquidité du régime ${dec(S.liq,2)}, taux ${dec((S.rate*100),1)} %${S.execPenalty>1?', pénalité débauchage':''}).${S.star>=0?` <em>Votre recrutement du trimestre travaille sur ${INSTR[S.star].sym} : coûts divisés par trois sur ce marché.</em>`:''}</p>`;
 }
 function commitOrders(){
- if(S.atk&&S.atk.q===S.q)S.k[S.atk.i]=S.atk.d*S.atk.m;   /* lot 308 : la manœuvre impose sa ligne, quoi qu'aient fait les boutons du book */
  S.kVal=[...S.k];   /* le book que le comité juge contre sa bande */
  let tot=0;
  for(let i=0;i<N;i++){const d=S.k[i]-S.k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}
@@ -6826,7 +6944,7 @@ function resolveQuarter(){
  if(offFx('lp',0))lpD.push([`Les locaux : ${OFF().nm}`,offFx('lp',0)]);   /* lot 276 */
  if(here(11))lpD.push(["La conférence du Pr Ada",2]);   /* lot 279 */
  if(S.prof==='tail'&&S.hedgeQ===S.q&&!S.stressQ)lpD.push(["Encore un trimestre à payer l'assurance",-1]);   /* lot 271 */
- if(S.atkRes)lpD.push([S.atkRes.ok?`Manœuvre réussie sur ${S.atkRes.nm} (${S.atkRes.kind})`:`Manœuvre ratée sur ${S.atkRes.nm} (${S.atkRes.kind})`,S.atkRes.ok?15:-10]);   /* lot 272 */
+ if(S.atkRes)lpD.push([S.atkRes.ok?`Manœuvre réussie sur ${S.atkRes.nm} (${S.atkRes.kind})`:`Manœuvre ratée sur ${S.atkRes.nm} (${S.atkRes.kind})`,S.atkRes.ok?(S.atkRes.cds?15:3):(S.atkRes.cds?-10:-3)]);   /* lot 272 */
  if(S.leakQ)lpD.push(['Vos positions ont circulé sur le marché',-2.5]);
  if(S.execSlipQ<-0.0035*S.navQ0)lpD.push(['Impact de marché lourd sur les ordres',-2]);
  const lpMult=(S.flighty?1.25:1)*PROF().lpMult*VOL().lpMult*(UNIV().lpMult||1);
@@ -6841,7 +6959,7 @@ function resolveQuarter(){
  const band=bandNow(),dev=Math.abs(sp-S.tgt)/S.tgt;
  const rcD=[];if(boH(8))rcD.push(["Lord Basil a déjeuné avec le régulateur",2]);if(offFx('rc',0))rcD.push([`Les locaux : ${OFF().nm}`,offFx('rc',0)]);   /* lot 276 */
  if(Math.abs(RISKRC[S.bud.risk])>=0.05)rcD.push([RISKRC[S.bud.risk]>0?'Contrôle des risques renforcé : rapports rassurants':'Contrôle des risques réduit : le comité s\'inquiète',RISKRC[S.bud.risk]]);
- if(S.atkRes&&!S.atkRes.ok)rcD.push(['Manœuvre ratée : le comité demande des comptes',-5]);   /* lot 272 */
+ if(S.atkRes&&!S.atkRes.ok)rcD.push(['Manœuvre ratée : le comité demande des comptes',S.atkRes.cds?-5:-2]);   /* lot 272 */
  if(S.commRes&&S.commRes.rc)rcD.push([S.commRes.lab+(S.comm.id==='gourou'&&!S.commRes.ok?' : « qui a validé ce chiffre ? »':''),S.commRes.rc]);
  if(S.leakQ)rcD.push(['Positions connues de contreparties',-2]);
  if(S.tcMultQ&&Math.abs(S.tcMultQ-1)>0.35)rcD.push(['Exécution éloignée du tarif standard',-2]);
