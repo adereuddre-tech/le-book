@@ -180,6 +180,7 @@ em{font-style:italic;color:var(--txt)}
 .chips i.rel.faible{color:var(--dimmer)}
 .crestbadge{display:flex;align-items:center;padding:0 2px;line-height:0;flex-shrink:0}
 .ft2 .mand{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--dimmer);opacity:.7}
+.chips.tks{margin-top:4px}.chips.tks i{font-family:var(--mono);font-weight:500}
 .chips i.sure{color:var(--gold);background:rgba(217,176,106,.16)}
 .news .src{overflow-wrap:anywhere}
 .news.rum .src{color:var(--gold)}
@@ -3339,7 +3340,12 @@ function renderNews(){
  /* trois sources en vue, les plus parlantes ; les autres repliées */
  const rk=r=>(r.sure?0:r.ev?1:r.rel==='forte'?2:r.rel==='moyenne'?3:4);
  const ord=[...S.rumors].sort((a,b)=>rk(a)-rk(b));
- const one=r=>`<div class="news ${r.ev?'rum':''}"><span class="src">${r.src.toUpperCase()}</span><span>${r.t}<div class="chips">${r.v.map((z0,k)=>{const z=z0*FSG[k];return `<i class="${z>0?'up':z<0?'dn':''}">${FACT[k].id} ${chip(z)}</i>`}).join('')}${r.sure?'<i class="sure">✓ vérifiée</i>':''}<i class="rel ${r.rel}">fiabilité ${r.rel}</i></div></span></div>`;
+ /* lot 310 : les marchés que la source dit toucher — ceux de la dépêche annoncée, sinon les trois plus exposés à ses facteurs */
+ const tk=r=>{let L;if(r.hit)L=Object.keys(r.hit).filter(sy=>IDX[sy]!==undefined&&mktOpen(IDX[sy])).map(sy=>({sy,z:r.hit[sy]}));
+   else L=INSTR.map((x,i)=>({sy:x.sym,i,z:x.b.reduce((a,b,k)=>a+b*(r.v[k]||0),0)})).filter(o=>mktOpen(o.i));
+   L=L.filter(o=>Math.abs(o.z)>1e-6).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z)).slice(0,3);
+   return L.length?`<div class="chips tks">${L.map(o=>`<i class="${o.z>0?'up':'dn'}">${o.sy} ${o.z>0?'▲':'▼'}</i>`).join('')}</div>`:''};
+ const one=r=>`<div class="news ${r.ev?'rum':''}"><span class="src">${r.src.toUpperCase()}</span><span>${r.t}${tk(r)}<div class="chips">${r.v.map((z0,k)=>{const z=z0*FSG[k];return `<i class="${z>0?'up':z<0?'dn':''}">${FACT[k].id} ${chip(z)}</i>`}).join('')}${r.sure?'<i class="sure">✓ vérifiée</i>':''}<i class="rel ${r.rel}">fiabilité ${r.rel}</i></div></span></div>`;
  el.innerHTML=ord.slice(0,3).map(one).join('')+(ord.length>3?`<details class="srcmore"><summary>Toutes les sources · ${ord.length-3} de plus</summary>${ord.slice(3).map(one).join('')}</details>`:'');
  const rs=document.getElementById('rsum');
  const b=S.rumors.filter(r=>r.bought);
@@ -3378,9 +3384,9 @@ function genRumors(){
  const dot=v=>v.reduce((a,z,k)=>a+z*S.f[k],0);
  /* pré-annonces d'événements */
  const pr=Math.max(0.2,Math.min(1,RESR[S.bud.res]+PROF().rumBonus));
- S.evQueue.filter(ev=>!ev.trader&&!ev.rivalEv&&!ev.stake&&ev.t&&ev.hit&&!ev.x).slice(0,3).forEach((ev,j)=>{if((S.jh&&j===0)||rng()<pr){out.push({src:'Pré-annonce',t:ev.rum||`Le desk entend parler de : « ${ev.t} »`,v:eventFactorVec(ev),rel:'moyenne',ev:true,truth:true})}});
+ S.evQueue.filter(ev=>!ev.trader&&!ev.rivalEv&&!ev.stake&&ev.t&&ev.hit&&!ev.x).slice(0,3).forEach((ev,j)=>{if((S.jh&&j===0)||rng()<pr){out.push({src:'Pré-annonce',t:ev.rum||`Le desk entend parler de : « ${ev.t} »`,v:eventFactorVec(ev),rel:'moyenne',ev:true,truth:true,hit:ev.hit})}});
  if(rng()<pr*0.45){const f=pick(MACROEV.filter(e=>!e.x&&!S.evQueue.includes(e)&&!S.usedMacro.includes(e.t)));
-   if(f)out.push({src:'Pré-annonce',t:f.rum||`Le desk entend parler de : « ${f.t} »`,v:eventFactorVec(f),rel:'faible',ev:true,truth:false})}
+   if(f)out.push({src:'Pré-annonce',t:f.rum||`Le desk entend parler de : « ${f.t} »`,v:eventFactorVec(f),rel:'faible',ev:true,truth:false,hit:f.hit})}
  /* rumeurs factorielles */
  let guard=0;
  while(out.length<n&&guard++<400){
