@@ -891,16 +891,16 @@ const DESKS=[{id:'inhouse',nm:"Desk d'exécution intégré",mult:()=>1.00,fixed:
 const SIZES=[
  {id:'small',lvl:'Débutant',nav:0.1,capX:1,perf:0.15,nm:"Facile — 15 % de performance",who:"« Des concurrents à votre portée »",
   p:"Des concurrents battables, des investisseurs qui pardonnent un mauvais trimestre, une équipe bon marché. Vous touchez 15 % de la performance.",
-  ef:[["g","capital de départ : 1 M$, plus celui de votre style"],["g","le book que votre desk construirait, proposé chaque trimestre et applicable d'un bouton, quel que soit votre style"],["g","équipe 15 % moins chère"],["g","concurrents moins adroits et peu capitalisés (0,25 M$ de trésorerie, équipe standard)"],["g","investisseurs patients : confiance de départ +8, pertes 40 % moins mal vécues, rachats 25 % plus petits"],["g","comité indulgent : une perte lui coûte 25 % de moins"],["b","commission de performance : 15 %"],["b","souscriptions 40 % plus petites"]],
-  rivSkill:0.050,rivVol:0.95,rivSeed:0.00025,lpNeg:0.60,rcNeg:0.75,lp0:8,flowMult:0.75,flowIn:0.60,goalMult:1,costM:0.85,seed:0.001},
+  ef:[["g","capital de départ : 1,5 M$, plus celui de votre style"],["g","le book que votre desk construirait, proposé chaque trimestre et applicable d'un bouton, quel que soit votre style"],["g","équipe 15 % moins chère"],["g","concurrents moins adroits et peu capitalisés (0,25 M$ de trésorerie, équipe standard)"],["g","investisseurs patients : confiance de départ +8, pertes 40 % moins mal vécues, rachats 25 % plus petits"],["g","comité indulgent : une perte lui coûte 25 % de moins"],["b","commission de performance : 15 %"],["b","souscriptions 40 % plus petites"]],
+  rivSkill:0.050,rivVol:0.95,rivSeed:0.00025,lpNeg:0.60,rcNeg:0.75,lp0:8,flowMult:0.75,flowIn:0.60,goalMult:1,costM:0.85,seed:0.0015},
  {id:'mid',lvl:'Normal',nav:0.1,capX:1,perf:0.20,nm:"Moyen — 20 % de performance",who:"« La place telle qu'elle est »",
   p:"Trois très bons concurrents, des investisseurs qui comparent, le tarif habituel du métier : 20 % de la performance.",
-  ef:[["g","commission de performance : 20 %"],["g","capital de départ : 0,5 M$, plus celui de votre style"],["b","équipe 10 % plus chère"],["b","concurrents très bons, chacun dans son style, 1,5 M$ de trésorerie pour s'offrir une meilleure équipe"],["b","investisseurs et comité de référence : ni indulgents, ni voraces"]],
-  rivSkill:0.090,rivVol:1,rivBud:1,rivSeed:0.0015,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1,costM:1.10,seed:0.0005},
+  ef:[["g","commission de performance : 20 %"],["g","capital de départ : 1 M$, plus celui de votre style"],["b","équipe 10 % plus chère"],["b","concurrents très bons, chacun dans son style, 1,5 M$ de trésorerie pour s'offrir une meilleure équipe"],["b","investisseurs et comité de référence : ni indulgents, ni voraces"]],
+  rivSkill:0.090,rivVol:1,rivBud:1,rivSeed:0.0015,lpNeg:1,rcNeg:1,lp0:0,flowMult:1,goalMult:1,costM:1.10,seed:0.001},
  {id:'mega',lvl:'Expert',nav:0.1,capX:1,perf:0.30,nm:"Difficile — 30 % de performance",who:"« Les meilleurs du monde, et des clients impitoyables »",
   p:"Des concurrents au sommet de leur art, des investisseurs voraces, une équipe hors de prix. En échange : 30 % de la performance, et l'argent arrive aussi vite qu'il part.",
-  ef:[["g","commission de performance : 30 %"],["g","souscriptions 60 % plus grosses : un bon trimestre attire gros"],["b","aucun capital de départ, sauf celui de votre style"],["b","équipe 75 % plus chère"],["b","concurrents au sommet de leur art, 4 M$ de trésorerie : la meilleure équipe dès le départ"],["b","investisseurs voraces : confiance de départ −8, pertes 40 % plus mal vécues, rachats 15 % plus gros"],["b","comité sévère : une perte lui coûte 35 % de plus"]],
-  rivSkill:0.180,rivVol:1.10,rivBud:1,rivSeed:0.004,lpNeg:1.40,rcNeg:1.35,lp0:-8,flowMult:1.15,flowIn:1.60,goalMult:1,costM:1.75,seed:0}
+  ef:[["g","commission de performance : 30 %"],["g","souscriptions 60 % plus grosses : un bon trimestre attire gros"],["g","capital de départ : 0,5 M$, plus celui de votre style"],["b","équipe 75 % plus chère"],["b","concurrents au sommet de leur art, 4 M$ de trésorerie : la meilleure équipe dès le départ"],["b","investisseurs voraces : confiance de départ −8, pertes 40 % plus mal vécues, rachats 15 % plus gros"],["b","comité sévère : une perte lui coûte 35 % de plus"]],
+  rivSkill:0.180,rivVol:1.10,rivBud:1,rivSeed:0.004,lpNeg:1.40,rcNeg:1.35,lp0:-8,flowMult:1.15,flowIn:1.60,goalMult:1,costM:1.75,seed:0.0005}
 ];
 const UNIVS=[
  {id:'fin',edge:0.75,lpMult:0.90,lvl:'Débutant',nm:"Le bac à sable",who:"« Actions, taux, devises. Le triangle classique »",
@@ -986,7 +986,7 @@ function hired(id,p){return !!teamInit()[id][p]}
 function massBp(id,T){T=T||teamInit();const L=teamL(id);let m=0;L.forEach((x,p)=>{if(T[id][p])m+=salP(L,p)});return m}
 function eqLvl(id,m){const L=teamL(id);let n=0;for(let p=0;p<L.length;p++)if(L[p].bp<=m+1e-9)n=p;return n}
 function teamCopy(T){T=T||teamInit();return {fo:[...T.fo],bo:[...T.bo]}}
-function ladderT(id,j,T){const C=teamCopy(T);C[id]=teamL(id).map((x,p)=>p===0||(p<=j&&!(id==='fo'&&goneP(p))));return C}   /* les partis ne reviennent que sur contre-offre */
+function ladderT(id,j,T){const C=teamCopy(T),L=teamL(id),tg=L[j].bp;let m=0;C[id]=L.map((x,p)=>{if(p===0)return true;if(m>=tg-1e-9||(id==='fo'&&goneP(p)))return false;m+=salP(L,p);return true});return C}   /* lot 305 : les partis (qui ne reviennent que sur contre-offre) sont remplacés par les suivants */
 function teamLadder(id,j){S.team=ladderT(id,j);syncBud();setOps()}
 function teamIsLadder(id,j){const T=teamInit(),L=ladderT(id,j);return teamL(id).every((x,p)=>!!T[id][p]===!!L[id][p])}
 function goneP(p){return gonesL().some(g=>g.p===p)}
