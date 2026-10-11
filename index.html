@@ -1016,12 +1016,12 @@ function bonRate(i){return bonBase()+BONOFF[i]}
 const BONFX=[{c:1.35,p:0.50},{c:1.17,p:0.40},{c:1.00,p:0.30},{c:0.82,p:0.20},{c:0.70,p:0.12}],BONCUT=1.5;   /* lot 223 : coûts élargis */
 const BONREAD=[1.25,1.12,1,0.87,0.75],BONWIN=[-0.08,-0.04,0,0.04,0.08];   /* lot 223 : lecture des dépêches, chances des anecdotes */
 /* lot 296 : le moral du desk, un stock de 0 à 100. Il ne dépend que de l'argent et des égards :
-   cible = cran de bonus effectif (35, 45 … 75) + locaux (garage −5 … yacht +8) ; la moitié de l'écart se referme
+   cible = cran de bonus effectif (35, 45 … 75) + locaux (garage 0 … yacht +13) ; la moitié de l'écart se referme
    chaque trimestre. Une baisse de taux coûte 5 points par cran, les anecdotes déplacent le moral d'un coup.
    Les quatre effets du bonus (coûts, lecture, anecdotes, débauchage) se lisent sur le moral : à cran constant,
    le moral converge vers le niveau qui redonne exactement les effets de ce cran. */
 const MORAL={t0:35,dt:10,k:0.5,cut:5,egard:20,lo:20,hi:80};   /* égards : un ancien +10 % de débauchage = moral −2 */
-function motOff(){return Math.round(-25*(offFx('poach')-1))}
+function motOff(){return Math.round(-25*(offFx('poach')-1))+5}   /* lot 298 : garage 0 … yacht +13 */
 function motT(i){return MORAL.t0+MORAL.dt*i+motOff()}
 function motV(){if(!S)return MORAL.t0;if(S.mot==null)S.mot=motT(bonEff());return S.mot}
 function motX(m){return ((m==null?motV():m)-MORAL.t0)/MORAL.dt}
@@ -3907,14 +3907,14 @@ function cardTile(){const C=S.cards||{y:0};const st=(S.redOn||S.redNext)?'r':C.y
 /* lot 276 : les locaux — un seul lieu à la fois ; loyer en plus du budget (pb de la base d'équipe), progression linéaire ;
    déménager coûte un trimestre du nouveau loyer. La Défense est le défaut, compris dans le loyer du back office. */
 const OFFICES=[   /* lot 278 : départ au garage ; chaque cran vaut un peu plus que son loyer — aucun optimum où rester bloqué */
- {id:'garage',ic:'🔧',nm:"Un garage à Levallois",bp:1,fx:{team:0.95,poach:1.2},d:"Le point de départ. Équipe 5 % moins chère (on vient en jean) ; moral −5 : on part vite d'un garage."},
- {id:'defense',ic:'🏢',nm:"La Défense, tour B, 27e étage",bp:10,fx:{lp:0.5,subs:1.05},d:"Une vraie adresse : confiance +0,5 par trimestre, souscriptions +5 %. La moquette est grise, la vue imprenable sur la tour d'en face."},
- {id:'montaigne',ic:'🥂',nm:"Avenue Montaigne",bp:20,fx:{lp:1,subs:1.08,poach:0.95},d:"Confiance +1 par trimestre : les investisseurs aiment l'adresse ; souscriptions +8 % ; moral +1. Les déjeuners s'allongent."},
- {id:'mayfair',ic:'🎩',nm:"Mayfair, Londres",bp:30,fx:{lp:1,subs:1.12,poach:0.8},d:"Confiance +1 ; souscriptions +12 % ; moral +5 : vos traders aiment le quartier, et le pub d'en bas."},
+ {id:'garage',ic:'🔧',nm:"Un garage à Levallois",bp:1,fx:{team:0.95,poach:1.2},d:"Le point de départ. Équipe 5 % moins chère (on vient en jean) ; on part vite d'un garage : aucun bonus de moral."},
+ {id:'defense',ic:'🏢',nm:"La Défense, tour B, 27e étage",bp:10,fx:{lp:0.5,subs:1.05},d:"Une vraie adresse : confiance +0,5 par trimestre, souscriptions +5 %, moral +5. La moquette est grise, la vue imprenable sur la tour d'en face."},
+ {id:'montaigne',ic:'🥂',nm:"Avenue Montaigne",bp:20,fx:{lp:1,subs:1.08,poach:0.95},d:"Confiance +1 par trimestre : les investisseurs aiment l'adresse ; souscriptions +8 % ; moral +6. Les déjeuners s'allongent."},
+ {id:'mayfair',ic:'🎩',nm:"Mayfair, Londres",bp:30,fx:{lp:1,subs:1.12,poach:0.8},d:"Confiance +1 ; souscriptions +12 % ; moral +10 : vos traders aiment le quartier, et le pub d'en bas."},
  {id:'geneve',ic:'⛲',nm:"Genève, quai du Mont-Blanc",bp:40,fx:{lp:1,subs:1.12,poach:0.8,out:0.8},d:"Les grandes familles sont patientes : rachats −20 %, en plus des avantages de Mayfair. Le secret bancaire a ses charmes."},
- {id:'greenwich',ic:'🌳',nm:"Greenwich, Connecticut",bp:50,fx:{lp:1,subs:1.18,poach:0.75,out:0.8,tc:0.93},d:"Tous les courtiers à deux rues : coûts d'exécution −7 % ; souscriptions +18 % ; moral +6 ; rachats −20 %."},
+ {id:'greenwich',ic:'🌳',nm:"Greenwich, Connecticut",bp:50,fx:{lp:1,subs:1.18,poach:0.75,out:0.8,tc:0.93},d:"Tous les courtiers à deux rues : coûts d'exécution −7 % ; souscriptions +18 % ; moral +11 ; rachats −20 %."},
  {id:'singapour',ic:'🌇',nm:"Singapour, Marina Bay",bp:60,fx:{lp:1,subs:1.2,poach:0.75,out:0.8,tc:0.93,asia:0.75,watch:0.05},d:"Tout Greenwich, plus l'Asie : coûts −25 % sur l'Asie et les exotiques, veille des extrêmes +5 pts. Le décalage horaire se gère au café."},
- {id:'monaco',ic:'🛥️',nm:"Monaco, sur un yacht",bp:70,fx:{lp:2,subs:1.25,poach:0.7,out:0.75,tc:0.93,asia:0.75,watch:0.05,inc:1.1},d:"Le sommet : confiance +2 par trimestre, souscriptions +25 %, rachats −25 %, moral +8. Seul défaut : incidents ×1,1 — on ne sait jamais où est le gérant."}];
+ {id:'monaco',ic:'🛥️',nm:"Monaco, sur un yacht",bp:70,fx:{lp:2,subs:1.25,poach:0.7,out:0.75,tc:0.93,asia:0.75,watch:0.05,inc:1.1},d:"Le sommet : confiance +2 par trimestre, souscriptions +25 %, rachats −25 %, moral +13. Seul défaut : incidents ×1,1 — on ne sait jamais où est le gérant."}];
 function OFF(){return OFFICES[(S&&S.office!=null)?S.office:0]||OFFICES[0]}
 function offFx(k,d){const v=OFF().fx[k];return v==null?(d==null?1:d):v}
 function offBp(){const o=OFF();return o.bp+((S.officePrev!=null&&(S.office??0)!==S.officePrev)?o.bp:0)}
@@ -4641,7 +4641,7 @@ function showGauge(id){
    ${dl?tbl(dl.map(row),['Investisseurs · dernier trimestre','Δ']):''}`);
  } else if(id==='mot'){   /* lot 297 */
   const m=motV(),L=(S.motLog||[]).slice(-8).reverse();
-  openModal('Moral du desk',`<p>Le moral de vos traders ne dépend que de l'argent et des égards. Chaque trimestre, il fait la moitié du chemin vers la cible de votre taux de bonus — 35 au minimum, 75 au cran le plus haut, sans bonus s'il n'y a pas de commission de performance — corrigée par vos locaux (garage −5, yacht +8). Une baisse de taux coûte 5 points par cran ; les petits gestes du quotidien (anecdotes) le déplacent d'un coup.</p>
+  openModal('Moral du desk',`<p>Le moral de vos traders ne dépend que de l'argent et des égards. Chaque trimestre, il fait la moitié du chemin vers la cible de votre taux de bonus — 35 au minimum, 75 au cran le plus haut, sans bonus s'il n'y a pas de commission de performance — relevée par vos locaux (garage 0, yacht +13). Une baisse de taux coûte 5 points par cran ; les petits gestes du quotidien (anecdotes) le déplacent d'un coup.</p>
    ${tbl([['Moral',`<b>${Math.round(m)}</b>`],['Cible de votre taux et de vos locaux',`${Math.round(motT(S.bonI==null?MOT.i0:S.bonI))}`],["Coûts d'exécution",'×'+dec(motC(),2)],['Bruit sur la lecture des dépêches','×'+dec(motR(),2)],['Chances des anecdotes du desk',(bonD()>=0?'+':'−')+Math.round(Math.abs(bonD())*100)+' pts'],['Risque de débauchage ce trimestre',Math.round(poachNow()*100)+' %']])}
    <p class="note">Sous ${MORAL.lo}, le desk peut partir en groupe : ${Math.round(motLo(m)*100)} % aujourd'hui, de plus en plus probable vers 0. Au-dessus de ${MORAL.hi}, il peut refuser toutes les offres des concurrents et redoubler d'efforts : ${Math.round(motHi(m)*100)} % aujourd'hui, de plus en plus probable vers 100.</p>
    ${L.length?tbl(L.map(x=>[`T${x.q+1} · ${x.why}`,`<span class="${cls(x.d)}">${x.d>=0?'+':'−'}${Math.abs(x.d).toFixed(1)}</span>`]),['Derniers mouvements','Δ']):''}`);
@@ -7158,7 +7158,7 @@ function screenDebrief(o){
  const bnSel=(S.over||S.q>=QT())?'':(()=>{const pf=Math.max(0,(S.mgrQ&&S.mgrQ.perf)||0),cur=S.bonI==null?MOT.i0:S.bonI,prev=S.bonPrev==null?MOT.i0:S.bonPrev,e=EXECM[S.bud.exec];
   if(!(pf>0))return noBonusPage(cur,o.qTotal);   /* lot 255 : sans commission de performance, pas de choix du bonus */
   return `<div class="block"><div class="blockhead"><h2>Taux de bonus d'équipe</h2><span class="hint">versé à l'ouverture</span></div>
-  <p class="note" style="margin-top:0">Une part de votre commission de performance${pf>0?` (${mm(pf)} ce trimestre)`:' — aucune ce trimestre : rien ne sera versé, et le desk se comporte comme au cran minimal'}. Le minimum vaut 5 fois le coût de votre front office sur 100 M$ (${dec(bonBase()*100,1)} % aujourd'hui) ; chaque cran ajoute 2,5, 5, 10 ou 15 points. Le taux nourrit le moral du desk (${Math.round(motV())} aujourd'hui) : chaque trimestre, le moral fait la moitié du chemin vers la cible de votre taux (35 au minimum, 75 au cran le plus haut, plus ou moins selon vos locaux), et une baisse de taux coûte 5 points par cran. Le moral fixe quatre choses : un multiplicateur sur tous vos coûts d'exécution, fourchette et impact de marché compris, la précision de la lecture des dépêches, les chances de gagner des anecdotes du desk et le risque de débauchage. Sous 20, le desk peut partir en groupe ; au-dessus de 80, il peut refuser toutes les offres.</p>
+  <p class="note" style="margin-top:0">Une part de votre commission de performance${pf>0?` (${mm(pf)} ce trimestre)`:' — aucune ce trimestre : rien ne sera versé, et le desk se comporte comme au cran minimal'}. Le minimum vaut 5 fois le coût de votre front office sur 100 M$ (${dec(bonBase()*100,1)} % aujourd'hui) ; chaque cran ajoute 2,5, 5, 10 ou 15 points. Le taux nourrit le moral du desk (${Math.round(motV())} aujourd'hui) : chaque trimestre, le moral fait la moitié du chemin vers la cible de votre taux (35 au minimum, 75 au cran le plus haut, plus selon vos locaux), et une baisse de taux coûte 5 points par cran. Le moral fixe quatre choses : un multiplicateur sur tous vos coûts d'exécution, fourchette et impact de marché compris, la précision de la lecture des dépêches, les chances de gagner des anecdotes du desk et le risque de débauchage. Sous 20, le desk peut partir en groupe ; au-dessus de 80, il peut refuser toutes les offres.</p>
   <div class="cisel">${BONOFF.map((o,i)=>{const p=bonRate(i),m=motNext(i,prev);return `<button class="bnp${i===cur?' on':''}" data-i="${i}">${dec(p*100,Number.isInteger(Math.round(p*1000)/10)?0:1)} %<br><small>${mm(p*pf)} · moral → ${Math.round(m)} · coûts ×${dec(motC(m),2)} · lecture ×${dec(motR(m),2)} · anecdotes ${motW(m)>=0?'+':'−'}${Math.round(Math.abs(motW(m))*100)} pts · débauche ${Math.round(Math.min(0.95,motP(m)*(boH(12)?0.5:1))*100)} %</small></button>`}).join('')}</div></div>`})();
  const gtSel=(S.over||S.q>=QT()||!gateOk())?'':`<div class="block"><div class="blockhead"><h2>Gate</h2><span class="hint">prochaine clôture</span></div>
   <p class="note" style="margin-top:0">${mm(invDue())} d'avis de rachat tombent à la prochaine clôture, ${dec(invDue()/Math.max(1e-9,extNav())*100,1)} % de l'encours. La gate limite les paiements à ${Math.round(INVP.gate*100)} % de l'encours, au prorata ; le reste est reporté d'un trimestre. Prix : confiance ${INVP.gateLp}, et pas deux trimestres de suite.</p>

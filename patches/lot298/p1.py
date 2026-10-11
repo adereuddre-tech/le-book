@@ -1,0 +1,15 @@
+p='index.html';s=open(p,encoding='utf-8').read()
+def rep(o,n,k=1):
+    global s;c=s.count(o);assert c==k,(o[:60],c);s=s.replace(o,n)
+# le garage est le point neutre du moral : le joueur qui ne bouge pas retrouve exactement les effets d'avant le moral
+rep("function motOff(){return Math.round(-25*(offFx('poach')-1))}","function motOff(){return Math.round(-25*(offFx('poach')-1))+5}   /* lot 298 : garage 0 … yacht +13 */")
+rep("cible = cran de bonus effectif (35, 45 … 75) + locaux (garage −5 … yacht +8)","cible = cran de bonus effectif (35, 45 … 75) + locaux (garage 0 … yacht +13)")
+rep("corrigée par vos locaux (garage −5, yacht +8)","relevée par vos locaux (garage 0, yacht +13)")
+rep("(35 au minimum, 75 au cran le plus haut, plus ou moins selon vos locaux)","(35 au minimum, 75 au cran le plus haut, plus selon vos locaux)")
+rep("Équipe 5 % moins chère (on vient en jean) ; moral −5 : on part vite d'un garage.","Équipe 5 % moins chère (on vient en jean) ; on part vite d'un garage : aucun bonus de moral.")
+rep("confiance +0,5 par trimestre, souscriptions +5 %. La moquette","confiance +0,5 par trimestre, souscriptions +5 %, moral +5. La moquette")
+rep("souscriptions +8 % ; moral +1.","souscriptions +8 % ; moral +6.")
+rep("souscriptions +12 % ; moral +5 : vos traders","souscriptions +12 % ; moral +10 : vos traders")
+rep("souscriptions +18 % ; moral +6 ; rachats","souscriptions +18 % ; moral +11 ; rachats")
+rep("rachats −25 %, moral +8. Seul","rachats −25 %, moral +13. Seul")
+open(p,'w',encoding='utf-8').write(s)
