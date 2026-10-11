@@ -5209,7 +5209,7 @@ function screenPlay(){
    Pouvoirs d'action : armés, désarmables jusqu'à « Passer les ordres », qui les confirme (pwCommit).
    Pouvoirs d'information (Ingrid, Tuco) : joués à la lecture, après confirmation. Gontran se joue sur l'écran de l'incident. */
 const PW=[
- {id:'jk',fo:0,ic:'🐣',nm:'Jean-Kevin',t:"Le tableur à couleurs",d:"Il « optimise » vos ordres du trimestre : une chance sur deux de −20 % sur tous les coûts, une sur deux de +20 % (bug). Le verdict tombe à l'exécution."},
+ {id:'jk',fo:0,ic:'🐣',nm:'Jean-Kevin',t:"Le tableur à couleurs",d:"Il « optimise » vos ordres du trimestre : −20 % sur tous les coûts si le tableur marche, +20 % s'il plante. Le verdict tombe à l'exécution. Disponible chaque trimestre ; il apprend : 50 % de réussite au premier appel, 5 points de plus à chaque fois, jusqu'à 90 %."},
  {id:'dw',fo:1,ic:'📞',nm:'Dwight',t:"Un bloc à la voix",d:"Vos ordres sur les actions passent sans impact de marché tout le trimestre : seule la fourchette est due."},
  {id:'ig',fo:2,ic:'🏦',nm:'Ingrid',info:1,t:"Lire l'adjudication",d:"Elle vous dit dans quel sens finira le marché de taux le plus parlant ce trimestre. Juste quatre fois sur cinq."},
  {id:'bo',fo:3,ic:'🤖',nm:'Boris',t:"L'algorithme en urgence",d:"Surcoût d'urgence divisé par trois sur les devises ce trimestre (dépêches, extrêmes, rivalités)."},
@@ -5249,7 +5249,8 @@ function atkClose(){S.atkRes=null;const a=S.atk;if(!a||a.q!==S.q)return;const ok
  S.nav*=(1+x);S.qEvM=(S.qEvM||0)+x*nb;S.atkRes={ok,x,nm:INSTR[a.i].nm,sym:INSTR[a.i].sym};S.evLog.push({t:`Attaque sur ${INSTR[a.i].nm}`,pnl:x,m:x*nb,lp:0,rc:0});if(ok){S.atkWins=(S.atkWins||0)+1}}
 function pwHere(o){return o.fo!=null?(o.fo===0||here(o.fo)):(S.bud&&S.bud.bo>=o.bo)}
 function pwOn(id){return !!(S&&S.pw&&S.pw[id]===S.q)}
-function pwBack(id){const l=S.pwLast&&S.pwLast[id];return l==null?0:l+4}   /* trimestre où le pouvoir revient */
+function pwBack(id){const l=S.pwLast&&S.pwLast[id];return l==null?0:l+(id==='jk'?1:4)}   /* lot 302 : Jean-Kevin chaque trimestre */
+function jkP(){return Math.min(0.90,0.50+0.05*(S.pwJKn||0))}   /* trimestre où le pouvoir revient */
 function pwAvail(o){if(!pwHere(o))return false;if(o.id==='mi')return !S.pwMi&&S.cards&&S.cards.y>0;return S.q>=pwBack(o.id)}
 function pwOk(o){return pwOn(o.id)?!o.info&&S.phase==='book':pwAvail(o)&&!o.inc}
 function pwTip(cls,rel,who){const c=[];for(let i=0;i<N;i++)if(mktOpen(i)&&INSTR[i].grp===cls)c.push(i);if(!c.length)return null;
@@ -5265,19 +5266,19 @@ function pwUse(id){const o=PW.find(x=>x.id===id);if(!o||!pwOk(o))return;S.pw=S.p
 /* à « Passer les ordres » : les pouvoirs armés sont joués et comptés pour l'année */
 function pwCommit(){if(!S.pw)return;S.pwLast=S.pwLast||{};S.pwMaK=null;
  PW.forEach(o=>{if(o.info||!pwOn(o.id)||S.pwLast[o.id]===S.q)return;S.pwLast[o.id]=S.q;
-  if(o.id==='jk')S.pwJK=prng32(hash32('jk'+S.q,S.seed))()<0.5?0.8:1.2;
+  if(o.id==='jk'){S.pwJK=prng32(hash32('jk'+S.q,S.seed))()<jkP()?0.8:1.2;S.pwJKn=(S.pwJKn||0)+1}
   if(o.id==='on'){gauge(8,0,'Onésime sur un plateau télé');if(!pwOn('jo'))S.leakQ=true}
   if(o.id==='jo')S.leakQ=false;
   if(o.id==='fi')gauge(0,5,"Audit propre de Firmin");
   if(o.id==='mi'){S.pwMi=1;S.cards.y=Math.max(0,S.cards.y-1);(S.cards.log=S.cards.log||[]).push({q:S.q,c:'effacé',why:'Mireille plaide devant le comité'})}});
- if(pwOn('jk'))toast(S.pwJK<1?'🐣 Le tableur de Jean-Kevin marche : coûts −20 % ce trimestre.':'🐣 Le tableur de Jean-Kevin plante : coûts +20 % ce trimestre.')}
+ if(pwOn('jk'))toast((S.pwJK<1?'🐣 Le tableur de Jean-Kevin marche : coûts −20 % ce trimestre.':'🐣 Le tableur de Jean-Kevin plante : coûts +20 % ce trimestre.')+` Il apprend : ${Math.round(jkP()*100)} % de réussite la prochaine fois.`)}
 function pwDraw(){const el=document.getElementById('pwblk');if(!el)return;const L=PW.filter(pwHere);
  const tips=(S.pwTips||[]).filter(t=>t.q===S.q);
- el.innerHTML=`<div class="blockhead"><h2>Votre équipe</h2><span class="hint">un coup de pouce chacun par an</span></div>
+ el.innerHTML=`<div class="blockhead"><h2>Votre équipe</h2><span class="hint">un coup de pouce chacun par an · Jean-Kevin chaque trimestre</span></div>
   ${tips.map(t=>`<div class="flag" style="margin:0 0 8px"><span>📌 <b>${t.who}</b> : ${t.nm} finira le trimestre en <b>${t.up?'hausse':'baisse'}</b>.</span></div>`).join('')}
   <div class="pwl">${L.map(o=>{const on=pwOn(o.id),ok=pwOk(o),back=pwBack(o.id);
    const st=on?(o.info?'joué ce trimestre':'armé · touchez pour désarmer'):o.inc?(pwAvail(o)?'disponible · se joue sur l’incident':`revient au trimestre ${back+1}`):o.id==='mi'?(S.pwMi?'joué pour le mandat':S.cards&&S.cards.y?'disponible':'aucun carton à effacer'):pwAvail(o)?(S.pwConf===o.id?'touchez encore pour confirmer : compté pour l’année':'disponible'):`revient au trimestre ${back+1}`;
-   return `<button class="pwb${on?' on':''}${S.pwConf===o.id?' conf':''}" data-pw="${o.id}"${ok?'':' disabled'}><b>${o.ic} ${o.nm} · ${o.t}</b><small>${o.d} <i>· ${st}</i></small></button>`}).join('')}</div>`;
+   return `<button class="pwb${on?' on':''}${S.pwConf===o.id?' conf':''}" data-pw="${o.id}"${ok?'':' disabled'}><b>${o.ic} ${o.nm} · ${o.t}</b><small>${o.d} <i>· ${st}${o.id==='jk'?` · réussite ${Math.round((pwOn('jk')&&S.pwLast&&S.pwLast.jk===S.q?Math.min(0.9,jkP()-0.05):jkP())*100)} %`:''}</i></small></button>`}).join('')}</div>`;
  el.querySelectorAll('.pwb[data-pw]').forEach(b=>b.onclick=()=>pwUse(b.dataset.pw))}
 /* Les ordres sortent de la poche du gérant : le bouton reste bloqué tant que la caisse ne suit
    pas. Un book inchangé ne coûte rien et n'est donc jamais bloqué — pas d'impasse possible. */
