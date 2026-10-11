@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 306.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 307.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -329,6 +329,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **304** : équipe composée personne par personne (`S.team`, `teamInit`, `hired`) : une case par personne, Jean-Kevin et le loyer d'office. Salaire propre = écart de grille (`salP`). Effets individuels par présence (`here`, `boH`, `pwHere`, CAST de Mireille) ; effets d'ensemble par niveau équivalent de masse salariale (`eqLvl` : plus haut cran payé par la masse, dans `syncBud`) — l'échelle d'avant donne exactement les mêmes effets. Recrutement et licenciement : un demi-trimestre du salaire (`hireRaw` → `S.qHireM`, `sevRawT` → `S.qSevM`), référence `S.teamPrev` (reconstruit depuis `budPrev` pour les sauvegardes). Un trader débauché quitte l'équipe (plus de salaire, pas d'indemnité) et ne revient que sur contre-offre. Carton rouge budget : Gontran, Josiane, Firmin imposés. Bot : recrute en échelle (`teamLadder`, `opsLadder`).
 - **305** : équipe : l'échelle « jusqu'au cran j » (`ladderT`, bot) remplace les partis par les suivants jusqu'à la masse salariale du cran ; capital de départ +0,5 M$ à toutes les difficultés (facile 1,5, moyen 1, difficile 0,5 M$, plus le style) pour compenser les frais d'embauche. Campagne 96 parties facile : lot 303 74 %, lot 304 67 % (le bot perdait ses niveaux avec les départs), lot 305 75 %.
 - **306** : locaux : plus de frais de déménagement (`offBp` = loyer) ; loyers +15 % (Défense 12, Montaigne 23, Mayfair 35, Genève 46, Greenwich 58, Singapour 69, yacht 80 pb) ; une adresse plus chère que la caisse ne peut payer est verrouillée (`offOk`) — on pouvait s'installer à Monaco sans un sou.
+- **307** : équipe : plus de frais d'embauche (`hireRaw` = 0), l'indemnité de licenciement reste ; capital de départ ramené à celui d'avant le lot 305 (facile 1, moyen 0,5, difficile 0 M$, plus le style). Campagne 96 parties facile : 72 % (75 % au lot 305, 74 % au lot 303), score moyen 7,8 inchangé.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
