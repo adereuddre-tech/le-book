@@ -975,12 +975,34 @@ const BUDGET=[
   d:"Le loyer, la comptabilité, les opérations, le contrôle des risques et la conformité. Josiane Suspens est le point neutre. Le loyer seul, c'est la catastrophe : incidents en série, chocs extrêmes encaissés de plein fouet. Au-dessus, chaque poste réduit nettement la fréquence et la gravité des incidents et amortit le choc immédiat des événements extrêmes, et rassure le comité.",
   lv:BOP.map(p=>Object.assign({nm:p.who},p))}
 ];
-function syncBud(){if(!S||!S.bud)return;S.bud.exec=S.bud.res=S.bud.ret=Math.min(S.bud.fo,7);   /* lot 197 : 8 crans */S.bud.risk=BOMAP[S.bud.bo]}
+/* lot 304 : l'équipe se compose personne par personne. Salaire propre = écart avec le cran d'avant de la grille.
+   Effets individuels (classe couverte, pouvoirs, avantages) : présence. Effets d'ensemble (coûts, sources, incidents) :
+   niveau équivalent = le cran le plus haut que la masse salariale paierait sur l'ancienne échelle. Le loyer et Jean-Kevin restent d'office. */
+function salP(L,p){return p>0?L[p].bp-L[p-1].bp:0}
+function teamL(id){return id==='fo'?FOP:BOP}
+function teamInit(){if(!S.team){const f=(S.bud&&S.bud.fo)||0,b=(S.bud&&S.bud.bo)||0;S.team={fo:FOP.map((x,p)=>p===0||p<=f),bo:BOP.map((x,p)=>p===0||p<=b)};
+  if(!S.teamPrev&&S.budPrev)S.teamPrev={fo:FOP.map((x,p)=>p===0||p<=S.budPrev.fo),bo:BOP.map((x,p)=>p===0||p<=S.budPrev.bo)}}return S.team}   /* sauvegardes d'avant le lot 304 */
+function hired(id,p){return !!teamInit()[id][p]}
+function massBp(id,T){T=T||teamInit();const L=teamL(id);let m=0;L.forEach((x,p)=>{if(T[id][p])m+=salP(L,p)});return m}
+function eqLvl(id,m){const L=teamL(id);let n=0;for(let p=0;p<L.length;p++)if(L[p].bp<=m+1e-9)n=p;return n}
+function teamCopy(T){T=T||teamInit();return {fo:[...T.fo],bo:[...T.bo]}}
+function ladderT(id,j,T){const C=teamCopy(T);C[id]=teamL(id).map((x,p)=>p===0||(p<=j&&!(id==='fo'&&goneP(p))));return C}   /* les partis ne reviennent que sur contre-offre */
+function teamLadder(id,j){S.team=ladderT(id,j);syncBud();setOps()}
+function teamIsLadder(id,j){const T=teamInit(),L=ladderT(id,j);return teamL(id).every((x,p)=>!!T[id][p]===!!L[id][p])}
+function goneP(p){return gonesL().some(g=>g.p===p)}
+/* recrutement et licenciement : un demi-trimestre du salaire de la personne */
+function hireRaw(T){T=T||teamInit();const P=S.teamPrev;let m=0;['fo','bo'].forEach(id=>teamL(id).forEach((x,p)=>{if(p>0&&T[id][p]&&!(P&&P[id][p]))m+=0.5*salP(teamL(id),p)}));return m}
+function sevRawT(T){T=T||teamInit();const P=S.teamPrev;if(!P)return 0;let m=0;['fo','bo'].forEach(id=>teamL(id).forEach((x,p)=>{if(p>0&&P[id][p]&&!T[id][p]&&!(id==='fo'&&goneP(p)))m+=0.5*salP(teamL(id),p)}));return m}
+function budgetBpT(T){return teamBp(massBp('fo',T)+massBp('bo',T))+DESK().fixed*1e4+cntOn()+offBp()}
+function opsT(T){return (budgetBpT(T)+hireRaw(T)+sevRawT(T))*1e-4*budNav()}
+function opsLadder(id,j){return opsT(ladderT(id,j))}
+function teamLadderSub(id,j){const P=S.teamPrev;if(!P)return false;return teamL(id).every((x,p)=>!(p===0||p<=j)||p===0||P[id][p])}
+function syncBud(){if(!S||!S.bud)return;teamInit();S.bud.fo=eqLvl('fo',massBp('fo'));S.bud.bo=eqLvl('bo',massBp('bo'));S.bud.exec=S.bud.res=S.bud.ret=Math.min(S.bud.fo,7);   /* lot 197 : 8 crans */S.bud.risk=BOMAP[S.bud.bo]}
 function eF(p){return FOP[p]&&FOP[p].g==='f'?'e':''}
 function gonesL(){if(!S.gones){S.gones=[];if(S.gone){S.gones.push({p:S.gone.p,n:S.gone.n,boss:S.gone.boss});S.gone=null}}return S.gones}
 const CNTK=1.5;   /* lot 117 : un trader parti ne revient que contre 1,5 trimestre de son salaire */
 function cntCost(p){return Math.round(CNTK*(FOP[p].bp-FOP[p-1].bp))}
-function here(p){return !!(S&&S.bud)&&S.bud.fo>=p&&!gonesL().some(g=>g.p===p&&g.n===0)}
+function here(p){return !!(S&&S.bud)&&hired('fo',p)&&!gonesL().some(g=>g.p===p&&g.n===0)}   /* lot 304 : présence */
 /* lot 93 : distribution des rôles */
 const CAST=[
  {re:'Dwight Tannenbaum|Dwight',on:()=>here(1),sub:()=>'le courtier actions'},
@@ -989,7 +1011,7 @@ const CAST=[
  {re:'Bartolomeo « Tuco » Ossobuco|Tuco',on:()=>here(4),sub:()=>'le courtier matières premières'},
  {re:'Wing-Fat « Winnie » Leung|Winnie',on:()=>here(5),sub:()=>'le courtier de Hong Kong'},
  {re:'Sœur Marie-Alpha',on:()=>here(6),sub:()=>'Jean-Kevin'},
- {re:'Mireille Cauchemar|Mireille',bo:1,on:()=>S.bud.bo>=4,sub:()=>S.bud.bo>=2?'Josiane Suspens':'Gontran Report-à-Nouveau'}];
+ {re:'Mireille Cauchemar|Mireille',bo:1,on:()=>boH(4),sub:()=>boH(2)?'Josiane Suspens':'Gontran Report-à-Nouveau'}];
 CAST.forEach(c=>{c.rx=new RegExp('(?:'+c.re+')')});
 const PERSO={"Tuco a gagné le concours de chili du prime broker":4,"Citadelle Nord fait une offre à Ingrid":2,"Pont-Levis Associés cherche un gérant énergie":4,"Votre gérante taux part chez un concurrent":2,"Un concurrent tourne autour de Boris":3,"« Ken Griffon m'a appelé. Pour un conseil. Je crois »":1};
 function persoOk(e){const w=e.who||'';if(e.hunt&&!huntCands().length)return false;if(/Marie-Alpha/.test(w)&&!here(6))return false;if(/^Dwight/.test(w)&&!here(1))return false;if(/Onésime/.test(w)&&!here(7))return false;if((/Report-à-Nouveau/.test(w)&&S.bud.bo<1)||(/Josiane/.test(w)&&S.bud.bo<2)||(/Tatillon/.test(w)&&S.bud.bo<3)||(/Pare-Feu/.test(w)&&S.bud.bo<5))return false;const p=PERSO[e.t];return p===undefined||here(p)}
@@ -1009,7 +1031,7 @@ function cast(ev){if(ev&&ev.hunt&&S&&S.bud){const c=huntCands();if(c.length){con
   if(Array.isArray(o.ch))o.ch=deepCast(o.ch,c)});
  return o}
 const BONOFF=[0,0.025,0.05,0.10,0.15],POACHP=0.5,MOT={i0:0};
-function bonBase(){if(!S||!S.bud)return 0;const p=Math.min(S.bud.fo,FOP.length-1);return p>=0?5*FOP[p].bp*1e-4:0}   /* lot 282 : 5 fois le coût du front office en pb, sans plafond */
+function bonBase(){if(!S||!S.bud)return 0;return 5*massBp('fo')*1e-4}   /* lot 304 : masse salariale du front office */   /* lot 282 : 5 fois le coût du front office en pb, sans plafond */
 function bonRate(i){return bonBase()+BONOFF[i]}
 /* lot 115 : effet direct du cran de bonus versé — g : part de la baisse des coûts du budget salle de marché que le desk livre ;
    p : risque de débauchage par trimestre ; ×1,5 le trimestre d'une baisse de taux */
@@ -1068,12 +1090,12 @@ function payBonus(){S.qBonT=0;S.bonWhoQ=null;if(S.q<1)return;const perf=(S.mgrQ&
  motV();motAdd(MORAL.k*(motT(S.bonEff)-S.mot),perf>0?'bonus':'pas de bonus');if(d<0)motAdd(MORAL.cut*d,'baisse du taux');   /* lot 296 */
  if(d<0)S.bonCutQ=S.q;S.bonPrev=i}
 function covered(g){const p=TRD[g];return p===undefined||here(p)}
-function boH(n){return !!(S&&S.bud&&S.bud.bo>=n)}   /* lot 279 : back office au cran n ou plus */
+function boH(n){return !!(S&&S.bud)&&hired('bo',n)}   /* lot 304 : la personne est là */   /* lot 279 : back office au cran n ou plus */
 function cntOn(){return S&&S.cntQ===S.q?(S.cntBp||0):0}
-function sevRaw(){const P=S.budPrev;if(!P)return 0;return 0.5*BUDGET.reduce((a,b)=>a+Math.max(0,b.lv[P[b.id]].bp-b.lv[S.bud[b.id]].bp),0)}   /* lot 117 : un demi-trimestre de salaire */
+function sevRaw(){return sevRawT()}   /* lot 304 : par personne */   /* lot 117 : un demi-trimestre de salaire */
 /* budget du trimestre + bonus versés aux partants, plafonnées à ce qui reste en caisse : baisser un cran ne bloque jamais */
 function setOps(){S.mgrCosts-=S.qOps||0;S.cOps=(S.cOps||0)-(S.qOps||0);const purse=mgrCash(),b=budgetBp()*1e-4*budNav();
- S.qSevM=Math.min(sevRaw()*1e-4*budNav(),Math.max(0,purse-b));S.qOps=b+S.qSevM;S.mgrCosts+=S.qOps;S.cOps+=S.qOps}
+ S.qSevM=Math.min(sevRaw()*1e-4*budNav(),Math.max(0,purse-b));S.qHireM=Math.min(hireRaw()*1e-4*budNav(),Math.max(0,purse-b-S.qSevM));S.qOps=b+S.qSevM+S.qHireM;S.mgrCosts+=S.qOps;S.cOps+=S.qOps}   /* lot 304 : recrutements */
 function covTxt(){const op=GRP.filter(g=>g!=='Exotiques'||S.exoOpen),c=op.filter(covered),u=op.filter(g=>!covered(g));
  return `<br>Classes couvertes : ${c.map(g=>g.toLowerCase()).join(', ')||'aucune'}${u.length?` · <span class="neg-g">sans trader, courtier ×${dec(NOTRD,1)}</span> : ${u.map(g=>g.toLowerCase()).join(', ')}`:''}`}
 const EXECM=[1.35,1.15,1.00,0.75,0.666,0.575,0.498,0.431],   /* lot 197 : 8e cran (Onésime) */   /* lot 38 : trois quarts de l'ancienne facture, le reste se paie en impact de marché */
@@ -1105,7 +1127,7 @@ function budEf0(id,i){
  return `${RESN[i]} sources · fiabilité des sources ${Math.abs(RESREL[i])<0.005?'de référence':(RESREL[i]>0?'+':'−')+Math.round(Math.abs(RESREL[i])*100)+' pts'} · pré-annonces ${Math.round(RESR[i]*100)} % · lecture des dépêches ±${Math.round(RESPH[i]*100)} pts`;
 }
 /* lot 82 : ce que veulent dire les chiffres de chaque budget, au cran choisi */
-function budEf(id,i){const X=L=>L.slice(0,i+1).filter(l=>l.pw).map(l=>`<br>${l.ic} <b>${l.who}</b> : ${l.pw}`).join('');   /* lot 279 */
+function budEf(id,i,one){const X=L=>L.filter((l,p)=>one!=null?p===one:hired(id,p)).filter(l=>l.pw).map(l=>`<br>${l.ic} <b>${l.who}</b> : ${l.pw}`).join('');   /* lot 304 : pouvoirs des présents */   /* lot 279 */
  if(id==='fo')return budEf0('exec',Math.min(i,7))+' · '+budEf0('res',Math.min(i,7))+X(FOP);if(id==='bo')return budEf0('risk',BOMAP[i])+X(BOP);return budEf0(id,i)}
 function budExpl(id){if(id==='fo')return budExpl0('exec',Math.min(S.bud.fo,7))+budExpl0('res',Math.min(S.bud.fo,7));if(id==='bo')return budExpl0('risk',BOMAP[S.bud.bo]);return budExpl0(id,S.bud[id])}
 function budExpl0(id,i){
@@ -4045,7 +4067,7 @@ function OFF(){return OFFICES[(S&&S.office!=null)?S.office:0]||OFFICES[0]}
 function offFx(k,d){const v=OFF().fx[k];return v==null?(d==null?1:d):v}
 function offBp(){const o=OFF();return o.bp+((S.officePrev!=null&&(S.office??0)!==S.officePrev)?o.bp:0)}
 function teamBp(f){return f*offFx('team')}
-function budgetBp(){return teamBp(BUDGET.reduce((a,b)=>a+b.lv[S.bud[b.id]].bp,0))+DESK().fixed*1e4+cntOn()+offBp()}
+function budgetBp(){return budgetBpT()}   /* lot 304 : masse salariale de l'équipe choisie */
 /* budget si l'on basculait un seul poste sur un autre niveau */
 /* lot 58 : placement du collatéral. Le surcroît de rendement est acquis au fil du trimestre ;
    la perte, de probabilité et de montant annoncés, tombe à la clôture (tirage pur). */
@@ -4080,7 +4102,7 @@ function drawColl(){
   toast(`Collatéral → <b>${o.nm}</b> · ${dec((S.rate/4+colY(o))*100,1)} % ce trimestre${o.p?`, ${Math.round(o.p*100)} % de risque de −${dec(o.l*100,1)} %`:''}`)});
 }
 function budRest(){const e=document.getElementById('brest');if(!e)return;const r=mgrCash()+(S.qOps||0)-budgetBp()*1e-4*budNav();e.textContent=mm(r);e.className=r>=0?'gold-g':'neg-g'}
-function budgetBpIf(id,lv){return teamBp(BUDGET.reduce((a,b)=>a+b.lv[b.id===id?lv:S.bud[b.id]].bp,0))+DESK().fixed*1e4+cntOn()+offBp()}
+function budgetBpIf(id,lv){return budgetBpT(ladderT(id,lv))}   /* l'échelle jusqu'au cran lv */
 /* Le score : commissions encaissées moins tout ce que le gérant a payé, coûts d'exécution
    du trimestre en cours compris — ils bougent pendant qu'on construit le book. */
 function mgrNet(){return S.mgrFees-S.mgrCosts-(S.phase==='book'?liveTC():(S.pendingTC||0)*S.nav)+((S.phase==='events'&&S.live&&S.coinvBase)?S.coinvBase*liveNet():0)}
@@ -4834,7 +4856,7 @@ function showGauge(id){
  } else if(id==='cost'){
   const c=costsNow();const k0=S.k0||S.k;
   const rows=[];for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9&&S.phase==='book'){const t=tcost(d,i);rows.push([`${INSTR[i].sym} ${k0[i]>0?'+':''}${k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,cB(t.bp),cS(t.cost)])}}
-  const b=BUDGET.map(bb=>[bb.nm+' · '+bb.lv[S.bud[bb.id]].nm,bb.lv[S.bud[bb.id]].bp+' pb','',bb.lv[S.bud[bb.id]].bp*1e-4*S.nav]);
+  const b=BUDGET.map(bb=>[bb.nm+' · '+teamInit()[bb.id].filter((x,p)=>x&&p>0).length+' personnes',massBp(bb.id)+' pb','',massBp(bb.id)*1e-4*S.nav]);
   if(DESK().fixed)b.push(['Masse salariale du desk',(DESK().fixed*1e4).toFixed(0)+' pb','',DESK().fixed*S.nav]);
   const tot=c.ops+c.tc+c.mgmt,tf=c.tc+c.mgmt;
   const UC=pickU([VOL().mgmt*S.nav,...b.map(x=>x[3]||0),c.tc*1e-4*S.nav,tot*1e-4*S.nav]);
@@ -5067,9 +5089,10 @@ function screenBudget(){
  save('screenBudget');S.hotFactor=null;
  S.mgrCosts-=S.qOps||0;S.cOps=(S.cOps||0)-(S.qOps||0);S.qOps=0;
  {const purse=mgrCash(),fits=()=>budgetBp()*1e-4*budNav()<=purse+1e-12;
-  if(redOn('budget')&&S.bud.bo<3){for(let l=3;l>S.bud.bo;l--){const o=S.bud.bo;S.bud.bo=l;if(fits())break;S.bud.bo=o}}
-  for(let g=0;g<40&&!fits()&&!S.budPrev;g++){let bi=null,bv=0;BUDGET.forEach(b=>{const l=S.bud[b.id];if(l>(redOn('budget')&&b.id==='bo'?3:0)&&b.lv[l].bp>bv){bv=b.lv[l].bp;bi=b.id}});
-   if(!bi)break;S.bud[bi]--}syncBud()}
+  teamInit();if(redOn('budget'))for(let p=1;p<=3;p++)S.team.bo[p]=true;   /* lot 304 : le comité impose les trois premiers postes */
+  gonesL().forEach(g=>{if(g.n===0)S.team.fo[g.p]=false});   /* un trader débauché quitte l'équipe : plus de salaire, pas d'indemnité */
+  for(let g=0;g<40&&!fits()&&!S.teamPrev;g++){let bi=null,bp=-1,bv=0;['fo','bo'].forEach(id=>teamL(id).forEach((x,p)=>{if(p>0&&S.team[id][p]&&!(id==='bo'&&redOn('budget')&&p<=3)&&salP(teamL(id),p)>bv){bv=salP(teamL(id),p);bi=id;bp=p}}));
+   if(!bi)break;S.team[bi][bp]=false}syncBud()}
  setOps();
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>Budget d'exploitation du trimestre</h2><span class="hint">à votre charge</span></div>
@@ -5085,7 +5108,7 @@ function screenBudget(){
  drawBuds();drawColl();
  document.getElementById('ok').onclick=()=>{
    const bp=budgetBp()-cntOn();
-   S.budBp=bp;S.budPrev={fo:S.bud.fo,bo:S.bud.bo};S.officePrev=S.office==null?0:S.office;   /* lot 276 */
+   S.budBp=bp;S.budPrev={fo:S.bud.fo,bo:S.bud.bo};S.teamPrev=teamCopy();   /* lot 304 */S.officePrev=S.office==null?0:S.office;   /* lot 276 */
    /* lot 61 : le rendement du collatéral est acquis au fonds et versé en entier à la clôture */
    planSignalsAfterBudget();
    if(S.preDesk&&(!S.preDesk.cond||S.preDesk.cond())){const ev=S.preDesk;S.preDesk=null;screenTraderEvent(ev,screenPlay)}else screenPlay();
@@ -5128,27 +5151,29 @@ function drawBuds(){
  /* caisse avant le budget de ce trimestre : un niveau qui la dépasse est verrouillé */
  const purse=mgrCash()+(S.qOps||0);
  setTimeout(budRest,0);
- const ok=(id,i)=>(i===0||(S.budPrev&&i<=S.budPrev[id])||budgetBpIf(id,i)*1e-4*budNav()<=purse)&&!(id==='bo'&&redOn('budget')&&i<3&&i<S.bud.bo);
- const GL=gonesL().filter(g=>g.n===0&&S.bud.fo>=g.p),cok=g=>(budgetBp()+cntCost(g.p))*1e-4*budNav()<=purse;
- document.getElementById('buds').innerHTML=BUDGET.map(b=>{const cur=S.bud[b.id];return `<div class="brow">
-   <div class="bh"><b><span class="bico">${b.ico}</span>${b.nm}</b><span>${mm(b.lv[cur].bp*1e-4*budNav())} · ${(b.lv[cur].bp*1e-4*budNav()/Math.max(1e-9,S.nav)*1e4).toFixed(0)} pb</span></div>
-   <p class="note" style="margin:2px 0 6px">${b.id==='fo'?`Touchez une personne : l'équipe va jusqu'à elle. Le prix est celui de toute l'équipe.`:`Touchez un poste : le back office va jusqu'à lui.`} ${S.budPrev&&S.budPrev[b.id]>0?`<b class="neg-g">Ne pas sélectionner, c'est licencier : chaque partant touche son bonus de départ, un demi-trimestre de salaire.</b>`:''}${b.id==='bo'&&redOn('budget')?` <b class="neg-g">Carton rouge : le comité vous interdit de descendre le back office sous ${BOP[3].who}.</b>`:''}</p>
-   <div class="team">${b.lv.map((l,i)=>{const gone=b.id==='fo'&&GL.some(g=>g.p===i),o=ok(b.id,i);
-    return `<button class="lvl tm ${i<=cur?'in':''} ${cur===i?'on':''}${gone?' gone':''}" data-b="${b.id}" data-i="${i}"${o?'':' disabled'}><span class="tic">${l.ic}</span><span class="tnm"><b>${l.full}</b><i>${gone?`parti${eF(i)} chez ${GL.find(g=>g.p===i).boss}`:l.role}</i></span><span class="tbp">${i>0?'+'+m3((l.bp-b.lv[i-1].bp)*1e-4*budNav()):'—'}<br>${o?'équipe '+m3(l.bp*1e-4*budNav()):(b.id==='bo'&&redOn('budget')&&i<3?'<span class="hx">interdit : carton rouge</span>':'<span class="hx">hors trésorerie</span>')}${S.budPrev&&i<S.budPrev[b.id]?`<br><span class="neg-g">départs −${m3(0.5*(b.lv[S.budPrev[b.id]].bp-l.bp)*1e-4*budNav())}</span>`:''}</span></button>`}).join('')}</div>
+ const tog=(id,p)=>{const T=teamCopy();T[id][p]=!T[id][p];return T},lock=(id,p)=>p===0||(id==='bo'&&redOn('budget')&&p<=3)||(id==='fo'&&goneP(p));
+ const ok=(id,p)=>!lock(id,p)&&(hired(id,p)||opsT(tog(id,p))<=purse+1e-12);   /* lot 304 : on peut toujours se séparer de quelqu'un */
+ const GL=gonesL().filter(g=>g.n===0),cok=g=>(budgetBp()+cntCost(g.p))*1e-4*budNav()<=purse;
+ const P=S.teamPrev;
+ document.getElementById('buds').innerHTML=BUDGET.map(b=>{const cur=S.bud[b.id],ms=massBp(b.id),nx=b.lv[cur+1];return `<div class="brow">
+   <div class="bh"><b><span class="bico">${b.ico}</span>${b.nm}</b><span>${mm(ms*1e-4*budNav())} · ${(ms*1e-4*budNav()/Math.max(1e-9,S.nav)*1e4).toFixed(0)} pb</span></div>
+   <p class="note" style="margin:2px 0 4px">Niveau équivalent : <b>${b.lv[cur].who}</b>${nx?` · encore ${m3((nx.bp-ms)*1e-4*budNav())} de masse salariale pour le niveau ${nx.who}`:''}.</p>
+   <p class="note" style="margin:2px 0 6px">Touchez une personne pour la recruter ou vous en séparer${b.id==='bo'?' ; sans personne, il reste le loyer':''}. Ce qu'elle apporte en propre n'existe que si elle est là ; les effets d'ensemble suivent la masse salariale. Recruter ou licencier coûte un demi-trimestre de son salaire.${b.id==='bo'&&redOn('budget')?` <b class="neg-g">Carton rouge : le comité impose ${BOP[1].who}, ${BOP[2].who} et ${BOP[3].who}.</b>`:''}</p>
+   <div class="team">${b.lv.map((l,i)=>{const gone=b.id==='fo'&&GL.some(g=>g.p===i),o=ok(b.id,i),h=hired(b.id,i),sal=salP(b.lv,i)*1e-4*budNav(),was=!!(P&&P[b.id][i]);
+    return `<button class="lvl tm ${h?'in on':''}${gone?' gone':''}" data-b="${b.id}" data-i="${i}"${o?'':' disabled'}><span class="tic">${l.ic}</span><span class="tnm"><b>${l.full}</b><i>${gone?`parti${eF(i)} chez ${GL.find(g=>g.p===i).boss}`:l.role}</i></span><span class="tbp">${i>0?m3(sal):'—'}<br>${i===0?'<span class="hx">d\'office</span>':gone?'<span class="hx">contre-offre ci-dessous</span>':lock(b.id,i)?'<span class="hx">imposé : carton rouge</span>':h?(was?'<span class="hx">en poste</span>':`<span class="neg-g">embauche −${m3(0.5*sal)}</span>`):(was&&!gone?`<span class="neg-g">départ −${m3(0.5*sal)}</span>`:o?'recruter':'<span class="hx">hors trésorerie</span>')}</span></button>`}).join('')}</div>
    ${b.id==='fo'?GL.map(G=>`<div class="flag" style="margin:8px 0 0"><span><b>${FOP[G.p].who} est parti${eF(G.p)} chez ${G.boss}.</b> ${eF(G.p)?'Elle':'Il'} ne reviendra pas d'${eF(G.p)?'elle':'lui'}-même${FOP[G.p].cls?` : la classe ${FOP[G.p].cls.toLowerCase()} passe par un courtier`:''}. Contre-offre : son salaire plus une prime de retour, ${cntCost(G.p)} pb au total (${mm(cntCost(G.p)*1e-4*budNav())}), et ${eF(G.p)?'elle':'il'} revient tout de suite.</span></div><button class="lvl cntb" data-cnt="${G.p}"${cok(G)?'':' disabled'}>Faire revenir ${FOP[G.p].who} · ${mm(cntCost(G.p)*1e-4*budNav())}${cok(G)?'':' · <span class="hx">hors trésorerie</span>'}</button>`).join(''):''}
    <div class="lvef">${budEf(b.id,cur)}${b.id==='fo'?covTxt()+bonTxt():''}</div>
-   <details style="margin-top:8px"><summary>À quoi sert ce budget · les ${b.lv.length} crans</summary><p class="note">${b.d}</p>${budExpl(b.id)}<ul class="efl">${b.lv.map((l,i)=>`<li><b>${l.who}</b> · ${mm(l.bp*1e-4*budNav())} · ${budEf(b.id,i)}</li>`).join('')}</ul></details></div>`}).join('');
+   <details style="margin-top:8px"><summary>À quoi sert ce budget · les ${b.lv.length} crans</summary><p class="note">${b.d}</p>${budExpl(b.id)}<ul class="efl">${b.lv.map((l,i)=>`<li><b>${l.who}</b> · salaire ${mm(salP(b.lv,i)*1e-4*budNav())} · niveau ${l.who} à partir de ${mm(l.bp*1e-4*budNav())} de masse salariale : ${budEf(b.id,i,i)}</li>`).join('')}</ul></details></div>`}).join('');
  const bp=budgetBp();
  {const c=bp*1e-4*budNav()+(S.qSevM||0),nv=Math.max(1e-9,S.nav);   /* lot 220 : coût réel, partants compris */
-  document.getElementById('btot').textContent=`${mm(c)} · ${(c/nv*1e4).toFixed(0)} pb de l'encours ce trimestre · ${dec(c*4/nv*100,1)} % par an${S.qSevM>0?` · dont bonus versés aux partants ${mm(S.qSevM)}`:''}`}
+  document.getElementById('btot').textContent=`${mm(c+(S.qHireM||0))} · ${((c+(S.qHireM||0))/nv*1e4).toFixed(0)} pb de l'encours ce trimestre · ${dec(c*4/nv*100,1)} % par an${S.qSevM>0?` · dont indemnités de départ ${mm(S.qSevM)}`:''}${S.qHireM>0?` · dont frais d'embauche ${mm(S.qHireM)}`:''}`}
  {const t=document.getElementById('btre');if(t){const v=mgrCash();t.textContent=mm(v);t.className=v>=0?'':'neg-g'}}
- app.querySelectorAll('.cntb[data-cnt]').forEach(cn=>cn.onclick=()=>{const p=+cn.dataset.cnt,cb=cntCost(p);S.cntBp=(S.cntQ===S.q?(S.cntBp||0):0)+cb;S.cntQ=S.q;S.gones=gonesL().filter(g=>g.p!==p);setOps();drawBuds();refreshStatus();toast(`Contre-offre acceptée : <b>${FOP[p].who}</b> revient (${mm(cb*1e-4*budNav())}).`)});
+ app.querySelectorAll('.cntb[data-cnt]').forEach(cn=>cn.onclick=()=>{const p=+cn.dataset.cnt,cb=cntCost(p);S.cntBp=(S.cntQ===S.q?(S.cntBp||0):0)+cb;S.cntQ=S.q;S.gones=gonesL().filter(g=>g.p!==p);teamInit().fo[p]=true;syncBud();setOps();drawBuds();refreshStatus();toast(`Contre-offre acceptée : <b>${FOP[p].who}</b> revient (${mm(cb*1e-4*budNav())}).`)});
  app.querySelectorAll('.lvl.tm').forEach(x=>x.onclick=()=>{
-  const id=x.dataset.b,i1=+x.dataset.i,i0=S.bud[id],bb=BUDGET.find(q=>q.id===id);if(i1===i0)return;
-  const b0=budgetBp();S.bud[id]=i1;syncBud();setOps();drawBuds();refreshStatus();
-  const b1=budgetBp(),who=i1>i0?bb.lv.slice(i0+1,i1+1):bb.lv.slice(i1+1,i0+1);
-  const fired=i1<i0&&S.budPrev&&i1<S.budPrev[id];
-  toast(`${i1>i0?'Recrutement':fired?'Départ':'Sélection retirée'} : <b>${who.map(l=>l.who).join(', ')}</b>${i1>i0&&who.length===1&&who[0].hi?` — « ${who[0].hi} »`:''}${fired&&S.qSevM>0?` · versement du bonus de départ ${mm(S.qSevM)}`:''} · ${bb.nm} ${b0.toFixed(0)} → <b>${b1.toFixed(0)} pb</b> (${(b1-b0)>=0?'+':'−'}${mm(Math.abs((b1-b0)*1e-4*budNav()))})`);
+  const id=x.dataset.b,p=+x.dataset.i,bb=BUDGET.find(q=>q.id===id),l=bb.lv[p];if(x.disabled||p===0)return;
+  const b0=budgetBp(),on=!hired(id,p);S.team[id][p]=on;syncBud();setOps();drawBuds();refreshStatus();
+  const b1=budgetBp(),was=!!(S.teamPrev&&S.teamPrev[id][p]),fee=0.5*salP(bb.lv,p)*1e-4*budNav();
+  toast(`${on?(was?'Retour':'Recrutement'):(was?(id==='fo'&&goneP(p)?'Place libérée':'Licenciement'):'Sélection retirée')} : <b>${l.who}</b>${on&&!was&&l.hi?` — « ${l.hi} »`:''}${on&&!was?` · frais d'embauche ${mm(fee)}`:!on&&was&&!(id==='fo'&&goneP(p))?` · indemnité ${mm(fee)}`:''} · ${bb.nm} ${b0.toFixed(0)} → <b>${b1.toFixed(0)} pb</b>`);
  });
  {const ok=document.getElementById('ok');if(ok){const t=budgetBp()*1e-4*budNav();ok.innerHTML=`Valider le budget · <b>${mm(t)}</b> ce trimestre — passer au book`}}   /* lot 137 */
 }
@@ -5267,7 +5292,7 @@ function screenAtk(){atkResolve();const R=S.atkRes,K=R.kind[0].toUpperCase()+R.k
   <button class="cta" id="ok">Continuer</button></div>`;
  document.getElementById('ok').onclick=()=>{stepEvents();window.scrollTo(0,0)}}
 function atkClose(){if(!(S.atk&&S.atk.q===S.q))S.atkRes=null;else atkResolve()}   /* lot 303 : la manœuvre se joue sur son écran ; filet si l'écran n'a pas été vu */
-function pwHere(o){return o.fo!=null?(o.fo===0||here(o.fo)):(S.bud&&S.bud.bo>=o.bo)}
+function pwHere(o){return o.fo!=null?(o.fo===0||here(o.fo)):boH(o.bo)}   /* lot 304 */
 function pwOn(id){return !!(S&&S.pw&&S.pw[id]===S.q)}
 function pwBack(id){const l=S.pwLast&&S.pwLast[id];return l==null?0:l+(id==='jk'?1:4)}   /* lot 302 : Jean-Kevin chaque trimestre */
 function jkP(){return Math.min(0.90,0.50+0.05*(S.pwJKn||0))}   /* trimestre où le pouvoir revient */
@@ -6818,7 +6843,7 @@ function resolveQuarter(){
     fait le flux net ; la voracité (difficulté) grossit les sorties, une confiance basse aussi. */
  const avgR=S.rivals.reduce((a,x)=>a+(x.last||0),0)/Math.max(1,S.rivals.length);
  const tot=invClose({r:qTotal,med:avgR,ddp:Math.max(0,1-S.idx/Math.max(S.hwmIdx||1,S.idx))});   /* lot 102 : investisseurs nommés */
- {const pP=Math.min(0.95,Math.max(0,poachNow())),cands=[];for(let p=1;p<=S.bud.fo;p++)if(here(p)&&FOP[p].cls)cands.push(p);   /* lot 96 : débauchage de base ; lot 99 : traders seulement ; lot 296 : lu sur le moral */
+ {const pP=Math.min(0.95,Math.max(0,poachNow())),cands=[];for(let p=1;p<FOP.length;p++)if(here(p)&&FOP[p].cls)cands.push(p);   /* lot 96 : débauchage de base ; lot 99 : traders seulement ; lot 296 : lu sur le moral */
  const mu=prng32(hash32('mot'+S.q,S.seed)),mHi=!S.over&&mu()<motHi(),mLo=!S.over&&!mHi&&cands.length>1&&mu()<motLo();
  if(mHi){S.execPenalty=Math.max(0.7,S.execPenalty*0.92);S.poachMsg+=` Le moral est au plus haut : le desk refuse toutes les offres des concurrents, et redouble d'efforts (coûts d'exécution −8 %).`}
  if(mLo){const boss=(pick(S.rivals.filter(x=>x.poacher))||S.rivals[S.rivals.length-1]).boss,p=cands[Math.floor(mu()*cands.length)];cands.splice(cands.indexOf(p),1);gonesL().push({p,n:1,boss});
@@ -7456,7 +7481,7 @@ function epilogue(rank,tot){const ch=(a,k)=>a[(hash32('epi'+k,S.seed)>>>0)%a.len
   7:[good?"Le professeur Onésime obtient sa propre émission. Il y explique la récession, qu'il n'a toujours pas vue venir.":"Onésime est nommé dans un comité d'experts. Il y prévoit tout, avec retard."]};
  for(let p=1;p<=7;p++){if(here(p)&&FATE[p])L.push([FOP[p].ic,FOP[p].who,FATE[p][0]])}
  (gonesL()||[]).filter(g=>!here(g.p)).slice(0,2).forEach(g=>{if(FOP[g.p])L.push([FOP[g.p].ic,FOP[g.p].who,`Débauché(e) par ${g.boss||'un concurrent'} pendant le mandat, ${FOP[g.p].who} y fait carrière et ne vous rappelle pas.`])});
- const bo=S.bud&&S.bud.bo||0;L.push([BOP[bo].ic||'🏢',BOP[bo].who,bo===0?"Le loyer augmente de 12 % au renouvellement du bail. Rien d'autre n'a changé.":bo>=4?"Le back office est cité en exemple par le régulateur. Personne ne sait ce que cela veut dire, mais c'est flatteur.":"Le back office archive le mandat dans quarante-trois classeurs, rapprochés à l'euro près."]);
+ const bo=(()=>{let n=0;if(S.bud)BOP.forEach((x,p)=>{if(hired('bo',p))n=p});return n})();L.push([BOP[bo].ic||'🏢',BOP[bo].who,bo===0?"Le loyer augmente de 12 % au renouvellement du bail. Rien d'autre n'a changé.":bo>=4?"Le back office est cité en exemple par le régulateur. Personne ne sait ce que cela veut dire, mais c'est flatteur.":"Le back office archive le mandat dans quarante-trois classeurs, rapprochés à l'euro près."]);
  const R=(S.rivals||[]).slice().sort((a,b)=>(b.cum||0)-(a.cum||0));
  if(R[0])L.push(['🏢',R[0].nm,`${R[0].boss} ${(R[0].cum||1)>tot?"termine devant vous et le fait savoir à chaque dîner en ville.":"termine derrière vous et explique à la presse que « ce n'était pas une compétition »."}`]);
  if(R.length>1){const w=R[R.length-1];L.push(['🏚️',w.nm,w.closed?`Le fonds de ${w.boss} a fermé. ${w.boss} enseigne désormais la gestion des risques.`:`${w.boss} finit dernier et se reconvertit dans les cryptoactifs.`])}

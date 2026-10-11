@@ -51,6 +51,10 @@ function playGame(o){
          on prend alors le cran le plus haut encore ouvert sous celui demandé */
       ids.forEach((b,i)=>{let e=null;
         const res=o.reserve!=null?o.reserve:(RES0[o.prof]!=null?RES0[o.prof]:0.35),okR=j=>j===0||w.eval(`(S.budPrev&&${j}<=S.budPrev['${b}'])||budgetBpIf('${b}',${j})*1e-4*budNav()<=Math.min(${1-res}*(mgrCash()+(S.qOps||0)),mgrCash()+(S.qOps||0)-${o.fbud===false?0:FLOOR}*S.nav)`);   /* lot 199 : l'équipe ne mange pas le plancher */   /* garde une réserve pour les ordres */
+        if(w.eval('typeof teamLadder')==='function'){   /* lot 304 : équipe par personne — le bot recrute en échelle jusqu'au cran visé */
+          const okT=j=>j===0||w.eval(`teamLadderSub('${b}',${j})||opsLadder('${b}',${j})<=Math.min(${1-res}*(mgrCash()+(S.qOps||0)),mgrCash()+(S.qOps||0)-${o.fbud===false?0:FLOOR}*S.nav)`);
+          let jj=0;for(let j=bud[i];j>=0;j--){if(okT(j)){jj=j;break}}
+          if(!w.eval(`teamIsLadder('${b}',${jj})`)){w.eval(`teamLadder('${b}',${jj});drawBuds()`);ch=true}return}
         for(let j=bud[i];j>=0;j--){const c=$(`#buds .lvl[data-b="${b}"][data-i="${j}"]`);if(c&&!c.disabled&&okR(j)){e=c;break}}
         if(e&&!e.classList.contains('on')){click(e);ch=true}});
       if(ch)continue}
