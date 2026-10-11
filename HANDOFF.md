@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 302.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 303.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -325,6 +325,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **300** : coûts d'ordres et impact de marché toujours signés du point de vue de la caisse (`cS`, `cB`, `cC`) : un coût en −, un coût négatif en + ; impact de marché de l'écran d'exécution signé ; enjeux « ordres » des options dans le même sens.
 - **301** : objectifs bonus : un par trimestre, tous les trimestres ; catalogue de 126 objectifs (les 13 du lot 210, l'ancien catalogue d'avant le lot 210 moins deux périmés, 8 nouveaux sur le moral, la protection, la visibilité, les cartons, la marge, le débauchage), sans répéter les 30 derniers. Montant ≈ 1 M$ (0,7 à 1,35 M$ selon la difficulté `b`), prélevé sur l'encours comme la commission de performance : NAV, indice, rendement du trimestre et plus-hauts ajustés après la vérification de l'objectif (mesuré avant prélèvement).
 - **302** : Jean-Kevin : pouvoir disponible chaque trimestre (`pwBack` +1) ; réussite `jkP()` = 50 % + 5 points par appel (`S.pwJKn`), plafond 90 % au 8e appel ; taux affiché sur la carte et dans le message.
+- **303** : activiste : la manœuvre remplace l'attaque de monnaie. Une fois par an, dès le premier trimestre, position de ±3/±4/±5 sur l'un des trois marchés au signal le plus net (`atkCands`, |m|/σ), à la hausse (corner, short squeeze) ou à la baisse (long squeeze, attaque contre la banque centrale) ; la ligne peut dépasser le plafond (`kCap`). Réussite `atkP` = 55 % + 5 pts par unité au-delà de 3 + 10 pts dans le sens du signal (plafond 90 %). Événement spécial après les dépêches (`screenAtk`/`atkResolve`) : réussi, `rBase[i]` = d·(max(0, d·r) + 1,2 σ) — renforcé ou retourné ; raté, r − d·0,5 σ. Bot : manœuvre ±4 sur le premier candidat dans le sens du signal, après son book. Campagne 96 parties facile (lots 301-303) : survie 74 % (72 % au lot 298), activiste 69 % (62 %).
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).

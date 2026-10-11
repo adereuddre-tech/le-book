@@ -880,9 +880,9 @@ const PROFILES=[
   ef:[['g',"<b>Pouvoir propre — l'intuition</b> : chaque trimestre, le sens d'un facteur macro avant tout le monde, juste quatre fois sur cinq"],['g',"veille des extrêmes : vous sentez venir l'orage mieux que personne (33 à 95 %), sans trop savoir lequel (5 à 45 %)"],['g',"vous lisez les dépêches mieux que personne : probabilités 40 % plus précises"],['g',"vous lisez la tendance trois fois plus nettement (bruit ×0,3) ; portage et valeur moins bien (×1,3)"],['g',"vous captez 85 % d'un mouvement en cours de trimestre"],['g',"un ajustement gratuit par trimestre"],['b',"les investisseurs suivent votre courbe au jour le jour : confiance 20 % plus nerveuse"],['b',"en facile, votre desk propose un book prudent (60 % du risque de croisière) : à vous d'oser plus"],['b',"aucune source supplémentaire : vous n'en demandez pas"],['b',"incidents plus fréquents (×1,70) et plus de deux fois plus chers : un desk qui va vite casse plus de vaisselle"],['g',"commission de performance +5 pts : l'aura du prophète — vos investisseurs paient plus cher pour être du bon côté de celui qui « sent » le marché, et aucun ne veut être celui qui est parti juste avant le grand coup"],['g',"capital de départ +0,5 M$"],['b',"équipe 20 % plus chère"]],
   sigBonus:0,capture:0.85,tcMult:1.00,rumBonus:0.05,lpMult:1.20,ddMax:0.22,modelScale:1.20,incMult:1.70,incSev:2.2,numeric:false,freeAdj:true,hunch:true,deskScale:0.6}
 ,
- {id:'act',sum:{pw:"l'attaque : une fois par an, un pari géant contre une banque centrale",f:["identifie presque toujours les extrêmes","la valeur lue trois fois plus nettement","commission de performance +5 pts : la légende se paie"],w:["coûts d'exécution +30 %, incidents plus fréquents et plus chers","investisseurs 10 % plus nerveux, comité sur ses gardes"]},lvl:'Expert',who:"« Quand on a raison, on n'en a jamais assez »",nm:"Macro activiste",
+ {id:'act',sum:{pw:"la manœuvre : une fois par an, un corner ou un squeeze qui force le marché dans votre sens",f:["identifie presque toujours les extrêmes","la valeur lue trois fois plus nettement","commission de performance +5 pts : la légende se paie"],w:["coûts d'exécution +30 %, incidents plus fréquents et plus chers","investisseurs 10 % plus nerveux, comité sur ses gardes"]},lvl:'Expert',who:"« Quand on a raison, on n'en a jamais assez »",nm:"Macro activiste",
   p:"Vous ne suivez pas le marché : vous le faites. Une monnaie tenue à bout de bras par sa banque centrale, des réserves qui fondent, et vous qui pariez assez gros pour précipiter la chute. Ça a fait des fortunes, et des faillites. Le reste du temps, un macro discrétionnaire très convaincu.",
-  ef:[['g',"<b>Pouvoir propre — l'attaque</b> : une fois par an, vous misez 5, 10 ou 15 % de l'encours contre une monnaie. Plus la mise est grosse, plus la banque centrale risque de céder (30 à 50 %, +10 pts si votre desk lit déjà la monnaie faible). Réussie : 1,2 fois la mise, et la légende. Ratée : la mise perdue, et le comité furieux"],['g',"veille des extrêmes : 18 à 83 % sentis, presque toujours identifiés (55 à 95 %)"],['g',"vous lisez la valeur trois fois plus nettement (bruit ×0,3) ; tendance et portage moins bien (×1,3)"],['b',"en facile, votre desk propose un book prudent (75 % du risque de croisière) : les convictions massives, c'est vous"],['b',"coûts de transaction +30 % : vous bougez le marché, il vous le rend"],['b',"incidents ×1,2, gravité ×1,3"],['b',"investisseurs 10 % plus nerveux"],['g',"commission de performance +5 pts ; capital de départ +1 M$"],['b',"équipe 20 % plus chère ; capture 75 %"]],
+  ef:[['g',"<b>Pouvoir propre — la manœuvre</b> : une fois par an, dès le premier trimestre, une position de ±3, ±4 ou ±5 sur l'un des trois marchés au signal le plus net, à la hausse (corner, short squeeze) ou à la baisse (long squeeze, attaque contre une banque centrale). À la clôture, un événement spécial : réussie (55 à 75 %, +10 pts dans le sens du signal), le marché finit dans votre sens, renforcé de 1,2 σ ou retourné ; ratée, il vous résiste d'une demi-σ, et le comité est furieux"],['g',"veille des extrêmes : 18 à 83 % sentis, presque toujours identifiés (55 à 95 %)"],['g',"vous lisez la valeur trois fois plus nettement (bruit ×0,3) ; tendance et portage moins bien (×1,3)"],['b',"en facile, votre desk propose un book prudent (75 % du risque de croisière) : les convictions massives, c'est vous"],['b',"coûts de transaction +30 % : vous bougez le marché, il vous le rend"],['b',"incidents ×1,2, gravité ×1,3"],['b',"investisseurs 10 % plus nerveux"],['g',"commission de performance +5 pts ; capital de départ +1 M$"],['b',"équipe 20 % plus chère ; capture 75 %"]],
   sigBonus:2,capture:0.75,tcMult:1.30,rumBonus:0.12,lpMult:1.10,modelScale:1.15,incMult:1.2,incSev:1.3,numeric:false,atk:true,deskScale:0.75}
 ];
 /* figés depuis le retrait de ces deux choix de l'écran d'accueil */
@@ -3077,7 +3077,7 @@ const DEPTH={ES:60,NQ:30,ESTX:20,TOPX:15,MXEF:8,TN:80,GBL:40,JGB:25,R:20,OAT:15,
 function depthMult(x,bn){const d=DEPTH[x.sym];return d?Math.sqrt(1+bn/(d*((S&&S.capBoost)||1))):1}
 /* Un marché fermé ne prend aucune position ; un marché ouvert, le mandat. */
 function mktOpen(i){const x=INSTR[i];return !!x&&x.rk<=OPENRK&&(x.grp!=='Exotiques'||!!(S&&S.exoOpen))&&!(S&&S.shut&&S.shut[x.sym]===S.q)}
-function kCap(i){return mktOpen(i)?((S&&S.maxk)||5):0}
+function kCap(i){return mktOpen(i)?Math.max((S&&S.maxk)||5,(S&&S.atk&&S.atk.q===S.q&&S.atk.i===i)?S.atk.m:0):0}   /* lot 303 */
 function clampK(i,v){const c=kCap(i);return Math.max(-c,Math.min(c,v))}
 /* Encours auquel s'ouvre le rang rk, pour la taille de départ : ×1,4 puis ×2. */
 function unlockNav(rk){const per=MKPERCL[S.size]||4,j=rk-per;return j<=0?0:S.aum0*([1.4,2.0][j-1]||99)}
@@ -3649,7 +3649,7 @@ function feeLine(){
  const z=SIZES.find(x=>x.id===setup.size)||SIZES[1];
  return `Le fonds vous verse <strong>2 % de gestion</strong> par an et <strong>${(z.perf*100).toFixed(0)} % de sa performance</strong> au-dessus de son plus haut historique. Votre société paie l'équipe, les ordres et les bonus.`;
 }
-function styTable(){const P=PROFILES,f=(x,d=2)=>'×'+dec(x,d),pw={rv:"les paires : deux écarts à refermer par trimestre",tail:"la protection au prix du choc, et qui rend plus que le choc",act:"une attaque de monnaie par an",syst:"le modèle : book entier en facile, six convictions en moyen et difficile",fonda:"sources vérifiées : une probabilité sûre par trimestre",flux:"intuition : le sens d'un facteur, juste 4 fois sur 5"};
+function styTable(){const P=PROFILES,f=(x,d=2)=>'×'+dec(x,d),pw={rv:"les paires : deux écarts à refermer par trimestre",tail:"la protection au prix du choc, et qui rend plus que le choc",act:"une manœuvre par an : corner ou squeeze sur n'importe quel marché",syst:"le modèle : book entier en facile, six convictions en moyen et difficile",fonda:"sources vérifiées : une probabilité sûre par trimestre",flux:"intuition : le sens d'un facteur, juste 4 fois sur 5"};
  const XR={rv:"12–78 % · 25–65 %",tail:"25–90 % · 40–80 %",act:"18–83 % · 55–95 %",syst:"20–85 % · 45–85 %",fonda:"10–75 % · 60–95 %",flux:"33–95 % · 5–45 %"};
  const R=[["Pouvoir",p=>pw[p.id]],["Extrêmes : sentir · identifier",p=>XR[p.id]],["Capital de départ",p=>STYSEED[p.id]?'+'+dec(STYSEED[p.id]*1000,2)+' M$':'—'],["Commission de performance",p=>STYPERF[p.id]?'+'+Math.round(STYPERF[p.id]*100)+' pts':'—'],
   ["Coût de l'équipe",p=>f(STYCOST[p.id])],["Coûts d'exécution",p=>f(p.tcMult)],["Book du desk (facile)",p=>f(p.deskScale||p.modelScale)+' le risque de croisière'],["Nervosité des investisseurs",p=>f(p.lpMult)],["Incidents : fréquence · coût",p=>f(p.incMult)+' · '+f(p.incSev||1,1)],["Mouvement capté sur les dépêches",p=>Math.round(p.capture*100)+' %']];
@@ -5229,24 +5229,44 @@ function styDraw(){const el=document.getElementById('stypw');if(!el)return;const
   <p class="note" style="margin:4px 0 0">L'écart s'est ouvert ; il se referme d'environ ${dec(PAIRA,2)} σ par jambe ce trimestre. Jouez les deux jambes à risque égal : le pari porte sur l'écart, pas sur la direction. Votre attendu par marché l'intègre déjà.</p>`;
  if(typeof styDrawX==='function')h+=styDrawX();
  el.innerHTML=h;el.hidden=!h;if(typeof styWire==='function')styWire(el)}
-/* lot 272 : l'attaque du macro activiste */
-const ATK={stake:0.05,win:1.2,p0:0.20,pm:0.10,read:0.10};
+/* lot 303 : la manœuvre de l'activiste — n'importe quel marché, à la hausse (corner, short squeeze) ou à la baisse
+   (long squeeze, attaque contre une banque centrale). Une fois par an, dès le premier trimestre : position de ±3, ±4 ou ±5
+   sur l'un des trois marchés au signal le plus net. À la clôture, un événement spécial : réussi, le marché finit dans votre sens
+   (mouvement renforcé de 1,2 σ, ou retourné s'il partait contre vous) ; raté, il vous résiste d'une demi-σ. */
+const ATK={p0:0.55,pm:0.05,read:0.10,A:1.2,back:0.5};
 function atkReady(){return PROF().atk&&!(S.atk&&S.atk.q===S.q)&&(S.atkLast==null||S.q-S.atkLast>=4)}
-function atkP(i,m){return Math.min(0.95,ATK.p0+ATK.pm*m+(expRet(i).m<0?ATK.read:0))}
-function styDrawX(){const P=PROF();if(!P.atk)return '';const D=INSTR.map((x,i)=>i).filter(i=>INSTR[i].grp==='Devises'&&mktOpen(i));
- if(S.atk&&S.atk.q===S.q){const a=S.atk;return `<div class="blockhead"><h2>L'attaque</h2><span class="hint">lancée</span></div><p class="note" style="margin:0">🦅 Vous attaquez <b>${INSTR[a.i].nm}</b> avec ${Math.round(a.m*ATK.stake*100)} % de l'encours. La banque centrale cède avec une probabilité de ${Math.round(a.p*100)} % ; verdict à la clôture.</p>`}
- if(!atkReady())return `<div class="blockhead"><h2>L'attaque</h2><span class="hint">une par an</span></div><p class="note" style="margin:0">Prochaine attaque possible au trimestre ${(S.atkLast||0)+5}.</p>`;
- S.atkSel=S.atkSel??D[0];S.atkM=S.atkM||1;const i=S.atkSel,m=S.atkM,st=m*ATK.stake,p=atkP(i,m);
- return `<div class="blockhead"><h2>L'attaque</h2><span class="hint">une par an · votre pouvoir</span></div>
-  <p class="note" style="margin:0 0 6px">Choisissez une monnaie et une mise. Plus la mise est grosse, plus la banque centrale risque de céder ; si votre desk lit déjà la monnaie faible, +10 pts.</p>
-  <div class="cisel">${D.map(j=>`<button class="hgp${j===i?' on':''}" data-atk="${j}">${INSTR[j].sym}</button>`).join('')}</div>
-  <div class="cisel" style="margin-top:6px">${[1,2,3].map(k=>`<button class="hgp${k===m?' on':''}" data-atm="${k}">${Math.round(k*ATK.stake*100)} %</button>`).join('')}</div>
-  <div class="attr"><span class="an">Mise : ${mm(st*S.nav)} · la banque centrale cède à ${Math.round(p*100)} %</span><span class="av"><b class="pos-g">+${mm(ATK.win*st*S.nav)}</b> / <b class="neg-g">−${mm(st*S.nav)}</b></span></div>
-  <button class="buy" id="atkgo" style="margin-top:6px">Lancer l'attaque sur ${INSTR[i].sym}</button>`}
-function styWire(el){el.querySelectorAll('[data-atk]').forEach(b=>b.onclick=()=>{S.atkSel=+b.dataset.atk;styDraw()});el.querySelectorAll('[data-atm]').forEach(b=>b.onclick=()=>{S.atkM=+b.dataset.atm;styDraw()});
- const g=el.querySelector('#atkgo');if(g)g.onclick=()=>{if(!atkReady())return;const i=S.atkSel,m=S.atkM;S.atk={q:S.q,i,m,p:atkP(i,m)};S.atkLast=S.q;gauge(0,-2,"Le comité apprend votre attaque");toast(`🦅 Attaque lancée sur <b>${INSTR[i].nm}</b>`);styDraw()}}
-function atkClose(){S.atkRes=null;const a=S.atk;if(!a||a.q!==S.q)return;const ok=prng32(hash32('atk'+S.q,S.seed))()<a.p,st=a.m*ATK.stake,x=ok?ATK.win*st:-st,nb=S.nav;
- S.nav*=(1+x);S.qEvM=(S.qEvM||0)+x*nb;S.atkRes={ok,x,nm:INSTR[a.i].nm,sym:INSTR[a.i].sym};S.evLog.push({t:`Attaque sur ${INSTR[a.i].nm}`,pnl:x,m:x*nb,lp:0,rc:0});if(ok){S.atkWins=(S.atkWins||0)+1}}
+function atkCands(){return INSTR.map((x,i)=>i).filter(i=>mktOpen(i)).sort((a,b)=>Math.abs(expRet(b).m)/INSTR[b].sigQ-Math.abs(expRet(a).m)/INSTR[a].sigQ).slice(0,3)}
+function atkP(i,d,m){return Math.min(0.9,ATK.p0+ATK.pm*(m-3)+(Math.sign(expRet(i).m)===d?ATK.read:0))}
+function atkKind(i,d){const g=INSTR[i].grp;return d>0?(g==='Matières premières'?'corner':'short squeeze'):(g==='Devises'||g==='Taux'?'attaque contre la banque centrale':'long squeeze')}
+function atkGain(i,d,m){return m*U/INSTR[i].sig*ATK.A*INSTR[i].sigQ}   /* ordre de grandeur du gain de la manœuvre seule, en part de l'encours */
+function styDrawX(){const P=PROF();if(!P.atk)return '';
+ if(S.atk&&S.atk.q===S.q){const a=S.atk;return `<div class="blockhead"><h2>La manœuvre</h2><span class="hint">lancée</span></div><p class="note" style="margin:0">🦅 ${atkKind(a.i,a.d)[0].toUpperCase()+atkKind(a.i,a.d).slice(1)} sur <b>${INSTR[a.i].nm}</b> : position ${a.d>0?'+':'−'}${a.m}. Réussite ${Math.round(a.p*100)} % ; verdict à la clôture, lors d'un événement spécial.</p>`}
+ if(!atkReady())return `<div class="blockhead"><h2>La manœuvre</h2><span class="hint">une par an</span></div><p class="note" style="margin:0">Prochaine manœuvre possible au trimestre ${(S.atkLast||0)+5}.</p>`;
+ const C=atkCands();if(!C.length)return '';if(!C.includes(S.atkSel))S.atkSel=C[0];const i=S.atkSel;
+ if(S.atkD==null||S.atkSelD!==i){S.atkD=Math.sign(expRet(i).m)||1;S.atkSelD=i}S.atkM=S.atkM||4;const d=S.atkD,m=S.atkM,p=atkP(i,d,m),g=atkGain(i,d,m);
+ return `<div class="blockhead"><h2>La manœuvre</h2><span class="hint">une par an · votre pouvoir</span></div>
+  <p class="note" style="margin:0 0 6px">Les trois marchés où votre desk lit le signal le plus net. Prenez position : à la clôture, vous pesez sur le marché pour qu'il finisse dans votre sens. Plus la position est grosse, plus la manœuvre a de chances de réussir ; dans le sens du signal, +10 pts.</p>
+  <div class="cisel">${C.map(j=>{const e=expRet(j).m;return `<button class="hgp${j===i?' on':''}" data-atk="${j}">${INSTR[j].sym} ${e>=0?'▲':'▼'}</button>`}).join('')}</div>
+  <div class="cisel" style="margin-top:6px"><button class="hgp${d>0?' on':''}" data-atd="1">▲ ${atkKind(i,1)}</button><button class="hgp${d<0?' on':''}" data-atd="-1">▼ ${atkKind(i,-1)}</button></div>
+  <div class="cisel" style="margin-top:6px">${[3,4,5].map(k=>`<button class="hgp${k===m?' on':''}" data-atm="${k}">${d>0?'+':'−'}${k}</button>`).join('')}</div>
+  <div class="attr"><span class="an">Position ${d>0?'+':'−'}${m} sur ${INSTR[i].nm} · réussite ${Math.round(p*100)} %</span><span class="av"><b class="pos-g">≈ +${mm(g*S.nav)}</b> / <b class="neg-g">≈ −${mm(g*ATK.back/ATK.A*S.nav)}</b></span></div>
+  <p class="note" style="margin:2px 0 0">En plus du mouvement propre du marché. La ligne remplace votre position actuelle sur ${INSTR[i].sym} ; le comité apprend la manœuvre (contrôle −2).</p>
+  <button class="buy" id="atkgo" style="margin-top:6px"${S.phase==='book'?'':' disabled'}>Lancer : ${atkKind(i,d)} sur ${INSTR[i].sym}</button>`}
+function styWire(el){el.querySelectorAll('[data-atk]').forEach(b=>b.onclick=()=>{S.atkSel=+b.dataset.atk;styDraw()});el.querySelectorAll('[data-atd]').forEach(b=>b.onclick=()=>{S.atkD=+b.dataset.atd;styDraw()});el.querySelectorAll('[data-atm]').forEach(b=>b.onclick=()=>{S.atkM=+b.dataset.atm;styDraw()});
+ const g=el.querySelector('#atkgo');if(g)g.onclick=()=>{if(!atkReady()||S.phase!=='book')return;const i=S.atkSel,d=S.atkD,m=S.atkM;S.atk={q:S.q,i,d,m,p:atkP(i,d,m)};S.atkLast=S.q;S.k[i]=d*m;
+  gauge(0,-2,"Le comité apprend votre manœuvre");toast(`🦅 Manœuvre lancée : ${atkKind(i,d)} sur <b>${INSTR[i].nm}</b>`);
+  try{drawRows();renderRisk();refreshSend();refreshGain();renderTC&&renderTC()}catch(e){}styDraw()}}
+/* l'événement spécial, à la clôture, après les dépêches */
+function atkResolve(){const a=S.atk;if(!a||a.q!==S.q||S.atkRes)return;const ok=prng32(hash32('atk'+S.q,S.seed))()<a.p,i=a.i,d=a.d,o=S.rBase[i],sq=INSTR[i].sigQ;
+ const n=ok?d*(Math.max(0,d*o)+ATK.A*sq):o-d*ATK.back*sq;S.rBase[i]=n;const x=weights(S.k)[i]*(n-o);
+ S.atkRes={ok,x,nm:INSTR[i].nm,sym:INSTR[i].sym,kind:atkKind(i,d),o,n,rev:ok&&d*o<0};if(ok)S.atkWins=(S.atkWins||0)+1}
+function screenAtk(){atkResolve();const R=S.atkRes,K=R.kind[0].toUpperCase()+R.kind.slice(1);
+ app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard${R.ok?'':' bad'}">${evHead('Votre desk · clôture','news')}<h3>🦅 Manœuvre sur ${R.nm} : ${R.ok?'réussie':'ratée'}</h3><p class="note" style="margin:0 0 6px">${K}</p>
+  <p>${R.ok?(R.rev?`Le marché partait contre vous (${sgn(R.o,1)}) : votre manœuvre le retourne, il finit à ${sgn(R.n,1)}.`:`Le marché allait déjà dans votre sens : votre manœuvre l'emballe, il finit à ${sgn(R.n,1)} au lieu de ${sgn(R.o,1)}.`):`Les contreparties ont tenu, et elles vous font payer l'audace : ${R.sym} finit à ${sgn(R.n,1)} au lieu de ${sgn(R.o,1)}.`}</p>
+  <div class="gzr"><span>effet de la manœuvre sur le fonds</span><b class="${cls(R.x)}">${R.x>=0?'+':'−'}${mm(Math.abs(R.x)*S.nav)} · ${sgnp(R.x,2)}</b></div></div>
+  <button class="cta" id="ok">Continuer</button></div>`;
+ document.getElementById('ok').onclick=()=>{stepEvents();window.scrollTo(0,0)}}
+function atkClose(){if(!(S.atk&&S.atk.q===S.q))S.atkRes=null;else atkResolve()}   /* lot 303 : la manœuvre se joue sur son écran ; filet si l'écran n'a pas été vu */
 function pwHere(o){return o.fo!=null?(o.fo===0||here(o.fo)):(S.bud&&S.bud.bo>=o.bo)}
 function pwOn(id){return !!(S&&S.pw&&S.pw[id]===S.q)}
 function pwBack(id){const l=S.pwLast&&S.pwLast[id];return l==null?0:l+(id==='jk'?1:4)}   /* lot 302 : Jean-Kevin chaque trimestre */
@@ -6159,6 +6179,7 @@ function stepEvents(){
    if(e.stake&&e.cond&&!e.cond()){stepEvents();return}
    if(e.rivalEv){if(Math.sign(S.k[e.i])===Math.sign(S.rBase[e.i])){stepEvents();return}screenRivalEvent(e);window.scrollTo(0,0);return}
    if(e.trader)screenTraderEvent(e);else screenMacroEvent(e);window.scrollTo(0,0);return}
+ if(S.atk&&S.atk.q===S.q&&S.atkShown!==S.q){S.atkShown=S.q;screenAtk();window.scrollTo(0,0);return}   /* lot 303 */
  if(!S.tailDone){if(S.tailEv===null||S.tailEv===undefined)S.tailEv=tailDraw()||0;
   if(S.tailEv){screenTail(S.tailEv);window.scrollTo(0,0);return}S.tailDone=true}
  if(S.incidentDue&&!S.incidentShown){S.incidentShown=true;screenIncident();window.scrollTo(0,0);return}
@@ -6765,7 +6786,7 @@ function resolveQuarter(){
  if(offFx('lp',0))lpD.push([`Les locaux : ${OFF().nm}`,offFx('lp',0)]);   /* lot 276 */
  if(here(11))lpD.push(["La conférence du Pr Ada",2]);   /* lot 279 */
  if(S.prof==='tail'&&S.hedgeQ===S.q&&!S.stressQ)lpD.push(["Encore un trimestre à payer l'assurance",-1]);   /* lot 271 */
- if(S.atkRes)lpD.push([S.atkRes.ok?`L'attaque sur ${S.atkRes.nm} a réussi : la banque centrale a cédé`:`L'attaque sur ${S.atkRes.nm} a échoué : la banque centrale a tenu`,S.atkRes.ok?15:-10]);   /* lot 272 */
+ if(S.atkRes)lpD.push([S.atkRes.ok?`Manœuvre réussie sur ${S.atkRes.nm} (${S.atkRes.kind})`:`Manœuvre ratée sur ${S.atkRes.nm} (${S.atkRes.kind})`,S.atkRes.ok?15:-10]);   /* lot 272 */
  if(S.leakQ)lpD.push(['Vos positions ont circulé sur le marché',-2.5]);
  if(S.execSlipQ<-0.0035*S.navQ0)lpD.push(['Impact de marché lourd sur les ordres',-2]);
  const lpMult=(S.flighty?1.25:1)*PROF().lpMult*VOL().lpMult*(UNIV().lpMult||1);
@@ -6780,7 +6801,7 @@ function resolveQuarter(){
  const band=bandNow(),dev=Math.abs(sp-S.tgt)/S.tgt;
  const rcD=[];if(boH(8))rcD.push(["Lord Basil a déjeuné avec le régulateur",2]);if(offFx('rc',0))rcD.push([`Les locaux : ${OFF().nm}`,offFx('rc',0)]);   /* lot 276 */
  if(Math.abs(RISKRC[S.bud.risk])>=0.05)rcD.push([RISKRC[S.bud.risk]>0?'Contrôle des risques renforcé : rapports rassurants':'Contrôle des risques réduit : le comité s\'inquiète',RISKRC[S.bud.risk]]);
- if(S.atkRes&&!S.atkRes.ok)rcD.push(['Attaque ratée : le comité demande des comptes',-5]);   /* lot 272 */
+ if(S.atkRes&&!S.atkRes.ok)rcD.push(['Manœuvre ratée : le comité demande des comptes',-5]);   /* lot 272 */
  if(S.commRes&&S.commRes.rc)rcD.push([S.commRes.lab+(S.comm.id==='gourou'&&!S.commRes.ok?' : « qui a validé ce chiffre ? »':''),S.commRes.rc]);
  if(S.leakQ)rcD.push(['Positions connues de contreparties',-2]);
  if(S.tcMultQ&&Math.abs(S.tcMultQ-1)>0.35)rcD.push(['Exécution éloignée du tarif standard',-2]);
@@ -7026,7 +7047,7 @@ function pressFeed(o){
  if(rk===1)add(pk(["Bloomberg","Financial Times","Absolute Return","Barron's"],37),pk([`${F} en tête des cinq grands macro : ${ahead?'':(behind?behind.boss+' « félicite » son concurrent, entre guillemets':'la concurrence encaisse')}`,`Classement des macro : ${F} premier${behind?`, ${behind.nm} suit à distance`:''}. On rappelle que le classement se refait chaque trimestre`,`${F} prend la première place. Dans la profession, on souligne que « la première place est surtout un problème à conserver »`,`Premier des cinq : ${F}. Les quatre autres publient tous une note sur « la sélectivité de la performance »`,`${F} domine la place ce trimestre. Le fonds rappelle sobrement que le mandat se juge sur la durée`],38));
  else if(rk>=4)add(pk(["Financial Times","La Tribune","Alpha Capture Weekly","Substack · Le Carnet du Macro"],39),pk([`${F} ${rk===5?'bon dernier':'avant-dernier'} des grands macro. ${ahead?ahead.boss+' commente : « chacun son cycle »':'La place n\'attend pas'}`,`${F} ferme la marche des cinq grands. La lettre trimestrielle invoque « un environnement peu favorable au style »`,`${rk===5?'Dernier':'Avant-dernier'} du peloton, ${F} rappelle que les classements trimestriels ne veulent rien dire. C'est vrai, et ça n'aide pas`,`${F} en fin de classement. Les allocataires comparent, c'est leur métier, et le tableau est sans appel`,`Classement : ${F} ${rk===4?'quatrième':'troisième'} sur quatre. Un consultant note que « le fonds a changé de style deux fois en un an »`],40));
  if(S.incidents.length&&S.qIncM<0)add(pk(["X · @macro_leaks","Risk.net","Le fil du desk","Reddit · r/hedgefunds"],41),pk([`Fuite chez ${F} : l'incident du trimestre a coûté ${mm(Math.abs(S.qIncM))}. Personne ne confirme, personne ne dément`,`Un incident opérationnel chez ${F} aurait coûté ${mm(Math.abs(S.qIncM))}. Le fonds parle d'« un événement isolé »`,`${mm(Math.abs(S.qIncM))} partis en fumée chez ${F} sur un incident. Le mot « contrôle interne » circule beaucoup cette semaine`,`Incident chez ${F} : ${mm(Math.abs(S.qIncM))}. Dans la salle, on explique que « ça peut arriver à tout le monde », ce qui est faux`,`On raconte qu'un incident a coûté ${mm(Math.abs(S.qIncM))} à ${F}. Le fonds n'a pas souhaité s'exprimer`],42));
- if(S.atkRes)add(pk(["Financial Times","Bloomberg","Les Échos"],55),S.atkRes.ok?pk([`${F} a fait plier la banque centrale : ${S.atkRes.nm} décroche, le fonds encaisse ${sgnp(S.atkRes.x,1)}. On parle déjà de « l'homme qui a cassé » la monnaie`,`Coup de maître de ${F} contre ${S.atkRes.nm} : la banque centrale abandonne la défense de sa monnaie`],56):pk([`La banque centrale a tenu : ${F} perd ${sgnp(S.atkRes.x,1)} sur son attaque contre ${S.atkRes.nm}. Le gouverneur savoure`,`${F} se casse les dents sur ${S.atkRes.nm} : les réserves étaient plus profondes que prévu`],57));
+ if(S.atkRes)add(pk(["Financial Times","Bloomberg","Les Échos"],55),S.atkRes.ok?pk([`${F} réussit sa manœuvre sur ${S.atkRes.nm} (${S.atkRes.kind}) : le fonds encaisse ${sgnp(S.atkRes.x,1)}. On parle déjà de « l'homme qui a fait plier » le marché`,`Coup de maître de ${F} sur ${S.atkRes.nm} : les contreparties ont dû céder`],56):pk([`Les contreparties ont tenu : ${F} perd ${sgnp(S.atkRes.x,1)} sur sa manœuvre ratée sur ${S.atkRes.nm} (${S.atkRes.kind})`,`${F} se casse les dents sur ${S.atkRes.nm} : le marché était plus profond que prévu`],57));
  if(S.commRes&&S.commRes.just)add(pk(["Les Échos","Bloomberg","Podcast · Salle des marchés"],47),pk([`${F} tient sa promesse de ${sgn(S.comm.ret,1)}… à quelques points de base près. Le service communication respire`,`Promesse tenue au fil du rasoir chez ${F}. On parle d'une dernière séance « très surveillée »`],48));
  else if(S.commRes&&S.commRes.ok&&S.comm.id==='gourou')add(pk(["BFM Business","Bloomberg TV","CNBC"],49),pk([`${F} avait promis d'écraser le marché. C'est fait : le gérant passe ce soir sur le plateau, cravate desserrée`,`Prophétie tenue : ${F} livre plus de ${sgn(S.comm.ret,1)} et s'invite au journal du soir. Les allocataires appellent`],50));
  else if(S.commRes&&!S.commRes.ok&&S.comm.id==='gourou')add(pk(["X · @macro_leaks","Reddit · r/hedgefunds","Podcast · Salle des marchés"],51),pk([`La prophétie de ${F} tourne en mème : « nous allons écraser le marché », avec le graphique du trimestre en dessous`,`${F} promettait ${sgn(S.comm.ret,1)}. Les salles de marché ont trouvé leur fond d'écran de la semaine`],52));

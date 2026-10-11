@@ -55,9 +55,6 @@ function playGame(o){
         if(e&&!e.classList.contains('on')){click(e);ch=true}});
       if(ch)continue}
     if($('#send')){
-      /* lot 281 : le macro activiste attaque la devise que son desk lit la plus faible, mise moyenne, si la lecture est alignée */
-      w.eval(`(()=>{if(typeof atkReady!=='function'||!atkReady())return;const D=INSTR.map((x,i)=>i).filter(i=>INSTR[i].grp==='Devises'&&mktOpen(i));if(!D.length)return;
-        const i=D.sort((a,b)=>expRet(a).m-expRet(b).m)[0];if(expRet(i).m>=0)return;S.atkSel=i;S.atkM=2;styDraw();const g=document.getElementById('atkgo');if(g)g.click()})()`);
       w.eval(`(()=>{const smart=${smart};
         if(${dumb}){S.k=S.k.map((v,i)=>mktOpen(i)?Math.round((Math.random()*2-1)*Math.min(3,S.maxk)):0);return}
         /* lot 67 : plus de cible de volatilité — le bot intelligent choisit l'échelle de son book qui maximise
@@ -81,6 +78,9 @@ function playGame(o){
       w.eval(`(()=>{const fl=${FLOOR}*S.nav,tc0=liveTC();for(let g=0;g<600;g++){if(mgrCash()>=fl-1e-12||liveTC()<=0.5*tc0)break;   /* jamais moins de la moitié du book */let bi=-1,bv=0;
         for(let i=0;i<N;i++){const d=S.k[i]-S.k0[i];if(Math.abs(d)<1e-9)continue;const t=tcost(d,i).cost;if(t>bv){bv=t;bi=i}}
         if(bi<0)break;S.k[bi]-=Math.sign(S.k[bi]-S.k0[bi])}})()`);
+      /* lot 303 : l'activiste lance sa manœuvre après son book — premier candidat, dans le sens du signal, position ±4 */
+      w.eval(`(()=>{if(typeof atkReady!=='function'||!atkReady()||typeof atkCands!=='function')return;const C=atkCands();if(!C.length)return;
+        S.atkSel=C[0];S.atkD=Math.sign(expRet(C[0]).m)||1;S.atkSelD=C[0];S.atkM=4;styDraw();const g=document.getElementById('atkgo');if(g)g.click()})()`);
       if($('#send').disabled&&$('#fitbook'))click($('#fitbook'));
       w.eval('window.__sps=(window.__sps||[]).concat(riskShown(weights(S.k)).total)');
       if($('#send').disabled){errs.push('book bloque');break}
