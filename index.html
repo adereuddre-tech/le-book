@@ -5145,7 +5145,7 @@ function planSignalsAfterBudget(){
 function drawOffs(){const el=document.getElementById('offs');if(!el)return;const cur=S.office==null?0:S.office,base=S.officePrev==null?0:S.officePrev;
  el.innerHTML=`<div class="brow"><div class="bh"><b><span class="bico">🏙️</span>Les locaux</b><span>${mm(OFF().bp*1e-4*budNav())} par trimestre</span></div>
   <p class="note" style="margin:2px 0 6px">Un seul lieu à la fois, du garage au yacht ; chaque adresse fait un peu mieux que son loyer, et reprend les avantages des précédentes. Déménager ne coûte rien de plus que le nouveau loyer.</p>
-  <div class="offl">${OFFICES.map((o,i)=>{const ok=offOk(i);return `<button class="offb${i===cur?' on':''}" data-off="${i}"${ok?'':' disabled'}><b>${o.ic} ${o.nm}</b><span>${o.bp} pb${ok?'':' · hors trésorerie'}</span><small>${o.d}</small></button>`}).join('')}</div></div>`;
+  <div class="offl">${OFFICES.map((o,i)=>{const ok=offOk(i);return `<button class="offb${i===cur?' on':''}" data-off="${i}"${ok?'':' disabled'}><b>${o.ic} ${o.nm}</b><span>${mm(o.bp*1e-4*budNav())} par trimestre${ok?'':' · hors trésorerie'}</span><small>${o.d}</small></button>`}).join('')}</div></div>`;
  el.querySelectorAll('.offb').forEach(b=>b.onclick=()=>{if(b.disabled)return;S.office=+b.dataset.off;setOps();drawBuds();refreshStatus()})}
 /* lot 306 : une adresse n'est accessible que si la caisse paie le budget du trimestre avec son loyer */
 function offOk(i){const cur=S.office==null?0:S.office,base=S.officePrev==null?0:S.officePrev;if(i===cur||i===base||OFFICES[i].bp<=OFFICES[cur].bp)return true;
