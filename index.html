@@ -3244,7 +3244,7 @@ function planQuarter(){
  S.k=new Array(N).fill(0);S.k0=new Array(N).fill(0);
  S.flowInC=(S.flowInC||0)+Math.max(0,S.qFlow||0);S.flowOutC=(S.flowOutC||0)+Math.max(0,-(S.qFlow||0));   /* lot 87 : flux cumulés */
  S.qColM=0;S.colBaseNav=0;S.rumors=[];S.xRiv=null;S.xRivT=null;S.xRivQ=null;S.xRivL=null;S.xRivB=null;S.evVerified=false;S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
- S.pendingTC=0;S.freeAdjUsed=false;S.live=false;S.qClosed=false;S.goalK=null;S.execSlipQ=0;gonesL().forEach(g=>g.n=0);S.cntBp=0;S.qSevM=0;
+ S.pendingTC=0;S.freeAdjUsed=false;S.live=false;S.qClosed=false;S.goalK=null;S.execSlipQ=0;gonesL().forEach(g=>g.n=0);S.cntBp=0;S.qSevM=0;S.qMv={};
  /* la commission de gestion est prélevée sur le fonds et vous est versée dès l'ouverture ;
     la performance et le bonus d'objectif attendent la clôture */
  S.tresQ0=mgrCash();   /* lot 87 */
@@ -5279,22 +5279,25 @@ function styDrawX(){const P=PROF();if(!P.atk)return '';
   <div class="cisel" style="margin-top:6px"><button class="hgp${d>0?' on':''}" data-atd="1">▲ ${atkKind(i,1)}</button><button class="hgp${d<0?' on':''}" data-atd="-1">▼ ${atkKind(i,-1)}</button></div>
   <div class="cisel" style="margin-top:6px">${[3,4,5].map(k=>`<button class="hgp${k===m?' on':''}" data-atm="${k}">${d>0?'+':'−'}${k}</button>`).join('')}</div>
   <div class="attr"><span class="an">Position ${d>0?'+':'−'}${m} sur ${INSTR[i].nm} · réussite ${Math.round(p*100)} %</span><span class="av"><b class="pos-g">≈ +${mm(g*S.nav)}</b> / <b class="neg-g">≈ −${mm(g*ATK.back/ATK.A*S.nav)}</b></span></div>
-  <p class="note" style="margin:2px 0 0">En plus du mouvement propre du marché. La ligne remplace votre position actuelle sur ${INSTR[i].sym} ; le comité apprend la manœuvre (contrôle −2).</p>
+  <p class="note" style="margin:2px 0 0">En plus du mouvement propre du marché. La ligne remplace votre position actuelle sur ${INSTR[i].sym} et reste verrouillée jusqu'à la clôture ; réussie, le marché finit dans votre sens, ratée, il finit contre vous. Le comité apprend la manœuvre (contrôle −2).</p>
   <button class="buy" id="atkgo" style="margin-top:6px"${S.phase==='book'?'':' disabled'}>Lancer : ${atkKind(i,d)} sur ${INSTR[i].sym}</button>`}
 function styWire(el){el.querySelectorAll('[data-atk]').forEach(b=>b.onclick=()=>{S.atkSel=+b.dataset.atk;styDraw()});el.querySelectorAll('[data-atd]').forEach(b=>b.onclick=()=>{S.atkD=+b.dataset.atd;styDraw()});el.querySelectorAll('[data-atm]').forEach(b=>b.onclick=()=>{S.atkM=+b.dataset.atm;styDraw()});
  const g=el.querySelector('#atkgo');if(g)g.onclick=()=>{if(!atkReady()||S.phase!=='book')return;const i=S.atkSel,d=S.atkD,m=S.atkM;S.atk={q:S.q,i,d,m,p:atkP(i,d,m)};S.atkLast=S.q;S.k[i]=d*m;
   gauge(0,-2,"Le comité apprend votre manœuvre");toast(`🦅 Manœuvre lancée : ${atkKind(i,d)} sur <b>${INSTR[i].nm}</b>`);
   try{drawRows();renderRisk();refreshSend();refreshGain();renderTC&&renderTC()}catch(e){}styDraw()}}
 /* l'événement spécial, à la clôture, après les dépêches */
-function atkResolve(){const a=S.atk;if(!a||a.q!==S.q||S.atkRes)return;const ok=prng32(hash32('atk'+S.q,S.seed))()<a.p,i=a.i,d=a.d,o=S.rBase[i],sq=INSTR[i].sigQ;
- const n=ok?d*(Math.max(0,d*o)+ATK.A*sq):o-d*ATK.back*sq;S.rBase[i]=n;const x=weights(S.k)[i]*(n-o);
- S.atkRes={ok,x,nm:INSTR[i].nm,sym:INSTR[i].sym,kind:atkKind(i,d),o,n,rev:ok&&d*o<0};if(ok)S.atkWins=(S.atkWins||0)+1}
+function atkResolve(){const a=S.atk;if(!a||a.q!==S.q||S.atkRes)return;const i=a.i,d=a.d,sq=INSTR[i].sigQ,mv=(S.qMv&&S.qMv[i])||0,o=S.rBase[i],P=o+mv;
+ if(d*S.k[i]<=0){S.atkRes={ok:false,vd:true,x:0,nm:INSTR[i].nm,sym:INSTR[i].sym,kind:atkKind(i,d),o:P,n:P};return}   /* lot 308 : plus de position dans le sens de la manœuvre */
+ const ok=prng32(hash32('atk'+S.q,S.seed))()<a.p,P2=ok?d*(Math.max(0,d*P)+ATK.A*sq):d*Math.min(d*P-ATK.back*sq,-ATK.back*sq),n=P2-mv;   /* lot 308 : ratée, le marché finit contre vous */
+ S.rBase[i]=n;const x=weights(S.k)[i]*(n-o);
+ S.atkRes={ok,x,nm:INSTR[i].nm,sym:INSTR[i].sym,kind:atkKind(i,d),o:P,n:P2,rev:(ok?d*P<0:d*P>0)};if(ok)S.atkWins=(S.atkWins||0)+1}
 function screenAtk(){atkResolve();const R=S.atkRes,K=R.kind[0].toUpperCase()+R.kind.slice(1);
  app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard${R.ok?'':' bad'}">${evHead('Votre desk · clôture','news')}<h3>🦅 Manœuvre sur ${R.nm} : ${R.ok?'réussie':'ratée'}</h3><p class="note" style="margin:0 0 6px">${K}</p>
-  <p>${R.ok?(R.rev?`Le marché partait contre vous (${sgn(R.o,1)}) : votre manœuvre le retourne, il finit à ${sgn(R.n,1)}.`:`Le marché allait déjà dans votre sens : votre manœuvre l'emballe, il finit à ${sgn(R.n,1)} au lieu de ${sgn(R.o,1)}.`):`Les contreparties ont tenu, et elles vous font payer l'audace : ${R.sym} finit à ${sgn(R.n,1)} au lieu de ${sgn(R.o,1)}.`}</p>
+  <p>${R.vd?`Votre position sur ${R.sym} n'est plus dans le sens de la manœuvre : elle tombe à plat, le marché finit à ${sgn(R.n,1)}.`:R.ok?(R.rev?`Le marché partait contre vous (${sgn(R.o,1)} sur le trimestre, dépêches comprises) : votre manœuvre le retourne, il finit à ${sgn(R.n,1)}.`:`Le marché allait déjà dans votre sens : votre manœuvre l'emballe, il finit à ${sgn(R.n,1)} au lieu de ${sgn(R.o,1)} (dépêches comprises).`):(R.rev?`Les contreparties ont tenu et retournent le marché contre vous : ${R.sym} finit à ${sgn(R.n,1)} au lieu de ${sgn(R.o,1)} (dépêches comprises).`:`Les contreparties ont tenu et enfoncent le clou : ${R.sym} finit à ${sgn(R.n,1)} au lieu de ${sgn(R.o,1)} (dépêches comprises).`)}</p>
   <div class="gzr"><span>effet de la manœuvre sur le fonds</span><b class="${cls(R.x)}">${R.x>=0?'+':'−'}${mm(Math.abs(R.x)*S.nav)} · ${sgnp(R.x,2)}</b></div></div>
   <button class="cta" id="ok">Continuer</button></div>`;
  document.getElementById('ok').onclick=()=>{stepEvents();window.scrollTo(0,0)}}
+function atkLocked(i){return !!(S&&S.atk&&S.atk.q===S.q&&S.atk.i===i)}
 function atkClose(){if(!(S.atk&&S.atk.q===S.q))S.atkRes=null;else atkResolve()}   /* lot 303 : la manœuvre se joue sur son écran ; filet si l'écran n'a pas été vu */
 function pwHere(o){return o.fo!=null?(o.fo===0||here(o.fo)):boH(o.bo)}   /* lot 304 */
 function pwOn(id){return !!(S&&S.pw&&S.pw[id]===S.q)}
@@ -5738,6 +5741,7 @@ function drawRows(){
  document.getElementById('rows').innerHTML=h;
  app.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
    const i=+b.dataset.i,v=+b.dataset.v;
+   if(atkLocked(i)){toast('🦅 Ligne de la manœuvre : verrouillée ce trimestre.');return}   /* lot 308 */
    const k1=S.k[i],sp0=pvol(weights(S.k)),c0=liveTC();
    S.k[i]=(S.k[i]===v?0:v);
    const sp1=pvol(weights(S.k)),c1=liveTC();
@@ -5928,6 +5932,7 @@ function renderTC(){
   <p class="note">Multiplicateur d'exécution appliqué : ×${dec((execMot()*DESK().mult(INSTR[0])*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult),2)} sur les actions (budget desk, organisation, liquidité du régime ${dec(S.liq,2)}, taux ${dec((S.rate*100),1)} %${S.execPenalty>1?', pénalité débauchage':''}).${S.star>=0?` <em>Votre recrutement du trimestre travaille sur ${INSTR[S.star].sym} : coûts divisés par trois sur ce marché.</em>`:''}</p>`;
 }
 function commitOrders(){
+ if(S.atk&&S.atk.q===S.q)S.k[S.atk.i]=S.atk.d*S.atk.m;   /* lot 308 : la manœuvre impose sa ligne, quoi qu'aient fait les boutons du book */
  S.kVal=[...S.k];   /* le book que le comité juge contre sa bande */
  let tot=0;
  for(let i=0;i<N;i++){const d=S.k[i]-S.k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}
@@ -6221,7 +6226,7 @@ function screenMacroEvent(ev){
  S.evG0={lp:S.lp,rc:S.rc};   /* état des jauges avant la dépêche : la flèche de la barre
                                 d'état doit couvrir la dépêche entière, pas le dernier appel */
  let imm=0;const touched=[];
- for(const sym in ev.hit){const i=IDX[sym];const r=0.5*ev.hit[sym]*INSTR[i].sigQ;imm+=w[i]*r;touched.push(i)}
+ for(const sym in ev.hit){const i=IDX[sym];const r=0.5*ev.hit[sym]*INSTR[i].sigQ;imm+=w[i]*r;touched.push(i);(S.qMv=S.qMv||{})[i]=(S.qMv[i]||0)+ev.hit[sym]*INSTR[i].sigQ}   /* lot 308 : ce que les dépêches ont fait au marché */
  if(ev.stress){imm*=0.5+0.5*(TAILM[S.bud.risk]||1);if(imm<0)imm*=crowd(riskShown(w).total);imm-=stressGap(S.k,STRESS.find(x=>x.id===ev.stress))*(0.5+0.5*(TAILM[S.bud.risk]||1));(S.tails=S.tails||[]).push({q:S.q,t:ev.t,f:-imm,id:'stress'});xRivHit(ev.stress)}   /* lot 101 : le back office amortit le choc */
  let hgB=0;if(ev.x&&S.hedgeQ===S.q&&imm<0)hgB=-imm*hH();   /* lot 253 : protection, sur le choc brut du marché */
  if(ev.stress&&pwOn('so')&&imm<0)imm*=ev.stress==='cyber'?0:0.65;   /* lot 268 : Solange ; lot 291 : avant la protection, qui rend quand même sur le choc brut */
