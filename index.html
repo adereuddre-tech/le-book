@@ -3370,6 +3370,8 @@ const sgn=(x,d=1)=>`<b class="${cls(x)}">${x>=0?'+':'−'}${dec(Math.abs(x*100),
 const sgnp=(x,d=1)=>(x>=0?'+':'−')+dec(Math.abs(x*100),d)+'\u00a0%';
 const bn=(x,d=1)=>`<b class="${cls(x)}">${x>=0?'+':'−'}${moneyB(Math.abs(x))}</b>`;
 const mn=x=>`<b class="${cls(x)}">${x>=0?'+':'−'}${mm(Math.abs(x))}</b>`;
+/* lot 300 : un coût (positif = on paie) affiché en négatif */
+const cS=c=>`${c>0?'−':'+'}${mm(Math.abs(c))}`,cB=b=>`${b>0?'−':'+'}${dec(Math.abs(b),1)} pb`,cC=c=>c>0?'neg-g':'pos-g';
 const cls=x=>x>0.00005?'pos-g':(x<-0.00005?'neg-g':'dim-g');
 let setup={prof:'fonda',arch:'std',desk:'inhouse',vol:'std',size:'mid',univ:'ext',dur:'normal'};/* arch et desk sont figés : redondants avec les budgets */
 /* Le tutoriel ne doit revenir ni au rechargement de la page ni à la partie suivante. */
@@ -4707,14 +4709,14 @@ function showGauge(id){
    <details><summary>Chaque ligne, en détail</summary><p class="note"><em>Gestion</em> : ${dec(VOL().mgmt*400,1)} % par an de l'encours, versée à l'ouverture, votre seul revenu certain. <em>Performance</em> : versée à la clôture, seulement au-dessus du plus haut historique du fonds. <em>Bonus</em> : objectif du trimestre tenu. <em>Budget</em> : les salaires du front et du back office, choisis en début de trimestre, et le bonus versé à ceux qui partent quand vous baissez d'un cran. <em>Courtage</em> : la facture de vos ordres, dépêches comprises ; l'impact de marché, lui, est payé par le fonds. <em>Autres</em> : ce que les accidents de levier et les incidents opérationnels ont mis à votre charge.</p></details>`);
  } else if(id==='cost'){
   const c=costsNow();const k0=S.k0||S.k;
-  const rows=[];for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9&&S.phase==='book'){const t=tcost(d,i);rows.push([`${INSTR[i].sym} ${k0[i]>0?'+':''}${k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,`${dec(t.bp,1)} pb`,`−${mm(t.cost)}`])}}
+  const rows=[];for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9&&S.phase==='book'){const t=tcost(d,i);rows.push([`${INSTR[i].sym} ${k0[i]>0?'+':''}${k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,cB(t.bp),cS(t.cost)])}}
   const b=BUDGET.map(bb=>[bb.nm+' · '+bb.lv[S.bud[bb.id]].nm,bb.lv[S.bud[bb.id]].bp+' pb','',bb.lv[S.bud[bb.id]].bp*1e-4*S.nav]);
   if(DESK().fixed)b.push(['Masse salariale du desk',(DESK().fixed*1e4).toFixed(0)+' pb','',DESK().fixed*S.nav]);
   const tot=c.ops+c.tc+c.mgmt,tf=c.tc+c.mgmt;
   const UC=pickU([VOL().mgmt*S.nav,...b.map(x=>x[3]||0),c.tc*1e-4*S.nav,tot*1e-4*S.nav]);
   openModal('Coûts du trimestre',`<p>La jauge additionne deux factures. Le fonds paie les <em>frais de gestion</em>, qui vous sont versés dès l'ouverture du trimestre, et l'<em>impact de marché</em> de vos ordres, qui dégrade son prix moyen. Votre société de gestion paie le <em>budget d'exploitation</em> et la <em>facture de courtage</em> : ils viennent en déduction de vos gains, et vous ne pouvez engager que ce que vous avez en caisse. Un point de base vaut <em>${mm(S.nav*1e-4)}</em>.</p>
    ${tbl([['<b>Payé par le fonds</b>','',''],[`Frais de gestion (${(VOL().mgmt*400).toFixed(1).replace('.',',')} % par an)`,`${(VOL().mgmt*1e4).toFixed(0)} pb`,inU(-VOL().mgmt*S.nav,UC)],
-     ...(S.execSlipQ?[['Impact de marché du trimestre',`${(-S.execSlipQ/S.nav*1e4).toFixed(0)} pb`,inU(S.execSlipQ,UC)]]:[]),
+     ...(S.execSlipQ?[['Impact de marché du trimestre',`${S.execSlipQ<0?'−':'+'}${Math.abs(S.execSlipQ/S.nav*1e4).toFixed(0)} pb`,inU(S.execSlipQ,UC)]]:[]),
      ['<b>Payé par vous</b>','',''],['Facture de courtage'+(S.phase==='book'?' (en préparation)':' (engagée)'),c.tc.toFixed(0)+' pb',inU(-c.tc*1e-4*S.nav,UC)],...b.map(x=>[x[0],x[1],inU(-(x[3]||0),UC)]),['Sous-total société',`${(c.ops+c.tc).toFixed(0)} pb`,inU(-(c.ops+c.tc)*1e-4*S.nav,UC)],
      ['<b>Total</b>',`<b>${tot.toFixed(0)} pb</b>`,inU(-tot*1e-4*S.nav,UC)],
      ['Trésorerie de votre société','',inU(mgrCash(),UC)]],['Poste','pb',UC.s.trim()])}`);
@@ -5744,11 +5746,11 @@ function renderTC(){
   const d=S.k[i]-S.k0[i];if(Math.abs(d)<1e-9)continue;
   const t=tcost(d,i);tot+=t.cost;
   rows+=`<div class="attr"><span class="an"><span class="num" style="color:var(--txt)">${INSTR[i].sym}</span> <span style="font-family:var(--mono);font-size:11px;color:var(--dimmer)">${S.k0[i]>0?'+':''}${S.k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]} · ${moneyB(t.bn)}</span></span>
-   <span class="av neg-g">${dec(t.bp,1)} pb · ${mm(t.cost)}</span></div>`;
+   <span class="av ${cC(t.cost)}">${cB(t.bp)} · ${cS(t.cost)}</span></div>`;
  }
  const el=document.getElementById('tc');if(!el)return;
  el.innerHTML=rows||`<p class="note" style="margin:0">Aucun ordre à passer : le book est inchangé, vous ne payez rien.</p>`;
- if(rows)el.innerHTML+=`<div class="kv" style="margin-top:8px"><span>Coût total des ordres</span><b class="neg-g">${mm(tot)} · ${(tot/S.nav*1e4).toFixed(0)} pb de l'encours</b></div>
+ if(rows)el.innerHTML+=`<div class="kv" style="margin-top:8px"><span>Coût total des ordres</span><b class="${cC(tot)}">${cS(tot)} · ${tot>0?'−':'+'}${Math.abs(tot/S.nav*1e4).toFixed(0)} pb de l'encours</b></div>
   <p class="note">Multiplicateur d'exécution appliqué : ×${dec((execMot()*DESK().mult(INSTR[0])*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult),2)} sur les actions (budget desk, organisation, liquidité du régime ${dec(S.liq,2)}, taux ${dec((S.rate*100),1)} %${S.execPenalty>1?', pénalité débauchage':''}).${S.star>=0?` <em>Votre recrutement du trimestre travaille sur ${INSTR[S.star].sym} : coûts divisés par trois sur ce marché.</em>`:''}</p>`;
 }
 function commitOrders(){
@@ -5924,21 +5926,21 @@ function screenExec(){
   if(x.tcMult){
    let sub=0;if(x.tcMultOn){orders.forEach(o=>{if(x.tcMultOn.includes(INSTR[o.i].sym))sub+=o.t.cost})}else sub=tot;
    const d=sub*(x.tcMult-1);bill=tot+d;
-   if(Math.abs(d)>=1e-9)out.push(`<span class="stk">ordres <em class="${d<0?'pos-g':'neg-g'}">${d<0?'−':'+'}${mm(Math.abs(d))}</em></span>`);
+   if(Math.abs(d)>=1e-9)out.push(`<span class="stk">ordres <em class="${d<0?'pos-g':'neg-g'}">${d<0?'+':'−'}${mm(Math.abs(d))}</em></span>`);   /* lot 300 : du point de vue de votre caisse */
   }
   const im=execImpactAmt(bill,x.tcMult,x.leakQ);
-  if(im)out.push(`<span class="stk">impact fonds <em class="neg-g">−${mm(Math.abs(im))}</em></span>`);
+  if(im)out.push(`<span class="stk">impact fonds <em class="${cls(im)}">${im<0?'−':'+'}${mm(Math.abs(im))}</em></span>`);
   const gx=execGz(x.tcMult,x.leakQ);
   return out.length?`<span class="stks">${out.join('')}</span>`:''};
  const lqNm=S.liq>1.5?'très dégradée':S.liq>1.2?'dégradée':S.liq>1.05?'un peu tendue':S.liq<0.92?'excellente':'normale';
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>${orders.length?'Les traders passent vos ordres':'Aucun ordre à passer'}</h2><span class="hint">T${S.q+1} · exécution</span></div>
-   ${orders.length?`<div class="kv"><span><b style="color:#fff">Ordres, à votre charge</b></span><b style="color:#fff;font-size:17px">−${mm(tot)}</b></div>
-   <div class="kv"><span>Impact de marché, pour le fonds</span><b class="neg-g">${mm(Math.abs(execImpactAmt(tot,1,S.leakQ)))}</b></div>`
+   ${orders.length?`<div class="kv"><span><b style="color:#fff">Ordres, à votre charge</b></span><b style="color:#fff;font-size:17px">${cS(tot)}</b></div>
+   <div class="kv"><span>Impact de marché, pour le fonds</span>${mn(execImpactAmt(tot,1,S.leakQ))}</div>`
    :`<p class="note" style="margin:0">Aucune position ce trimestre : vous ne payez aucun ordre. Le desk en profite pour vous parler d'autre chose.</p>`}
    ${orders.length?`<details style="margin-top:10px"><summary>Détail des ordres et des coûts</summary>
     <p class="note" style="margin:8px 0 0">${orders.length} marché${orders.length>1?'s':''} à travailler · liquidité ${lqNm} (×${dec(S.liq,2)}) · taux au jour le jour ${dec((S.rate*100),1)} % · trésorerie après paiement ${mm(mgrCash())} · ordres ${(tot/S.nav*1e4).toFixed(0)} pb, impact ${(Math.abs(execImpactAmt(tot,1,S.leakQ))/S.nav*1e4).toFixed(0)} pb de l'encours.</p>
-    <div class="wire" style="margin-top:8px">${orders.map(o=>`<div class="attr"><span class="an"><span class="num" style="color:${GRPC[INSTR[o.i].grp]}">${INSTR[o.i].sym}</span> <span class="recap" style="color:var(--dimmer)">${S.k0[o.i]>0?'+':''}${S.k0[o.i]} → ${S.k[o.i]>0?'+':''}${S.k[o.i]} · ${moneyB(o.t.bn)}</span></span><span class="av neg-g">${dec(o.t.bp,1)} pb · ${mm(o.t.cost)}</span></div>`).join('')}
+    <div class="wire" style="margin-top:8px">${orders.map(o=>`<div class="attr"><span class="an"><span class="num" style="color:${GRPC[INSTR[o.i].grp]}">${INSTR[o.i].sym}</span> <span class="recap" style="color:var(--dimmer)">${S.k0[o.i]>0?'+':''}${S.k0[o.i]} → ${S.k[o.i]>0?'+':''}${S.k[o.i]} · ${moneyB(o.t.bn)}</span></span><span class="av ${cC(o.t.cost)}">${cB(o.t.bp)} · ${cS(o.t.cost)}</span></div>`).join('')}
     <p class="note">Multiplicateur du trimestre ×${dec(mult,2)} : budget desk ×${dec(execMot(),2)} (moral ${Math.round(motV())}), liquidité ×${dec(S.liq,2)}, taux ×${dec((1+(S.rate-0.03)*4),2)}, profil ×${dec(PROF().tcMult,2)}${S.execPenalty!==1?`, débauchage ×${dec(S.execPenalty,2)}`:''}.${S.star>=0?` Recrue du trimestre sur ${INSTR[S.star].sym} : ÷3.`:''}</p></div></details>`:''}
   </div>
   ${ev?`<div class="evwrap" style="padding-top:14px"><div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p></div>
