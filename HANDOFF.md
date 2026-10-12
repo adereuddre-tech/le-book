@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 320.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 321.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -343,6 +343,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **318** : portage structurel : appétit borné à −4 σ (au lieu de −3) — le VIX rapporte jusqu'à ≈ +14 % par trimestre dans la panique.
 - **319** : exécution : le tableur de Jean-Kevin est tracé (marche ou plante, ±20 %, montant compris dans la facture).
 - **320** : anecdotes d'exécution : en-tête « exécution standard » (ordres payés par votre société, impact supporté par le fonds) ; chaque option affiche son écart au standard pour votre société et pour le fonds, plus ses aléas ; bilan en trois temps (standard, effet de votre choix, total) pour la société puis pour le fonds, avec une phrase de synthèse ; « −50 pb » d'une option précise « de l'encours (le fonds) ».
+- **321** : cohérence des chocs : comptabilité additive dans le trimestre — le P&L du book s'applique à l'encours de début de trimestre (`navQ0`) dans `resolveQuarter`, `liveRet` et `navNow`. Avant, un choc pris sur l'encours (dépêche, extrême, accident de levier) rétrécissait après coup le P&L du book (effet croisé choc × performance), et le ruban bougeait plus que la perte affichée. Vérifié : extrêmes, choc immédiat et suite affichés = réalisés (30/30) ; accidents de levier, perte affichée = perte de l'encours.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
