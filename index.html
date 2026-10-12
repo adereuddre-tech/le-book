@@ -3351,8 +3351,7 @@ function renderNews(){
  const rk=r=>(r.sure?0:r.ev?1:r.rel==='forte'?2:r.rel==='moyenne'?3:4);
  const ord=[...S.rumors].sort((a,b)=>rk(a)-rk(b));
  /* lot 310 : les marchés que la source dit toucher — ceux de la dépêche annoncée, sinon les trois plus exposés à ses facteurs */
- const tk=r=>{let L;if(r.hit)L=Object.keys(r.hit).filter(sy=>IDX[sy]!==undefined&&mktOpen(IDX[sy])).map(sy=>({sy,z:r.hit[sy]}));
-   else L=INSTR.map((x,i)=>({sy:x.sym,i,z:x.b.reduce((a,b,k)=>a+b*(r.v[k]||0),0)})).filter(o=>mktOpen(o.i));
+ const tk=r=>{if(!r.hit)return '';let L=Object.keys(r.hit).filter(sy=>IDX[sy]!==undefined&&mktOpen(IDX[sy])).map(sy=>({sy,z:r.hit[sy]}));
    L=L.filter(o=>Math.abs(o.z)>1e-6).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z)).slice(0,3);
    return L.length?`<div class="chips tks">${L.map(o=>`<i class="${o.z>0?'up':'dn'}">${o.sy} ${o.z>0?'▲':'▼'}</i>`).join('')}</div>`:''};
  const one=r=>`<div class="news ${r.ev?'rum':''}"><span class="src">${r.src.toUpperCase()}</span><span>${r.t}${tk(r)}<div class="chips">${r.v.map((z0,k)=>{const z=z0*FSG[k];return `<i class="${z>0?'up':z<0?'dn':''}">${FACT[k].id} ${chip(z)}</i>`}).join('')}${r.sure?'<i class="sure">✓ vérifiée</i>':''}<i class="rel ${r.rel}">fiabilité ${r.rel}</i></div></span></div>`;
