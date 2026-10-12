@@ -3496,7 +3496,7 @@ function rivalReturns(){   /* lot 67 : exactement rivRet(j,1) — plus aucun tir
 const app=document.getElementById('app');
 /* lot 267 : glossaire au toucher — la première occurrence d'un terme dans chaque note devient soulignée ; un toucher ouvre sa définition */
 const GLOSS={
- 'portage':"Ce que rapporte une position si les prix ne bougent pas : l'écart de taux entre deux devises, la pente d'une courbe, le coût de stockage d'une matière première.",
+ 'portage':"Ce que rapporte une position si les prix ne bougent pas : dividendes et prime de risque des actions, prime de terme des obligations, écart de taux entre deux devises, coût de stockage d'une matière, contango du VIX. Une part est structurelle et connue ; l'autre suit le cycle.",
  'tendance':"Le signal qui parie que ce qui a monté continuera de monter. Il gagne dans les marchés qui bougent longtemps dans le même sens, perd dans les retournements.",
  'fourchette':"L'écart entre le prix auquel on peut acheter et celui auquel on peut vendre. Chaque ordre en paie la moitié.",
  'impact de marché':"Le prix qui bouge contre vous pendant que vous exécutez : plus l'ordre est gros par rapport au carnet, plus il pèse.",
@@ -5864,7 +5864,7 @@ function drawRows(){
       <span class="rr">${ordTxt(i)}</span></div>
      <div class="seg" data-row="${i}">${seg}</div>
      <div class="tcv"><button data-mkt="${i}" class="tcvb">${(()=>{const m=STYLESIG[S.prof]||'t';
-       return ['t','c','v'].map(z=>`<span class="${z===m?'mine':'oth'}">${tcvChip(SIGNM[z],S.tcvEst[z][i])}</span>`).join('')})()}${(S.prof==='fonda'&&S.cat&&S.cat.includes(i))?'<i class="cat" title="Catalyseur : l&#39;écart de valeur se referme ce trimestre">⚡</i>':''}<span class="more">détails ›</span></button></div>
+       return ['t','c','v'].map(z=>`<span class="${z===m?'mine':'oth'}">${tcvChip(SIGNM[z],S.tcvEst[z][i]+(z==='c'?kapZ(i):0))}</span>`).join('')})()}${(S.prof==='fonda'&&S.cat&&S.cat.includes(i))?'<i class="cat" title="Catalyseur : l&#39;écart de valeur se referme ce trimestre">⚡</i>':''}<span class="more">détails ›</span></button></div>
      <div class="rowinfo" id="ri${i}"></div></div>`;
   });
  });
@@ -5885,9 +5885,11 @@ function drawRows(){
 }
 function chip(z){const n=Math.min(3,Math.abs(Math.round(z)));return n===0?'·':(z>0?'▲':'▼').repeat(n)}
 function tcvChip(nm,z){return `<i class="${z>0?'up':z<0?'dn':''}">${nm} ${chip(z)}</i>`}
+/* lot 316 : portage affiché = signal du cycle + portage structurel ramené en σ du signal */
+function kapZ(i){const x=INSTR[i];return kap(i,(S.factEst||[])[3]||0)/Math.max(1e-9,x.sigQ*SIGW.c)}
 const TCVTXT={
  t:{nm:'Tendance',d:"Les deux derniers trimestres de ce marché, pondérés. Les régimes persistent : un marché qui vient de monter a plus de chances de continuer que de se retourner.",eff:0.12},
- c:{nm:'Portage',d:{Actions:"Rendement des bénéfices et des dividendes contre le taux du cash : ce que la position rapporte si rien ne bouge.",Taux:"Pente de la courbe et prime de terme : ce qu'une position longue gagne à porter l'obligation.",Devises:"Différentiel de taux d'intérêt entre les deux devises : la rémunération d'être long la devise qui paie le plus.",'Matières premières':"Rendement de roulement des contrats à terme : positif quand la courbe est en déport, négatif en report."},eff:0.10},
+ c:{nm:'Portage',d:{Actions:"Rendement des bénéfices et des dividendes contre le taux du cash : ce que la position rapporte si rien ne bouge.",Taux:"Pente de la courbe et prime de terme : ce qu'une position longue gagne à porter l'obligation.",Devises:"Différentiel de taux d'intérêt entre les deux devises : la rémunération d'être long la devise qui paie le plus.",'Matières premières':"Rendement de roulement des contrats à terme : positif quand la courbe est en déport, négatif en report.",Exotiques:"Ce que coûte ou rapporte de tenir la position : contango des contrats de volatilité (cher quand le marché est calme, payant dans la peur), coût de financement d'une crypto, roulement d'un contrat de fret ou de carbone."},eff:0.10},
  v:{nm:'Valeur',d:"Cherté du marché contre ses fondamentaux de long terme. Un marché bon marché a une petite dérive haussière, un marché cher une petite dérive baissière — lentement.",eff:0.08}
 };
 function showMarket(i){
@@ -5921,8 +5923,8 @@ function showMarket(i){
  openModal(`${MFLAG[x.sym]||''} ${x.sym} — ${x.nm}`,`${dens}
   <p class="note" style="margin-top:0">Attendu du trimestre <em class="${cls(XR.m)}">${sgn(XR.m,1)}</em>, de ${sgn(XR.m-2*XR.s,1)} à ${sgn(XR.m+2*XR.s,1)} à 95 %. Trait doré : l'attendu ; pointillé : le zéro.</p>
   ${tbl([...XP.fac.map((o,k)=>{const g=FSG[k],eb=o.b*g,ef=o.f*g;return [FACT[k].nm,`${eb>=0?'+':'−'}${dec(Math.abs(eb),2)} × ${ef>=0?'+':'−'}${dec(Math.abs(ef),2)}`,pc(o.v)]}),
-    ['Tendance',L(e.t[i]),pc(XP.t)],['Portage',L(e.c[i]),pc(XP.c)],[`Valeur${XP.cv>1?' ⚡':''}`,L(e.v[i]),pc(XP.v)],
-    ...(Math.abs(XP.drift)>1e-6?[['Portage structurel','',pc(XP.drift)]]:[]),
+    ['Tendance',L(e.t[i]),pc(XP.t)],['Portage · cycle',L(e.c[i]),pc(XP.c)],[`Valeur${XP.cv>1?' ⚡':''}`,L(e.v[i]),pc(XP.v)],
+    ...(Math.abs(XP.drift)>1e-6?[['Portage · structurel',KAPPA[x.sym]&&KAPPA[x.sym][1]?'selon l\'appétit':'connu',pc(XP.drift)]]:[]),
     ['<b>Attendu</b>','',`<b>${pc(XR.m)}</b>`]],['','Exposition × lecture','Effet'])}
   ${tbl([['Par unité, pour le fonds',`<b>${pc(w1*XR.m)}</b> ± ${dec(2*w1*XR.s*100,1)} %`],
     ['Risque marginal (±1 unité)',`<b class="${rp>0?'neg-g':'pos-g'}">${rp>=0?'+':'−'}${dec(Math.abs(rp),1)} pt</b> sur ${Math.round(riskShown(weights(S.k)).total*100)}`],
@@ -5930,7 +5932,7 @@ function showMarket(i){
     ['Autres fonds',Math.abs(S.crowd[i])<0.25?'neutres':(S.crowd[i]>0?'majoritairement longs':'majoritairement courts')]])}
   <details style="margin-top:10px"><summary>Comment lire ce tableau</summary>
    <p style="margin-top:8px">Facteurs : l'exposition du marché (de −1 à +1) multipliée par ce que vos sources disent du facteur. Signaux : ce que tendance, portage et valeur ajoutent${XP.cv>1?' — la valeur compte triple sur un catalyseur':''}. L'intervalle couvre environ 95 trimestres sur 100 : il mesure ce que vous ne savez pas.</p>
-   <p><em>Tendance</em> — ${TCVTXT.t.d}</p><p><em>Portage</em> — ${TCVTXT.c.d[x.grp]}</p><p><em>Valeur</em> — ${TCVTXT.v.d}</p>
+   <p><em>Tendance</em> — ${TCVTXT.t.d}</p><p><em>Portage</em> — ${TCVTXT.c.d[x.grp]||''} Il a deux parts : le <em>structurel</em>, connu exactement (dividendes et prime de risque, prime de terme, écart de taux, coût de stockage, contango), et le <em>cycle</em>, que le desk lit avec du bruit. La pastille du book les additionne.</p><p><em>Valeur</em> — ${TCVTXT.v.d}</p>
    <p>Votre style lit son signal trois fois plus nettement que les deux autres ; la salle de marché règle le bruit (±${dec(TCVQ[S.bud.exec],2)} cran).</p></details>
   <details><summary>Le marché</summary>
    <p style="margin-top:8px">${x.sub}. Volatilité annualisée ${dec((x.sig*100),1)} %. Une unité vaut <em>${moneyB(Math.abs(notionalBn(1,i)))}</em> de notionnel ; une unité de plus coûterait ${dec(t1.bp,1)} pb, soit ${mm(t1.cost)}.</p></details>`);

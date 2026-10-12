@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 315.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 316.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -338,6 +338,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **313** : proposition hors book du prime broker (`TIPS`) : 12 types au lieu de 7 (nouveaux : cargaison physique, bloc d'actions, obligation convertible, obligation catastrophe, actif de collection ; espérance +0,25 à +0,3 %), et 4 à 6 variantes de présentation par type (`v`, titre + récit, tirage `tipv`) inspirées du livre noir — mêmes coûts, gains et chances par type.
 - **314** : textes mis en cohérence : tutoriel (moral, carton dans la tuile de confiance, sources liées à la masse salariale), descriptions du front et du back office (recrutement par personne, niveau par masse salariale), règles de l'accueil (moral au lieu du bonus), styles décrits tous les six, trésorerie (capital de départ, ligne dédiée), mémoire de la presse (manœuvre), page du bonus, multiplicateur d'exécution (« recrues et moral »), objectifs Winnie, glossaire (moral, masse salariale).
 - **315** : portage structurel `KAPPA`/`kap(i,a)` = κ0 + χ·a (a = appétit en σ, borné [−3 ; 1,5]) : une seule formule pour l'attendu (appétit estimé) et le réalisé (appétit du trimestre). Remplace `PREM` (actions +1,2 %, taux +0,4 % par trimestre) et la dérive du VIX (−8,5 %, χ = 8,5/1,5 : s'annule à −1,5 σ, s'inverse au-delà) ; plus de multiplicateur de régime (crise ×−2,2, récession ×−0,9) sur le réalisé, qui divergeait de l'attendu.
+- **316** : affichage du portage : la pastille « Portage » du book additionne le signal du cycle et le portage structurel (`kapZ`, ramené en σ du signal) ; le détail d'un marché sépare « Portage · cycle » et « Portage · structurel » (connu, ou selon l'appétit) ; texte d'aide et glossaire (dont les exotiques).
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
