@@ -5268,7 +5268,7 @@ const PW=[
  {id:'go',bo:1,ic:'🧮',nm:'Gontran',inc:1,t:"Passer l'écriture",d:"Si un incident tombe, il le rattrape : le fonds n'en paie qu'un quart, sans perte de confiance. Se joue sur l'écran de l'incident."},
  {id:'jo',bo:2,ic:'🗂️',nm:'Josiane',t:"Tout rapprocher",d:"Aucune fuite de vos positions ce trimestre, quoi qu'il arrive — même si Onésime passe à la télé."},
  {id:'fi',bo:3,ic:'🔎',nm:'Firmin',t:"Un audit propre",d:"Le rapport d'audit annuel tombe à point : contrôle des risques +5."},
- {id:'mi',bo:4,ic:'⚖️',nm:'Mireille',t:"Plaider devant le comité",d:"Une fois par mandat, elle fait effacer un carton jaune."},
+ {id:'mi',bo:4,ic:'⚖️',nm:'Mireille',t:"Plaider devant le comité",d:"Une fois par mandat : elle fait effacer le carton jaune en cours, et le comité ne donnera pas de jaune à la clôture de ce trimestre."},
  {id:'so',bo:5,ic:'🛡️',nm:'Solange',t:"Exercice de crise",d:"Ce trimestre, le choc immédiat d'un événement extrême est réduit de 35 %, et une cyberattaque ne vous touche pas. S'ajoute à la protection, qui rend sur le choc du marché."}];
 function styDraw(){const el=document.getElementById('stypw');if(!el)return;const P=PROF();let h='';
  if(P.tailH)h=`<div class="blockhead"><h2>La convexité</h2><span class="hint">votre pouvoir</span></div><p class="note" style="margin:0">Après les ordres, la protection contre les extrêmes vous est vendue au prix du choc moyen, sans marge (aujourd'hui ${dec(hedgeCost()*100,2)} % de l'encours pour ce book) et rend 120 % du choc immédiat : les 20 % de plus sont offerts. ${xWatchTxt()}</p>`;
@@ -5441,7 +5441,7 @@ function pwHere(o){return o.fo!=null?(o.fo===0||here(o.fo)):boH(o.bo)}   /* lot 
 function pwOn(id){return !!(S&&S.pw&&S.pw[id]===S.q)}
 function pwBack(id){const l=S.pwLast&&S.pwLast[id];return l==null?0:l+(id==='jk'?1:4)}   /* lot 302 : Jean-Kevin chaque trimestre */
 function jkP(){return Math.min(0.90,0.50+0.05*(S.pwJKn||0))}   /* trimestre où le pouvoir revient */
-function pwAvail(o){if(!pwHere(o))return false;if(o.id==='mi')return !S.pwMi&&S.cards&&S.cards.y>0;return S.q>=pwBack(o.id)}
+function pwAvail(o){if(!pwHere(o))return false;if(o.id==='mi')return !S.pwMi;return S.q>=pwBack(o.id)}
 function pwOk(o){return pwOn(o.id)?!o.info&&S.phase==='book':pwAvail(o)&&!o.inc}
 function pwTip(cls,rel,who){const c=[];for(let i=0;i<N;i++)if(mktOpen(i)&&INSTR[i].grp===cls)c.push(i);if(!c.length)return null;
  const i=c.sort((a,b)=>Math.abs(expRet(b).m)-Math.abs(expRet(a).m))[0],u=prng32(hash32('pw'+who+S.q,S.seed))(),up=(S.rBase[i]>0)===(u<rel);return {who,sym:INSTR[i].sym,nm:INSTR[i].nm,up}}
@@ -5460,14 +5460,16 @@ function pwCommit(){if(!S.pw)return;S.pwLast=S.pwLast||{};S.pwMaK=null;
   if(o.id==='on'){gauge(8,0,'Onésime sur un plateau télé');if(!pwOn('jo'))S.leakQ=true}
   if(o.id==='jo')S.leakQ=false;
   if(o.id==='fi')gauge(0,5,"Audit propre de Firmin");
-  if(o.id==='mi'){S.pwMi=1;S.cards.y=Math.max(0,S.cards.y-1);(S.cards.log=S.cards.log||[]).push({q:S.q,c:'effacé',why:'Mireille plaide devant le comité'})}});
+  if(o.id==='mi'){S.pwMi=1;S.miShield=S.q;S.cards=S.cards||{y:0,r:0,clean:0,log:[]};const y0=S.cards.y;S.cards.y=0;S.cards.clean=0;
+   if(y0)S.cards.log.push({q:S.q,c:'effacé',why:'Mireille plaide devant le comité'});
+   toast(`⚖️ <b>Mireille</b> plaide : ${y0?'carton jaune effacé, et ':''}pas de jaune à la clôture de ce trimestre.`)}});
  if(pwOn('jk'))toast((S.pwJK<1?'🐣 Le tableur de Jean-Kevin marche : coûts −20 % ce trimestre.':'🐣 Le tableur de Jean-Kevin plante : coûts +20 % ce trimestre.')+` Il apprend : ${Math.round(jkP()*100)} % de réussite la prochaine fois.`)}
 function pwDraw(){const el=document.getElementById('pwblk');if(!el)return;const L=PW.filter(pwHere);
  const tips=(S.pwTips||[]).filter(t=>t.q===S.q);
  el.innerHTML=`<div class="blockhead"><h2>Votre équipe</h2><span class="hint">un coup de pouce chacun par an · Jean-Kevin chaque trimestre</span></div>
   ${tips.map(t=>`<div class="flag" style="margin:0 0 8px"><span>📌 <b>${t.who}</b> : ${t.nm} finira le trimestre en <b>${t.up?'hausse':'baisse'}</b>.</span></div>`).join('')}
   <div class="pwl">${L.map(o=>{const on=pwOn(o.id),ok=pwOk(o),back=pwBack(o.id);
-   const st=on?(o.info?'joué ce trimestre':'armé · touchez pour désarmer'):o.inc?(pwAvail(o)?'disponible · se joue sur l’incident':`revient au trimestre ${back+1}`):o.id==='mi'?(S.pwMi?'joué pour le mandat':S.cards&&S.cards.y?'disponible':'aucun carton à effacer'):pwAvail(o)?(S.pwConf===o.id?'touchez encore pour confirmer : compté pour l’année':'disponible'):`revient au trimestre ${back+1}`;
+   const st=on?(o.info?'joué ce trimestre':'armé · touchez pour désarmer'):o.inc?(pwAvail(o)?'disponible · se joue sur l’incident':`revient au trimestre ${back+1}`):o.id==='mi'?(S.pwMi?'joué pour le mandat':'disponible'):pwAvail(o)?(S.pwConf===o.id?'touchez encore pour confirmer : compté pour l’année':'disponible'):`revient au trimestre ${back+1}`;
    return `<button class="pwb${on?' on':''}${S.pwConf===o.id?' conf':''}" data-pw="${o.id}"${ok?'':' disabled'}><b>${o.ic} ${o.nm} · ${o.t}</b><small>${o.d} <i>· ${st}${o.id==='jk'?` · réussite ${Math.round((pwOn('jk')&&S.pwLast&&S.pwLast.jk===S.q?Math.min(0.9,jkP()-0.05):jkP())*100)} %`:''}</i></small></button>`}).join('')}</div>`;
  el.querySelectorAll('.pwb[data-pw]').forEach(b=>b.onclick=()=>pwUse(b.dataset.pw))}
 /* Les ordres sortent de la poche du gérant : le bouton reste bloqué tant que la caisse ne suit
@@ -7137,6 +7139,7 @@ function resolveQuarter(){
   else if(S.stopQn!==S.q-1&&qTotal<=-ls&&qTotal>-2*ls)why.push(`stop trimestriel de −${dec(ls*100,1)} % franchi à la clôture`);
   if(Math.round(cc.v*100)>Math.round(lc*100))why.push(`${Math.round(cc.v*100)} % du risque en ${cc.g.toLowerCase()}, limite ${Math.round(lc*100)} %`);
   S.qCard=null;
+  if(!red&&why.length&&S.miShield===S.q-1){S.miSaved=why[0];C.log.push({q:S.q,c:'effacé',why:'Mireille : '+why[0]});why.length=0}
   if(!red&&why.length){C.y++;C.clean=0;S.qCard={c:'jaune',why:why[0]};C.log.push({q:S.q,c:'jaune',why:why[0]});
    if(C.y>=2)red='deuxième carton jaune'}
   else if(!red){C.clean++;if(C.clean>=4&&C.y>0){C.y--;C.clean=0}}
@@ -7517,6 +7520,7 @@ function screenDebrief(o){
     <p><b>Le comité des risques vous sort le rouge.</b><br>${qc.why}.</p>
     <ul class="rules2">${qc.cn&&qc.cn.list?qc.cn.list.map(c=>`<li>Au prochain trimestre : <b>${c.nm}</b> — ${c.t}.</li>`).join(''):`<li>Au prochain trimestre : <b>${qc.cn?qc.cn.nm:'contrainte'}</b> — ${qc.cn?qc.cn.t:''}.</li>`}</ul></div>`);
    const mb=document.querySelector('#modal .mbox');if(mb)mb.classList.add('redbox')},30)}
+ if(S.miSaved&&S.miShield===S.q-1)warn.push(`⚖️ <b>Mireille a plaidé</b> — le comité voulait un jaune (${S.miSaved}). Il n'en donne pas.`);
  if(S.qCard)warn.push(S.qCard.c==='rouge'?`🟥 <b>Carton rouge du comité</b> — ${S.qCard.why}. Au prochain trimestre : <b>${S.qCard.cn.nm}</b> — ${S.qCard.cn.t}.`:`🟨 <b>Carton jaune du comité</b> — ${S.qCard.why}. Au deuxième, c'est le rouge.`);
  if(capStress()>0&&!S.capWarned){S.capWarned=1;warn.push(`Capacité atteinte : à ${moneyB(S.nav)} d'encours, vos ordres coûtent ${((capFactor()-1)*100).toFixed(0)} % d'impact de plus qu'au premier jour. Collecter davantage ne rapportera bientôt plus ce que ça coûte.`)}
  {const c=S.colRes;if(c&&c.show)detl.push(c.lock?`Collatéral renforcé : rémunéré à 60 % du taux, ${mn(c.m)} par rapport aux bons du Trésor.`
