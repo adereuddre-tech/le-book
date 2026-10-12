@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 313.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 314.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -336,6 +336,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **311** : avertissement de carton : cadre central compact avec liseré (jaune ou rouge) au lieu du bandeau pleine largeur.
 - **312** : activiste : le livre noir remplace la manœuvre dans le book. Catalogue `BKCAT` de 104 marchés hors du book (devises émergentes et ancrages, dettes en détresse, indices exotiques, actions célèbres — VW, GameStop, Wirecard… —, matières étroites, curiosités). Chaque trimestre, trois occasions tirées (pas de répétition sur 12), sens, réussite 45–65 %, gain 1,6–2,2 × la mise ; mise 1–5 % de l'encours ; verdict sur l'écran de clôture, résultat dans l'encours (`qEvM`). Trois réussites d'affilée à mises strictement croissantes (`S.bkStreak`) : coup du siècle (`BKCDS`, 10 scénarios), mise 5/10/15 %, réussite 45 %, gain 8 × la mise. Confiance ±3 (coup du siècle +15/−10), comité −1 au lancement (−3), −2 sur échec (−5). Correction : le résultat de la manœuvre du trimestre précédent restait affiché (`atkRes.q`). Bot : première occasion à 3 % (coup du siècle 10 %). Campagne 96 parties facile : activiste survie 62 %, score moyen 5,0 → 7,1.
 - **313** : proposition hors book du prime broker (`TIPS`) : 12 types au lieu de 7 (nouveaux : cargaison physique, bloc d'actions, obligation convertible, obligation catastrophe, actif de collection ; espérance +0,25 à +0,3 %), et 4 à 6 variantes de présentation par type (`v`, titre + récit, tirage `tipv`) inspirées du livre noir — mêmes coûts, gains et chances par type.
+- **314** : textes mis en cohérence : tutoriel (moral, carton dans la tuile de confiance, sources liées à la masse salariale), descriptions du front et du back office (recrutement par personne, niveau par masse salariale), règles de l'accueil (moral au lieu du bonus), styles décrits tous les six, trésorerie (capital de départ, ligne dédiée), mémoire de la presse (manœuvre), page du bonus, multiplicateur d'exécution (« recrues et moral »), objectifs Winnie, glossaire (moral, masse salariale).
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
