@@ -874,9 +874,9 @@ const PROFILES=[
   p:"Pas d'opinion : un modèle. Il lit tous les signaux, pèse toutes les sources et, en niveau facile, vous propose un book d'un bouton. Vous ne savez pas toujours pourquoi il est long du yen. Lui, si.",
   ef:[['g',"<b>Pouvoir propre — le modèle</b> : en moyen et difficile, la lecture du modèle, ses six convictions les plus nettes, sens et rang ; en facile, le book du modèle entier, applicable d'un bouton (comme pour tous les styles)"],['g',"veille des extrêmes équilibrée : le modèle de risque sent venir de 20 à 85 % des extrêmes, en identifie de 45 à 85 % et chiffre la perte du book"],['g',"il lit les trois signaux de marché, tendance, portage et valeur, avec un bruit ×0,6 ; chaque autre style lit le sien ×0,3 mais les deux autres ×1,3"],['g',"investisseurs 15 % moins nerveux"],['b',"le modèle vise 90 % du risque de croisière : régulier, mais il laisse du rendement"],['g',"incidents opérationnels −40 % : tout est automatisé, journalisé, horodaté"],['g',"le modèle recale vite : 50 % du mouvement capté après un ajustement"],['b',"le modèle aime la tendance : il surestime de 4 pts la probabilité qu'une dépêche se prolonge"],['b',"ajuster en cours de trimestre exige une dérogation au modèle, que le comité consigne"],['g',"capital de départ +0,5 M$ ; équipe 5 % moins chère"],['g',"coûts de transaction −15 % : le modèle exécute sans état d'âme"],['b',"aucune intuition : ce que le modèle n'a pas mesuré n'existe pas"]],
   sigBonus:0,capture:0.50,tcMult:0.85,rumBonus:0.05,lpMult:0.85,modelScale:0.90,ddMax:0.40,incMult:0.60,numeric:true,noAdj:true},
- {id:'tail',sum:{pw:"la protection au prix du choc, et qui en rend 120 % : vous gagnez quand tout s'effondre",f:["veille des extrêmes forte","aucun signal mal lu : bruit ×1 partout","incidents −10 %"],w:["investisseurs 10 % plus nerveux","chaque trimestre calme où vous êtes couvert : confiance −1"]},lvl:'Normal',who:"« Je ne sais pas quand, je sais que »",nm:"Chasseur de queues",
+ {id:'tail',sum:{pw:"la protection au prix du choc, et qui en rend 120 % : vous gagnez quand tout s'effondre",f:["veille des extrêmes forte","aucun signal mal lu : bruit ×1 partout","incidents −10 %"],w:["investisseurs 10 % plus nerveux","la protection coûte chaque trimestre ; elle ne paie que dans les coups durs"]},lvl:'Normal',who:"« Je ne sais pas quand, je sais que »",nm:"Chasseur de queues",
   p:"Vous ne prévoyez pas la crise : vous savez qu'elle viendra, et vous êtes le seul à être payé ce jour-là. Le reste du temps, vous payez l'assurance, trimestre après trimestre, sous le regard de plus en plus las de vos investisseurs. Un jour de krach, vous faites en une séance ce que les autres font en dix ans.",
-  ef:[['g',"<b>Pouvoir propre — la convexité</b> : votre protection contre les extrêmes rend 120 % du choc immédiat au lieu de 70 %, et vous ne la payez qu'au prix d'une protection à 100 % (sans la marge de 2 × des autres styles) : le surplus est offert, un extrême vous enrichit"],['g',"veille des extrêmes forte : 25 à 90 % sentis, 40 à 80 % identifiés"],['g',"aucune spécialité de lecture, mais aucune faiblesse : tendance, portage et valeur au bruit ×1"],['g',"incidents −10 % : un desk prudent"],['b',"investisseurs 10 % plus nerveux : ils ne comprennent pas pourquoi vous payez l'assurance"],['b',"chaque trimestre calme où vous êtes couvert : « encore un trimestre à payer l'assurance », confiance −1"],['g',"capital de départ +0,5 M$ ; équipe 10 % moins chère : un desk sobre"],['b',"votre desk vise 90 % du risque de croisière"],['b',"commission de performance +3 pts, le prix de la convexité ; capture 60 %"]],
+  ef:[['g',"<b>Pouvoir propre — la convexité</b> : votre protection rend 120 % au lieu de 70 % — du choc immédiat d'un extrême, de la moitié de celui d'une dépêche violente, et de la perte du trimestre au-delà de −3 % (put sur le book) —, et vous ne la payez qu'au prix d'une protection à 100 % (sans la marge de 2 × des autres styles) : le surplus est offert, un extrême vous enrichit"],['g',"veille des extrêmes forte : 25 à 90 % sentis, 40 à 80 % identifiés"],['g',"aucune spécialité de lecture, mais aucune faiblesse : tendance, portage et valeur au bruit ×1"],['g',"incidents −10 % : un desk prudent"],['b',"investisseurs 10 % plus nerveux : ils ne comprennent pas pourquoi vous payez l'assurance"],['g',"quand la protection paie, confiance +3 : « le seul fonds qui a gagné pendant la crise »"],['g',"capital de départ +0,5 M$ ; équipe 10 % moins chère : un desk sobre"],['b',"votre desk vise 90 % du risque de croisière"],['b',"commission de performance +3 pts, le prix de la convexité ; capture 60 %"]],
   sigBonus:0,capture:0.60,tcMult:1.0,rumBonus:0.10,lpMult:1.10,modelScale:0.90,incMult:0.9,incSev:1.0,numeric:false,tailH:true},
  {id:'fonda',sum:{pw:"deux sources vérifiées par trimestre, et une dépêche dont la suite est connue",f:["+5 sources par trimestre","la valeur lue trois fois plus nettement, trois catalyseurs secrets","les extrêmes presque toujours identifiés"],w:["incidents plus fréquents et plus chers","60 % seulement d'un mouvement capté"]},lvl:'Normal',who:"« Je peux avoir raison plus longtemps que le marché ne peut rester solvable »",nm:"Gérant fondamental discrétionnaire",
   p:"Une vue du monde, construite ligne par ligne, et défendue contre tous. Vous avez passé trois nuits sur la balance courante d'un pays que personne ne regarde. Vous aurez raison — reste à savoir si votre mandat tiendra jusque-là.",
@@ -3189,8 +3189,8 @@ function planQuarter(){
  }
  const tav=TRADER_MID.filter(e=>!S.usedTrader.includes(e.t)&&persoOk(e)&&!(e.who.startsWith('Sœur')&&S.prof!=='syst'));
  if(tav.length){const te=pick(tav);S.usedTrader.push(te.t);S.evQueue.splice(Math.floor(rng()*(S.evQueue.length+1)),0,{trader:true,...te})}
- {const u=prng32(hash32('stress'+S.q,S.seed));S.stressQ=null;if(u()<xProbTot()){   /* lot 264 : un seul tirage, un seul catalogue */
-   const pS=stressP(),pX=S.q>=1?XPROB:0,mac=u()<pX/(pS+pX);let sc=null;
+ {const u=prng32(hash32('stress'+S.q,S.seed));S.stressQ=null;S.xPd=null;S.xPd={q:S.q,pS:stressP(),pX:S.q>=1?XPROB:0};if(u()<xProbTot()){   /* lot 322 : probabilités figées au tirage */   /* lot 264 : un seul tirage, un seul catalogue */
+   const pS=S.xPd.pS,pX=S.xPd.pX,mac=u()<pX/(pS+pX);let sc=null;
    if(mac){S.usedX=S.usedX||[];let av=STRESS.filter(x=>x.mac&&!S.usedX.includes(x.id));if(!av.length){S.usedX=[];av=STRESS.filter(x=>x.mac)}sc=av[Math.floor(u()*av.length)];S.usedX.push(sc.id)}
    else{const C=STRESS.filter(x=>!x.mac),wt=C.map(x=>x.ext?1/3:1),tw=wt.reduce((a,b)=>a+b,0);let r=u()*tw,si=0;while(si<C.length-1&&r>=wt[si]){r-=wt[si];si++}sc=C[si]}
    const ev=stressEv(sc.id);if(ev){S.stressQ=sc.id;S.evQueue.splice(1+Math.floor(u()*S.evQueue.length),0,ev)}}}   /* lot 101 */
@@ -5614,8 +5614,9 @@ const STRESSK=0.32,STRGAP=0.28;
 MACROEV.filter(e=>e.x).forEach((e,j)=>{const x={};for(const sy in e.hit)x[sy]=e.hit[sy]/(STRESSK*1.5);
  STRESS.push({id:'mx'+j,mac:1,nm:e.t,t0:e.t,who:e.who,x,sh:[0,0,0,0],p:e.p,...(e.liq?{liq:e.liq}:{}),...(e.shut?{shut:e.shut}:{})})});
 /* probabilité qu'un extrême frappe ce trimestre, et celle de chaque scénario */
-function xProbTot(){return 1-(1-stressP())*(1-((S&&S.q>=1)?XPROB:0))}
-function xScP(sc){const pS=stressP(),pX=(S&&S.q>=1)?XPROB:0,T=xProbTot();if(!sc||T<=0)return 0;
+function xPs(){return S&&S.xPd&&S.xPd.q===S.q?S.xPd.pS:stressP()}function xPx(){return S&&S.xPd&&S.xPd.q===S.q?S.xPd.pX:((S&&S.q>=1)?XPROB:0)}
+function xProbTot(){return 1-(1-xPs())*(1-xPx())}
+function xScP(sc){const pS=xPs(),pX=xPx(),T=xProbTot();if(!sc||T<=0)return 0;
  if(sc.mac)return T*pX/(pS+pX)/Math.max(1,STRESS.filter(x=>x.mac).length);
  const C=STRESS.filter(x=>!x.mac),tw=C.reduce((a,x)=>a+(x.ext?1/3:1),0);return T*pS/(pS+pX)*(sc.ext?1/3:1)/tw}
 function stressGap(k,sc){const w=weights(k);let g=0;for(let i=0;i<N;i++)g+=Math.abs(w[i])*INSTR[i].sigQ;return STRGAP*g*(sc&&sc.ext?2:1)*crowd(riskShown(w).total)*(S&&S.prof==='rv'?1.5:1)}   /* lot 270 : les paires divergent ; lot 284 : ×1,5 */
@@ -6107,7 +6108,14 @@ function hint(id){
    elle rend une part du choc immédiat de tout événement extrême du trimestre (STRESS et dépêches x:1), back office compris. */
 const HEDGE={h:0.70,load:2,min:0.005};   /* lot 257 : prime actuarielle = 2 × ce que la protection rend en moyenne, 0,5 % au moins */
 /* ce que la protection rendrait en moyenne ce trimestre, aux probabilités du marché (la veille du desk n'entre pas dans le prix) */
-function hedgeEV(){const k=S.k,bo=0.5+0.5*(TAILM[S.bud.risk]||1);let e=0;STRESS.forEach(x=>{e+=xScP(x)*Math.max(0,-0.5*bo*stressLoss(k,x))});return hH()*e}   /* lot 264 */
+const PUTK=0.03;   /* lot 322 : le put sur le book paie au-delà de −3 % sur le trimestre */
+function nCdf(x){const t=1/(1+0.2316419*Math.abs(x)),d=0.3989423*Math.exp(-x*x/2),p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p}
+function hedgeParts(){const k=S.k,w=weights(k),bo=0.5+0.5*(TAILM[S.bud.risk]||1);let ex=0;STRESS.forEach(x=>{ex+=xScP(x)*Math.max(0,-0.5*bo*stressLoss(k,x))});
+ let dp=0;(S.evQueue||[]).forEach(ev=>{if(!ev||ev.x||ev.stress||!ev.hit||ev.trader||ev.rivalEv||ev.stake)return;const mh=Math.max(...Object.values(ev.hit).map(Math.abs));if(mh<1)return;
+  let im=0;for(const sy in ev.hit){const i=IDX[sy];if(i!==undefined)im+=w[i]*0.5*ev.hit[sy]*INSTR[i].sigQ}dp+=0.5*0.5*Math.abs(im)});   /* sens inconnu : une chance sur deux d'être contre vous */
+ const sg=Math.max(1e-6,1.25*pvol(w)/2),d=PUTK/sg,pt=sg*Math.exp(-d*d/2)/Math.sqrt(2*Math.PI)-PUTK*(1-nCdf(d));
+ return {ex,dp,pt:Math.max(0,pt)}}
+function hedgeEV(){const P=hedgeParts();return hH()*(P.ex+P.dp+P.pt)}   /* lot 322 : extrêmes, dépêches violentes, put sur le book */   /* lot 264 */
 function hH(){return S&&S.prof==='tail'?1.2:HEDGE.h}function hL(){return S&&S.prof==='tail'?1:HEDGE.load}   /* lot 271 */
 function hedgeCost(){return Math.max(HEDGE.min,hL()*hedgeEV()*Math.min(1,hH())/hH())*(boH(9)?0.7:1)}   /* lot 291 : la part rendue au-delà du choc n'est pas facturée */
 /* probabilité du marché pour un extrême donné (STRESS : par son poids ; dépêche x:1 : uniforme) */
@@ -6117,15 +6125,17 @@ function xImmEst(){const k=S.k,bo=0.5+0.5*(TAILM[S.bud.risk]||1),h=S.xHint;
  let sc=h&&h.id?STRESS.find(x=>x.id===h.id):null;const sig=!!sc;
  if(!sc){let bv=1e9;STRESS.forEach(x=>{const v=stressLoss(k,x);if(v<bv){bv=v;sc=x}})}
  return {nm:sc.nm.charAt(0).toLowerCase()+sc.nm.slice(1),v:0.5*bo*stressLoss(k,sc),sig,p:xMktP({id:sc.id})}}
-function hedgeBlock(){const e=xImmEst(),pX=xProbTot(),ev=hedgeEV(),cr=hedgeCost(),c=cr*S.nav,on=S.hedgeQ===S.q||S.hedgePick===S.q;
- return `<div class="block"><div class="blockhead"><h2>Protection contre les extrêmes</h2><span class="hint">payée par le fonds</span></div>
+function hedgeBlock(){const e=xImmEst(),pX=xProbTot(),ev=hedgeEV(),cr=hedgeCost(),c=cr*S.nav,on=S.hedgeQ===S.q||S.hedgePick===S.q,HP=hedgeParts(),h=hH();
+ return `<div class="block"><div class="blockhead"><h2>Protection</h2><span class="hint">extrêmes, dépêches violentes, put sur le book · payée par le fonds</span></div>
   ${S.xHint?`<div class="flag xh" style="margin:0 0 8px"><span>${xHintTxt(S.k)}</span></div>`:''}
   <p class="note" style="margin:0 0 6px">Un événement extrême frappe ce trimestre avec une probabilité d'environ ${Math.round(pX*100)} %. ${xWatchTxt()}</p>
   <div class="attr"><span class="an">Ce que la protection rend en moyenne, aux probabilités du marché</span><span class="av"><b>${mm(ev*S.nav)} · ${dec(ev*100,2)} %</b></span></div>
+  <div class="attr"><span class="an" style="padding-left:10px">dont extrêmes · dépêches violentes · put sur le book</span><span class="av">${mm(h*HP.ex*S.nav)} · ${mm(h*HP.dp*S.nav)} · ${mm(h*HP.pt*S.nav)}</span></div>
   <div class="attr"><span class="an">Prime : ${cr>HEDGE.min+1e-9?(hH()>1?`ce que rendrait une protection à 100 % du choc · le surplus de ${Math.round(hH()*100-100)} % est offert`:`${dec(hL(),0)} × ce montant`):`plancher de ${dec(HEDGE.min*100,1)} %`}</span><span class="av"><b class="neg-g">−${mm(c)} · ${dec(cr*100,2)} %</b></span></div>
   <div class="attr"><span class="an">${e.sig?'Extrême signalé':'Pire extrême pour votre book'} : ${e.nm} (probabilité du marché ${dec(e.p*100,1)} %) · choc immédiat</span><span class="av"><b class="${e.v<0?'neg-g':'pos-g'}">${sgnp(e.v,1)} · ${mm(Math.abs(e.v)*S.nav)}</b></span></div>
   <div class="attr"><span class="an">Rendu par la protection (${Math.round(hH()*100)} % du choc immédiat)</span><span class="av"><b class="pos-g">${e.v<0?'+'+mm(-e.v*hH()*S.nav):'—'}</b></span></div>
-  <p class="note">La protection rend ${Math.round(hH()*100)} % du choc immédiat de tout événement extrême du trimestre ; la suite du mouvement reste à votre charge, comme pour une dépêche. Sans extrême, la prime est perdue. ${S.prof==='tail'?"Vous la payez au prix d'une protection qui rendrait exactement le choc : les 20 % de plus sont offerts, elle rapporte en moyenne.":"Le marché vend cette protection au double de ce qu'elle rend en moyenne : se couvrir chaque trimestre coûte cher ; elle ne paie que si votre veille vous en dit plus que le marché."}</p>
+  <p class="note">La protection rend ${Math.round(h*100)} % du choc immédiat de tout événement extrême du trimestre, ${Math.round(h*50)} % de celui d'une dépêche violente (choc d'au moins 1 σ), et, à la clôture, ${Math.round(h*100)} % de la perte du trimestre au-delà de −${Math.round(PUTK*100)} % : un put sur votre propre book. La suite des mouvements reste à votre charge. Si rien de tout cela n'arrive, la prime est perdue. ${S.prof==='tail'?"Vous la payez au prix d'une protection qui rendrait exactement le choc : les 20 % de plus sont offerts, elle rapporte en moyenne.":"Le marché vend cette protection au double de ce qu'elle rend en moyenne : se couvrir chaque trimestre coûte cher ; elle ne paie que si votre veille vous en dit plus que le marché."}</p>
+  ${(S.hgPaid||0)>0?`<div class="attr"><span class="an">Depuis le début du mandat : primes payées · rendu par la protection</span><span class="av"><b class="neg-g">−${mm(S.hgPaid)}</b> · <b class="pos-g">+${mm(S.hgGot||0)}</b></span></div>`:''}
   <div class="cisel"><button class="hgp${on?'':' on'}" data-h="0">Sans protection</button><button class="hgp${on?' on':''}" data-h="1">Protéger · −${mm(c)}</button></div></div>`}
 function screenCoinv(){
  const hAsk=S.hedgeAsk!==S.q,cAsk=S.q>=1&&S.coinvQ!==S.q;
@@ -6150,7 +6160,7 @@ function screenCoinv(){
  document.getElementById('ok').onclick=()=>{if(hAsk)hedgeApply();const tg=amt(coinvPct());S.nav+=tg;S.navQ0+=tg;S.coinvBase=tg;S.coinvIn=tg;S.coinvLock=tg;S.coinvQ=S.q;refreshGain();screenComm();window.scrollTo(0,0)};
 }
 function hedgeApply(){if(S.hedgeAsk===S.q)return;S.hedgeAsk=S.q;if(S.hedgePick!==S.q)return;
- const cr=hedgeCost(),c=cr*S.nav;S.nav-=c;S.qEvM=(S.qEvM||0)-c;S.hedgeQ=S.q;S.evLog.push({t:'Protection contre les extrêmes',pnl:-cr,m:-c,lp:0,rc:0});try{refreshGain()}catch(e){}}
+ const cr=hedgeCost(),c=cr*S.nav;S.nav-=c;S.qEvM=(S.qEvM||0)-c;S.hedgeQ=S.q;S.hgPaid=(S.hgPaid||0)+c;S.evLog.push({t:'Protection contre les extrêmes',pnl:-cr,m:-c,lp:0,rc:0});try{refreshGain()}catch(e){}}
 /* lot 256 : chance de tenir, calée sur 195 trimestres joués : le résultat tout compris vaut en moyenne 0,65 × l'attendu
    du book − 3 points (frais, dépêches, extrêmes, accidents), avec une dispersion 1,25 fois plus large */
 function commP(ret){const b=expBook(S.k);if(!(b.s>0))return 0.5;return 1/(1+Math.exp(-1.702*(0.65*b.m-0.03-ret)/(1.25*b.s)))}
@@ -6431,7 +6441,8 @@ function screenMacroEvent(ev){
  let imm=0;const touched=[];
  for(const sym in ev.hit){const i=IDX[sym];const r=0.5*ev.hit[sym]*INSTR[i].sigQ;imm+=w[i]*r;touched.push(i);(S.qMv=S.qMv||{})[i]=(S.qMv[i]||0)+ev.hit[sym]*INSTR[i].sigQ}   /* lot 308 : ce que les dépêches ont fait au marché */
  if(ev.stress){imm*=0.5+0.5*(TAILM[S.bud.risk]||1);if(imm<0)imm*=crowd(riskShown(w).total);imm-=stressGap(S.k,STRESS.find(x=>x.id===ev.stress))*(0.5+0.5*(TAILM[S.bud.risk]||1));(S.tails=S.tails||[]).push({q:S.q,t:ev.t,f:-imm,id:'stress'});xRivHit(ev.stress)}   /* lot 101 : le back office amortit le choc */
- let hgB=0;if(ev.x&&S.hedgeQ===S.q&&imm<0)hgB=-imm*hH();   /* lot 253 : protection, sur le choc brut du marché */
+ let hgB=0;if(S.hedgeQ===S.q&&imm<0){if(ev.x)hgB=-imm*hH();else if(Math.max(...Object.values(ev.hit).map(Math.abs))>=1)hgB=-imm*hH()*0.5}   /* lot 322 : dépêche violente, moitié */
+ if(hgB){S.hgGot=(S.hgGot||0)+hgB*S.nav;S.hgPayQ=S.q}   /* lot 253 : protection, sur le choc brut du marché */
  if(ev.stress&&pwOn('so')&&imm<0)imm*=ev.stress==='cyber'?0:0.65;   /* lot 268 : Solange ; lot 291 : avant la protection, qui rend quand même sur le choc brut */
  imm+=hgB;
  const navB=S.nav;S.nav*=(1+imm);S.qEvM+=imm*navB;
@@ -6963,6 +6974,9 @@ function resolveQuarter(){
    sur:collTot-S.rate/4*bN+loss,loss,show:redOn('collat')||cO.id!=='tres'}}
  const ops=S.budBp*1e-4;
  const tc=S.pendingTC;S.pendingTC=0;      /* à la charge du gérant, plus à celle du fonds */
+ /* lot 322 : la protection est aussi un put sur le book, payé à la clôture au-delà de −3 % */
+ S.hgPutQ=null;if(S.hedgeQ===S.q){const qp=Math.max(1e-9,S.navQ0),rp=(gross*qp+collateral*S.nav+(S.qColM||0)+(S.qEvM||0)+(S.qIncM||0)-(S.qMgmtM||0))/qp;
+  if(rp<-PUTK){const pay=hH()*(-rp-PUTK)*qp;S.nav+=pay;S.qEvM=(S.qEvM||0)+pay;S.hgGot=(S.hgGot||0)+pay;S.hgPayQ=S.q;S.hgPutQ={m:pay,r:rp};S.evLog.push({t:'Protection : put sur le book',pnl:pay/qp,m:pay,lp:0,rc:0})}}
  const navBefore=S.nav;
  const nb=S.nav,q0=Math.max(1e-9,S.navQ0);
  const mgmtM=S.qMgmtM||0;                 /* déjà prélevée à l'ouverture du trimestre */
@@ -7022,7 +7036,7 @@ function resolveQuarter(){
  if(S.budBp>70)lpD.push(['Facture d\'exploitation jugée lourde',-1.5]);
  if(offFx('lp',0))lpD.push([`Les locaux : ${OFF().nm}`,offFx('lp',0)]);   /* lot 276 */
  if(here(11))lpD.push(["La conférence du Pr Ada",2]);   /* lot 279 */
- if(S.prof==='tail'&&S.hedgeQ===S.q&&!S.stressQ)lpD.push(["Encore un trimestre à payer l'assurance",-1]);   /* lot 271 */
+ if(S.hgPayQ===S.q)lpD.push(["La protection a payé : le fonds encaisse quand les autres perdent",S.prof==='tail'?3:1]);   /* lot 322 : plus de malus du trimestre calme */
  if(S.atkRes)lpD.push([S.atkRes.ok?`Manœuvre réussie sur ${S.atkRes.nm} (${S.atkRes.kind})`:`Manœuvre ratée sur ${S.atkRes.nm} (${S.atkRes.kind})`,S.atkRes.ok?(S.atkRes.cds?15:3):(S.atkRes.cds?-10:-3)]);   /* lot 272 */
  if(S.leakQ)lpD.push(['Vos positions ont circulé sur le marché',-2.5]);
  if(S.execSlipQ<-0.0035*S.navQ0)lpD.push(['Impact de marché lourd sur les ordres',-2]);
