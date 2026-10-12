@@ -7524,10 +7524,10 @@ function screenDebrief(o){
  if(S.qLog.includes('mandat'))warn.push("Votre mandat est réduit : plus aucune position au-delà de 3 unités.");
  const story=S.qLog.filter(x=>x!=='mandat');
  /* lot 82 : l'essentiel d'abord ; le détail reste replié plus bas */
- const Gq=S.mgrQ,bon=S.qGoal&&S.qGoal.ok?(S.qGoal.bonus||0):0,netQ=Gq.fees-Gq.ops-(Gq.tc||0)+(Gq.coinv||0)-(Gq.claw||0)+bon;
+ const Gq=S.mgrQ,bon=S.qGoal&&S.qGoal.ok?(S.qGoal.bonus||0):0,netQ=mgrCash()-(S.tresQ0!==undefined?S.tresQ0:0);
  const cz=[...S.gLog.filter(g=>g.lp).map(g=>[g.why,g.lp]),...S.lpD.filter(x=>x[0]!=='Plafonnement')].sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,3);
  const lpQ0=S.lpQ0!==undefined?S.lpQ0:S.lp,rkE=1+S.rivals.filter(r=>!r.closed&&r.cum>S.idx).length;
- const gpart=[['commissions',Gq.fees],["bonus d'objectif",bon],['co-investissement '+Math.round((Gq.cp||COINV)*100)+' %',Gq.coinv||0],['restitution',-(Gq.claw||0)],['budget',-Gq.ops],['exécution',-(Gq.tc||0)]].filter(x=>Math.abs(x[1])>1e-9);
+ const gpart=[['commissions',Gq.fees-bon],["bonus d'objectif",bon],['co-investissement '+Math.round((Gq.cp||COINV)*100)+' %',Gq.coinv||0],['restitution',-(Gq.claw||0)],['budget',-Gq.ops],["bonus d'équipe",-(S.qBonT||0)],['exécution',-(Gq.tc||0)]].filter(x=>Math.abs(x[1])>1e-9);
  const ess=`<div class="block ess"><div class="blockhead"><h2>L'essentiel</h2><span class="hint">trimestre ${S.q}/${QT()}</span></div>
   <div class="attr"><span class="an">Le fonds</span><span class="av"><b class="${cls(o.qTotal)}">${sgn(o.qTotal,1)}</b> · ${rkE}<sup>${rkE===1?'er':'e'}</sup>/4 · encours ${moneyB(S.nav)}</span></div>
   ${Math.abs(o.P.flowM)>1e-9?`<div class="attr"><span class="an">${o.P.flowM>=0?'Souscriptions':'Rachats'}</span><span class="av">${inU(o.P.flowM,UQ)}</span></div>`:''}
