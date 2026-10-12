@@ -4584,7 +4584,9 @@ function winChip(e){const p=winP(e);if(p===null)return '';const v=Math.round(p*1
 function effTxt(s,e){if(typeof s!=='string'||!e)return s;   /* lot 230 */
  const sub=(p0,good)=>{const a=Math.round(p0*100),b=Math.round(pAdj(p0,good)*100);if(a!==b)s=s.replace(new RegExp('(^|[^\\d,])'+a+' %'),(m,c)=>c+b+' %')};
  if(e.gamble2)sub(e.gamble2[0],e.gamble2[1]>=0);if(e.gambleLp)sub(e.gambleLp[0],e.gambleLp[1]>=0);
- if(e.gamble)sub(e.gamble[0],false);if(e.risk)sub(e.risk[0],riskGood(e));return s}
+ if(e.gamble)sub(e.gamble[0],false);if(e.risk)sub(e.risk[0],riskGood(e));
+ if(e.cash&&!/encours|fonds/.test(s))s=s.replace(/([−+-]\s?\d+(?:,\d+)?\s?pb)/,'$1 de l\'encours (le fonds)');   /* lot 320 : qui paie */
+ return s}
 function fxTxt(s,x){s=effTxt(s,x);
  if(typeof s!=='string'||!/(omité|nvestisseurs)(\s+des risques)?\s*[+−-]\s*\d/.test(s))return s;
  x=x||{};
@@ -6299,21 +6301,22 @@ function screenExec(){
  const ev=av.length?cast(pick(av)):null;if(ev)S.usedExec.push(ev.t0||ev.t);
  const mult=execMot()*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult;
  /* l'enjeu réel de chaque option, en monnaie, sur la facture d'ouverture du trimestre */
- const stake=c=>{const x=c.e||{};const out=[];let bill=tot;
-  if(x.tcMult){
-   let sub=0;if(x.tcMultOn){orders.forEach(o=>{if(x.tcMultOn.includes(INSTR[o.i].sym))sub+=o.t.cost})}else sub=tot;
-   const d=sub*(x.tcMult-1);bill=tot+d;
-   if(Math.abs(d)>=1e-9)out.push(`<span class="stk">ordres <em class="${d<0?'pos-g':'neg-g'}">${d<0?'+':'−'}${mm(Math.abs(d))}</em></span>`);   /* lot 300 : du point de vue de votre caisse */
-  }
-  const im=execImpactAmt(bill,x.tcMult,x.leakQ);
-  if(im)out.push(`<span class="stk">impact fonds <em class="${cls(im)}">${im<0?'−':'+'}${mm(Math.abs(im))}</em></span>`);
-  const gx=execGz(x.tcMult,x.leakQ);
-  return out.length?`<span class="stks">${out.join('')}</span>`:''};
+ /* lot 320 : chaque option dit ce qu'elle change par rapport à l'exécution standard, pour votre société et pour le fonds */
+ const stake=c=>{const x=c.e||{};let bill=tot,soc=0,fund=0;const extra=[];
+  if(x.tcMult){let sub=0;if(x.tcMultOn){orders.forEach(o=>{if(x.tcMultOn.includes(INSTR[o.i].sym))sub+=o.t.cost})}else sub=tot;const d=sub*(x.tcMult-1);bill=tot+d;soc-=d}
+  if(x.gainBp)soc+=x.gainBp*1e-4*S.aum0;
+  if(x.opex)soc+=x.opex*S.aum0;
+  fund+=execImpactAmt(bill,x.tcMult,x.leakQ)-execImpactAmt(tot,1,S.leakQ);
+  if(x.cash)fund+=x.cash*S.nav;
+  if(x.risk)extra.push(`aléa fonds <em class="${x.risk[1]>=0?'pos-g':'neg-g'}">${Math.round(x.risk[0]*100)} % de ${x.risk[1]>=0?'+':'−'}${mm(Math.abs(x.risk[1])*S.nav)}</em>${x.safePnl?` (sinon ${x.safePnl>=0?'+':'−'}${mm(Math.abs(x.safePnl)*S.nav)})`:''}`);
+  if(x.gamble)extra.push(`pari <em class="neg-g">${Math.round(x.gamble[0]*100)} % de risque${x.tcMult?` : coûts ×${dec(x.gamble[1],1)}`:' : gain divisé par −2'}</em>`);
+  const f=v=>`<em class="${Math.abs(v)<1e-6?'dim-g':cls(v)}">${Math.abs(v)<1e-6?'0':(v>0?'+':'−')+mm(Math.abs(v))}</em>`;
+  return `<span class="stks"><span class="stk">vs standard · votre société ${f(soc)}</span><span class="stk">le fonds ${f(fund)}</span>${extra.map(t=>`<span class="stk">${t}</span>`).join('')}</span>`};
  const lqNm=S.liq>1.5?'très dégradée':S.liq>1.2?'dégradée':S.liq>1.05?'un peu tendue':S.liq<0.92?'excellente':'normale';
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>${orders.length?'Les traders passent vos ordres':'Aucun ordre à passer'}</h2><span class="hint">T${S.q+1} · exécution</span></div>
-   ${orders.length?`<div class="kv"><span><b style="color:#fff">Ordres, à votre charge</b></span><b style="color:#fff;font-size:17px">${cS(tot)}</b></div>
-   <div class="kv"><span>Impact de marché, pour le fonds</span>${mn(execImpactAmt(tot,1,S.leakQ))}</div>${pwOn('jk')&&S.pwJK?`<div class="kv"><span>🐣 Tableur de Jean-Kevin : ${S.pwJK<1?'il marche':'il plante'} (${S.pwJK<1?'−':'+'}20 %), compris dans la facture</span>${mn(tot/S.pwJK-tot)}</div>`:''}`
+   ${orders.length?`<p class="note" style="margin:0 0 4px">Exécution standard — deux factures distinctes :</p><div class="kv"><span><b style="color:#fff">Ordres · payés par votre société</b></span><b style="color:#fff;font-size:17px">${cS(tot)}</b></div>
+   <div class="kv"><span>Impact de marché · supporté par le fonds</span>${mn(execImpactAmt(tot,1,S.leakQ))}</div>${pwOn('jk')&&S.pwJK?`<div class="kv"><span>🐣 Tableur de Jean-Kevin : ${S.pwJK<1?'il marche':'il plante'} (${S.pwJK<1?'−':'+'}20 %), compris dans la facture</span>${mn(tot/S.pwJK-tot)}</div>`:''}`
    :`<p class="note" style="margin:0">Aucune position ce trimestre : vous ne payez aucun ordre. Le desk en profite pour vous parler d'autre chose.</p>`}
    ${orders.length?`<details style="margin-top:10px"><summary>Détail des ordres et des coûts</summary>
     <p class="note" style="margin:8px 0 0">${orders.length} marché${orders.length>1?'s':''} à travailler · liquidité ${lqNm} (×${dec(S.liq,2)}) · taux au jour le jour ${dec((S.rate*100),1)} % · trésorerie après paiement ${mm(mgrCash())} · ordres ${(tot/S.nav*1e4).toFixed(0)} pb, impact ${(Math.abs(execImpactAmt(tot,1,S.leakQ))/S.nav*1e4).toFixed(0)} pb de l'encours.</p>
@@ -6322,7 +6325,7 @@ function screenExec(){
   </div>
   ${ev?`<div class="evwrap" style="padding-top:14px"><div class="evcard">${evHead(ev.who,'trader')}<h3>${ev.t}</h3><p>${ev.p}</p></div>
    ${ev.ch.map((c,i)=>{const mg=((c.e&&c.e.mgrM)||0)*S.aum0/0.1,ko=false;
-     return `<button class="choice" data-i="${i}"${ko?' disabled title="Trésorerie insuffisante"':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${(()=>{const x=c.e||{},q=execGz(x.tcMult,x.leakQ),v=cf(q.lp,q.rc);return v?` Manière d'exécuter : confiance ${v>0?'+':'−'}${Math.abs(v)}.`:''})()}${stake(c)}${opxChip(c.e)}${winChip(c.e)}${bkPrev(c.e,'exec')}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`
+     return `<button class="choice" data-i="${i}"${ko?' disabled title="Trésorerie insuffisante"':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${(()=>{const x=c.e||{},q=execGz(x.tcMult,x.leakQ),v=cf(q.lp,q.rc);return v?` Manière d'exécuter : confiance ${v>0?'+':'−'}${Math.abs(v)}.`:''})()}${stake(c)}${winChip(c.e)}${bkPrev(c.e,'exec')}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`
    :`<button class="cta" id="go2">Lancer le trimestre</button>`}
  </div>`;
  /* sans anecdote, le fonds paie quand même l'impact d'une exécution standard */
@@ -6375,25 +6378,27 @@ function screenExec(){
   const billF=S.pendingTC*S.nav,adj=billF-R.bill0-R.dt,mg=R.g+R.op,netM=-billF+mg;
   const row=(l,v,c)=>[l,`<span class="${c||cls(v)}">${v>=0?'+':'−'}${mm(Math.abs(v))}</span>`];
   const shA=Math.abs(adj)>Math.max(2e-6,0.02*R.bill0);   /* en dessous : arrondi, rattaché à la facture standard */
-  const T1=[row('Facture standard de vos ordres',-(shA?R.bill0:billF-R.dt),'neg-g')];
-  if(Math.abs(R.dt)>1e-9)T1.push(row(`Votre choix : coûts ×${dec(R.m,2)}${R.on?' sur '+R.on.join(', '):''}${R.gm?' (pari perdu)':''}`,-R.dt));
+  const T1=[row('Exécution standard · facture des ordres',-(shA?R.bill0:billF-R.dt),'neg-g')];
+  if(Math.abs(R.dt)>1e-9)T1.push(row(`Effet de votre choix · coûts ×${dec(R.m,2)}${R.on?' sur '+R.on.join(', '):''}${R.gm?' (pari perdu)':''}`,-R.dt));
   if(shA)T1.push(row(adj<0?'Positions réduites : ordres en moins':'Positions ajoutées : ordres en plus',-adj));
-  T1.push(['<b>Facture des ordres</b>',`<b class="neg-g">−${mm(billF)}</b>`]);
-  if(Math.abs(mg)>1e-9)T1.push(row(R.g?`${R.g>=0?'Rabais ou commission obtenus':'Rabais repris'}${R.gm?' (pari perdu)':''}`:(R.op<0?'Dépense du choix':'Recette du choix'),mg));
-  T1.push(['<b>Net pour votre société de gestion</b>',`<b class="${cls(netM)}">${netM>=0?'+':'−'}${mm(Math.abs(netM))}</b>`]);
+  if(Math.abs(mg)>1e-9)T1.push(row(R.g?`Effet de votre choix · ${R.g>=0?'rabais ou commission obtenus':'rabais repris'}${R.gm?' (pari perdu)':''}`:(R.op<0?'Effet de votre choix · dépense':'Effet de votre choix · recette'),mg));
+  T1.push(['<b>Total pour votre société</b>',`<b class="${cls(netM)}">${netM>=0?'+':'−'}${mm(Math.abs(netM))}</b>`]);
   const im0=R.im0||0,imd=(R.im||0)-im0,rkA=R.rk?(R.rk.hit?R.rk.v*navB0:(R.rk.safe||0)*navB0):0,fT=(S.nav-navB0);
   const T2=[];
-  if(im0)T2.push(row('Impact de marché, exécution standard',im0));
-  if(Math.abs(imd)>1e-9)T2.push(row(imd<0?'Votre manière d\'exécuter : prix moyen dégradé':'Votre manière d\'exécuter : prix moyen protégé',imd));
+  if(im0)T2.push(row('Exécution standard · impact de marché',im0));
+  if(Math.abs(imd)>1e-9)T2.push(row(imd<0?'Effet de votre choix · prix moyen dégradé':'Effet de votre choix · prix moyen protégé',imd));
   if(R.rk)T2.push([`Aléa du choix : ${Math.round(R.rk.p*100)} % de chances de ${sgn(R.rk.v,1)}`,R.rk.hit?`<span class="${cls(R.rk.v)}">arrivé · ${R.rk.v>=0?'+':'−'}${mm(Math.abs(rkA))}</span>`:(R.rk.safe?`<span class="${cls(R.rk.safe)}">évité · ${R.rk.safe>=0?'+':'−'}${mm(Math.abs(rkA))}</span>`:'<span class="dim-g">pas arrivé · 0</span>')]);
-  if(R.cash)T2.push(row('Effet direct sur l\'encours',R.cash));
+  if(R.cash)T2.push(row('Effet de votre choix · sur l\'encours',R.cash));
   T2.push(['<b>Total pour le fonds</b>',`<b class="${cls(fT)}">${fT>=0?'+':'−'}${mm(Math.abs(fT))} · ${sgn(fT/navB0,1)}</b>`]);
   const C3=[];const ccx=(l,z)=>{const v=Math.round(z.lp||0);if(v)C3.push([l,`<span class="${cls(v)}">${v>0?'+':'−'}${Math.abs(v)}</span>`])};
   ccx("Manière d'exécuter (le comité veut le tarif standard)",g3);ccx('Effet propre du choix',g2);ccx('Résultat pour le fonds',g);
   const cT=Math.round(g.lp+g2.lp+g3.lp);C3.push(['<b>Total</b>',`<b class="${cls(cT)}">${cT>0?'+':cT<0?'−':''}${Math.abs(cT)}</b>`]);
   const book=msg.filter(t=>/ramené|→|inversée/.test(t));
-  const H=`<p class="note" style="margin:6px 0 0">Votre choix : ${fxTxt(ch.s,e)}</p><div class="kicker" style="margin:12px 0 2px">Votre société de gestion</div>${tbl(T1)}
-   <div class="kicker" style="margin:14px 0 2px">Le fonds</div>${tbl(T2)}
+  const socD=netM+(shA?R.bill0:billF-R.dt),fundD=fT-im0;
+  const H=`<p class="note" style="margin:6px 0 0">Votre choix : ${fxTxt(ch.s,e)}</p>
+   <p class="note" style="margin:6px 0 0">Par rapport à l'exécution standard : votre société ${Math.abs(socD)<1e-6?'<b class="dim-g">inchangée</b>':`<b class="${cls(socD)}">${socD>=0?'+':'−'}${mm(Math.abs(socD))}</b>`} · le fonds ${Math.abs(fundD)<1e-6?'<b class="dim-g">inchangé</b>':`<b class="${cls(fundD)}">${fundD>=0?'+':'−'}${mm(Math.abs(fundD))}</b>`}. Votre société paie les ordres ; le fonds supporte l'impact de marché et les aléas.</p>
+   <div class="kicker" style="margin:12px 0 2px">Votre société de gestion · votre trésorerie</div>${tbl(T1)}
+   <div class="kicker" style="margin:14px 0 2px">Le fonds · l'encours des investisseurs</div>${tbl(T2)}
    <details style="margin-top:4px"><summary>Qu'est-ce que l'impact de marché ?</summary><p class="note">En achetant ou en vendant, vos ordres poussent le prix contre vous : l'écart entre le prix au moment de la décision et le prix moyen obtenu est perdu par le fonds, pas par vous. En exécution standard, il vaut ${dec(IMPK,1)} fois la facture des ordres. Payer plus cher pour être servi vite (bloc, coûts ×1,2…) le réduit ; négocier un rabais (coûts ×0,8…) laisse le marché vous voir venir et l'augmente (facteur coûts<sup>−1,2</sup>) ; si vos ordres fuitent, il est multiplié par 1,6.</p></details>
    ${book.length?`<div class="kicker" style="margin:14px 0 2px">Votre book</div><p class="note" style="margin:0">${book.join(' ')}</p>`:''}
    <div class="kicker" style="margin:14px 0 2px">Confiance</div>${tbl(C3)}`;
