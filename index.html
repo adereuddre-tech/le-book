@@ -6313,7 +6313,7 @@ function screenExec(){
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>${orders.length?'Les traders passent vos ordres':'Aucun ordre à passer'}</h2><span class="hint">T${S.q+1} · exécution</span></div>
    ${orders.length?`<div class="kv"><span><b style="color:#fff">Ordres, à votre charge</b></span><b style="color:#fff;font-size:17px">${cS(tot)}</b></div>
-   <div class="kv"><span>Impact de marché, pour le fonds</span>${mn(execImpactAmt(tot,1,S.leakQ))}</div>`
+   <div class="kv"><span>Impact de marché, pour le fonds</span>${mn(execImpactAmt(tot,1,S.leakQ))}</div>${pwOn('jk')&&S.pwJK?`<div class="kv"><span>🐣 Tableur de Jean-Kevin : ${S.pwJK<1?'il marche':'il plante'} (${S.pwJK<1?'−':'+'}20 %), compris dans la facture</span>${mn(tot/S.pwJK-tot)}</div>`:''}`
    :`<p class="note" style="margin:0">Aucune position ce trimestre : vous ne payez aucun ordre. Le desk en profite pour vous parler d'autre chose.</p>`}
    ${orders.length?`<details style="margin-top:10px"><summary>Détail des ordres et des coûts</summary>
     <p class="note" style="margin:8px 0 0">${orders.length} marché${orders.length>1?'s':''} à travailler · liquidité ${lqNm} (×${dec(S.liq,2)}) · taux au jour le jour ${dec((S.rate*100),1)} % · trésorerie après paiement ${mm(mgrCash())} · ordres ${(tot/S.nav*1e4).toFixed(0)} pb, impact ${(Math.abs(execImpactAmt(tot,1,S.leakQ))/S.nav*1e4).toFixed(0)} pb de l'encours.</p>
