@@ -958,8 +958,8 @@ const FOP=[
  {who:"Winnie",hi:"Hong Kong ouvre dans six heures. J'y suis déjà.",full:"Wing-Fat « Winnie » Leung",role:"trader exotiques, vit à l'heure de Hong Kong",ic:"🐉",bp:100,cls:'Exotiques',g:'f'},
  {who:"Sœur Marie-Alpha",hi:"Le modèle est juste. Ce sont les hommes qui pèchent.",full:"Sœur Marie-Alpha « Sister Sharpe »",role:"stratégiste quantitative, prie pour la normalité des rendements",ic:"📿",bp:140},
  {who:"Le professeur Onésime",hi:"Je ne prévois pas la récession. Je la commente avant tout le monde.",full:"Pr Onésime « The Oracle »",role:"économiste en chef, une prévision par plateau télé",ic:"🎓",bp:190},
- {who:"Priya",hi:"Les satellites voient les parkings pleins avant les résultats.",full:"Priya « Pixel » Raman",role:"données alternatives, images satellites et cartes bancaires",ic:"🛰️",bp:250,g:'f',pw:"bruit des signaux tendance, portage et valeur ×0,75"},
- {who:"Sir Mervyn",hi:"J'ai écrit ce communiqué il y a dix ans. Ils n'ont changé que la date.",full:"Sir Mervyn « Forward Guidance » Hale",role:"ancien banquier central",ic:"🏛️",bp:320,pw:"sur les dépêches de banques centrales et de taux, la probabilité de suite est donnée exacte"},
+ {who:"Priya",hi:"Les satellites voient les parkings pleins avant les résultats.",full:"Priya « Pixel » Raman",role:"données alternatives, images satellites et cartes bancaires",ic:"🛰️",bp:250,g:'f',pw:"bruit des signaux tendance, portage et valeur ×0,75 ; chaque trimestre, le sens d'une action ou d'un indice, juste 85 fois sur 100, déjà dans votre attendu"},
+ {who:"Sir Mervyn",hi:"J'ai écrit ce communiqué il y a dix ans. Ils n'ont changé que la date.",full:"Sir Mervyn « Forward Guidance » Hale",role:"ancien banquier central",ic:"🏛️",bp:320,pw:"sur les dépêches de banques centrales et de taux, la probabilité de suite est donnée exacte ; chaque trimestre, le sens de la liquidité, juste 85 fois sur 100, déjà dans la lecture du desk"},
  {who:"Kenji",hi:"Je connais leur book par cœur. Je l'ai construit.",full:"Kenji « Le Transfuge » Ota",role:"gérant star débauché chez un concurrent",ic:"🥷",bp:400,pw:"le meilleur concurrent perd 20 % d'adresse ; un deuxième signal lu aussi bien que le vôtre"},
  {who:"Pr Ada",hi:"Le marché est efficient. Sauf quand je le regarde.",full:"Pr Ada « Nobel » Lindqvist",role:"prix Nobel d'économie, une conférence par mois",ic:"🏅",bp:490,g:'f',pw:"lecture des dépêches 30 % plus précise, confiance +2 par trimestre ; mais 10 % de risque de fuite par trimestre"},
  {who:"Victoria",hi:"Mon successeur m'appelle encore. Pour avoir mon avis.",full:"Victoria « Black Book » Ashworth",role:"ancienne ministre des Finances",ic:"📒",bp:590,g:'f',pw:"chaque trimestre, le sens du facteur macro le plus fort, juste neuf fois sur dix"}];
@@ -3315,6 +3315,7 @@ function recoBook(){
  /* lot 287 : le book du desk intègre ce que sait le style — l'intuition du flux, les catalyseurs du fondamental, les paires */
  if(S.hunch)f[S.hunch.k]+=(S.hunch.up?1:-1)*1.03;
  if(S.vic&&S.vic.q===S.q)f[S.vic.k]+=(S.vic.up?1:-1)*1.37;
+ if(S.mer&&S.mer.q===S.q)f[S.mer.k]+=(S.mer.up?1:-1)*1.2;
  const sc=INSTR.map((x,i)=>{let v=0;for(let k=0;k<K;k++)v+=x.b[k]*f[k]*Math.max(W.F,0.5);
   if(S.tcvEst)v+=0.24*W.T*S.tcvEst.t[i]+0.20*W.C*S.tcvEst.c[i]+0.18*W.V*S.tcvEst.v[i]*((S.prof==='fonda'&&S.cat&&S.cat.includes(i))?CATM:1);
   v+=W.X*0.30*S.crowd[i]+2*pairAlpha(i);
@@ -3343,11 +3344,12 @@ function factRead(){
  const est=[0,0,0,0];b.forEach(r=>{const p=r.p||RELP[r.rel];r.v.forEach((z,k)=>est[k]+=(2*p-1)*z)});
  const f=est.map(z=>z/Math.max(1,b.length)*2.2);
  if(S.hunch&&HUNCHW)f[S.hunch.k]+=(S.hunch.up?1:-1)*HUNCHW;   /* lot 77 */
- if(S.vic&&S.vic.q===S.q)f[S.vic.k]+=(S.vic.up?1:-1)*VICW;   /* lot 331 : l'intuition de Victoria, juste neuf fois sur dix */
+ if(S.vic&&S.vic.q===S.q)f[S.vic.k]+=(S.vic.up?1:-1)*VICW;
+ if(S.mer&&S.mer.q===S.q)f[S.mer.k]+=(S.mer.up?1:-1)*MERW;   /* lot 336 : Sir Mervyn, juste 85 fois sur 100 */   /* lot 331 : l'intuition de Victoria, juste neuf fois sur dix */
  return f;
 }
 function rumorEst(){S.factEst=factRead()}
-var HUNCHW=1.4,VICW=1.85;   /* Victoria : même calibrage, à 90 % au lieu de 80 % */   /* poids de l'intuition du flux dans l'attendu : ≈ (2×0,85−1) × |f| typique ×1,4 */
+var HUNCHW=1.4,VICW=1.85,MERW=1.63;   /* Victoria : même calibrage, à 90 % au lieu de 80 % */   /* poids de l'intuition du flux dans l'attendu : ≈ (2×0,85−1) × |f| typique ×1,4 */
 function renderNews(){
  const el=document.getElementById('news');if(!el)return;
  /* trois sources en vue, les plus parlantes ; les autres repliées */
@@ -3357,17 +3359,18 @@ function renderNews(){
  const tk=r=>{if(!r.hit)return '';let L=Object.keys(r.hit).filter(sy=>IDX[sy]!==undefined&&mktOpen(IDX[sy])).map(sy=>({sy,z:r.hit[sy]}));
    L=L.filter(o=>Math.abs(o.z)>1e-6).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z)).slice(0,3);
    return L.length?`<div class="chips tks">${L.map(o=>`<i class="${o.z>0?'up':'dn'}">${o.sy} ${o.z>0?'▲':'▼'}</i>`).join('')}</div>`:''};
- const one=r=>`<div class="news ${r.ev?'rum':''}"><span class="src">${r.src.toUpperCase()}</span><span>${r.t}${tk(r)}<div class="chips">${r.v.map((z0,k)=>{const z=z0*FSG[k];return `<i class="${z>0?'up':z<0?'dn':''}">${FACT[k].id} ${chip(z)}</i>`}).join('')}${r.sure?'<i class="sure">✓ vérifiée</i>':''}<i class="rel ${r.rel}">fiabilité ${r.rel}</i></div></span></div>`;
+ const one=r=>`<div class="news ${r.ev?'rum':''}"><span class="src">${r.src.toUpperCase()}</span><span>${r.t}${tk(r)}<div class="chips">${r.v.map((z0,k)=>{const z=z0*FSG[k];return `<i class="${z>0?'up':z<0?'dn':''}">${FACT[k].id} ${chip(z)}</i>`}).join('')}${r.sure?'<i class="sure">✓ vérifiée</i>':''}${r.trd?`<i>+2 pts · ${r.trd}</i>`:''}<i class="rel ${r.rel}">fiabilité ${r.rel}</i></div></span></div>`;
  el.innerHTML=ord.slice(0,3).map(one).join('')+(ord.length>3?`<details class="srcmore"><summary>Toutes les sources · ${ord.length-3} de plus</summary>${ord.slice(3).map(one).join('')}</details>`:'');
  const rs=document.getElementById('rsum');
  const b=S.rumors.filter(r=>r.bought);
- if(rs)rs.innerHTML=(b.length||(S.vic&&S.vic.q===S.q))?`<table class="qt"><thead><tr><th>Facteur</th><th>Lecture du desk</th></tr></thead><tbody>`+FACT.map((f,k)=>{
+ if(rs)rs.innerHTML=(b.length||(S.vic&&S.vic.q===S.q)||(S.mer&&S.mer.q===S.q))?`<table class="qt"><thead><tr><th>Facteur</th><th>Lecture du desk</th></tr></thead><tbody>`+FACT.map((f,k)=>{
    const wsum=factRead()[k]*FSG[k];   /* lot 198 */
    return `<tr><td style="color:var(--txt)">${f.id} · ${f.nm}</td><td style="font-weight:500;color:${readCol(wsum)}"><span style="margin-right:6px">${readTri(k)}</span>${readLab(wsum)}</td></tr>`}).join('')+`</tbody></table>
    <details style="margin-top:6px"><summary>Détails</summary><p class="note">Chaque source achetée est pondérée par sa fiabilité (une source forte pèse environ trois fois une source faible) et leurs impacts prétendus sont moyennés. Lecture par facteur, la même que dans le détail d'un marché : ${FACT.map((f,k)=>{const z=factRead()[k]*FSG[k];return `${f.id} ${z>=0?'+':'−'}${dec(Math.abs(z),2)}`}).join(' · ')}. Une flèche = 0,45.</p></details>`
   :`<p class="note" style="margin:0">Aucune source achetée : le desk n'a rien à consolider.</p>`;
  if(rs&&S.xHint)rs.innerHTML+=`<p class="note" style="margin:8px 0 0">${xHintTxt()}</p>`;   /* lot 106 */
  if(rs&&S.vic&&S.vic.q===S.q)rs.innerHTML+=`<p class="note" style="margin:8px 0 0">🏛️ <b>Victoria</b> : <b>${FACT[S.vic.k].nm.toLowerCase()}</b> va surprendre ${(S.vic.up===(FSG[S.vic.k]>0))?'à la hausse':'à la baisse'} ce trimestre — juste neuf fois sur dix, déjà dans la lecture du desk.</p>`;
+ if(rs&&S.mer&&S.mer.q===S.q)rs.innerHTML+=`<p class="note" style="margin:8px 0 0">🏛️ <b>Sir Mervyn</b> : <b>${FACT[S.mer.k].nm.toLowerCase()}</b> va surprendre ${(S.mer.up===(FSG[S.mer.k]>0))?'à la hausse':'à la baisse'} ce trimestre — juste 85 fois sur 100, déjà dans la lecture du desk.</p>`;
  if(rs&&S.hunch)rs.innerHTML+=`<p class="note" style="margin:8px 0 0">🫀 <b>Votre intuition</b> : <b>${FACT[S.hunch.k].nm.toLowerCase()}</b> va surprendre ${(S.hunch.up===(FSG[S.hunch.k]>0))?'à la hausse':'à la baisse'} ce trimestre.</p>`;
  const fe=document.getElementById('factest');
  if(fe&&S.size==='small'){   /* lot 251 : le book du desk, offert à tous les styles en niveau facile, retiré en moyen et difficile */
@@ -3389,6 +3392,9 @@ function renderNews(){
    <p class="note" style="margin:6px 0 0">Les six convictions les plus nettes du modèle, de la plus forte à la moins forte : le sens, pas la taille. Le dimensionnement et le risque restent les vôtres.</p>`
    :`<p class="note" style="margin:0">Le modèle ne voit rien de tranché ce trimestre.</p>`}
 }
+/* lot 336 : la classe la plus touchée par une rumeur ; si son trader est là, il en connaît les acteurs (+2 pts de fiabilité) */
+function rumTrd(v){let bi=-1,bv=0;for(let i=0;i<N;i++){const z=Math.abs(INSTR[i].b.reduce((a,b,k)=>a+b*(v[k]||0),0));if(z>bv){bv=z;bi=i}}
+ if(bi<0)return null;const p=TRD[INSTR[bi].grp];return p!==undefined&&here(p)?FOP[p].who:null}
 function genRumors(){
  reseed('rum');
  const n=RESN[S.bud.res]+PROF().sigBonus+(S.srcBonusN>0?2:0);
@@ -3404,12 +3410,12 @@ function genRumors(){
  let guard=0;
  while(out.length<n&&guard++<400){
    const r=pick(RUMORS);if(used.has(r.t))continue;
-   const p=Math.max(0.35,Math.min(0.95,RELP[r.rel]+relB));
+   const tr=rumTrd(r.v),p=Math.max(0.35,Math.min(0.95,RELP[r.rel]+relB+(tr?0.02:0)));
    const wantTrue=rng()<p;
    const d=dot(r.v);
    const agrees=Math.abs(d)<0.25?null:d>0;
    if(agrees!==null&&agrees!==wantTrue)continue;
-   used.add(r.t);out.push({...r,truth:wantTrue,p});
+   used.add(r.t);out.push({...r,truth:wantTrue,p,trd:tr||undefined});
  }
  /* pouvoir du gérant fondamental : une source recoupée, donnée pour certaine */
  if(PROF().verified){
@@ -3775,7 +3781,7 @@ function renderPicks(){
 }
 
 function readScore(k){
- if(!(S.rumors||[]).some(r=>r.bought)&&!S.hunch&&!(S.vic&&S.vic.q===S.q))return null;
+ if(!(S.rumors||[]).some(r=>r.bought)&&!S.hunch&&!(S.vic&&S.vic.q===S.q)&&!(S.mer&&S.mer.q===S.q))return null;
  return factRead()[k]*FSG[k];   /* lot 198 : convention d'affichage, comme la fenêtre du marché */
 }
 function readTri(k){
@@ -5151,9 +5157,12 @@ function planSignalsAfterBudget(){
  if(here(11)&&!pwOn('jo')&&prng32(hash32('ada'+S.q,S.seed))()<0.10){S.leakQ=true;toast("🏅 Le Pr Ada a cité vos positions en conférence : elles circulent ce trimestre.")}   /* lot 279 */
  if(here(12)&&S.f){let k=0;for(let j=1;j<K;j++)if(Math.abs(S.f[j])>Math.abs(S.f[k]))k=j;const ok=prng32(hash32('vic'+S.q,S.seed))()<0.9,up=(S.f[k]>0)===ok;
   (S.pwTips=S.pwTips||[]).push({who:'Victoria',nm:`Le facteur « ${FACT[k].nm.toLowerCase()} »`,up:up===(FSG[k]>0),q:S.q,fk:k});S.vic={q:S.q,k,up}}
+ if(here(9)&&S.f){const k=2,ok=prng32(hash32('mer'+S.q,S.seed))()<0.85,up=(S.f[k]>0)===ok;   /* lot 336 : Sir Mervyn */
+  (S.pwTips=S.pwTips||[]).push({who:'Sir Mervyn',nm:`Le facteur « ${FACT[k].nm.toLowerCase()} »`,up:up===(FSG[k]>0),q:S.q,fk:k});S.mer={q:S.q,k,up}}
  if(here(10)&&!S.kenjiDone){const R=(S.rivals||[]).filter(r=>!r.closed).sort((a,b)=>(b.cum||0)-(a.cum||0))[0];if(R){R.skill=(R.skill||0.7)*0.8;S.kenjiDone=1;toast(`🥷 Kenji arrive de chez ${R.nm} : ils perdent 20 % d'adresse.`)}}
  /* la recherche et le contrôle sont choisis avant la publication des rumeurs et des signaux */
  genRumors();
+ if(here(8)){const t=pwTip('Actions',0.85,'Priya');if(t)(S.pwTips=S.pwTips||[]).push(Object.assign(t,{q:S.q}))}   /* lot 336 : Priya */
  let pInc=0.09*ARCH().incMult*RISKM[S.bud.risk]*PROF().incMult*offFx('inc')*(boH(12)?0.8:1)+(DESK().algo?0.03:0);
  S.incidentDue=rng()<pInc;
  /* trader star */
@@ -5454,7 +5463,7 @@ function jkP(){return Math.min(0.90,0.50+0.05*(S.pwJKn||0))}   /* trimestre où 
 function pwAvail(o){if(!pwHere(o))return false;if(o.id==='mi')return !S.pwMi;return S.q>=pwBack(o.id)}
 function pwOk(o){return pwOn(o.id)?!o.info&&S.phase==='book':pwAvail(o)&&!o.inc}
 const PWTIP={ig:'Taux',tu:'Matières premières',dw:'Actions',bo:'Devises'};   /* lot 330 : quatre tuyaux à 90 % */
-function pwTip(cls,rel,who){const c=[];for(let i=0;i<N;i++)if(mktOpen(i)&&INSTR[i].grp===cls)c.push(i);if(!c.length)return null;
+function pwTip(cls,rel,who){const c=[];for(let i=0;i<N;i++)if(mktOpen(i)&&INSTR[i].grp===cls&&!tipOf(i))c.push(i);if(!c.length)return null;
  const i=c.sort((a,b)=>Math.abs(expRet(b).m)-Math.abs(expRet(a).m))[0],u=prng32(hash32('pw'+who+S.q,S.seed))(),up=(S.rBase[i]>0)===(u<rel);return {who,sym:INSTR[i].sym,nm:INSTR[i].nm,up,rel,i}}
 function pwUse(id){const o=PW.find(x=>x.id===id);if(!o||!pwOk(o))return;S.pw=S.pw||{};S.pwLast=S.pwLast||{};
  if(o.info){if(S.pwConf!==id){S.pwConf=id;pwDraw();return}S.pwConf=null;S.pw[id]=S.q;S.pwLast[id]=S.q;
