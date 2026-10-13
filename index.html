@@ -5230,10 +5230,11 @@ function planSignalsAfterBudget(){
   goldLater({v:'star',k:'RECRUE DU TRIMESTRE',tier:'bronze',t:`Débauché chez ${rv.nm}`,d:`Un trader ${({Actions:'actions',Taux:'taux',Devises:'devises','Matières premières':'matières premières',Exotiques:'exotic markets'})[INSTR[S.star].grp]||'macro'} quitte ${rv.nm} pour votre desk.`,g:`coûts d'exécution ÷2 sur toute la classe ${INSTR[S.star].grp.toLowerCase()}, tant qu'il reste chez vous`})}
  bonusOpen();
 }
+function offDelta(i){const sv=S.office,c0=opsT();S.office=i;const c1=opsT();S.office=sv;return c1-c0}   /* lot 350 */
 function drawOffs(){const el=document.getElementById('offs');if(!el)return;const cur=S.office==null?0:S.office,base=S.officePrev==null?0:S.officePrev;
  el.innerHTML=`<div class="brow"><div class="bh"><b><span class="bico">🏙️</span>Les locaux</b><span>${mm(OFF().bp*1e-4*budNav())} par trimestre</span></div>
-  <p class="note" style="margin:2px 0 6px">Un seul lieu à la fois, du garage au yacht ; chaque adresse fait un peu mieux que son loyer, et reprend les avantages des précédentes. Déménager ne coûte rien de plus que le nouveau loyer.</p>
-  <div class="offl">${OFFICES.map((o,i)=>{const ok=offOk(i);return `<button class="offb${i===cur?' on':''}" data-off="${i}"${ok?'':' disabled'}><b>${o.ic} ${o.nm}</b><span>${mm(o.bp*1e-4*budNav())} par trimestre${ok?'':' · hors trésorerie'}</span><small>${o.d}</small></button>`}).join('')}</div></div>`;
+  <p class="note" style="margin:2px 0 6px">Un seul lieu à la fois, du garage au yacht ; chaque adresse fait un peu mieux que son loyer, et reprend les avantages des précédentes. Déménager ne coûte rien de plus que le nouveau loyer ; le chiffre « budget » compte aussi l'effet des locaux sur le coût de l'équipe (le garage la fait 5 % moins chère).</p>
+  <div class="offl">${OFFICES.map((o,i)=>{const ok=offOk(i);return `<button class="offb${i===cur?' on':''}" data-off="${i}"${ok?'':' disabled'}><b>${o.ic} ${o.nm}</b><span>${mm(o.bp*1e-4*budNav())} par trimestre${i!==cur?(d=>` · budget ${d>=0?'+':'−'}${mm(Math.abs(d))}`)(offDelta(i)):''}${ok?'':` · hors trésorerie : il manque ${mm(Math.max(0,offDelta(i)-mgrCash()))}`}</span><small>${o.d}</small></button>`}).join('')}</div></div>`;
  el.querySelectorAll('.offb').forEach(b=>b.onclick=()=>{if(b.disabled)return;S.office=+b.dataset.off;setOps();drawBuds();refreshStatus()})}
 /* lot 306 : une adresse n'est accessible que si la caisse paie le budget du trimestre avec son loyer */
 function offOk(i){const cur=S.office==null?0:S.office,base=S.officePrev==null?0:S.officePrev;if(i===cur||i===base||OFFICES[i].bp<=OFFICES[cur].bp)return true;
