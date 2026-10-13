@@ -4818,7 +4818,7 @@ function showGauge(id){
    ${dl?tbl(dl.map(row),['Investisseurs · dernier trimestre','Δ']):''}`);
  } else if(id==='mot'){   /* lot 297 */
   const m=motV(),L=(S.motLog||[]).slice(-8).reverse();
-  openModal('Moral du desk',`<p>Le moral de vos traders ne dépend que de l'argent et des égards. Chaque trimestre, il fait la moitié du chemin vers la cible de votre taux de bonus — 30 au minimum, 50 au troisième cran, 95 au cran maximal (hors de prix), le minimum sans commission de performance — relevée par vos locaux (garage 0, yacht +13). À 50, tout est neutre ; en dessous, le desk coûte et lit mal ; au-dessus, il se surpasse, et à 100 il est déchaîné : coûts ×0,45, bruit de lecture ×0,45, anecdotes +20 pts, débauchage 3 %, et il refuse toutes les offres. Une baisse de taux coûte 5 points par cran ; les petits gestes du quotidien (anecdotes) le déplacent d'un coup.</p>
+  openModal('Moral du desk',`<p>Le moral de vos traders ne dépend que de l'argent et des égards. Chaque trimestre, il fait la moitié du chemin vers la cible de votre taux de bonus — 30 au minimum, 50 au troisième cran, 95 au cran maximal (hors de prix), le minimum sans commission de performance — relevée par vos locaux (garage 0, yacht +13) ; un déménagement joue tout de suite, de l'écart entier, avant les signaux et les ordres du trimestre. À 50, tout est neutre ; en dessous, le desk coûte et lit mal ; au-dessus, il se surpasse, et à 100 il est déchaîné : coûts ×0,45, bruit de lecture ×0,45, anecdotes +20 pts, débauchage 3 %, et il refuse toutes les offres. Une baisse de taux coûte 5 points par cran ; les petits gestes du quotidien (anecdotes) le déplacent d'un coup.</p>
    ${tbl([['Moral',`<b>${Math.round(m)}</b>`],['Cible de votre taux et de vos locaux',`${Math.round(motT(S.bonI==null?MOT.i0:S.bonI))}`],["Coûts d'exécution",'×'+dec(motC(),2)],['Bruit sur la lecture des dépêches','×'+dec(motR(),2)],['Chances des anecdotes du desk',(bonD()>=0?'+':'−')+Math.round(Math.abs(bonD())*100)+' pts'],['Risque de débauchage ce trimestre',Math.round(poachNow()*100)+' %']])}
    <p class="note">Sous ${MORAL.lo}, le desk peut partir en groupe : ${Math.round(motLo(m)*100)} % aujourd'hui, de plus en plus probable vers 0. Au-dessus de ${MORAL.hi}, il peut refuser toutes les offres des concurrents et redoubler d'efforts : ${Math.round(motHi(m)*100)} % aujourd'hui, de plus en plus probable vers 100.</p>
    ${L.length?tbl(L.map(x=>[`T${x.q+1} · ${x.why}`,`<span class="${cls(x.d)}">${x.d>=0?'+':'−'}${Math.abs(x.d).toFixed(1)}</span>`]),['Derniers mouvements','Δ']):''}`);
@@ -5137,6 +5137,8 @@ function screenBudget(){
  drawBuds();drawColl();
  document.getElementById('ok').onclick=()=>{
    const bp=budgetBp()-cntOn();
+   {const o1=S.office==null?0:S.office,o0=S.officePrev==null?0:S.officePrev;if(o1!==o0){const m1=motOff();S.office=o0;const m0=motOff();S.office=o1;   /* lot 339 */
+     if(m1!==m0){motAdd(m1-m0,'déménagement');toast(`${OFFICES[o1].ic} Déménagement : moral ${m1>m0?'+':'−'}${Math.abs(m1-m0)}, dès ce trimestre.`)}}}
    S.budBp=bp;S.budPrev={fo:S.bud.fo,bo:S.bud.bo};S.teamPrev=teamCopy();   /* lot 304 */S.officePrev=S.office==null?0:S.office;   /* lot 276 */
    /* lot 61 : le rendement du collatéral est acquis au fonds et versé en entier à la clôture */
    planSignalsAfterBudget();
