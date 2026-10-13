@@ -725,12 +725,13 @@ const IDIOX=1.5;
    et le réalisé (appétit du trimestre). Remplace la prime par classe (PREM) et la dérive du VIX (et son multiplicateur de régime). */
 /* lot 317 : tableau complet. Devises : écart de taux ; χ = κ0/1,5 — le portage s'annule à −1,5 σ d'appétit et s'inverse au-delà
    (débouclage des carry trades, rachat des devises de financement). Matières et crypto : coût de stockage ou de financement. */
-const KAPPA={ES:[0.012,0],NQ:[0.012,0],ESTX:[0.012,0],TOPX:[0.012,0],MXEF:[0.015,0],
- TN:[0.004,0],GBL:[0.004,0],R:[0.004,0],OAT:[0.004,0],JGB:[0.004,0],
+const KRP=0.066;   /* lot 346 : prime de risque trimestrielle par point de vol annualisée, actions et obligations (κ = KRP·σ, lu à la volatilité courante) */
+const KAPPA={ES:['rp',0],NQ:['rp',0],ESTX:['rp',0],TOPX:['rp',0],MXEF:['rp',0],
+ TN:['rp',0],GBL:['rp',0],R:['rp',0],OAT:['rp',0],JGB:['rp',0],
  AUD:[0.005,0.005/1.5],MXP:[0.010,0.010/1.5],GBP:[0.002,0.002/1.5],EUR:[-0.002,-0.002/1.5],JPY:[-0.005,-0.005/1.5],
  GC:[-0.002,0],KC:[-0.005,0],ZW:[-0.005,0],BTC:[-0.005,0],
  VX:[-0.085,0.085/1.5]};
-function kap(i,a){const k=KAPPA[INSTR[i].sym];if(!k)return 0;const aa=Math.max(-4,Math.min(1.5,a||0));return k[0]+k[1]*aa}   /* lot 318 : panique jusqu'à −4 σ (VIX ≈ +14 %) */
+function kap(i,a){const k=KAPPA[INSTR[i].sym];if(!k)return 0;const aa=Math.max(-4,Math.min(1.5,a||0));return (k[0]==='rp'?KRP*INSTR[i].sig:k[0])+k[1]*aa}   /* lot 318 : panique jusqu'à −4 σ (VIX ≈ +14 %) */
 function normB(x){let q=x.b.reduce((a,v)=>a+v*v,0);if(q>0.92){const f=Math.sqrt(0.92/q);x.b=x.b.map(v=>v*f);q=0.92}x.idio=Math.sqrt(1-q)*IDIOX}
 let COV=[];
 function buildCov(){COV=[];for(let i=0;i<N;i++){COV[i]=[];for(let j=0;j<N;j++){
