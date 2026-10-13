@@ -3314,6 +3314,7 @@ function recoBook(){
  const {W,f:f0}=styleEst(),f=[...f0];
  /* lot 287 : le book du desk intègre ce que sait le style — l'intuition du flux, les catalyseurs du fondamental, les paires */
  if(S.hunch)f[S.hunch.k]+=(S.hunch.up?1:-1)*1.03;
+ if(S.vic&&S.vic.q===S.q)f[S.vic.k]+=(S.vic.up?1:-1)*1.37;
  const sc=INSTR.map((x,i)=>{let v=0;for(let k=0;k<K;k++)v+=x.b[k]*f[k]*Math.max(W.F,0.5);
   if(S.tcvEst)v+=0.24*W.T*S.tcvEst.t[i]+0.20*W.C*S.tcvEst.c[i]+0.18*W.V*S.tcvEst.v[i]*((S.prof==='fonda'&&S.cat&&S.cat.includes(i))?CATM:1);
   v+=W.X*0.30*S.crowd[i]+2*pairAlpha(i);
@@ -3342,10 +3343,11 @@ function factRead(){
  const est=[0,0,0,0];b.forEach(r=>{const p=r.p||RELP[r.rel];r.v.forEach((z,k)=>est[k]+=(2*p-1)*z)});
  const f=est.map(z=>z/Math.max(1,b.length)*2.2);
  if(S.hunch&&HUNCHW)f[S.hunch.k]+=(S.hunch.up?1:-1)*HUNCHW;   /* lot 77 */
+ if(S.vic&&S.vic.q===S.q)f[S.vic.k]+=(S.vic.up?1:-1)*VICW;   /* lot 331 : l'intuition de Victoria, juste neuf fois sur dix */
  return f;
 }
 function rumorEst(){S.factEst=factRead()}
-var HUNCHW=1.4;   /* poids de l'intuition du flux dans l'attendu : ≈ (2×0,85−1) × |f| typique ×1,4 */
+var HUNCHW=1.4,VICW=1.85;   /* Victoria : même calibrage, à 90 % au lieu de 80 % */   /* poids de l'intuition du flux dans l'attendu : ≈ (2×0,85−1) × |f| typique ×1,4 */
 function renderNews(){
  const el=document.getElementById('news');if(!el)return;
  /* trois sources en vue, les plus parlantes ; les autres repliées */
@@ -3359,12 +3361,13 @@ function renderNews(){
  el.innerHTML=ord.slice(0,3).map(one).join('')+(ord.length>3?`<details class="srcmore"><summary>Toutes les sources · ${ord.length-3} de plus</summary>${ord.slice(3).map(one).join('')}</details>`:'');
  const rs=document.getElementById('rsum');
  const b=S.rumors.filter(r=>r.bought);
- if(rs)rs.innerHTML=b.length?`<table class="qt"><thead><tr><th>Facteur</th><th>Lecture du desk</th></tr></thead><tbody>`+FACT.map((f,k)=>{
+ if(rs)rs.innerHTML=(b.length||(S.vic&&S.vic.q===S.q))?`<table class="qt"><thead><tr><th>Facteur</th><th>Lecture du desk</th></tr></thead><tbody>`+FACT.map((f,k)=>{
    const wsum=factRead()[k]*FSG[k];   /* lot 198 */
    return `<tr><td style="color:var(--txt)">${f.id} · ${f.nm}</td><td style="font-weight:500;color:${readCol(wsum)}"><span style="margin-right:6px">${readTri(k)}</span>${readLab(wsum)}</td></tr>`}).join('')+`</tbody></table>
    <details style="margin-top:6px"><summary>Détails</summary><p class="note">Chaque source achetée est pondérée par sa fiabilité (une source forte pèse environ trois fois une source faible) et leurs impacts prétendus sont moyennés. Lecture par facteur, la même que dans le détail d'un marché : ${FACT.map((f,k)=>{const z=factRead()[k]*FSG[k];return `${f.id} ${z>=0?'+':'−'}${dec(Math.abs(z),2)}`}).join(' · ')}. Une flèche = 0,45.</p></details>`
   :`<p class="note" style="margin:0">Aucune source achetée : le desk n'a rien à consolider.</p>`;
  if(rs&&S.xHint)rs.innerHTML+=`<p class="note" style="margin:8px 0 0">${xHintTxt()}</p>`;   /* lot 106 */
+ if(rs&&S.vic&&S.vic.q===S.q)rs.innerHTML+=`<p class="note" style="margin:8px 0 0">🏛️ <b>Victoria</b> : <b>${FACT[S.vic.k].nm.toLowerCase()}</b> va surprendre ${(S.vic.up===(FSG[S.vic.k]>0))?'à la hausse':'à la baisse'} ce trimestre — juste neuf fois sur dix, déjà dans la lecture du desk.</p>`;
  if(rs&&S.hunch)rs.innerHTML+=`<p class="note" style="margin:8px 0 0">🫀 <b>Votre intuition</b> : <b>${FACT[S.hunch.k].nm.toLowerCase()}</b> va surprendre ${(S.hunch.up===(FSG[S.hunch.k]>0))?'à la hausse':'à la baisse'} ce trimestre.</p>`;
  const fe=document.getElementById('factest');
  if(fe&&S.size==='small'){   /* lot 251 : le book du desk, offert à tous les styles en niveau facile, retiré en moyen et difficile */
@@ -3772,7 +3775,7 @@ function renderPicks(){
 }
 
 function readScore(k){
- if(!(S.rumors||[]).some(r=>r.bought)&&!S.hunch)return null;
+ if(!(S.rumors||[]).some(r=>r.bought)&&!S.hunch&&!(S.vic&&S.vic.q===S.q))return null;
  return factRead()[k]*FSG[k];   /* lot 198 : convention d'affichage, comme la fenêtre du marché */
 }
 function readTri(k){
@@ -5147,7 +5150,7 @@ function planSignalsAfterBudget(){
  ecoBoost();   /* lot 96 */
  if(here(11)&&!pwOn('jo')&&prng32(hash32('ada'+S.q,S.seed))()<0.10){S.leakQ=true;toast("🏅 Le Pr Ada a cité vos positions en conférence : elles circulent ce trimestre.")}   /* lot 279 */
  if(here(12)&&S.f){let k=0;for(let j=1;j<K;j++)if(Math.abs(S.f[j])>Math.abs(S.f[k]))k=j;const ok=prng32(hash32('vic'+S.q,S.seed))()<0.9,up=(S.f[k]>0)===ok;
-  (S.pwTips=S.pwTips||[]).push({who:'Victoria',nm:`Le facteur « ${FACT[k].nm.toLowerCase()} »`,up:up===(FSG[k]>0),q:S.q})}
+  (S.pwTips=S.pwTips||[]).push({who:'Victoria',nm:`Le facteur « ${FACT[k].nm.toLowerCase()} »`,up:up===(FSG[k]>0),q:S.q,fk:k});S.vic={q:S.q,k,up}}
  if(here(10)&&!S.kenjiDone){const R=(S.rivals||[]).filter(r=>!r.closed).sort((a,b)=>(b.cum||0)-(a.cum||0))[0];if(R){R.skill=(R.skill||0.7)*0.8;S.kenjiDone=1;toast(`🥷 Kenji arrive de chez ${R.nm} : ils perdent 20 % d'adresse.`)}}
  /* la recherche et le contrôle sont choisis avant la publication des rumeurs et des signaux */
  genRumors();
@@ -5450,7 +5453,7 @@ function pwAvail(o){if(!pwHere(o))return false;if(o.id==='mi')return !S.pwMi;ret
 function pwOk(o){return pwOn(o.id)?!o.info&&S.phase==='book':pwAvail(o)&&!o.inc}
 const PWTIP={ig:'Taux',tu:'Matières premières',dw:'Actions',bo:'Devises'};   /* lot 330 : quatre tuyaux à 90 % */
 function pwTip(cls,rel,who){const c=[];for(let i=0;i<N;i++)if(mktOpen(i)&&INSTR[i].grp===cls)c.push(i);if(!c.length)return null;
- const i=c.sort((a,b)=>Math.abs(expRet(b).m)-Math.abs(expRet(a).m))[0],u=prng32(hash32('pw'+who+S.q,S.seed))(),up=(S.rBase[i]>0)===(u<rel);return {who,sym:INSTR[i].sym,nm:INSTR[i].nm,up}}
+ const i=c.sort((a,b)=>Math.abs(expRet(b).m)-Math.abs(expRet(a).m))[0],u=prng32(hash32('pw'+who+S.q,S.seed))(),up=(S.rBase[i]>0)===(u<rel);return {who,sym:INSTR[i].sym,nm:INSTR[i].nm,up,rel,i}}
 function pwUse(id){const o=PW.find(x=>x.id===id);if(!o||!pwOk(o))return;S.pw=S.pw||{};S.pwLast=S.pwLast||{};
  if(o.info){if(S.pwConf!==id){S.pwConf=id;pwDraw();return}S.pwConf=null;S.pw[id]=S.q;S.pwLast[id]=S.q;
   const t=pwTip(PWTIP[id],0.90,o.nm);if(t)(S.pwTips=S.pwTips||[]).push(Object.assign(t,{q:S.q}));
@@ -5473,7 +5476,7 @@ function pwCommit(){if(!S.pw)return;S.pwLast=S.pwLast||{};S.pwMaK=null;
 function pwDraw(){const el=document.getElementById('pwblk');if(!el)return;const L=PW.filter(pwHere);
  const tips=(S.pwTips||[]).filter(t=>t.q===S.q);
  el.innerHTML=`<div class="blockhead"><h2>Votre équipe</h2><span class="hint">un coup de pouce chacun par an · Jean-Kevin chaque trimestre</span></div>
-  ${tips.map(t=>`<div class="flag" style="margin:0 0 8px"><span>📌 <b>${t.who}</b> : ${t.nm} finira le trimestre en <b>${t.up?'hausse':'baisse'}</b>.</span></div>`).join('')}
+  ${tips.map(t=>`<div class="flag" style="margin:0 0 8px"><span>📌 <b>${t.who}</b> : ${t.nm} finira le trimestre en <b>${t.up?'hausse':'baisse'}</b> — déjà dans ${t.fk!=null?'la lecture des facteurs':'votre attendu'}.</span></div>`).join('')}
   <div class="pwl">${L.map(o=>{const on=pwOn(o.id),ok=pwOk(o),back=pwBack(o.id);
    const st=on?(o.info?'joué ce trimestre':'armé · touchez pour désarmer'):o.inc?(pwAvail(o)?'disponible · se joue sur l’incident':`revient au trimestre ${back+1}`):o.id==='mi'?(S.pwMi?'joué pour le mandat':'disponible'):pwAvail(o)?(S.pwConf===o.id?'touchez encore pour confirmer : compté pour l’année':'disponible'):`revient au trimestre ${back+1}`;
    return `<button class="pwb${on?' on':''}${S.pwConf===o.id?' conf':''}" data-pw="${o.id}"${ok?'':' disabled'}><b>${o.ic} ${o.nm} · ${o.t}</b><small>${o.d} <i>· ${st}${o.id==='jk'?` · réussite ${Math.round((pwOn('jk')&&S.pwLast&&S.pwLast.jk===S.q?Math.min(0.9,jkP()-0.05):jkP())*100)} %`:''}</i></small></button>`}).join('')}</div>`;
@@ -5534,14 +5537,19 @@ function expRet(i){
   z+=pairAlpha(i);   /* lot 270 */
   v+=SIGW.t**2*(sigNoise('t')**2+0.1)+SIGW.c**2*(sigNoise('c')**2+0.1)+SIGW.v**2*(sigNoise('v')**2+0.1)}
  v+=(x.idio||0)**2;
- return {m:x.sigQ*z+kap(i,f[3]||0),s:x.sigQ*Math.sqrt(v)};
+ return tipPost(i,x.sigQ*z+kap(i,f[3]||0),x.sigQ*Math.sqrt(v));
 }
+function tipOf(i){return (S.pwTips||[]).find(t=>t.q===S.q&&t.i===i&&t.rel)}
+function tipPost(i,m,s){const t=tipOf(i);if(!t||!(s>1e-9))return {m,s,m0:m};
+ const a=m/s,P=nCdf(a),ph=Math.exp(-a*a/2)/Math.sqrt(2*Math.PI),ru=t.up?t.rel:1-t.rel,rd=1-ru,Z=ru*P+rd*(1-P);
+ const E1=ru*(m*P+s*ph)+rd*(m*(1-P)-s*ph),E2=ru*((m*m+s*s)*P+m*s*ph)+rd*((m*m+s*s)*(1-P)-m*s*ph),mp=E1/Z;
+ return {m:mp,s:Math.sqrt(Math.max(1e-12,E2/Z-mp*mp)),m0:m,tip:t}}
 /* L'attendu d'un marché, morceau par morceau (mêmes termes que expRet). */
 function expParts(i){
  const x=INSTR[i],f=S.factEst||[0,0,0,0],e=S.tcvEst||{t:[],c:[],v:[]},ed=UNIV().edge||1;
  const cv=(S.prof==='fonda'&&S.cat&&S.cat.includes(i))?CATM:1;
  return {fac:x.b.map((b,k)=>({b,f:f[k],v:x.sigQ*b*f[k]})),
-  t:x.sigQ*SIGW.t*(e.t[i]||0)*ed,c:x.sigQ*SIGW.c*(e.c[i]||0)*ed,v:x.sigQ*SIGW.v*cv*(e.v[i]||0)*ed,cv,drift:kap(i,f[3]||0)};
+  t:x.sigQ*SIGW.t*(e.t[i]||0)*ed,c:x.sigQ*SIGW.c*(e.c[i]||0)*ed,v:x.sigQ*SIGW.v*cv*(e.v[i]||0)*ed,cv,drift:kap(i,f[3]||0),tipT:tipOf(i),tip:(R=>R.m-R.m0)(expRet(i))};
 }
 /* Contribution de chaque marché au risque affiché, en points de volatilité (somme = risque affiché). */
 function riskPts(k){
@@ -5942,6 +5950,7 @@ function showMarket(i){
   ${tbl([...XP.fac.map((o,k)=>{const g=FSG[k],eb=o.b*g,ef=o.f*g;return [FACT[k].nm,`${eb>=0?'+':'−'}${dec(Math.abs(eb),2)} × ${ef>=0?'+':'−'}${dec(Math.abs(ef),2)}`,pc(o.v)]}),
     ['Tendance',L(e.t[i]),pc(XP.t)],['Portage · cycle',L(e.c[i]),pc(XP.c)],[`Valeur${XP.cv>1?' ⚡':''}`,L(e.v[i]),pc(XP.v)],
     ...(Math.abs(XP.drift)>1e-6?[['Portage · structurel',KAPPA[x.sym]&&KAPPA[x.sym][1]?'selon l\'appétit':'connu',pc(XP.drift)]]:[]),
+    ...(XP.tipT?[[`Tuyau de ${XP.tipT.who}`,`${XP.tipT.up?'▲ hausse':'▼ baisse'} · ${Math.round(XP.tipT.rel*100)} %`,pc(XP.tip)]]:[]),
     ['<b>Attendu</b>','',`<b>${pc(XR.m)}</b>`]],['','Exposition × lecture','Effet'])}
   ${tbl([['Par unité, pour le fonds',`<b>${pc(w1*XR.m)}</b> ± ${dec(2*w1*XR.s*100,1)} %`],
     ['Risque marginal (±1 unité)',`<b class="${rp>0?'neg-g':'pos-g'}">${rp>=0?'+':'−'}${dec(Math.abs(rp),1)} pt</b> sur ${Math.round(riskShown(weights(S.k)).total*100)}`],
