@@ -2973,12 +2973,27 @@ function covInfo(){const base=covE();if(!S)return base;
   const a=Math.sqrt(rho[i]*rho[j]);_CI[i][j]=i===j?rho[i]*xi.sig**2*(EXPVF*c+Math.max(0,1-bb)+sv):a*xi.sig*xj.sig*EXPVF*c}}
  _CIk=key;return _CI}
 /* risque du fonds, en vol annualisée comme riskShown : book (information du desk) + extrêmes + collatéral + covariance */
-function fundParts(k){k=k||S.k;const w=weights(k),st=volStress(w,undefined,covInfo()),ev=evVarExp(w).v,Vb=st*st+ev;
- const Pd=typeof xDeskP==='function'?xDeskP():0,bo=0.5+0.5*((S.bud&&TAILM[S.bud.risk])||1),h=S.xHint;let Q=[];
+/* moments de la perte du book sur un extrême du trimestre, à la probabilité du desk (alerte nommée : ce scénario) */
+function xMoments(k){const Pd=typeof xDeskP==='function'&&S.bud?xDeskP():0,bo=0.5+0.5*((S.bud&&TAILM[S.bud.risk])||1),h=S.xHint;let Q=[];
  if(h&&h.id){const sc=STRESS.find(x=>x.id===h.id);if(sc)Q=[[sc,1]]}
  if(!Q.length){let sw=0;STRESS.forEach(x=>{const p=xScP(x);if(p>0){Q.push([x,p]);sw+=p}});Q=sw>0?Q.map(([x,p])=>[x,p/sw]):[]}
  let E1=0,E2=0;Q.forEach(([x,q])=>{const L=(0.5*bo+0.5)*stressLoss(k,x);E1+=q*L;E2+=q*L*L});
  if(h&&h.t&&!h.id){const L=(0.5*bo+0.5)*xEvLoss(k,h.t);E1=L;E2=L*L}
+ return {Pd,E1,E2}}
+/* lot 349 : rentabilité du fonds, tout compris (trimestrielle) */
+function fundRetParts(k){k=k||S.k;const k0=S.k0||S.k,w=weights(k);
+ const lect=profitBook(k)-xBookTerm(k);
+ let cx=0;for(let i=0;i<N;i++){const d=k[i]-k0[i];if(d){const t=tcost(d,i);cx+=(t.imp-(1+IMPK)*t.cost)/S.nav}}   /* le fonds paie la facture et le glissement, pas seulement l'impact */
+ const XM=xMoments(k),ext=XM.Pd*XM.E1;
+ const A=accP(k),sp=A.sp,spE=Math.max(sp,0.20+0.5*(A.mgu-MGZ.watch)),Lm=Math.min(0.6,TAILSEV*tailL(spE));
+ let im=0;if(A.m>0)for(let m=0;m<N;m++){const d=Math.trunc(k[m]/2)-k[m];if(d)im+=tcost(d,m).cost*urgM(URG.tail,m)}
+ const acc=-A.m*(0.8*Lm+Math.min(0.08,im/S.nav));
+ const V=visList(k),pv=visP(k);let vl=0,vp=0;V.forEach(v=>{const H=v.kind==='short'?VIS.Hs:VIS.Hl,L=Math.min(0.6,Math.abs(w[v.i])*INSTR[v.i].sigQ*H*crowd(sp));vl+=v.p*0.8*L;vp+=v.p});
+ const vis=vp>0?-pv*vl/vp:0;
+ return {total:lect+cx+ext+acc+vis,lect,cx,ext,acc,vis,pd:XM.Pd}}
+function fundRet(k){return fundRetParts(k).total}
+function fundParts(k){k=k||S.k;const w=weights(k),st=volStress(w,undefined,covInfo()),ev=evVarExp(w).v,Vb=st*st+ev;
+ const XM=xMoments(k),Pd=XM.Pd,E1=XM.E1,E2=XM.E2;
  const VX=Math.max(0,Pd*E2-(Pd*E1)**2);
  const o=colOpt();let VC=0,CV=0;
  if(!redOn('collat')&&o.p>0){const a=(1-Math.min(1,marginPct(k)))*o.l,ph=Math.min(0.95,COLK*o.p),pl=colPx(o,false),pD=Pd*ph+(1-Pd)*pl;
@@ -3918,8 +3933,10 @@ function limConc(raw){return Math.min(1,LIM.conc+(limNegOn('conc',raw)?LIM.neg.c
 function clsConc(w){const sp=pvol(w);if(sp<1e-6)return {v:0,g:''};const rc=riskContrib(w),m={};INSTR.forEach((x,i)=>m[x.grp]=(m[x.grp]||0)+rc[i]);
  let g='',v=0;for(const k in m){const f=m[k]/sp;if(f>v){v=f;g=k}}return {v,g}}
 function limRows(k){const w=weights(k),sp=pvol(w),cc=clsConc(w),lv=limVol(),lc=limConc(),ng=S.limNeg&&S.limNeg.q===S.q?S.limNeg.id:'';
- const FP=fundParts(k);
- return `<div class="kv"><span>Risque du fonds · book, extrêmes, collatéral</span><b>${dec(FP.total*50,1)} %</b></div>
+ const FP=fundParts(k),FR=fundRetParts(k),p2=v=>`${v>=0?'+':'−'}${dec(Math.abs(v)*100,2)} %`;
+ return `<div class="kv"><span>Rentabilité du fonds · tout compris, ce trimestre</span><b class="${cls(FR.total)}">${p2(FR.total)}</b></div>
+  <p class="note" style="margin:0 0 4px">Lecture des marchés ${p2(FR.lect)} · fourchette, impact et glissement ${p2(FR.cx)} · extrêmes (${Math.round(FR.pd*100)} %) ${p2(FR.ext)} · accidents de levier et appels de marge ${p2(FR.acc)}${FR.vis?` · squeezes ${p2(FR.vis)}`:''}. C'est sur elle que se lit la rentabilité marginale des marchés.</p>
+  <div class="kv"><span>Risque du fonds · book, extrêmes, collatéral</span><b>${dec(FP.total*50,1)} %</b></div>
   <p class="note" style="margin:0 0 4px">Book lu par le desk ${dec(FP.book*50,1)} % · extrêmes (${Math.round(FP.pd*100)} %) ${dec(FP.x*50,1)} % · collatéral ${dec(FP.col*50,1)} %${Math.abs(FP.cov)>5e-5?` · dont corrélation défauts–extrêmes ${FP.cov>=0?'+':'−'}${dec(Math.abs(FP.cov)*50,2)} %`:''}. C'est sur lui que se lit le risque marginal des marchés.</p>
   <div class="kv"><span>Limite du comité · risque ex ante${ng==='vol'?' (négociée)':''}</span><b class="${sp>lv*LIM.red?'neg-g':sp>lv?'gold-g':''}">${dec(sp*50,1)} % / ${dec(lv*50,1)} %</b></div>
   <div class="kv"><span>Limite · concentration${cc.g?' ('+cc.g.toLowerCase()+')':''}${ng==='conc'?' (négociée)':''}</span><b class="${cc.v>lc?'gold-g':''}">${Math.round(cc.v*100)} % / ${Math.round(lc*100)} %</b></div>
@@ -4605,7 +4622,7 @@ function kPrev(e,mode){
 /* même lecture que les lignes de marché : rentabilité du trimestre, risque en points de vol ex ante */
 function bkD(k1,cost,hid){
  if(!k1)return '';const same=k1.every((v,i)=>v===S.k[i]);if(same&&!hid&&!cost)return '';
- const R=kk=>fundRisk(kk),dr=(R(k1)-R(S.k))*100,dp=profitBook(k1)-profitBook(S.k);
+ const R=kk=>fundRisk(kk),dr=(R(k1)-R(S.k))*100,dp=fundRet(k1)-fundRet(S.k);
  const ch=k1.map((v,i)=>v!==S.k[i]?`${INSTR[i].sym} ${S.k[i]>0?'+':''}${S.k[i]}→${v>0?'+':''}${v}`:null).filter(Boolean);
  const cs=cost>0?`coûts <b>${mm(cost)}</b>`:cost<0?`coûts <b class="pos-g">−${mm(-cost)}</b>`:'';
  const l1=[ch.length?`${ch.slice(0,4).join(', ')}${ch.length>4?'…':''}`:'',cs].filter(Boolean).join(' · ');
@@ -6026,6 +6043,7 @@ function showMarket(i){
     ['Autres fonds',Math.abs(S.crowd[i])<0.25?'neutres':(S.crowd[i]>0?'majoritairement longs':'majoritairement courts')]])}
   <details style="margin-top:10px"><summary>Comment lire ce tableau</summary>
    <p style="margin-top:8px">Facteurs : l'exposition du marché (de −1 à +1) multipliée par ce que vos sources disent du facteur. Signaux : ce que tendance, portage et valeur ajoutent${XP.cv>1?' — la valeur compte triple sur un catalyseur':''}. L'intervalle couvre environ 95 trimestres sur 100 : il mesure ce que vous ne savez pas.</p>
+   <p>Rentabilité et risque marginaux se lisent sur le <em>fonds</em>, tout compris : lecture des marchés, fourchette, impact et glissement, extrêmes à la probabilité du desk, accidents de levier, appels de marge et squeezes, collatéral selon la marge. Le panneau du book montre la lecture des marchés seule.</p>
    <p>Risque marginal : ce qu'une unité de plus (ou de moins) ajoute au risque du <em>fonds</em> — le book lu avec tout ce que sait le desk (tuyaux de facteurs et de marchés), les extrêmes à la probabilité du desk, le collatéral et la corrélation de ses défauts avec les extrêmes. Le comité, lui, ne juge que le book.</p>
    <p><em>Tendance</em> — ${TCVTXT.t.d}</p><p><em>Portage</em> — ${TCVTXT.c.d[x.grp]||''} Il a deux parts : le <em>structurel</em>, connu exactement (dividendes et prime de risque, prime de terme, écart de taux, coût de stockage, contango), et le <em>cycle</em>, que le desk lit avec du bruit. La pastille du book les additionne.</p><p><em>Valeur</em> — ${TCVTXT.v.d}</p>
    <p>Votre style lit son signal trois fois plus nettement que les deux autres ; la salle de marché règle le bruit (±${dec(TCVQ[S.bud.exec],2)} cran).</p></details>
@@ -6053,10 +6071,10 @@ function rowInfo(i){
  if(mktOpen(i)){
   const R=kk=>fundRisk(kk),r0=R(S.k),kp=[...S.k],km=[...S.k];kp[i]+=1;km[i]-=1;   /* lot 344 : risque du fonds */
   const rP=(R(kp)-r0)*50,rM=(R(km)-r0)*50,rc=v=>`<b class="${v>0.05?'neg-g':v<-0.05?'pos-g':'dim-g'}">${v>=0?'+':'−'}${dec(Math.abs(v),1)} pt</b>`;
-  const ex1=pc2(profitBook(kp)-profitBook(S.k));
+  const fr0=fundRet(S.k),ex1=pc2(fundRet(kp)-fr0);   /* lot 349 */
   const k0=S.k0?S.k0[i]:S.k[i],d=S.k[i]-k0,t=tcost(d,i);
   const od=d>0?`<b class="pos-g">achat ${d}</b>`:d<0?`<b class="neg-g">vente ${-d}</b>`:'<b class="dim-g">aucun</b>';
-  const pM=pc2(profitBook(km)-profitBook(S.k)),pct1=v=>`<b class="${v>0.005?'neg-g':v<-0.005?'pos-g':'dim-g'}">${v>=0?'+':'−'}${dec(Math.abs(v),2)} %</b>`;
+  const pM=pc2(fundRet(km)-fr0),pct1=v=>`<b class="${v>0.005?'neg-g':v<-0.005?'pos-g':'dim-g'}">${v>=0?'+':'−'}${dec(Math.abs(v),2)} %</b>`;
   gl=`<div class="rgrid3"><span></span><span class="k">−1 · vente</span><span class="k">+1 · achat</span><span class="lb">rentabilité</span><span>${pM}</span><span>${ex1}</span><span class="lb">risque</span><span>${pct1(rM)}</span><span>${pct1(rP)}</span></div>`}
  el.innerHTML=`<div class="fxe2">${ex}</div>${gl}`;
 }
@@ -6606,9 +6624,9 @@ function screenMacroEvent(ev){
  const go=i=>{clearTimer();resolveEvent(ev,touched,plan[i],imm,navB)};
  const NO=plan.findIndex(o=>o.n===0);let sel=NO;
  /* lot 244 : résumé compact dans le dock, détail au-dessus */
- const R0=fundRisk(S.k),P0=profitBook(S.k);
+ const R0=fundRisk(S.k),P0=fundRet(S.k);
  const sline=(o,s)=>`<div class="dkr"><span>${['Poursuite','Retournement'][s]} <b>${Math.round(PR[s]*100)} %</b></span><span class="${o.pay[s]>0?'pos-g':o.pay[s]<0?'neg-g':'dim-g'}">${uNum(o.pay[s]*S.nav,UM)} ${unitLab}</span><span>conf. ${gcell(o.gz[s].lp)}</span></div>`;
- document.getElementById('evpan').innerHTML=plan.map((o,i)=>{const dp=o.n!==0&&o.trades.length?profitBook(o.t)-P0:0,dr=o.n!==0&&o.trades.length?(fundRisk(o.t)-R0)*100:0;
+ document.getElementById('evpan').innerHTML=plan.map((o,i)=>{const dp=o.n!==0&&o.trades.length?fundRet(o.t)-P0:0,dr=o.n!==0&&o.trades.length?(fundRisk(o.t)-R0)*100:0;
    return `<div class="pcell" data-p="${i}"><div class="evopt evdk" data-i="${i}"><div class="dkh"><b>${o.b}</b><span class="${o.cost>0?'neg-g':o.cost<0?'pos-g':'dim-g'}">${o.n===0?'aucun ordre':o.trades.length?(o.cost<0?'rabais +'+mm(-o.cost):'ordres −'+mm(o.cost)):'aucun ordre possible'}</span></div>
     ${sline(o,0)}${sline(o,1)}<div class="dkr dkm"><span>rentabilité ${pc2(dp)}</span><span>risque <b class="${dr>0.05?'neg-g':dr<-0.05?'pos-g':'dim-g'}">${dr>=0?'+':'−'}${dec(Math.abs(dr),1)} pt</b></span>${o.ban?'<span class="neg-g">carton rouge : interdit</span>':''}</div></div></div>`}).join('');
  /* lot 245 : tous les détails empilés, hauteur constante quel que soit le cran */
