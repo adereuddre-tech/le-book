@@ -605,6 +605,7 @@ body.tmron #app{padding-bottom:150px}
 .sect .trd{margin-left:8px;font-size:12px;color:var(--gold);font-weight:600;letter-spacing:0}
 .cisel .lmp,.cisel .gtp,.cisel .hgp{flex:1;padding:8px 4px;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-size:12.5px}
 .cisel .lmp.on,.cisel .gtp.on,.cisel .hgp.on{border:2px solid var(--gold);color:var(--gold);background:rgba(214,178,94,.12)}.cisel .cip{flex:1;padding:9px 0;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-family:var(--mono);font-size:13px}.cisel .cip.on{border-color:var(--gold);color:var(--gold)}
+.cisel.bn6{flex-wrap:wrap}.cisel.bn6 .bnp{flex:1 1 30%}
 .cisel .bnp,.cisel .bnw{flex:1;padding:8px 4px;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);font-size:12.5px}.cisel .bnp small{color:var(--dim);font-size:10.5px}.cisel .bnw{flex:0 0 auto;padding:6px 9px}.cisel .bnp.on,.cisel .bnw.on{border-color:var(--gold);color:var(--gold)}
 .ess .attr .av{text-align:right}
 </style>
@@ -1042,29 +1043,30 @@ function cast(ev){if(ev&&ev.hunt&&S&&S.bud){const c=huntCands();if(c.length){con
   ['t','p','after','riskMsg','safeTxt','safe','msg'].forEach(k=>{o[k]=recast(o[k],c)});
   if(Array.isArray(o.ch))o.ch=deepCast(o.ch,c)});
  return o}
-const BONOFF=[0,0.025,0.05,0.10,0.15],POACHP=0.5,MOT={i0:0};
+const BONOFF=[0,0.025,0.05,0.10,0.15,0.30],POACHP=0.5,MOT={i0:0};
 function bonBase(){if(!S||!S.bud)return 0;return 5*massBp('fo')*1e-4}   /* lot 304 : masse salariale du front office */   /* lot 282 : 5 fois le coût du front office en pb, sans plafond */
 function bonRate(i){return bonBase()+BONOFF[i]}
 /* lot 115 : effet direct du cran de bonus versé — g : part de la baisse des coûts du budget salle de marché que le desk livre ;
    p : risque de débauchage par trimestre ; ×1,5 le trimestre d'une baisse de taux */
-const BONFX=[{c:1.35,p:0.50},{c:1.17,p:0.40},{c:1.00,p:0.30},{c:0.82,p:0.20},{c:0.70,p:0.12}],BONCUT=1.5;   /* lot 223 : coûts élargis */
-const BONREAD=[1.25,1.12,1,0.87,0.75],BONWIN=[-0.08,-0.04,0,0.04,0.08];   /* lot 223 : lecture des dépêches, chances des anecdotes */
+/* lot 329 : effets lus sur le moral, nœuds à 0, 25, 50, 75, 100 — neutres à 50, déchaînés à 100 */
+const BONFX=[{c:1.60,p:0.70},{c:1.30,p:0.45},{c:1.00,p:0.30},{c:0.75,p:0.15},{c:0.45,p:0.03}],BONCUT=1.5;
+const BONREAD=[1.40,1.20,1,0.75,0.45],BONWIN=[-0.14,-0.08,0,0.08,0.20];
 /* lot 296 : le moral du desk, un stock de 0 à 100. Il ne dépend que de l'argent et des égards :
    cible = cran de bonus effectif (35, 45 … 75) + locaux (garage 0 … yacht +13) ; la moitié de l'écart se referme
    chaque trimestre. Une baisse de taux coûte 5 points par cran, les anecdotes déplacent le moral d'un coup.
    Les quatre effets du bonus (coûts, lecture, anecdotes, débauchage) se lisent sur le moral : à cran constant,
    le moral converge vers le niveau qui redonne exactement les effets de ce cran. */
-const MORAL={t0:35,dt:10,k:0.5,cut:5,egard:20,lo:20,hi:80};   /* égards : un ancien +10 % de débauchage = moral −2 */
-function motOff(){return Math.round(-25*(offFx('poach')-1))+5}   /* lot 298 : garage 0 … yacht +13 */
-function motT(i){return MORAL.t0+MORAL.dt*i+motOff()}
-function motV(){if(!S)return MORAL.t0;if(S.mot==null)S.mot=motT(bonEff());return S.mot}
-function motX(m){return ((m==null?motV():m)-MORAL.t0)/MORAL.dt}
-function motI(A,x){const n=A.length-1;if(x<=0)return A[0]+(A[1]-A[0])*x;if(x>=n)return A[n]+(A[n]-A[n-1])*(x-n);const i=Math.floor(x),f=x-i;return A[i]+(A[i+1]-A[i])*f}
 const mclp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function motC(m){return mclp(motI(BONFX.map(f=>f.c),motX(m)),0.55,1.6)}
+const MORAL={tg:[30,40,50,62,75,95],k:0.5,cut:5,egard:20,lo:20,hi:80};   /* égards : un ancien +10 % de débauchage = moral −2 */
+function motOff(){return Math.round(-25*(offFx('poach')-1))+5}   /* lot 298 : garage 0 … yacht +13 */
+function motT(i){return MORAL.tg[Math.max(0,Math.min(MORAL.tg.length-1,i))]+motOff()}
+function motV(){if(!S)return MORAL.tg[0];if(S.mot==null)S.mot=motT(bonEff());return S.mot}
+function motX(m){return mclp(m==null?motV():m,0,100)/25}
+function motI(A,x){const n=A.length-1;if(x<=0)return A[0]+(A[1]-A[0])*x;if(x>=n)return A[n]+(A[n]-A[n-1])*(x-n);const i=Math.floor(x),f=x-i;return A[i]+(A[i+1]-A[i])*f}
+function motC(m){return mclp(motI(BONFX.map(f=>f.c),motX(m)),0.45,1.6)}
 function motP(m){return mclp(motI(BONFX.map(f=>f.p),motX(m)),0.03,0.7)}
-function motR(m){return mclp(motI(BONREAD,motX(m)),0.6,1.4)}
-function motW(m){return mclp(motI(BONWIN,motX(m)),-0.14,0.14)}
+function motR(m){return mclp(motI(BONREAD,motX(m)),0.45,1.4)}
+function motW(m){return mclp(motI(BONWIN,motX(m)),-0.14,0.20)}
 function motAdd(d,why){if(!S||!d)return;const m0=motV();S.mot=mclp(m0+d,0,100);(S.motLog=S.motLog||[]).push({q:S.q,d:S.mot-m0,why})}
 /* projection du moral au prochain trimestre pour un cran donné (page du bonus) */
 function motNext(i,prev){const m=motV();return mclp(m+MORAL.k*(motT(i)-m)+(prev!=null&&i<prev?MORAL.cut*(i-prev):0),0,100)}
@@ -4808,7 +4810,7 @@ function showGauge(id){
    ${dl?tbl(dl.map(row),['Investisseurs · dernier trimestre','Δ']):''}`);
  } else if(id==='mot'){   /* lot 297 */
   const m=motV(),L=(S.motLog||[]).slice(-8).reverse();
-  openModal('Moral du desk',`<p>Le moral de vos traders ne dépend que de l'argent et des égards. Chaque trimestre, il fait la moitié du chemin vers la cible de votre taux de bonus — 35 au minimum, 75 au cran le plus haut, sans bonus s'il n'y a pas de commission de performance — relevée par vos locaux (garage 0, yacht +13). Une baisse de taux coûte 5 points par cran ; les petits gestes du quotidien (anecdotes) le déplacent d'un coup.</p>
+  openModal('Moral du desk',`<p>Le moral de vos traders ne dépend que de l'argent et des égards. Chaque trimestre, il fait la moitié du chemin vers la cible de votre taux de bonus — 30 au minimum, 50 au troisième cran, 95 au cran maximal (hors de prix), le minimum sans commission de performance — relevée par vos locaux (garage 0, yacht +13). À 50, tout est neutre ; en dessous, le desk coûte et lit mal ; au-dessus, il se surpasse, et à 100 il est déchaîné : coûts ×0,45, bruit de lecture ×0,45, anecdotes +20 pts, débauchage 3 %, et il refuse toutes les offres. Une baisse de taux coûte 5 points par cran ; les petits gestes du quotidien (anecdotes) le déplacent d'un coup.</p>
    ${tbl([['Moral',`<b>${Math.round(m)}</b>`],['Cible de votre taux et de vos locaux',`${Math.round(motT(S.bonI==null?MOT.i0:S.bonI))}`],["Coûts d'exécution",'×'+dec(motC(),2)],['Bruit sur la lecture des dépêches','×'+dec(motR(),2)],['Chances des anecdotes du desk',(bonD()>=0?'+':'−')+Math.round(Math.abs(bonD())*100)+' pts'],['Risque de débauchage ce trimestre',Math.round(poachNow()*100)+' %']])}
    <p class="note">Sous ${MORAL.lo}, le desk peut partir en groupe : ${Math.round(motLo(m)*100)} % aujourd'hui, de plus en plus probable vers 0. Au-dessus de ${MORAL.hi}, il peut refuser toutes les offres des concurrents et redoubler d'efforts : ${Math.round(motHi(m)*100)} % aujourd'hui, de plus en plus probable vers 100.</p>
    ${L.length?tbl(L.map(x=>[`T${x.q+1} · ${x.why}`,`<span class="${cls(x.d)}">${x.d>=0?'+':'−'}${Math.abs(x.d).toFixed(1)}</span>`]),['Derniers mouvements','Δ']):''}`);
@@ -7571,8 +7573,8 @@ function screenDebrief(o){
  const bnSel=(S.over||S.q>=QT())?'':(()=>{const pf=Math.max(0,(S.mgrQ&&S.mgrQ.perf)||0),cur=S.bonI==null?MOT.i0:S.bonI,prev=S.bonPrev==null?MOT.i0:S.bonPrev,e=EXECM[S.bud.exec];
   if(!(pf>0))return noBonusPage(cur,o.qTotal);   /* lot 255 : sans commission de performance, pas de choix du bonus */
   return `<div class="block"><div class="blockhead"><h2>Taux de bonus d'équipe</h2><span class="hint">versé à l'ouverture</span></div>
-  <p class="note" style="margin-top:0">Une part de votre commission de performance${pf>0?` (${mm(pf)} ce trimestre)`:' — aucune ce trimestre : rien ne sera versé, et le moral glisse vers la cible du taux minimum'}. Le minimum vaut 5 fois la masse salariale de votre front office sur 100 M$ (${dec(bonBase()*100,1)} % aujourd'hui) ; chaque cran ajoute 2,5, 5, 10 ou 15 points. Le taux nourrit le moral du desk (${Math.round(motV())} aujourd'hui) : chaque trimestre, le moral fait la moitié du chemin vers la cible de votre taux (35 au minimum, 75 au cran le plus haut, plus selon vos locaux), et une baisse de taux coûte 5 points par cran. Le moral fixe quatre choses : un multiplicateur sur tous vos coûts d'exécution, fourchette et impact de marché compris, la précision de la lecture des dépêches, les chances de gagner des anecdotes du desk et le risque de débauchage. Sous 20, le desk peut partir en groupe ; au-dessus de 80, il peut refuser toutes les offres.</p>
-  <div class="cisel">${BONOFF.map((o,i)=>{const p=bonRate(i),m=motNext(i,prev);return `<button class="bnp${i===cur?' on':''}" data-i="${i}">${dec(p*100,Number.isInteger(Math.round(p*1000)/10)?0:1)} %<br><small>${mm(p*pf)} · moral → ${Math.round(m)} · coûts ×${dec(motC(m),2)} · lecture ×${dec(motR(m),2)} · anecdotes ${motW(m)>=0?'+':'−'}${Math.round(Math.abs(motW(m))*100)} pts · débauche ${Math.round(Math.min(0.95,motP(m)*(boH(12)?0.5:1))*100)} %</small></button>`}).join('')}</div></div>`})();
+  <p class="note" style="margin-top:0">Une part de votre commission de performance${pf>0?` (${mm(pf)} ce trimestre)`:' — aucune ce trimestre : rien ne sera versé, et le moral glisse vers la cible du taux minimum'}. Le minimum vaut 5 fois la masse salariale de votre front office sur 100 M$ (${dec(bonBase()*100,1)} % aujourd'hui) ; chaque cran ajoute 2,5, 5, 10, 15 ou 30 points — le dernier est hors de prix. Le taux nourrit le moral du desk (${Math.round(motV())} aujourd'hui) : chaque trimestre, le moral fait la moitié du chemin vers la cible de votre taux (${MORAL.tg.join(', ')} selon le cran, plus selon vos locaux). À 50, tout est neutre ; au-dessus, les avantages s'envolent jusqu'à 100, et une baisse de taux coûte 5 points par cran. Le moral fixe quatre choses : un multiplicateur sur tous vos coûts d'exécution, fourchette et impact de marché compris, la précision de la lecture des dépêches, les chances de gagner des anecdotes du desk et le risque de débauchage. Sous 20, le desk peut partir en groupe ; au-dessus de 80, il peut refuser toutes les offres.</p>
+  <div class="cisel bn6">${BONOFF.map((o,i)=>{const p=bonRate(i),m=motNext(i,prev);return `<button class="bnp${i===cur?' on':''}" data-i="${i}">${i===BONOFF.length-1?'🔥 ':''}${dec(p*100,Number.isInteger(Math.round(p*1000)/10)?0:1)} %<br><small>${mm(p*pf)} · moral → ${Math.round(m)} · coûts ×${dec(motC(m),2)} · lecture ×${dec(motR(m),2)} · anecdotes ${motW(m)>=0?'+':'−'}${Math.round(Math.abs(motW(m))*100)} pts · débauche ${Math.round(Math.min(0.95,motP(m)*(boH(12)?0.5:1))*100)} %</small></button>`}).join('')}</div></div>`})();
  const gtSel=(S.over||S.q>=QT()||!gateOk())?'':`<div class="block"><div class="blockhead"><h2>Gate</h2><span class="hint">prochaine clôture</span></div>
   <p class="note" style="margin-top:0">${mm(invDue())} d'avis de rachat tombent à la prochaine clôture, ${dec(invDue()/Math.max(1e-9,extNav())*100,1)} % de l'encours. La gate limite les paiements à ${Math.round(INVP.gate*100)} % de l'encours, au prorata ; le reste est reporté d'un trimestre. Prix : confiance ${INVP.gateLp}, et pas deux trimestres de suite.</p>
   <div class="cisel"><button class="gtp${S.gateNext?'':' on'}" data-g="0">Payer à l'échéance</button><button class="gtp${S.gateNext?' on':''}" data-g="1">Activer la gate</button></div></div>`;
