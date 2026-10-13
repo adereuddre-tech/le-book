@@ -5206,7 +5206,7 @@ function drawBuds(){
 
 /* ---------- positionnement ---------- */
 function screenPlay(){
- tuto(2,3);
+ tuto(2,3);setTimeout(()=>{try{window.scrollTo(0,0)}catch(e){}},0);   /* lot 332 */
  goldFlush(500);
  app.innerHTML=statusBar()+`<div class="fade">
   ${objRows()}
