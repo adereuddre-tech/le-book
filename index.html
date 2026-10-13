@@ -3129,7 +3129,7 @@ const NAVEND=0.05;
 const FUNDMIN=0.04,DDEND=0.50;   /* lot 83 : 40 M$ ; lot 104 : plus lus pour la fin de partie */
 const FUNDEMPTY=0.01;   /* lot 104 : fonds vidé */
 const STYCOST={syst:0.95,fonda:0.95,flux:1.20,rv:1.0,tail:0.90,act:1.20};   /* lot 122 */
-const BUDK=0.90;   /* lot 123 : toutes les équipes 20 % moins chères */
+const BUDK=1.60;   /* lot 123 : toutes les équipes 20 % moins chères ; lot 348 : ×1,78 — la société ne paie plus la facture des ordres (campagne : survie 81 %, 79 % avant) */
 function budNav(){return (S.aum0||0.1)*((SIZE()&&SIZE().costM)||1)*(STYCOST[S.prof]||1)*BUDK}   /* lot 176 : base fixe, l'encours de départ */   /* lot 104 : salaires et loyer ne suivent pas l'encours à la baisse */
 function ddMax(){return (S&&PROF().ddMax)||0.28}
 /* Profondeur de chaque carnet, en Md$ de notionnel : ce qu'un ordre peut peser avant que le
@@ -3185,7 +3185,7 @@ function newGame(seed,prof,arch,desk,vol,size,univ,dur){
    over:null,truth:null,f:[],rumor:null,pending:[],shock:new Array(N).fill(0),
    evQueue:[],log:[],flows:0,press:[],lastPress:null,rankPrev:1,phase:'budget',hotFactor:null,lpD:null,rcD:null,fLast:null,gLog:[],navQ0:100,qEvM:0,qIncM:0,qRumor:0,evLog:[]};
  rivDraw();   /* lot 157 */
- S.mgrSeed=(SIZE().seed||0)+(STYSEED[S.prof]||0);   /* lot 120 : difficulté + style */S.mgrFees+=S.mgrSeed;   /* lot 113 : capital de départ de la société de gestion */
+ S.mgrSeed=0.8*((SIZE().seed||0)+(STYSEED[S.prof]||0));   /* lot 348 : −20 %, la société ne paie plus que le courtage */   /* lot 120 : difficulté + style */S.mgrFees+=S.mgrSeed;   /* lot 113 : capital de départ de la société de gestion */
  planQuarter();
 }
 function planQuarter(){
@@ -3283,7 +3283,7 @@ function planQuarter(){
  S.k=new Array(N).fill(0);S.k0=new Array(N).fill(0);
  S.flowInC=(S.flowInC||0)+Math.max(0,S.qFlow||0);S.flowOutC=(S.flowOutC||0)+Math.max(0,-(S.qFlow||0));   /* lot 87 : flux cumulés */
  S.qColM=0;S.colBaseNav=0;S.rumors=[];S.xRiv=null;S.xRivT=null;S.xRivQ=null;S.xRivL=null;S.xRivB=null;S.evVerified=false;S.tcvEst=null;S.gLog=[];S.evLog=[];S.comm=null;S.commRes=null;S.rankPrev=rivalRank();S.qFlow=0;S.qOps=0;S.sc=null;S.navQ0=S.nav;S.qEvM=0;S.qIncM=0;S.qRumor=0;S.kEff=null;S.shock=new Array(N).fill(0);
- S.pendingTC=0;S.freeAdjUsed=false;S.live=false;S.qClosed=false;S.goalK=null;S.execSlipQ=0;gonesL().forEach(g=>g.n=0);S.cntBp=0;S.qSevM=0;S.qMv={};
+ S.pendingTC=0;S.qBn=0;S.freeAdjUsed=false;S.live=false;S.qClosed=false;S.goalK=null;S.execSlipQ=0;gonesL().forEach(g=>g.n=0);S.cntBp=0;S.qSevM=0;S.qMv={};
  /* la commission de gestion est prélevée sur le fonds et vous est versée dès l'ouverture ;
     la performance et le bonus d'objectif attendent la clôture */
  S.tresQ0=mgrCash();   /* lot 87 */
@@ -4165,7 +4165,7 @@ function budRest(){const e=document.getElementById('brest');if(!e)return;const r
 function budgetBpIf(id,lv){return budgetBpT(ladderT(id,lv))}   /* l'échelle jusqu'au cran lv */
 /* Le score : commissions encaissées moins tout ce que le gérant a payé, coûts d'exécution
    du trimestre en cours compris — ils bougent pendant qu'on construit le book. */
-function mgrNet(){return S.mgrFees-S.mgrCosts-(S.phase==='book'?liveTC():(S.pendingTC||0)*S.nav)+((S.phase==='events'&&S.live&&S.coinvBase)?S.coinvBase*liveNet():0)}
+function mgrNet(){return S.mgrFees-S.mgrCosts-comNow()+((S.phase==='events'&&S.live&&S.coinvBase)?S.coinvBase*liveNet():0)}
 /* Ce qu'il peut encore engager : son score plus le capital de départ de la société. */
 /* lot 81 : co-investissement — un dixième de la trésorerie d'ouverture suit le résultat net du fonds */
 const COINV=0.25;
@@ -4187,7 +4187,7 @@ function coPend(){if(S&&S.coinvScr===S.q&&S.coinvQ!==S.q)return coinvPct()*Math.
 function cashView(){return mgrCash()-bonPend()-coPend()}   /* lot 63 : pas de capital de départ, trésorerie = gains nets */
 function liveTC(){let tot=0;const k0=S.k0||S.k;for(let i=0;i<N;i++){const d=S.k[i]-k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}return tot}
 function costsNow(){
- const tc=S.phase==='book'?liveTC()/S.nav:(S.pendingTC||0);
+ const tc=comNow()/S.nav;
  return {ops:budgetBp(),tc:tc*1e4,mgmt:VOL().mgmt*1e4,info:0};
 }
 /* Fraction du trimestre écoulée, lue sur l'avancement de la file de dépêches. */
@@ -4680,7 +4680,12 @@ function pnlGauge(pnl,why){const z=pnlGz(pnl);return gauge(z.lp,z.rc,why)}
    standard, corrigé de la manière d'exécuter : payer le bloc (m>1) protège le prix moyen,
    négocier un rabais (m<1) le dégrade, une fuite le dégrade encore. Sert à l'affichage comme
    à l'application (invariant 9). */
-const IMPK=2.4,IMPMAX=0.015;
+const IMPK=1.4,IMPMAX=0.015,COMB=0.5e-4;   /* lot 348 : glissement 1,4 × la facture (la facture elle-même est payée par le fonds) ; courtage 0,5 pb */
+function bnTraded(k0,k1){let b=0;for(let i=0;i<N;i++){const d=(k1[i]||0)-(k0[i]||0);if(d)b+=Math.abs(notionalBn(d,i))}return b}
+function comAdd(bn){S.qBn=(S.qBn||0)+(bn||0)}
+function liveCom(){return COMB*bnTraded(S.k0||S.k,S.k)}
+function comNow(){return S.phase==='book'?liveCom():COMB*(S.qBn||0)}
+function billFund(amt,why){if(!amt)return;S.pendingTC+=amt/S.nav;execSlip(-amt,why||'Fourchette et impact')}
 function execImpactF(m,leak){return Math.pow(Math.max(0.3,Math.min(3,m||1)),-1.2)*(leak?1.6:1)}
 function execImpactAmt(bill,m,leak){
  if(!(bill>0))return 0;
@@ -4895,7 +4900,7 @@ function showGauge(id){
  } else if(id==='gain'){
   const sg=v=>`<b class="${v>=0?'pos-g':'neg-g'}">${v>=0?'+':'−'}${mm(Math.abs(v))}</b>`;
   const live=S.phase==='events'&&S.live,cLive=live&&S.coinvBase?S.coinvBase*liveNet():0,lock=coinvLocked(),net=mgrNet();
-  const tcNow=S.phase==='book'?liveTC():(S.pendingTC||0)*S.nav,tcAll=S.led?(S.cTC||0)+tcNow:(S.totalTC||0)+(S.phase==='book'?liveTC():0);
+  const tcNow=comNow(),tcAll=(S.cTC||0)+tcNow;
   const it=[...((S.mgrSeed||0)>0?[[`Capital de départ`,S.mgrSeed]]:[]),[`Commissions de gestion`,S.cMgmt||0],[`Commissions de performance`,S.cPerf||0],[`Bonus d'objectif`,S.cBon||0],
    [`Résultat du co-investissement${cLive?' (dont en cours '+(cLive>=0?'+':'−')+mm(Math.abs(cLive))+')':''}`,(S.mgrCoinv||0)+cLive],
    ...((S.mgrClaw||0)>0?[[`Restitution (avant le lot 98)`,-(S.mgrClaw||0)]]:[]),[`Budget d'exploitation`,-(S.cOps||0)],[`Bonus d'équipe`,-(S.cBonT||0)],[`Courtage de vos ordres${tcNow?' (dont trimestre en cours −'+mm(tcNow)+')':''}`,-tcAll]];
@@ -5534,8 +5539,8 @@ function pwDraw(){const el=document.getElementById('pwblk');if(!el)return;const 
    pas. Un book inchangé ne coûte rien et n'est donc jamais bloqué — pas d'impasse possible. */
 function refreshSend(){
  const b=document.getElementById('send'),p=document.getElementById('purse');if(!b)return;
- const c=liveTC(),rest=mgrCash(),avail=Math.max(0,rest+c),ko=false,rb=redBlock();
- if(p)p.innerHTML=`<span>Ordres ${mm(c)} · trésorerie après paiement</span><b class="${rest>=0?'':'neg-g'}">${mm(rest)}</b>`
+ const c=liveCom(),rest=mgrCash(),avail=Math.max(0,rest+c),ko=false,rb=redBlock();
+ if(p)p.innerHTML=`<span>Courtage ${mm(c)} · trésorerie après paiement</span><b class="${rest>=0?'':'neg-g'}">${mm(rest)}</b>`
    +(ko||rb?` <button class="buy" id="fitbook" style="margin-left:8px">${rb?'Ramener le book dans la contrainte':'Ramener le book au payable'}</button>`:'');
  {const nt=document.getElementById('pursenote');
   if(nt)nt.textContent=rest<0?`Après ces ordres, votre trésorerie est négative (${mm(rest)}) : c'est permis pendant le trimestre, mais elle doit être revenue au-dessus de zéro à la clôture, sinon c'est le dépôt de bilan.`:'';}
@@ -5554,7 +5559,7 @@ function fitBook(){
   else{for(let i=0;i<N;i++)if(S.k[i]&&rc[i]>bv){bv=rc[i];bi=i}if(bi<0)break;S.k[bi]-=Math.sign(S.k[bi])}
  }
  for(let g=0;g<400;g++){
-  const c=liveTC(),avail=Math.max(0,mgrCash()+c);
+  const c=liveCom(),avail=Math.max(0,mgrCash()+c);
   if(c<=avail)break;
   let bi=-1,bv=0;
   for(let i=0;i<N;i++){const d=S.k[i]-S.k0[i];if(Math.abs(d)<1e-9)continue;
@@ -6150,14 +6155,14 @@ function renderTC(){
  }
  const el=document.getElementById('tc');if(!el)return;
  el.innerHTML=rows||`<p class="note" style="margin:0">Aucun ordre à passer : le book est inchangé, vous ne payez rien.</p>`;
- if(rows)el.innerHTML+=`<div class="kv" style="margin-top:8px"><span>Coût total des ordres</span><b class="${cC(tot)}">${cS(tot)} · ${tot>0?'−':'+'}${Math.abs(tot/S.nav*1e4).toFixed(0)} pb de l'encours</b></div>
+ if(rows)el.innerHTML+=`<div class="kv" style="margin-top:8px"><span>Fourchette et impact · payés par le fonds</span><b class="${cC(tot)}">${cS(tot)} · ${tot>0?'−':'+'}${Math.abs(tot/S.nav*1e4).toFixed(0)} pb de l'encours</b></div><div class="kv"><span>Courtage · payé par votre société</span><b>${mm(liveCom())}</b></div>
   <p class="note">Multiplicateur d'exécution appliqué : ×${dec((execMot()*DESK().mult(INSTR[0])*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult),2)} sur les actions (budget desk, organisation, liquidité du régime ${dec(S.liq,2)}, taux ${dec((S.rate*100),1)} %${S.execPenalty>1?', pénalité débauchage':''}).${S.star>=0?` <em>Votre recrutement du trimestre travaille sur ${INSTR[S.star].sym} : coûts divisés par trois sur ce marché.</em>`:''}</p>`;
 }
 function commitOrders(){
  S.kVal=[...S.k];   /* le book que le comité juge contre sa bande */
  let tot=0;
  for(let i=0;i<N;i++){const d=S.k[i]-S.k0[i];if(Math.abs(d)>1e-9)tot+=tcost(d,i).cost}
- S.pendingTC=tot/S.nav;S.totalTC+=tot;S.phase='events';S.hotFactor=null;S.qLog=[];
+ S.pendingTC=tot/S.nav;S.qBn=bnTraded(S.k0,S.k);S.totalTC+=tot;S.phase='events';S.hotFactor=null;S.qLog=[];
  const pv=previewGauge();gauge(pv.lp,pv.rc,`Book validé pour le trimestre — ${pv.why||'sans remarque'}`);
  return tot;
 }
@@ -6410,7 +6415,7 @@ function screenExec(){
  /* l'enjeu réel de chaque option, en monnaie, sur la facture d'ouverture du trimestre */
  /* lot 320 : chaque option dit ce qu'elle change par rapport à l'exécution standard, pour votre société et pour le fonds */
  const stake=c=>{const x=c.e||{};let bill=tot,soc=0,fund=0;const extra=[];
-  if(x.tcMult){let sub=0;if(x.tcMultOn){orders.forEach(o=>{if(x.tcMultOn.includes(INSTR[o.i].sym))sub+=o.t.cost})}else sub=tot;const d=sub*(x.tcMult-1);bill=tot+d;soc-=d}
+  if(x.tcMult){let sub=0;if(x.tcMultOn){orders.forEach(o=>{if(x.tcMultOn.includes(INSTR[o.i].sym))sub+=o.t.cost})}else sub=tot;const d=sub*(x.tcMult-1);bill=tot+d;fund-=d}
   if(x.gainBp)soc+=x.gainBp*1e-4*S.aum0;
   if(x.opex)soc+=x.opex*S.aum0;
   fund+=execImpactAmt(bill,x.tcMult,x.leakQ)-execImpactAmt(tot,1,S.leakQ);
@@ -6422,8 +6427,9 @@ function screenExec(){
  const lqNm=S.liq>1.5?'très dégradée':S.liq>1.2?'dégradée':S.liq>1.05?'un peu tendue':S.liq<0.92?'excellente':'normale';
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>${orders.length?'Les traders passent vos ordres':'Aucun ordre à passer'}</h2><span class="hint">T${S.q+1} · exécution</span></div>
-   ${orders.length?`<p class="note" style="margin:0 0 4px">Exécution standard — deux factures distinctes :</p><div class="kv"><span><b style="color:#fff">Ordres · payés par votre société</b></span><b style="color:#fff;font-size:17px">${cS(tot)}</b></div>
-   <div class="kv"><span>Impact de marché · supporté par le fonds</span>${mn(execImpactAmt(tot,1,S.leakQ))}</div>${pwOn('jk')&&S.pwJK?`<div class="kv"><span>🐣 Tableur de Jean-Kevin : ${S.pwJK<1?'il marche':'il plante'} (${S.pwJK<1?'−':'+'}20 %), compris dans la facture</span>${mn(tot/S.pwJK-tot)}</div>`:''}`
+   ${orders.length?`<p class="note" style="margin:0 0 4px">Exécution standard — qui paie quoi :</p><div class="kv"><span><b style="color:#fff">Fourchette et impact au tarif · payés par le fonds</b></span><b style="color:#fff;font-size:17px">${cS(tot)}</b></div>
+   <div class="kv"><span>Glissement du prix moyen · supporté par le fonds</span>${mn(execImpactAmt(tot,1,S.leakQ))}</div>
+   <div class="kv"><span>Courtage · payé par votre société (${dec(COMB*1e4,1)} pb du notionnel)</span>${cS(COMB*bnTraded(S.k0,S.k))}</div>${pwOn('jk')&&S.pwJK?`<div class="kv"><span>🐣 Tableur de Jean-Kevin : ${S.pwJK<1?'il marche':'il plante'} (${S.pwJK<1?'−':'+'}20 %), compris dans la facture</span>${mn(tot/S.pwJK-tot)}</div>`:''}`
    :`<p class="note" style="margin:0">Aucune position ce trimestre : vous ne payez aucun ordre. Le desk en profite pour vous parler d'autre chose.</p>`}
    ${orders.length?`<details style="margin-top:10px"><summary>Détail des ordres et des coûts</summary>
     <p class="note" style="margin:8px 0 0">${orders.length} marché${orders.length>1?'s':''} à travailler · liquidité ${lqNm} (×${dec(S.liq,2)}) · taux au jour le jour ${dec((S.rate*100),1)} % · trésorerie après paiement ${mm(mgrCash())} · ordres ${(tot/S.nav*1e4).toFixed(0)} pb, impact ${(Math.abs(execImpactAmt(tot,1,S.leakQ))/S.nav*1e4).toFixed(0)} pb de l'encours.</p>
@@ -6437,7 +6443,7 @@ function screenExec(){
  </div>`;
  /* sans anecdote, le fonds paie quand même l'impact d'une exécution standard */
  const done=()=>{S.totalTC+=(S.pendingTC*S.nav)-tot;
-  if(!ev){const im=execImpactAmt(S.pendingTC*S.nav,1,S.leakQ);if(im)execSlip(im,'Impact')}
+  if(!ev){const b0=S.pendingTC*S.nav;execSlip(-b0,'Fourchette et impact');const im=execImpactAmt(b0,1,S.leakQ);if(im)execSlip(im,'Impact')}
   phaseLive()};
  if(ev&&ev.ch)ev.ch.forEach(c=>{delete c.e._hit});
  if(!ev){document.getElementById('go2').onclick=done;return}
@@ -6455,21 +6461,22 @@ function screenExec(){
    e._m=m}
   /* l'impact de marché du trimestre, sur la facture telle qu'elle est après ce choix */
   {const bill=S.pendingTC*S.nav,im=execImpactAmt(bill,e._m||e.tcMult,e.leakQ);
+   execSlip(-bill,'Fourchette et impact');R.billP=bill;
    R.billI=bill;R.im=im;R.im0=execImpactAmt(bill,1,false);
    if(im){execSlip(im,'Impact');msg.push(`Impact de marché sur le prix moyen : ${mn(im)} pour le fonds.`)}}
   if(e.risk){R.rk={p:pAdj(e.risk[0],riskGood(e)),v:e.risk[1],hit:false};if(rng()<R.rk.p){R.rk.hit=true;S.nav*=(1+e.risk[1]);S.qEvM+=e.risk[1]*navB0;msg.push(`${e.riskMsg||'Le marché est parti pendant l\'exécution'} : ${sgn(e.risk[1],1)}.`);e._hit=true}
    else if(e.safePnl){R.rk.safe=e.safePnl;S.nav*=(1+e.safePnl);S.qEvM+=e.safePnl*navB0;e._hit=true;msg.push(e.safeTxt)}}
   if(e.invert){const i=IDX[e.invert];S.k[i]=-S.k[i];msg.push(`Position sur ${e.invert} inversée pour le trimestre.`)}
-  if(e.cap2){for(let i=0;i<N;i++)if(Math.abs(S.k[i])===3){const d=S.k[i]>0?-1:1;const t=tcost(d,i);S.k[i]+=d;S.pendingTC-=t.cost*0.8/S.nav;msg.push(`${INSTR[i].sym} ramené à ${S.k[i]>0?'+':''}${S.k[i]}.`)}}
+  if(e.cap2){for(let i=0;i<N;i++)if(Math.abs(S.k[i])===3){const d=S.k[i]>0?-1:1;const t=tcost(d,i);S.k[i]+=d;billFund(-t.cost*0.8);msg.push(`${INSTR[i].sym} ramené à ${S.k[i]>0?'+':''}${S.k[i]}.`)}}
   if(e.leakQ&&!pwGuard('jo'))S.leakQ=true;
   if(e.poach)motAdd(-MORAL.egard*e.poach,'égards');
   if(e.cash){R.cash=e.cash*S.nav;S.nav*=(1+e.cash);S.qEvM+=e.cash*navB0;msg.push(`Encours du fonds ${sgn(e.cash,1)}.`)}
   if(e.opex){const a=e.opex*S.aum0;R.op=a;S.mgrCosts-=a;refreshGain();msg.push(`${a>=0?'+':'−'}${mm(Math.abs(a))} pour votre société de gestion.`)}   /* lot 222 */
-  if(e.halfOn){const arr=Array.isArray(e.halfOn)?e.halfOn:[e.halfOn];arr.forEach(sy=>{const i=IDX[sy];const nk=Math.trunc(S.k[i]/2);if(nk!==S.k[i]){const t=tcost(nk-S.k[i],i);S.pendingTC-=t.cost*0.7/S.nav;S.k[i]=nk;msg.push(`${sy} ramené à ${nk>0?'+':''}${nk}.`)}})}
-  if(e.cutTop1){const w=weights(S.k),rc=riskContrib(w);const o=rc.map((v,i)=>({v:Math.abs(v),i})).sort((a,b)=>b.v-a.v)[0];if(o&&S.k[o.i]!==0){const d=-Math.sign(S.k[o.i]);const t=tcost(d,o.i);S.k[o.i]+=d;S.pendingTC-=t.cost*0.8/S.nav;msg.push(`${INSTR[o.i].sym} ramené à ${S.k[o.i]>0?'+':''}${S.k[o.i]}.`)}}
+  if(e.halfOn){const arr=Array.isArray(e.halfOn)?e.halfOn:[e.halfOn];arr.forEach(sy=>{const i=IDX[sy];const nk=Math.trunc(S.k[i]/2);if(nk!==S.k[i]){const t=tcost(nk-S.k[i],i);billFund(-t.cost*0.7);S.k[i]=nk;msg.push(`${sy} ramené à ${nk>0?'+':''}${nk}.`)}})}
+  if(e.cutTop1){const w=weights(S.k),rc=riskContrib(w);const o=rc.map((v,i)=>({v:Math.abs(v),i})).sort((a,b)=>b.v-a.v)[0];if(o&&S.k[o.i]!==0){const d=-Math.sign(S.k[o.i]);const t=tcost(d,o.i);S.k[o.i]+=d;billFund(-t.cost*0.8);msg.push(`${INSTR[o.i].sym} ramené à ${S.k[o.i]>0?'+':''}${S.k[o.i]}.`)}}
   if(e.scaleAll){for(let i=0;i<N;i++){const nk=Math.round(S.k[i]*e.scaleAll);if(nk!==S.k[i]){S.k[i]=nk;msg.push(`${INSTR[i].sym} → ${nk>0?'+':''}${nk}.`)}}}
   if(e.randAdd){for(let n=0;n<e.randAdd;n++){const i=Math.floor(rng()*N);const d=rng()<0.5?-1:1;const nk=clampK(i,S.k[i]+d);if(nk!==S.k[i]){S.k[i]=nk;msg.push(`${INSTR[i].sym} → ${nk>0?'+':''}${nk} (position héritée).`)}}}
-  if(e.kAddAbsE){const i=IDX[e.kAddAbsE[0]];const nk=clampK(i,S.k[i]+e.kAddAbsE[1]);if(nk!==S.k[i]){const t=tcost(nk-S.k[i],i);S.pendingTC+=t.cost/S.nav;S.k[i]=nk;msg.push(`${e.kAddAbsE[0]} → ${nk>0?'+':''}${nk} (${mm(t.cost)}).`)}}
+  if(e.kAddAbsE){const i=IDX[e.kAddAbsE[0]];const nk=clampK(i,S.k[i]+e.kAddAbsE[1]);if(nk!==S.k[i]){const t=tcost(nk-S.k[i],i);comAdd(t.bn);billFund(t.cost);S.k[i]=nk;msg.push(`${e.kAddAbsE[0]} → ${nk>0?'+':''}${nk} (${mm(t.cost)}).`)}}
   if(e.risk&&!e._hit)msg.push(e.safeTxt||"Le risque annoncé ne s'est pas produit.");
   const pnl=(S.nav-navB0)/navB0;
   const g=pnl?pnlGauge(pnl,`${ev.who.split(' ·')[0]} — ${ch.b}`):{lp:0,rc:0};
@@ -6482,17 +6489,17 @@ function screenExec(){
   /* le bilan d'exécution était replié dans « Le détail » : c'est précisément ce que le joueur
      doit voir pour sentir le poids de son choix */
   /* lot 241 : bilan en trois blocs, dans l'ordre du choix */
-  const billF=S.pendingTC*S.nav,adj=billF-R.bill0-R.dt,mg=R.g+R.op,netM=-billF+mg;
+  const billF=S.pendingTC*S.nav,adj=billF-R.bill0-R.dt,mg=R.g+R.op,com=COMB*(S.qBn||0),netM=-com+mg;
   const row=(l,v,c)=>[l,`<span class="${c||cls(v)}">${v>=0?'+':'−'}${mm(Math.abs(v))}</span>`];
   const shA=Math.abs(adj)>Math.max(2e-6,0.02*R.bill0);   /* en dessous : arrondi, rattaché à la facture standard */
-  const T1=[row('Exécution standard · facture des ordres',-(shA?R.bill0:billF-R.dt),'neg-g')];
-  if(Math.abs(R.dt)>1e-9)T1.push(row(`Effet de votre choix · coûts ×${dec(R.m,2)}${R.on?' sur '+R.on.join(', '):''}${R.gm?' (pari perdu)':''}`,-R.dt));
-  if(shA)T1.push(row(adj<0?'Positions réduites : ordres en moins':'Positions ajoutées : ordres en plus',-adj));
+  const T1=[row(`Courtage · ${dec(COMB*1e4,1)} pb du notionnel`,-com,'neg-g')];
   if(Math.abs(mg)>1e-9)T1.push(row(R.g?`Effet de votre choix · ${R.g>=0?'rabais ou commission obtenus':'rabais repris'}${R.gm?' (pari perdu)':''}`:(R.op<0?'Effet de votre choix · dépense':'Effet de votre choix · recette'),mg));
   T1.push(['<b>Total pour votre société</b>',`<b class="${cls(netM)}">${netM>=0?'+':'−'}${mm(Math.abs(netM))}</b>`]);
   const im0=R.im0||0,imd=(R.im||0)-im0,rkA=R.rk?(R.rk.hit?R.rk.v*navB0:(R.rk.safe||0)*navB0):0,fT=(S.nav-navB0);
-  const T2=[];
-  if(im0)T2.push(row('Exécution standard · impact de marché',im0));
+  const T2=[row('Exécution standard · fourchette et impact au tarif',-(shA?R.bill0:billF-R.dt),'neg-g')];
+  if(Math.abs(R.dt)>1e-9)T2.push(row(`Effet de votre choix · tarif ×${dec(R.m,2)}${R.on?' sur '+R.on.join(', '):''}${R.gm?' (pari perdu)':''}`,-R.dt));
+  if(shA)T2.push(row(adj<0?'Positions réduites : ordres en moins':'Positions ajoutées : ordres en plus',-adj));
+  if(im0)T2.push(row('Exécution standard · glissement du prix moyen',im0));
   if(Math.abs(imd)>1e-9)T2.push(row(imd<0?'Effet de votre choix · prix moyen dégradé':'Effet de votre choix · prix moyen protégé',imd));
   if(R.rk)T2.push([`Aléa du choix : ${Math.round(R.rk.p*100)} % de chances de ${sgn(R.rk.v,1)}`,R.rk.hit?`<span class="${cls(R.rk.v)}">arrivé · ${R.rk.v>=0?'+':'−'}${mm(Math.abs(rkA))}</span>`:(R.rk.safe?`<span class="${cls(R.rk.safe)}">évité · ${R.rk.safe>=0?'+':'−'}${mm(Math.abs(rkA))}</span>`:'<span class="dim-g">pas arrivé · 0</span>')]);
   if(R.cash)T2.push(row('Effet de votre choix · sur l\'encours',R.cash));
@@ -6646,7 +6653,7 @@ function evPlans(ev,touched){
   return {lp:c,rc,pnl:a}});
  const syms=trades.map(x=>INSTR[x.i].sym).join(', ');
  const fS=!trades.length?(a<0?'Aucun ordre possible sur les marchés touchés (limite de position ou cotation suspendue).':'Déjà au maximum autorisé sur les marchés touchés : aucun ordre possible.')
-  :`${syst?'Dérogation au modèle : ':''}${a>0?'+':'−'}${Math.abs(a)} unité${Math.abs(a)>1?'s':''} ${a>0?'dans le sens du choc':'contre le choc'} sur ${syms}. ${free?`Coût ${nb(mm(cost))} offert par le desk`:cost<0?`Rabais de ${nb(mm(-cost))} pour votre société de gestion : vous fournissez la liquidité que les autres cherchent`:`Coût ${nb(mm(cost))} à votre charge`} · vol ex-ante ${pctc(v0)} → ${pctc(v1)}${S.noAddQ?' · interdit par le comité':''}.`;
+  :`${syst?'Dérogation au modèle : ':''}${a>0?'+':'−'}${Math.abs(a)} unité${Math.abs(a)>1?'s':''} ${a>0?'dans le sens du choc':'contre le choc'} sur ${syms}. ${free?`Coût ${nb(mm(cost))} offert par le desk`:cost<0?`Rabais de ${nb(mm(-cost))} pour le fonds : vous fournissez la liquidité que les autres cherchent`:`Coût ${nb(mm(cost))} pour le fonds`} · vol ex-ante ${pctc(v0)} → ${pctc(v1)}${S.noAddQ?' · interdit par le comité':''}.`;
   const AID={2:'follow',1:'half','-1':'chalf','-2':'contra'},ALAB={2:'Renforcer au maximum',1:'Renforcer à moitié','-1':'Contrer à moitié','-2':'Contrer au maximum'};
  return {a:AID[a],n:a,b:ALAB[a],s:fS,t,kE,trades,cost:costP,costRaw:cost,free,pay:payF,gz:gzF,fixRc,v0,v1};
  };
@@ -6675,8 +6682,8 @@ function resolveEvent(ev,touched,o,imm,navB){
  const k0=[...S.k];
  const acted=o.trades.length>0;
  if(acted){S.k=[...o.t];if(o.free)S.freeAdjUsed=true}
- const cost=o.cost;
- S.pendingTC+=cost/S.nav;S.totalTC+=cost;
+ const cost=o.cost;comAdd(bnTraded(k0,S.k));
+ billFund(cost);S.totalTC+=cost;
  const wE=weights(o.kE);let resid=0;const perM=[];
  touched.forEach(i=>{const m=ev.hit[INSTR[i].sym]*INSTR[i].sigQ*mult;const pi=wE[i]*m;resid+=pi;
    perM.push([INSTR[i].sym,`${k0[i]>0?'+':''}${k0[i]} → ${S.k[i]>0?'+':''}${S.k[i]}`,`${sgn(m,1)}`,pi])});
@@ -6741,15 +6748,15 @@ function screenRivalEvent(e){
   <div class="evsel">${[['fade','−','contrer'],['dhalf','−½','contrer'],['none','0','rien'],['fhalf','+½','suivre'],['follow','+','suivre']].map(([a,l,c])=>{const off=a!=='none'&&RT[a]===S.k[i];
     return `<button class="evstep rvstep ${a==='follow'||a==='fhalf'?'up':a==='none'?'zr':'dn'}${a==='none'?' on':''}" data-a="${a}"${off?' disabled':''}><b>${l}</b><small>${c}</small></button>`}).join('')}</div>
   <button class="cta" id="rvok" style="margin-top:10px">Valider</button></div>`;
- const RP={follow:`<b>Suivre ${rv.boss} : passer ${x.sym} à ${nk>0?'+':''}${nk}</b><span>Coût ${mm(tcost(nk-S.k[i],i).cost*urgM(1.5,i)*S.tcMultQ)}, à votre charge, dans un marché qui a déjà bougé. La suite du mouvement vaut en moyenne un tiers de ce qui a été fait, avec beaucoup de bruit. Si ça continue, la presse parle d'un rattrapage ; sinon, d'un gérant qui court après les autres.${bkD(S.k.map((v,m)=>m===i?nk:v),0,false)}</span>`,
-  fhalf:`<b>Suivre à moitié : ${x.sym} à ${hF>0?'+':''}${hF}</b><span>Coût ${mm(tcost(hF-S.k[i],i).cost*urgM(1.5,i)*S.tcMultQ)}, à votre charge. La moitié du pari, la moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hF:v),0,false)}</span>`,
+ const RP={follow:`<b>Suivre ${rv.boss} : passer ${x.sym} à ${nk>0?'+':''}${nk}</b><span>Coût ${mm(tcost(nk-S.k[i],i).cost*urgM(1.5,i)*S.tcMultQ)} pour le fonds, dans un marché qui a déjà bougé. La suite du mouvement vaut en moyenne un tiers de ce qui a été fait, avec beaucoup de bruit. Si ça continue, la presse parle d'un rattrapage ; sinon, d'un gérant qui court après les autres.${bkD(S.k.map((v,m)=>m===i?nk:v),0,false)}</span>`,
+  fhalf:`<b>Suivre à moitié : ${x.sym} à ${hF>0?'+':''}${hF}</b><span>Coût ${mm(tcost(hF-S.k[i],i).cost*urgM(1.5,i)*S.tcMultQ)} pour le fonds. La moitié du pari, la moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hF:v),0,false)}</span>`,
   none:`<b>Ne pas répondre à la presse</b><span>Vous ne changez rien. Confiance −1,5 de plus : vos investisseurs voulaient une réaction.</span>`,
   dhalf:`<b>Contrer à moitié : ${x.sym} à ${hD>0?'+':''}${hD}</b><span>Vous pariez, sans tout miser, que ${rv.boss} a tort de rester. Coût ${mm(tcost(hD-S.k[i],i).cost*urgM(1.5,i)*S.tcMultQ)}. La moitié de l'écho dans la presse.${bkD(S.k.map((v,m)=>m===i?hD:v),0,false)}</span>`,
   fade:`<b>Prendre le contre-pied : ${x.sym} à ${(-nk)>0?'+':''}${-nk}</b><span>Vous pariez que ${rv.boss} a tort de rester. Coût ${mm(tcost(-nk-S.k[i],i).cost*urgM(1.5,i)*S.tcMultQ)}, même bruit, gloire ou ridicule.${bkD(S.k.map((v,m)=>m===i?-nk:v),0,false)}</span>`};
  const pickR=a=>{clearTimer();const navB=S.nav;let msg=[],cost=0,pnl=0;
   if(a==='none'){const g=gauge(-1.5,0,"Silence face à la presse");S.evLog.push({t:t1,pnl:0,m:0,lp:g0.lp+g.lp,rc:g0.rc+g.rc});
     resultCard(`RIVALITÉ · ${rv.nm.toUpperCase()}`,"Vous laissez dire",[`${rv.boss} a eu ses colonnes. Vous gardez votre book.`],[['Confiance',`<span class="${cls(gcf(g0,g))}">${sd1(gcf(g0,g))}</span>`]],"Continuer le trimestre",stepEvents);return}
-  const dA=(a==='follow'||a==='fhalf')?'follow':'fade',hs=(a==='fhalf'||a==='dhalf')?0.5:1,target=RT[a];   /* lot 208 */const tt=tcost(target-S.k[i],i);cost=tt.cost*urgM(1.5,i)*S.tcMultQ;S.k[i]=target;S.pendingTC+=cost/S.nav;S.totalTC+=cost;
+  const dA=(a==='follow'||a==='fhalf')?'follow':'fade',hs=(a==='fhalf'||a==='dhalf')?0.5:1,target=RT[a];   /* lot 208 */const tt=tcost(target-S.k[i],i);cost=tt.cost*urgM(1.5,i)*S.tcMultQ;comAdd(tt.bn);S.k[i]=target;billFund(cost);S.totalTC+=cost;
   const resid=r*(0.17+0.45*gauss());const w=weights(S.k);pnl=w[i]*resid;
   S.nav*=(1+pnl);S.qEvM+=pnl*navB;
   const total=pnl;   /* lot 59 : coût payé par le gérant seul */
@@ -6783,7 +6790,7 @@ function screenTraderEvent(ev,next){
     return `<button class="choice" data-i="${i}"${ko?' disabled':''}><b>${c.b}</b><span>${fxTxt(c.s,c.e)}${opxChip(c.e)}${winChip(c.e)}${bkPrev(c.e,'mid')}${ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`}).join('')}</div>`;
  const pickCh=idx=>{clearTimer();
   const ch=ev.ch[idx],e=ch.e;const msg=[];let pnl=0,cost=0;const navB=S.nav;
-  const setK=(i,nk)=>{nk=clampK(i,nk);if(nk!==S.k[i]){const t=tcost(nk-S.k[i],i);const c=t.cost*S.tcMultQ;S.pendingTC+=c/S.nav;S.totalTC+=c;cost+=c;S.k[i]=nk;
+  const setK=(i,nk)=>{nk=clampK(i,nk);if(nk!==S.k[i]){const t=tcost(nk-S.k[i],i);const c=t.cost*S.tcMultQ;comAdd(t.bn);billFund(c);S.totalTC+=c;cost+=c;S.k[i]=nk;
    /* exécuter au tarif hérité du trimestre (fuite, bloc, urgence) dégrade aussi le prix */
    const sl=execImpactAmt(c,S.tcMultQ,S.leakQ);
    if(sl){execSlip(sl,'Impact');msg.push(`${INSTR[i].sym} passe à ${nk>0?'+':''}${nk} (${mm(c)} de coûts, ${mn(sl)} d'impact).`)}
@@ -6827,8 +6834,8 @@ function screenTraderEvent(ev,next){
   if(e.cutTop2){const w=weights(S.k),rc=riskContrib(w);rc.map((v,i)=>({v:Math.abs(v),i})).sort((a,b)=>b.v-a.v).slice(0,2).forEach(o=>{if(S.k[o.i]!==0)setK(o.i,S.k[o.i]-Math.sign(S.k[o.i]))})}
   if(e.risk){if(rng()<pAdj(e.risk[0],riskGood(e))){pnl+=e.risk[1];if(e.riskRc||e.riskLp)gauge(e.riskLp||0,e.riskRc||0,e.riskMsg||'Incident');if(e.leakQ&&!pwGuard('jo'))S.leakQ=true;msg.push(`${e.riskMsg||'Mauvaise surprise'} : ${sgn(e.risk[1],1)}.`)}else msg.push(e.safeTxt||"Tout s'est bien passé.")}
   if(e.tcMultQ)S.tcMultQ=e.tcMultQ;
-  let tcD=0;if(e.tcMult&&!e.tcMultQ){const b=(S.pendingTC||0)*S.nav;tcD=b*(e.tcMult-1);S.pendingTC+=tcD/S.nav;S.totalTC+=tcD;S.tcMultQ*=e.tcMult;
-   msg.push(`Coûts d'exécution du trimestre ${e.tcMult>1?'+':'−'}${Math.round(Math.abs(e.tcMult-1)*100)} % : ${tcD>=0?'+':'−'}${mm(Math.abs(tcD))} sur la facture d'ordres (${mm(b)}), payés par votre société de gestion ; les ajustements à venir suivent le même tarif.`)}
+  let tcD=0;if(e.tcMult&&!e.tcMultQ){const b=(S.pendingTC||0)*S.nav;tcD=b*(e.tcMult-1);billFund(tcD);S.totalTC+=tcD;S.tcMultQ*=e.tcMult;
+   msg.push(`Coûts d'exécution du trimestre ${e.tcMult>1?'+':'−'}${Math.round(Math.abs(e.tcMult-1)*100)} % : ${tcD>=0?'+':'−'}${mm(Math.abs(tcD))} sur la facture d'ordres (${mm(b)}), payés par le fonds ; les ajustements à venir suivent le même tarif.`)}
   if(e.cash){pnl+=e.cash;msg.push(`Encours du fonds ${sgn(e.cash,1)} (${(e.cash*1e4).toFixed(0)} pb).`)}
   if(e.opex){const a=e.opex*S.aum0;S.mgrCosts-=a;refreshGain();msg.push(`${a>=0?'+':'−'}${mm(Math.abs(a))} pour votre société de gestion.`)}   /* lot 222 */
   if(e.noise)S.noise=true;
@@ -6840,7 +6847,7 @@ function screenTraderEvent(ev,next){
   S.evLog.push({t:ev.t,pnl:total,m:total*navB,lp:g.lp+g2.lp,rc:g.rc+g2.rc});
   resultCard(`LE DESK · ${ev.who.split(' ·')[0].toUpperCase()}`,ch.b,ev.after?[ev.after,...msg]:(msg.length?msg:['']),
    [],
-   next===stepEvents?"Continuer le trimestre":"Aller sur le desk",next,{key:[['<b>Résultat</b>',`<span class="${cls(total)}">${sgn(total,1)} · ${mn(total*navB)}</span>`],...(tcD?[["Coûts d'exécution · société",`<span class="${cls(-tcD)}">${mn(-tcD)}</span>`]]:[]),['Confiance',`<span class="${cls(gcf(g,g2))}">${sd1(gcf(g,g2))}</span>`]]});
+   next===stepEvents?"Continuer le trimestre":"Aller sur le desk",next,{key:[['<b>Résultat</b>',`<span class="${cls(total)}">${sgn(total,1)} · ${mn(total*navB)}</span>`],...(tcD?[["Coûts d'exécution · fonds",`<span class="${cls(-tcD)}">${mn(-tcD)}</span>`]]:[]),['Confiance',`<span class="${cls(gcf(g,g2))}">${sd1(gcf(g,g2))}</span>`]]});
  };
  app.querySelectorAll('.choice').forEach(b=>b.onclick=()=>pickCh(+b.dataset.i));
  armTimer(()=>pickCh(ev.ch.length-1));
@@ -6977,20 +6984,20 @@ function mgPlan(){const nav=S.nav,mgu=marginPct(S.k),req=mgu*nav,tg=MGC.back;
  const f=Math.max(0.05,Math.min(0.9,1-tg/mgu)),k2=S.k.map(v=>Math.trunc(v*(1-f)));let c2=0;for(let i=0;i<N;i++){const d=k2[i]-S.k[i];if(d)c2+=tcost(d,i).cost*urgF(MGC.crisis,i)}
  return {mgu,inj,k1:k,c1,k2,c2,f}}
 function screenStopQ(){S.stopQn=S.q;const r=liveRet(),ls=limStop(),k1=S.k.map(v=>Math.trunc(v/2));let c=0;for(let i=0;i<N;i++){const d=k1[i]-S.k[i];if(d)c+=tcost(d,i).cost*urgF(1.3,i)}
- const O=[{id:'cut',b:"Couper le book de moitié",s:`Ordres au tarif d'urgence : ${mm(c)} à votre charge. Pas de carton.`},
+ const O=[{id:'cut',b:"Couper le book de moitié",s:`Ordres au tarif d'urgence : ${mm(c)} pour le fonds. Pas de carton.`},
   {id:'keep',b:"Passer outre",s:"Le book reste en place ; le comité consigne un carton jaune à la clôture."}];
  app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard bad">${evHead('Comité des risques · stop trimestriel','risk')}<h3>Trimestre à ${sgnp(r,1)} : le stop de −${dec(ls*100,1)} % est franchi</h3>
   <p>La limite est écrite dans votre mandat. Le comité demande de réduire le book de moitié avant la prochaine séance ; dans les deux cas, plus aucun renforcement sur les dépêches ce trimestre.</p>${evTimerHTML}</div>
   <div class="choices" style="margin-top:12px">${O.map((o,i)=>`<button class="choice" data-m="${i}"><b>${o.b}</b><span>${o.s}${i===0?bkD(k1,0,false):''}</span></button>`).join('')}</div></div>`;
  const go=i=>{clearTimer();const o=O[i];
-  if(o.id==='cut'){const r0=liveRet();S.k=k1;const r1=liveRet();S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0;S.pendingTC+=c/S.nav;S.totalTC+=c;S.stopCut=S.q}else S.stopY=S.q;
+  if(o.id==='cut'){const r0=liveRet();comAdd(bnTraded(S.k,k1));S.k=k1;const r1=liveRet();S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0;billFund(c);S.totalTC+=c;S.stopCut=S.q}else S.stopY=S.q;
   S.noAddQ=true;S.stops=(S.stops||0)+1;S.evLog.push({t:'Stop trimestriel du comité',pnl:0,m:0,lp:0,rc:0});refreshGain();stepEvents()};
  app.querySelectorAll('.choice[data-m]').forEach(b=>b.onclick=()=>go(+b.dataset.m));
  armTimer(()=>go(0),'sans réponse : le desk coupe la moitié')}
 function screenMarginCall(){const P=mgPlan(),cash=mgrCash(),nav=S.nav;
  const O=[{id:'inj',b:"Apporter des fonds propres",s:`La société de gestion verse ${mm(P.inj)} dans le fonds, bloqués avec votre co-investissement jusqu'à la clôture. Le book ne bouge pas.`,c:-1,ko:P.inj>cash},
-  {id:'cut',b:"Couper vous-même",s:`Vous retirez les lignes les plus gourmandes en marge, au tarif d'urgence : ${mm(P.c1)} à votre charge.`,c:-2,k:P.k1,tc:P.c1},
-  {id:'pb',b:"Laisser le prime broker liquider",s:`Il coupe ${Math.round(P.f*100)} % de chaque ligne au pire prix : ${mm(P.c2)} à votre charge.`,c:-5,k:P.k2,tc:P.c2}];
+  {id:'cut',b:"Couper vous-même",s:`Vous retirez les lignes les plus gourmandes en marge, au tarif d'urgence : ${mm(P.c1)} pour le fonds.`,c:-2,k:P.k1,tc:P.c1},
+  {id:'pb',b:"Laisser le prime broker liquider",s:`Il coupe ${Math.round(P.f*100)} % de chaque ligne au pire prix : ${mm(P.c2)} pour le fonds.`,c:-5,k:P.k2,tc:P.c2}];
  {const oc=PW.find(x=>x.id==='oc');if(oc&&pwAvail(oc))O.unshift({id:'oc',b:"💱 Octave appelle le prime broker",s:"Il obtient un délai jusqu'à la clôture : rien n'est coupé, et plus d'appel ce trimestre. Compté pour l'année.",c:0})}
  app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard bad">${evHead('Prime broker · appel de marge','risk')}<h3>Marge utilisée ${Math.round(P.mgu*100)} % : au-delà du seuil de ${Math.round(MGC.thr*100)} %</h3>
   <p>Le prime broker recalcule vos exigences après chaque mouvement. Il faut revenir à ${Math.round(MGC.back*100)} % de l'encours avant la prochaine séance.</p>${evTimerHTML}</div>
@@ -6998,7 +7005,7 @@ function screenMarginCall(){const P=mgPlan(),cash=mgrCash(),nav=S.nav;
  const go=i=>{clearTimer();const o=O[i];
   if(o.id==='oc'){(S.pwLast=S.pwLast||{}).oc=S.q;S.ocGrace=S.q}
   else if(o.id==='inj'){const x=P.inj;S.nav+=x;S.navQ0+=x;S.coinvBase=(S.coinvBase||0)+x;S.coinvIn=(S.coinvIn||0)+x;S.coinvLock=(S.coinvLock||0)+x;S.mgInj=(S.mgInj||0)+x}
-  else{const r0=liveRet();S.k=o.k;const r1=liveRet();S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0;S.pendingTC+=o.tc/S.nav;S.totalTC+=o.tc}
+  else{const r0=liveRet();comAdd(bnTraded(S.k,o.k));S.k=o.k;const r1=liveRet();S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0;billFund(o.tc);S.totalTC+=o.tc}
   if(o.id!=='oc'&&marginPct(S.k)>MGC.thr){const r0=liveRet();S.k=S.k.map(()=>0);const r1=liveRet();S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0;toast('Marge toujours au-delà du seuil : le prime broker solde le book.')}   /* lot 104 */
   S.marginCalls=(S.marginCalls||0)+1;S.everMarginCall=1;
   const g=gauge(o.c,0,`Appel de marge : ${o.b.toLowerCase()}`);S.evLog.push({t:'Appel de marge',pnl:0,m:0,lp:g.lp,rc:g.rc});
@@ -7060,8 +7067,8 @@ function resolveQuarter(){
    else if(mgTrough>MGC.thr){
     const f=Math.max(0.05,Math.min(MGC.cut,1-MGC.thr/mgTrough));
     let liq=0;
-    for(let i=0;i<N;i++){const d=-S.k[i]*f;if(Math.abs(d)>1e-9){const t=tcost(d,i);liq+=t.cost*MGC.crisis}}
-    S.pendingTC+=liq/S.nav;
+    for(let i=0;i<N;i++){const d=-S.k[i]*f;if(Math.abs(d)>1e-9){const t=tcost(d,i);liq+=t.cost*MGC.crisis;comAdd(t.bn)}}
+    billFund(liq,'Liquidation');
     gross+=f*(trough-gross);                   /* la part liquidée réalise le creux, pas la clôture */
     S.k=S.k.map(v=>Math.round(v*(1-f)));
     S.marginCall={f,mgu,mgTrough,trough,cost:liq};S.everMarginCall=1;
@@ -7076,11 +7083,11 @@ function resolveQuarter(){
   S.colRes={nm:redOn('collat')?'Collatéral renforcé':cO.nm,lock:redOn('collat'),x:collTot/bN-S.rate/4,hit:cHit,l:cO.l,p:cPe,ext:!!S.stressQ,m:collTot-S.rate/4*bN,
    sur:collTot-S.rate/4*bN+loss,loss,show:redOn('collat')||cO.id!=='tres'}}
  const ops=S.budBp*1e-4;
- const tc=S.pendingTC;S.pendingTC=0;      /* à la charge du gérant, plus à celle du fonds */
+ S.pendingTC=0;      /* lot 348 : la facture a été payée par le fonds au fil du trimestre ; le gérant paie le courtage */
  /* lot 322 : la protection est aussi un put sur le book, payé à la clôture au-delà de −3 % */
  S.hgPutQ=null;if(S.hedgeQ===S.q){const qp=Math.max(1e-9,S.navQ0),rp=(gross*qp+collateral*S.nav+(S.qColM||0)+(S.qEvM||0)+(S.qIncM||0)-(S.qMgmtM||0))/qp;
   if(rp<-PUTK){const pay=hH()*(-rp-PUTK)*qp;S.nav+=pay;S.qEvM=(S.qEvM||0)+pay;S.hgGot=(S.hgGot||0)+pay;S.hgPayQ=S.q;S.hgPutQ={m:pay,r:rp};S.evLog.push({t:'Protection : put sur le book',pnl:pay/qp,m:pay,lp:0,rc:0})}}
- const navBefore=S.nav;
+ const navBefore=S.nav,tc=(S.qBn||0)*COMB/Math.max(1e-12,navBefore);
  const nb=S.nav,q0=Math.max(1e-9,S.navQ0);
  const mgmtM=S.qMgmtM||0;                 /* déjà prélevée à l'ouverture du trimestre */
  const grQ=(gross*q0+collateral*nb+(S.qColM||0)+(S.qEvM||0)+(S.qIncM||0)-mgmtM)/q0;   /* lot 321 */
@@ -7633,7 +7640,7 @@ function screenDebrief(o){
  const Gq=S.mgrQ,bon=S.qGoal&&S.qGoal.ok?(S.qGoal.bonus||0):0,netQ=mgrCash()-(S.tresQ0!==undefined?S.tresQ0:0);
  const cz=[...S.gLog.filter(g=>g.lp).map(g=>[g.why,g.lp]),...S.lpD.filter(x=>x[0]!=='Plafonnement')].sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,3);
  const lpQ0=S.lpQ0!==undefined?S.lpQ0:S.lp,rkE=1+S.rivals.filter(r=>!r.closed&&r.cum>S.idx).length;
- const gpart=[['commissions',Gq.fees-bon],["bonus d'objectif",bon],['co-investissement '+Math.round((Gq.cp||COINV)*100)+' %',Gq.coinv||0],['restitution',-(Gq.claw||0)],['budget',-Gq.ops],["bonus d'équipe",-(S.qBonT||0)],['exécution',-(Gq.tc||0)]].filter(x=>Math.abs(x[1])>1e-9);
+ const gpart=[['commissions',Gq.fees-bon],["bonus d'objectif",bon],['co-investissement '+Math.round((Gq.cp||COINV)*100)+' %',Gq.coinv||0],['restitution',-(Gq.claw||0)],['budget',-Gq.ops],["bonus d'équipe",-(S.qBonT||0)],['courtage',-(Gq.tc||0)]].filter(x=>Math.abs(x[1])>1e-9);
  const ess=`<div class="block ess"><div class="blockhead"><h2>L'essentiel</h2><span class="hint">trimestre ${S.q}/${QT()}</span></div>
   <div class="attr"><span class="an">Le fonds</span><span class="av"><b class="${cls(o.qTotal)}">${sgn(o.qTotal,1)}</b> · ${rkE}<sup>${rkE===1?'er':'e'}</sup>/4 · encours ${moneyB(S.nav)}</span></div>
   ${Math.abs(o.P.flowM)>1e-9?`<div class="attr"><span class="an">${o.P.flowM>=0?'Souscriptions':'Rachats'}</span><span class="av">${inU(o.P.flowM,UQ)}</span></div>`:''}
@@ -7657,7 +7664,7 @@ function screenDebrief(o){
  </div>`;
  const tresSel=`<div class="block ess"><div class="blockhead"><h2>Trésorerie du gérant</h2><span class="hint">trimestre ${S.q}/${QT()}</span></div>
   <div class="attr" style="margin-top:10px"><span class="an" style="color:var(--txt)">Votre gain du trimestre</span><span class="av">${inU(netQ,UG)}</span></div>
-  ${(()=>{const T0=S.tresQ0!==undefined?S.tresQ0:0,T1=mgrCash(),it=[['Commission de gestion',Gq.mgmt||0],['Commission de performance',Gq.perf||0],["Bonus d'objectif",bon],[Gq.cb?`Co-investissement (${Math.round((Gq.cp||0)*100)} % · ${mm(Gq.cb)} placés)`:'Co-investissement',Gq.coinv||0],["Budget d'exploitation",-(Gq.ops||0)],["Bonus d'équipe versé à l'ouverture",-(S.qBonT||0)],["Coûts d'exécution",-(Gq.tc||0)]];
+  ${(()=>{const T0=S.tresQ0!==undefined?S.tresQ0:0,T1=mgrCash(),it=[['Commission de gestion',Gq.mgmt||0],['Commission de performance',Gq.perf||0],["Bonus d'objectif",bon],[Gq.cb?`Co-investissement (${Math.round((Gq.cp||0)*100)} % · ${mm(Gq.cb)} placés)`:'Co-investissement',Gq.coinv||0],["Budget d'exploitation",-(Gq.ops||0)],["Bonus d'équipe versé à l'ouverture",-(S.qBonT||0)],["Courtage de vos ordres",-(Gq.tc||0)]];
    const oth=T1-T0-it.reduce((a,x)=>a+x[1],0);if(Math.abs(oth)>1e-7)it.push(['Autres (accidents, incidents, desk payés par vous)',oth]);
    return `<table class="qt" style="margin-top:12px"><thead><tr><th style="text-align:left">Trésorerie</th><th>M$</th></tr></thead><tbody>
     <tr><td style="text-align:left">Début du trimestre</td><td>${mm(T0)}</td></tr>
@@ -7700,7 +7707,7 @@ function screenDebrief(o){
    <div class="attr"><span class="an" style="color:var(--txt)">Résultat du trimestre</span><span class="av">${inU(o.P.perfM,UQ)}</span></div>
    <div class="attr"><span class="an">Souscriptions et rachats</span><span class="av ${Math.abs(o.P.flowM)>1e-9?cls(o.P.flowM):''}">${Math.abs(o.P.flowM)>1e-9?inU(o.P.flowM,UQ):'aucun mouvement'}</span></div>
    ${S.poachMsg?`<div class="note" style="margin:4px 0 8px">${S.poachMsg}</div>`:''}<div class="attr"><span class="an">Encours en fin de trimestre</span><span class="av"><b>${moneyB(S.nav)}</b></span></div>
-   <details style="margin-top:8px"><summary>Détails</summary><p class="note">La facture de courtage du trimestre (${mm(-o.P.tcM)}) n'apparaît pas ici : elle est à votre charge, pas à celle du fonds. L'impact de marché de vos ordres, lui, est compté plus haut, avec les dépêches et le desk. Encours de début de trimestre : ${moneyB(o.q0)}. Les dépêches, interactions et incidents ont été comptabilisés au fil du trimestre ; les positions, le collatéral et les frais le sont à la clôture. Les souscriptions et rachats sont des mouvements de capital : ils changent l'encours sans compter dans la performance.</p></details></details>
+   <details style="margin-top:8px"><summary>Détails</summary><p class="note">Le courtage du trimestre (${mm(-o.P.tcM)}) n'apparaît pas ici : il est à votre charge, pas à celle du fonds. La fourchette, l'impact et le glissement de vos ordres, eux, sont payés par le fonds et comptés plus haut, avec les dépêches et le desk. Encours de début de trimestre : ${moneyB(o.q0)}. Les dépêches, interactions et incidents ont été comptabilisés au fil du trimestre ; les positions, le collatéral et les frais le sont à la clôture. Les souscriptions et rachats sont des mouvements de capital : ils changent l'encours sans compter dans la performance.</p></details></details>
   </div>
   <div class="block"><details><summary style="font-size:15px;color:var(--txt);font-weight:600">Ce qu'on en dit · investisseurs, comité, presse</summary>
    <div class="wire"><div class="kicker" style="margin-bottom:4px">LES INVESTISSEURS</div><p style="margin:0;color:var(--dim);font-size:13.5px">${V.inv}</p>
