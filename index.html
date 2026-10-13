@@ -3071,7 +3071,7 @@ function brake(A){return Math.pow(Math.max(1,(A===undefined?S.nav:A)/BRK0),BRK)}
    le contrer (la fournir) ×1,5 ; extrême (les deux familles) : ×4 et ×2. Un trader sur la classe réduit le surcoût d'un tiers.
    lot 261 : contrer ×1 (dépêche) et ×1,5 (extrême) ; le trader multiplie le coût par 2/3 (contrer une dépêche : ×0,67). */
 const URG={ev:{f:2.5,c:1},x:{f:4,c:1.5},tail:3};
-function urgM(m,i){if(pwOn('bo')&&INSTR[i].grp==='Devises'&&m>1)m=1+(m-1)/3;return covered(INSTR[i].grp)?m*2/3:m}   /* lot 268 : Boris */
+function urgM(m,i){return covered(INSTR[i].grp)?m*2/3:m}   /* lot 268 : Boris */
 /* lot 262 : à contre-sens, on fournit la liquidité et le marché cède une décote, croissante avec la taille de l'ordre :
    k × √(unités) pb du notionnel, plafonnée — dépêche 2,5 pb (6 pb au plus), extrême 15 pb (40 pb au plus). Les coûts
    normaux sont de 2 à 4 pb du notionnel : un gros ordre à contre-sens dans un extrême coûte moins que rien. */
@@ -3094,7 +3094,6 @@ function tcost(dk,i){
  if(!covered(x.grp))m*=NOTRD;   /* lot 92 : sans trader, le courtier */   /* lot 70 : recrues gardées jusqu'à la fin, ÷2 sur leur classe (sans cumul) */
  bp*=m;
  const cost=bn*bp*1e-4,spr=Math.min(cost,bn*x.s*TCK*m*brake()*1e-4);
- if(pwOn('dw')&&x.grp==='Actions')return {cost:spr,bp:spr/bn*1e4,bn,spr,imp:0};   /* lot 268 : Dwight, sans impact */
  return {cost,bp,bn,spr,imp:cost-spr};
 }
 /* Fin de partie : l'encours sous 5 % de son niveau de départ (−95 %). */
@@ -5259,10 +5258,10 @@ function screenPlay(){
    Pouvoirs d'information (Ingrid, Tuco) : joués à la lecture, après confirmation. Gontran se joue sur l'écran de l'incident. */
 const PW=[
  {id:'jk',fo:0,ic:'🐣',nm:'Jean-Kevin',t:"Le tableur à couleurs",d:"Il « optimise » vos ordres du trimestre : −20 % sur tous les coûts si le tableur marche, +20 % s'il plante. Le verdict tombe à l'exécution. Disponible chaque trimestre ; il apprend : 50 % de réussite au premier appel, 5 points de plus à chaque fois, jusqu'à 90 %."},
- {id:'dw',fo:1,ic:'📞',nm:'Dwight',t:"Un bloc à la voix",d:"Vos ordres sur les actions passent sans impact de marché tout le trimestre : seule la fourchette est due."},
- {id:'ig',fo:2,ic:'🏦',nm:'Ingrid',info:1,t:"Lire l'adjudication",d:"Elle vous dit dans quel sens finira le marché de taux le plus parlant ce trimestre. Juste quatre fois sur cinq."},
- {id:'bo',fo:3,ic:'🤖',nm:'Boris',t:"L'algorithme en urgence",d:"Surcoût d'urgence divisé par trois sur les devises ce trimestre (dépêches, extrêmes, rivalités)."},
- {id:'tu',fo:4,ic:'🛢️',nm:'Tuco',info:1,t:"Les cuves de Rotterdam",d:"Il vous dit dans quel sens finira la matière première la plus parlante ce trimestre. Juste 85 fois sur 100 : les cuves ne mentent pas."},
+ {id:'dw',fo:1,ic:'📞',nm:'Dwight',info:1,t:"Le carnet de Wall Street",d:"Il vous dit dans quel sens finira le marché d'actions le plus parlant ce trimestre. Juste neuf fois sur dix : il connaît tous les vendeurs de la place."},
+ {id:'ig',fo:2,ic:'🏦',nm:'Ingrid',info:1,t:"Lire l'adjudication",d:"Elle vous dit dans quel sens finira le marché de taux le plus parlant ce trimestre. Juste neuf fois sur dix."},
+ {id:'bo',fo:3,ic:'🤖',nm:'Boris',info:1,t:"Le modèle de change",d:"Il vous dit dans quel sens finira la devise la plus parlante ce trimestre. Juste neuf fois sur dix : son modèle a vu passer les flux."},
+ {id:'tu',fo:4,ic:'🛢️',nm:'Tuco',info:1,t:"Les cuves de Rotterdam",d:"Il vous dit dans quel sens finira la matière première la plus parlante ce trimestre. Juste neuf fois sur dix : les cuves ne mentent pas."},
  {id:'wi',fo:5,ic:'🐉',nm:'Winnie',t:"Hong Kong d'abord",d:"Sur les dépêches qui touchent l'Asie ou les exotiques, vous captez 100 % du mouvement ce trimestre : elle a exécuté avant l'ouverture européenne."},
  {id:'ma',fo:6,ic:'📿',nm:'Sœur Marie-Alpha',t:"Le rééquilibrage béni",d:"Elle recale votre book sur le risque de croisière (deux tiers de la limite du comité), ligne par ligne, et les ordres du début de trimestre coûtent 40 % de moins."},
  {id:'on',fo:7,ic:'🎓',nm:'Onésime',t:"Un plateau télé",d:"Confiance des investisseurs +8. Mais il parle trop : vos grosses lignes fuitent ce trimestre (coûts ×1,45), sauf si Josiane veille."},
@@ -5449,11 +5448,12 @@ function pwBack(id){const l=S.pwLast&&S.pwLast[id];return l==null?0:l+(id==='jk'
 function jkP(){return Math.min(0.90,0.50+0.05*(S.pwJKn||0))}   /* trimestre où le pouvoir revient */
 function pwAvail(o){if(!pwHere(o))return false;if(o.id==='mi')return !S.pwMi;return S.q>=pwBack(o.id)}
 function pwOk(o){return pwOn(o.id)?!o.info&&S.phase==='book':pwAvail(o)&&!o.inc}
+const PWTIP={ig:'Taux',tu:'Matières premières',dw:'Actions',bo:'Devises'};   /* lot 330 : quatre tuyaux à 90 % */
 function pwTip(cls,rel,who){const c=[];for(let i=0;i<N;i++)if(mktOpen(i)&&INSTR[i].grp===cls)c.push(i);if(!c.length)return null;
  const i=c.sort((a,b)=>Math.abs(expRet(b).m)-Math.abs(expRet(a).m))[0],u=prng32(hash32('pw'+who+S.q,S.seed))(),up=(S.rBase[i]>0)===(u<rel);return {who,sym:INSTR[i].sym,nm:INSTR[i].nm,up}}
 function pwUse(id){const o=PW.find(x=>x.id===id);if(!o||!pwOk(o))return;S.pw=S.pw||{};S.pwLast=S.pwLast||{};
  if(o.info){if(S.pwConf!==id){S.pwConf=id;pwDraw();return}S.pwConf=null;S.pw[id]=S.q;S.pwLast[id]=S.q;
-  const t=pwTip(id==='ig'?'Taux':'Matières premières',id==='ig'?0.80:0.85,o.nm);if(t)(S.pwTips=S.pwTips||[]).push(Object.assign(t,{q:S.q}));
+  const t=pwTip(PWTIP[id],0.90,o.nm);if(t)(S.pwTips=S.pwTips||[]).push(Object.assign(t,{q:S.q}));
   toast(`${o.ic} <b>${o.nm}</b> · ${t?`${t.nm} finira le trimestre en ${t.up?'hausse':'baisse'}`:'rien à dire ce trimestre'}. Compté pour l'année.`);pwDraw();return}
  if(pwOn(id)){delete S.pw[id];if(id==='ma'&&S.pwMaK){S.k=S.pwMaK;S.pwMaK=null;drawRows();renderRisk();refreshSend();refreshGain()}toast(`${o.ic} <b>${o.nm}</b> · désarmé.`)}
  else{S.pw[id]=S.q;if(id==='jk')S.pwJK=null;if(id==='ma'){S.pwMaK=[...S.k];const sp=pvol(weights(S.k));if(sp>1e-6){const a=cruise()/sp;S.k=S.k.map((v,i)=>clampK(i,Math.round(v*a)));drawRows();renderRisk();refreshSend();refreshGain()}}
