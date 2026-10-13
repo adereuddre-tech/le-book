@@ -5416,7 +5416,7 @@ const BKCDS=[
  ['JGB30','Le pari contre la Banque du Japon',-1,"La « veuve noire » : tout le monde a perdu en vendant les JGB depuis trente ans. Sauf peut-être cette fois."]];
 
 /* lot 312 : la manœuvre de l'activiste se joue hors du book, chaque trimestre. Trois occasions du livre noir, mise de 1 à 5 %
-   de l'encours, probabilité et multiple affichés ; verdict à la clôture. Trois réussites d'affilée à mises croissantes
+   de l'encours, probabilité et multiple affichés ; verdict à la clôture. Trois manœuvres d'affilée à mises croissantes (lot 341 : réussies ou non)
    ouvrent le coup du siècle : mise de 5 à 15 %, gain jusqu'à huit fois la mise.
    lot 328 : trois profils (sûr, équilibré, audacieux) à espérance croissante ; réussite +3 pts par point de mise, +5 pts par réussite du mandat (≤ +15), plafond 95 % ;
    coup du siècle 40 / 50 / 60 % à 5 / 10 / 15 %. */
@@ -5431,7 +5431,7 @@ function bkOffers(){if(S.bkOff&&S.bkOff.q===S.q)return S.bkOff.L;const u=prng32(
  BK.P.forEach(P=>{if(!C.length)return;const x=C.splice(Math.floor(u()*C.length),1)[0];L.push({c:x[0],nm:x[1],f:x[2],ctx:x[3],d:u()<0.5?1:-1,pr:P.id,prn:P.nm,p:Math.round((P.p+0.04*(u()-0.5))*100)/100,W:Math.round((P.W*(0.97+0.06*u()))*10)/10})});
  if((S.bkStreak||0)>=3){const x=BKCDS[Math.floor(u()*BKCDS.length)];L.unshift({c:x[0],nm:x[1],f:'cds',ctx:x[3],d:x[2],p:BK.pCds[0],W:BK.W,cds:1})}
  S.bkOff={q:S.q,L};return L}
-function styDrawX(){const P=PROF();if(!P.atk)return '';const st=S.bkStreak||0,ser=st>=3?'<b class="gold-g">le coup du siècle est sur la table</b>':`série : ${st} réussite${st>1?'s':''} à mises croissantes — ${3-st} de plus pour le coup du siècle`;
+function styDrawX(){const P=PROF();if(!P.atk)return '';const st=S.bkStreak||0,ser=st>=3?'<b class="gold-g">le coup du siècle est sur la table</b>':`série : ${st} manœuvre${st>1?'s':''} d’affilée à mises croissantes, réussie${st>1?'s':''} ou non — ${3-st} de plus pour le coup du siècle`;
  if(S.atk&&S.atk.q===S.q){const a=S.atk;return `<div class="blockhead"><h2>Le livre noir</h2><span class="hint">manœuvre lancée</span></div><p class="note" style="margin:0">${a.cds?`👑 <b>Coup du siècle</b> : ${a.nm}`:`🦅 ${a.kind} sur <b>${a.nm}</b>`}, ${Math.round(a.st*100)} % de l'encours en jeu. Réussite ${Math.round(a.p*100)} %, gain ${dec(a.W,1)} fois la mise, espérance ${sgn(a.p*a.W-(1-a.p),0).replace(' %','')}${' '}% de la mise ; verdict à la clôture. ${ser}.</p>`}
  const L=bkOffers();if(S.bkSel==null||S.bkSel>=L.length)S.bkSel=0;const o=L[S.bkSel],SK=o.cds?BK.cds:BK.stakes;if(!SK.includes(S.bkSt))S.bkSt=SK[o.cds?0:2];const sk=S.bkSt;
  return `<div class="blockhead"><h2>Le livre noir</h2><span class="hint">une manœuvre par trimestre · hors du book</span></div>
@@ -5446,14 +5446,14 @@ function styWire(el){el.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{
   gauge(0,o.cds?-3:-1,"Le comité apprend votre manœuvre");toast(`🦅 ${o.cds?'Coup du siècle lancé':'Manœuvre lancée'} : <b>${o.nm}</b>`);styDraw()}}
 function atkResolve(){const a=S.atk;if(!a||a.q!==S.q||(S.atkRes&&S.atkRes.q===S.q))return;   /* un résultat par trimestre (le précédent restait affiché) */const ok=prng32(hash32('atk'+S.q,S.seed))()<a.p,x=ok?a.W*a.st:-a.st,nb=S.nav;
  S.nav*=(1+x);S.qEvM=(S.qEvM||0)+x*nb;S.evLog.push({t:`${a.cds?'Coup du siècle':'Manœuvre'} : ${a.nm}`,pnl:x,m:x*nb,lp:0,rc:0});
- if(a.cds)S.bkStreak=0;else if(ok){S.bkStreak=(S.bkStreak||0)>0&&a.st>(S.bkLast||0)?S.bkStreak+1:1;S.bkLast=a.st}else{S.bkStreak=0;S.bkLast=0}
+ if(a.cds){S.bkStreak=0;S.bkLast=0}else{S.bkStreak=(S.bkStreak||0)>0&&a.st>(S.bkLast||0)?S.bkStreak+1:1;S.bkLast=a.st}   /* lot 341 : réussie ou non */
  S.atkRes={q:S.q,ok,x,nm:a.nm,sym:a.c,kind:a.kind,cds:a.cds,st:a.st};if(ok)S.atkWins=(S.atkWins||0)+1}
 function screenAtk(){S.atkRes=null;atkResolve();const R=S.atkRes,a=S.atk;
  app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard${R.ok?'':' bad'}">${evHead('Votre desk · clôture','news')}<h3>${R.cds?`👑 ${R.nm} : ${R.ok?'réussi !':'raté'}`:`🦅 Manœuvre sur ${R.nm} : ${R.ok?'réussie':'ratée'}`}</h3>
   <p class="note" style="margin:0 0 6px">${R.cds?'Le coup du siècle':R.kind[0].toUpperCase()+R.kind.slice(1)} · ${Math.round(R.st*100)} % de l'encours en jeu</p>
   <p>${R.ok?(R.cds?`On en parlera dans les manuels : les contreparties capitulent les unes après les autres, et le marché cède d'un coup. Le fonds encaisse ${dec(a.W,1)} fois la mise.`:`Les contreparties cèdent avant la clôture : le marché ${a.d>0?'s’envole':'décroche'} et vous sortez au meilleur moment.`):(R.cds?`Les autorités tiennent, et le marché vous broie. La mise est perdue ; la légende attendra.`:`Les contreparties ont tenu : le marché ${a.d>0?'retombe':'rebondit'}, et la mise est perdue.`)}</p>
   <div class="gzr"><span>effet sur le fonds</span><b class="${cls(R.x)}">${R.x>=0?'+':'−'}${mm(Math.abs(R.x)*S.nav/(1+R.x))} · ${sgnp(R.x,2)}</b></div>
-  ${!R.cds&&R.ok&&(S.bkStreak||0)>=3?'<p class="note" style="margin:6px 0 0">👑 Trois réussites d’affilée à mises croissantes : le coup du siècle vous sera proposé au prochain trimestre.</p>':''}</div>
+  ${!R.cds&&(S.bkStreak||0)>=3?'<p class="note" style="margin:6px 0 0">👑 Trois manœuvres d’affilée à mises croissantes : le coup du siècle vous sera proposé au prochain trimestre.</p>':''}</div>
   <button class="cta" id="ok">Continuer</button></div>`;
  document.getElementById('ok').onclick=()=>{stepEvents();window.scrollTo(0,0)}}
 function atkLocked(i){return false}   /* lot 312 : plus de ligne dans le book */
