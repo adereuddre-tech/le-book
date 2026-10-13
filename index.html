@@ -5400,27 +5400,32 @@ const BKCDS=[
 
 /* lot 312 : la manœuvre de l'activiste se joue hors du book, chaque trimestre. Trois occasions du livre noir, mise de 1 à 5 %
    de l'encours, probabilité et multiple affichés ; verdict à la clôture. Trois réussites d'affilée à mises croissantes
-   ouvrent le coup du siècle : mise de 5 à 15 %, gain jusqu'à huit fois la mise. */
-const BK={stakes:[0.01,0.02,0.03,0.04,0.05],cds:[0.05,0.10,0.15],W:8,pCds:0.45,rec:12};
+   ouvrent le coup du siècle : mise de 5 à 15 %, gain jusqu'à huit fois la mise.
+   lot 328 : trois profils (sûr, équilibré, audacieux) à espérance croissante ; réussite +3 pts par point de mise, +5 pts par réussite du mandat (≤ +15), plafond 95 % ;
+   coup du siècle 40 / 50 / 60 % à 5 / 10 / 15 %. */
+const BK={stakes:[0.01,0.02,0.03,0.04,0.05],cds:[0.05,0.10,0.15],W:8,pCds:[0.40,0.50,0.60],rec:12,perPt:0.03,leg:0.05,legMax:0.15,pMax:0.95,
+ P:[{id:'sur',nm:'coup sûr',p:0.75,W:0.8},{id:'eq',nm:'équilibré',p:0.60,W:1.6},{id:'aud',nm:'audacieux',p:0.45,W:2.6}]};   /* lot 328 : espérance croissante avec le risque */
+function bkLeg(){return Math.min(BK.legMax,BK.leg*(S.atkWins||0))}
+function bkP(o,st){if(o.cds)return BK.pCds[Math.max(0,BK.cds.indexOf(st))];return Math.min(BK.pMax,o.p+BK.perPt*(Math.round(st*100)-1)+bkLeg())}
 const ATK={};
 function bkKind(f,d){return {fx:d>0?'short squeeze':'attaque contre la banque centrale',dt:d>0?'short squeeze':'attaque de la dette',ix:d>0?'short squeeze':'raid baissier',sk:d>0?'gamma squeeze':'raid baissier',cm:d>0?'corner':'long squeeze',od:d>0?'corner':'long squeeze'}[f]||'manœuvre'}
 function atkReady(){return PROF().atk&&!(S.atk&&S.atk.q===S.q)}
 function bkOffers(){if(S.bkOff&&S.bkOff.q===S.q)return S.bkOff.L;const u=prng32(hash32('bk'+S.q,S.seed)),rec=S.bkRec||[],C=BKCAT.filter(x=>!rec.includes(x[0])),L=[];
- while(L.length<3&&C.length){const x=C.splice(Math.floor(u()*C.length),1)[0];L.push({c:x[0],nm:x[1],f:x[2],ctx:x[3],d:u()<0.5?1:-1,p:Math.round((0.45+0.20*u())*20)/20,W:Math.round((1.6+0.6*u())*10)/10})}
- if((S.bkStreak||0)>=3){const x=BKCDS[Math.floor(u()*BKCDS.length)];L.unshift({c:x[0],nm:x[1],f:'cds',ctx:x[3],d:x[2],p:BK.pCds,W:BK.W,cds:1})}
+ BK.P.forEach(P=>{if(!C.length)return;const x=C.splice(Math.floor(u()*C.length),1)[0];L.push({c:x[0],nm:x[1],f:x[2],ctx:x[3],d:u()<0.5?1:-1,pr:P.id,prn:P.nm,p:Math.round((P.p+0.04*(u()-0.5))*100)/100,W:Math.round((P.W*(0.97+0.06*u()))*10)/10})});
+ if((S.bkStreak||0)>=3){const x=BKCDS[Math.floor(u()*BKCDS.length)];L.unshift({c:x[0],nm:x[1],f:'cds',ctx:x[3],d:x[2],p:BK.pCds[0],W:BK.W,cds:1})}
  S.bkOff={q:S.q,L};return L}
 function styDrawX(){const P=PROF();if(!P.atk)return '';const st=S.bkStreak||0,ser=st>=3?'<b class="gold-g">le coup du siècle est sur la table</b>':`série : ${st} réussite${st>1?'s':''} à mises croissantes — ${3-st} de plus pour le coup du siècle`;
- if(S.atk&&S.atk.q===S.q){const a=S.atk;return `<div class="blockhead"><h2>Le livre noir</h2><span class="hint">manœuvre lancée</span></div><p class="note" style="margin:0">${a.cds?`👑 <b>Coup du siècle</b> : ${a.nm}`:`🦅 ${a.kind} sur <b>${a.nm}</b>`}, ${Math.round(a.st*100)} % de l'encours en jeu. Réussite ${Math.round(a.p*100)} %, gain ${dec(a.W,1)} fois la mise ; verdict à la clôture. ${ser}.</p>`}
+ if(S.atk&&S.atk.q===S.q){const a=S.atk;return `<div class="blockhead"><h2>Le livre noir</h2><span class="hint">manœuvre lancée</span></div><p class="note" style="margin:0">${a.cds?`👑 <b>Coup du siècle</b> : ${a.nm}`:`🦅 ${a.kind} sur <b>${a.nm}</b>`}, ${Math.round(a.st*100)} % de l'encours en jeu. Réussite ${Math.round(a.p*100)} %, gain ${dec(a.W,1)} fois la mise, espérance ${sgn(a.p*a.W-(1-a.p),0).replace(' %','')}${' '}% de la mise ; verdict à la clôture. ${ser}.</p>`}
  const L=bkOffers();if(S.bkSel==null||S.bkSel>=L.length)S.bkSel=0;const o=L[S.bkSel],SK=o.cds?BK.cds:BK.stakes;if(!SK.includes(S.bkSt))S.bkSt=SK[o.cds?0:2];const sk=S.bkSt;
  return `<div class="blockhead"><h2>Le livre noir</h2><span class="hint">une manœuvre par trimestre · hors du book</span></div>
-  <p class="note" style="margin:0 0 6px">Des marchés que votre book ne touche pas : votre desk y repère trois occasions. La manœuvre ne pèse ni sur le risque, ni sur la marge du book ; seul le résultat compte, à la clôture. ${ser}.</p>
-  ${L.map((x,j)=>`<button class="pwb${j===S.bkSel?' on':''}" data-bk="${j}"><b>${x.cds?`👑 Coup du siècle · ${x.nm}`:`${x.d>0?'▲':'▼'} ${x.nm} · ${bkKind(x.f,x.d)}`}</b><small>${x.ctx} <i>· réussite ${Math.round(x.p*100)} % · gain ${dec(x.W,1)} × la mise</i></small></button>`).join('')}
+  <p class="note" style="margin:0 0 6px">Des marchés que votre book ne touche pas : votre desk y repère trois occasions, du coup sûr à l'audacieux. Plus le coup est risqué, plus il rapporte en moyenne. La réussite monte de ${Math.round(BK.perPt*100)} points par point de mise (le desk y met les moyens) et de ${Math.round(BK.leg*100)} points par manœuvre réussie dans le mandat (votre légende : +${Math.round(bkLeg()*100)} sur ${Math.round(BK.legMax*100)}), jusqu'à ${Math.round(BK.pMax*100)} %. La manœuvre ne pèse ni sur le risque, ni sur la marge du book ; seul le résultat compte, à la clôture. ${ser}.</p>
+  ${L.map((x,j)=>{const pp=bkP(x,x.cds?(BK.cds.includes(sk)?sk:BK.cds[0]):(BK.stakes.includes(sk)?sk:0.03));return `<button class="pwb${j===S.bkSel?' on':''}" data-bk="${j}"><b>${x.cds?`👑 Coup du siècle · ${x.nm}`:`${x.d>0?'▲':'▼'} ${x.nm} · ${bkKind(x.f,x.d)} · <i>${x.prn}</i>`}</b><small>${x.ctx} <i>· réussite ${Math.round(pp*100)} % · gain ${dec(x.W,1)} × la mise · espérance ${pp*x.W-(1-pp)>=0?'+':'−'}${Math.round(Math.abs(pp*x.W-(1-pp))*100)} % de la mise</i></small></button>`}).join('')}
   <div class="cisel" style="margin-top:6px">${SK.map(k=>`<button class="hgp${k===sk?' on':''}" data-bks="${k}">${Math.round(k*100)} %</button>`).join('')}</div>
-  <div class="attr"><span class="an">Mise ${mm(sk*S.nav)} · réussite ${Math.round(o.p*100)} %</span><span class="av"><b class="pos-g">+${mm(o.W*sk*S.nav)}</b> / <b class="neg-g">−${mm(sk*S.nav)}</b></span></div>
+  ${(()=>{const pp=bkP(o,sk),ev=(pp*o.W-(1-pp))*sk*S.nav;return `<div class="attr"><span class="an">Mise ${mm(sk*S.nav)} · réussite ${Math.round(pp*100)} %</span><span class="av"><b class="pos-g">+${mm(o.W*sk*S.nav)}</b> / <b class="neg-g">−${mm(sk*S.nav)}</b></span></div><div class="attr"><span class="an">Espérance</span><span class="av"><b class="${cls(ev)}">${ev>=0?'+':'−'}${mm(Math.abs(ev))}</b></span></div>`})()}
   <button class="buy" id="atkgo" style="margin-top:6px"${S.phase==='book'?'':' disabled'}>${o.cds?'👑 Lancer le coup du siècle':`Lancer : ${bkKind(o.f,o.d)} sur ${o.nm}`}</button>`}
 function styWire(el){el.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{S.bkSel=+b.dataset.bk;styDraw()});el.querySelectorAll('[data-bks]').forEach(b=>b.onclick=()=>{S.bkSt=+b.dataset.bks;styDraw()});
  const g=el.querySelector('#atkgo');if(g)g.onclick=()=>{if(!atkReady()||S.phase!=='book')return;const o=bkOffers()[S.bkSel||0],st=S.bkSt;
-  S.atk={q:S.q,c:o.c,nm:o.nm,d:o.d,p:o.p,W:o.W,st,cds:!!o.cds,kind:o.cds?o.nm:bkKind(o.f,o.d)};(S.bkRec=S.bkRec||[]).push(o.c);S.bkRec=S.bkRec.slice(-BK.rec);
+  S.atk={q:S.q,c:o.c,nm:o.nm,d:o.d,p:bkP(o,st),W:o.W,st,cds:!!o.cds,pr:o.prn,kind:o.cds?o.nm:bkKind(o.f,o.d)};(S.bkRec=S.bkRec||[]).push(o.c);S.bkRec=S.bkRec.slice(-BK.rec);
   gauge(0,o.cds?-3:-1,"Le comité apprend votre manœuvre");toast(`🦅 ${o.cds?'Coup du siècle lancé':'Manœuvre lancée'} : <b>${o.nm}</b>`);styDraw()}}
 function atkResolve(){const a=S.atk;if(!a||a.q!==S.q||(S.atkRes&&S.atkRes.q===S.q))return;   /* un résultat par trimestre (le précédent restait affiché) */const ok=prng32(hash32('atk'+S.q,S.seed))()<a.p,x=ok?a.W*a.st:-a.st,nb=S.nav;
  S.nav*=(1+x);S.qEvM=(S.qEvM||0)+x*nb;S.evLog.push({t:`${a.cds?'Coup du siècle':'Manœuvre'} : ${a.nm}`,pnl:x,m:x*nb,lp:0,rc:0});

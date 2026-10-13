@@ -84,7 +84,7 @@ function playGame(o){
         if(bi<0)break;S.k[bi]-=Math.sign(S.k[bi]-S.k0[bi])}})()`);
       /* lot 312 : l'activiste joue le livre noir chaque trimestre — première occasion, mise 3 % (coup du siècle : 10 %) */
       w.eval(`(()=>{if(typeof atkReady!=='function'||!atkReady()||typeof bkOffers!=='function')return;const L=bkOffers();if(!L.length)return;
-        S.bkSel=0;S.bkSt=L[0].cds?0.10:0.03;styDraw();const g=document.getElementById('atkgo');if(g)g.click()})()`);
+        S.bkSel=L[0].cds?0:1;S.bkSt=L[0].cds?0.10:0.03;styDraw();const g=document.getElementById('atkgo');if(g)g.click()})()`);
       if($('#send').disabled&&$('#fitbook'))click($('#fitbook'));
       w.eval('window.__sps=(window.__sps||[]).concat(riskShown(weights(S.k)).total)');
       if($('#send').disabled){errs.push('book bloque');break}
