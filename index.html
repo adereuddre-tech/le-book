@@ -5691,7 +5691,17 @@ function xHintTxt(k){const h=S&&S.xHint;if(!h)return '';const nm=xHintName(),L=x
  const who={syst:'<b>Le modèle de risque</b> signale',fonda:'<b>Votre réseau</b> annonce',flux:'<b>Votre intuition</b> :'}[h.src]||'<b>Rumeur</b> :';
  const what=nm?`un événement extrême ce trimestre : ${nm}.`:`un choc extrême se prépare ce trimestre. ${h.src==='flux'?'Vous ne sauriez pas dire lequel.':'Lequel, personne ne le sait.'}`;
  const ch=h.src==='syst'&&nm&&L!=null?` Perte du book sur le mouvement complet : ${sgnp(L,1)} · ${moneyB(Math.abs(L)*S.nav)}.`:'';
- return `🔴 ${who} ${what}${ch}`}
+ const bt=k?xBookTerm(k):0;
+ return `🔴 ${who} ${what}${ch}${Math.abs(bt)>1e-6?` Déjà dans la rentabilité estimée du book, à ${Math.round(xDeskP()*100)} % de probabilité pour votre desk : ${sgnp(bt,2)}.`:''}`}
+/* lot 337 : probabilité d'un extrême ce trimestre pour le desk, sachant l'alerte (ou son absence) — Bayes sur la veille */
+function xDeskP(){const T=xProbTot();if(!(T>0))return 0;const W=xWatch();
+ return S.xHint?W.s*T/Math.max(1e-9,W.s*T+W.fa*(1-T)):(1-W.s)*T/Math.max(1e-9,(1-W.s)*T+(1-W.fa)*(1-T))}
+/* perte attendue sur le book d'un extrême signalé (mouvement complet, choc immédiat amorti par le contrôle des risques) */
+function xBookTerm(k){if(!S||!S.xHint||!S.bud)return 0;k=k||S.k;const h=S.xHint,P=xDeskP(),bo=0.5+0.5*(TAILM[S.bud.risk]||1);let L=0;
+ if(h.id){const sc=STRESS.find(x=>x.id===h.id);L=sc?stressLoss(k,sc):0}
+ else if(h.t)L=xEvLoss(k,h.t);
+ else{let sw=0,sl=0;STRESS.forEach(x=>{const p=xScP(x);sw+=p;sl+=p*stressLoss(k,x)});L=sw>0?sl/sw:0}
+ return P*(0.5*bo+0.5)*L}
 function xWatchTxt(){const W=xWatch();return `Votre veille sent venir <b>${Math.round(W.s*100)} %</b> des extrêmes et en identifie <b>${Math.round(W.i*100)} %</b> ; fausse alerte ${Math.round(W.fa*100)} % des trimestres calmes.`}
 function stressP(){return Math.min(0.32,0.10+0.20*Math.max(0,((S&&S.liq)||1)-0.9)/0.6)}   /* lue sur la liquidité affichée au desk */
 function crowd(sp){return Math.min(2.5,1+2.5*Math.max(0,sp-0.20)/0.10)}
@@ -5858,7 +5868,7 @@ function colExp(){const o=colOpt(),m=mgShare();return redOn('collat')?S.rate/4*0
 function profitBook(k){
  k=k||S.k;const w=weights(k),k0=S.k0||S.k;let m=colExp();
  for(let i=0;i<N;i++){if(w[i])m+=w[i]*expRet(i).m;const d=k[i]-k0[i];if(d)m-=tcost(d,i).imp/S.nav}
- const sg=riskShown(w).total;return m-FINK*(sg/0.2)*(sg/0.2);   /* lot 85 : lecture des marchés, moins le financement facturé ; ni accidents ni drain */
+ const sg=riskShown(w).total;return m-FINK*(sg/0.2)*(sg/0.2)+xBookTerm(k);   /* lot 85 : lecture des marchés, moins le financement facturé ; ni accidents ni drain ; lot 337 : l'extrême signalé */
 }
 const pc2=x=>`<b class="${Math.abs(x)<5e-5?'dim-g':cls(x)}">${x>=0?'+':'−'}${dec(Math.abs(x*100),2)} %</b>`;
 function expBook(k){
