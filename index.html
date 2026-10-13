@@ -650,7 +650,7 @@ const CLASSES=['Actions','Taux','Devises','Matières premières','Exotiques'];
 /* lot 100 : type de produit. Les devises se traitent en forwards, le fret et la pluie en swaps : gré à gré, marge ×1,3. */
 const PTYPE={fut:{nm:'future coté',m:1.0},otc:{nm:'gré à gré (forward, swap)',m:1.3}};
 INSTR_ALL.forEach(x=>{x.pt=['EUR','JPY','GBP','AUD','MXP','BDI','NRAM'].includes(x.sym)?'otc':'fut'});
-function mgRate(i){const x=INSTR[i];return x.mg*((PTYPE[x.pt]||PTYPE.fut).m)*((S&&S.mgMult)||1)*(boH(10)?0.85:1)}   /* lot 279 : Octave */
+function mgRate(i){const x=INSTR[i];return x.mg*((PTYPE[x.pt]||PTYPE.fut).m)*((S&&S.mgMult)||1)*(boH(10)?0.80:1)}   /* lot 279 : Octave ; lot 335 : −20 % */
 /* taille du fonds → nombre de marchés ouverts par classe ; univers → nombre de classes */
 const MKPERCL={small:3,mid:3,mega:3};   /* lot 49 : un seul départ, les marchés se gagnent */
 const NCLASS={fin:3,com:4,ext:5};
@@ -974,9 +974,9 @@ const BOP=[
  {who:"Maître Fourche",hi:"Tout est négociable, surtout ce qui est écrit.",full:"Maître Aurélien Fourche",role:"juriste, contentieux et contrats",ic:"📜",bp:95,pw:"incidents 40 % moins chers"},
  {who:"Lord Basil",hi:"Bruxelles est un village. Washington aussi.",full:"Lord Basil Lobbington",role:"affaires publiques, Bruxelles et Washington",ic:"🎖️",bp:125,pw:"contrôle des risques +2 par trimestre ; les extrêmes sentis sont identifiés 15 pts plus souvent"},
  {who:"Cassandra",hi:"Je ne prédis pas les crises. Je les tarife.",full:"Cassandra « Black Swan » Mehta",role:"cheffe des risques extrêmes",ic:"🦢",bp:160,pw:"protection contre les extrêmes 30 % moins chère ; veille +15 pts"},
- {who:"Octave",hi:"Votre marge était trop chère. Je l'ai renégociée pendant votre réunion.",full:"Octave « Repo » Mercier",role:"trésorier, financement et collatéral",ic:"💱",bp:200,pw:"marge exigée −15 % sur tout le book"},
+ {who:"Octave",hi:"Votre marge était trop chère. Je l'ai renégociée pendant votre réunion.",full:"Octave « Repo » Mercier",role:"trésorier, financement et collatéral",ic:"💱",bp:200,pw:"marge exigée −20 % sur tout le book ; une fois par an, il fait renoncer le prime broker à un appel de marge"},
  {who:"Hugo",hi:"Deux prime brokers valent mieux qu'un seul qui vous lâche.",full:"Hugo « Two Banks » Ravel",role:"responsable des contreparties",ic:"🏦",bp:245,pw:"accidents de levier par la marge ÷2 ; lignes visibles 30 % moins exposées"},
- {who:"Dr Anouk",hi:"Un trader qui dort bien ne fait pas de fat finger.",full:"Dr Anouk Ferreira",role:"psychologue de la salle des marchés",ic:"🧘",bp:295,pw:"débauchage ÷2 ; incidents −20 %"}];
+ {who:"Dr Anouk",hi:"Un trader qui dort bien ne fait pas de fat finger.",full:"Dr Anouk Ferreira",role:"psychologue de la salle des marchés",ic:"🧘",bp:295,pw:"débauchage ÷2 ; incidents −20 % ; une fois par an, un séminaire : moral +25"}];
 const BOMAP=[0,1,3,4,5,6,6,6,6,6,6,6,6],NOTRD=2,   /* lot 259 : courtier ×2 (×4 avant) */
  TRD={'Actions':1,'Taux':2,'Devises':3,'Matières premières':4,'Exotiques':5};
 const BUDGET=[
@@ -5272,7 +5272,9 @@ const PW=[
  {id:'jo',bo:2,ic:'🗂️',nm:'Josiane',t:"Tout rapprocher",d:"Aucune fuite de vos positions ce trimestre, quoi qu'il arrive — même si Onésime passe à la télé. Ne compte pour l'année que si elle a empêché une fuite."},
  {id:'fi',bo:3,ic:'🔎',nm:'Firmin',t:"Un audit propre",d:"Le rapport d'audit annuel tombe à point : contrôle des risques +5."},
  {id:'mi',bo:4,ic:'⚖️',nm:'Mireille',t:"Plaider devant le comité",d:"Une fois par mandat : elle fait effacer le carton jaune en cours, et le comité ne donnera pas de jaune à la clôture de ce trimestre. Ne compte pour le mandat que si elle a effacé ou évité un carton."},
- {id:'so',bo:5,ic:'🛡️',nm:'Solange',t:"Exercice de crise",d:"Ce trimestre, le choc immédiat d'un événement extrême est réduit de 35 %, et une cyberattaque ne vous touche pas. S'ajoute à la protection, qui rend sur le choc du marché. Ne compte pour l'année que si un extrême ou une cyberattaque tombe."}];
+ {id:'so',bo:5,ic:'🛡️',nm:'Solange',t:"Exercice de crise",d:"Ce trimestre, le choc immédiat d'un événement extrême est réduit de 35 %, et une cyberattaque ne vous touche pas. S'ajoute à la protection, qui rend sur le choc du marché. Ne compte pour l'année que si un extrême ou une cyberattaque tombe."},
+ {id:'oc',bo:10,ic:'💱',nm:'Octave',inc:1,t:"Un coup de fil au prime broker",d:"Si un appel de marge tombe, il obtient un délai jusqu'à la clôture : rien n'est coupé, aucune perte de confiance. Se joue sur l'écran de l'appel (et tout seul à la clôture) ; ne compte pour l'année que s'il sert."},
+ {id:'an',bo:12,ic:'🧘',nm:'Dr Anouk',t:"Le séminaire",d:"Deux jours au vert pour tout le desk : moral +25 d'un coup, dès ce trimestre (coûts, lecture, anecdotes, débauchage)."}];
 function styDraw(){const el=document.getElementById('stypw');if(!el)return;const P=PROF();let h='';
  if(P.tailH)h=`<div class="blockhead"><h2>La convexité</h2><span class="hint">votre pouvoir</span></div><p class="note" style="margin:0">Après les ordres, la protection contre les extrêmes vous est vendue au prix du choc moyen, sans marge (aujourd'hui ${dec(hedgeCost()*100,2)} % de l'encours pour ce book) et rend 120 % du choc immédiat : les 20 % de plus sont offerts. ${xWatchTxt()}</p>`;
  if(P.pairs&&S.pairs&&S.pairs.length)h=`<div class="blockhead"><h2>Les paires du trimestre</h2><span class="hint">vous seul les voyez</span></div>
@@ -5471,6 +5473,7 @@ function pwCommit(){if(!S.pw)return;S.pwLast=S.pwLast||{};S.pwMaK=null;
   if(o.id==='on'){gauge(8,0,'Onésime sur un plateau télé');if(!pwGuard('jo'))S.leakQ=true}
   if(o.id==='jo'&&S.leakQ){S.leakQ=false;S.pwLast.jo=S.q}
   if(o.id==='fi')gauge(0,5,"Audit propre de Firmin");
+  if(o.id==='an'){motAdd(25,"séminaire d'Anouk");toast('🧘 <b>Dr Anouk</b> emmène le desk au vert : moral +25.')}
   if(o.id==='mi'){S.miShield=S.q;S.cards=S.cards||{y:0,r:0,clean:0,log:[]};const y0=S.cards.y;S.cards.y=0;S.cards.clean=0;
    if(y0){S.pwMi=1;S.cards.log.push({q:S.q,c:'effacé',why:'Mireille plaide devant le comité'})}
    toast(`⚖️ <b>Mireille</b> plaide : ${y0?'carton jaune effacé, et ':''}pas de jaune à la clôture de ce trimestre.`)}});
@@ -5480,7 +5483,7 @@ function pwDraw(){const el=document.getElementById('pwblk');if(!el)return;const 
  el.innerHTML=`<div class="blockhead"><h2>Votre équipe</h2><span class="hint">un coup de pouce chacun par an · Jean-Kevin chaque trimestre · les gardiens ne comptent que s'ils servent</span></div>
   ${tips.map(t=>`<div class="flag" style="margin:0 0 8px"><span>📌 <b>${t.who}</b> : ${t.nm} finira le trimestre en <b>${t.up?'hausse':'baisse'}</b> — déjà dans ${t.fk!=null?'la lecture des facteurs':'votre attendu'}.</span></div>`).join('')}
   <div class="pwl">${L.map(o=>{const on=pwOn(o.id),ok=pwOk(o),back=pwBack(o.id);
-   const st=on?(o.info?'joué ce trimestre':S.pwLast&&S.pwLast[o.id]===S.q&&PWG.includes(o.id)?'a servi · compté':PWG.includes(o.id)?(S.phase==='book'?'armé · touchez pour désarmer · ne compte que s’il sert':'en garde · ne compte que s’il sert'):'armé · touchez pour désarmer'):o.inc?(pwAvail(o)?'disponible · se joue sur l’incident':`revient au trimestre ${back+1}`):o.id==='mi'?(S.pwMi?'joué pour le mandat':'disponible'):pwAvail(o)?(S.pwConf===o.id?'touchez encore pour confirmer : compté pour l’année':'disponible'):`revient au trimestre ${back+1}`;
+   const st=on?(o.info?'joué ce trimestre':S.pwLast&&S.pwLast[o.id]===S.q&&PWG.includes(o.id)?'a servi · compté':PWG.includes(o.id)?(S.phase==='book'?'armé · touchez pour désarmer · ne compte que s’il sert':'en garde · ne compte que s’il sert'):'armé · touchez pour désarmer'):o.inc?(pwAvail(o)?(o.id==='oc'?'disponible · joue sur l’appel de marge':'disponible · se joue sur l’incident'):`revient au trimestre ${back+1}`):o.id==='mi'?(S.pwMi?'joué pour le mandat':'disponible'):pwAvail(o)?(S.pwConf===o.id?'touchez encore pour confirmer : compté pour l’année':'disponible'):`revient au trimestre ${back+1}`;
    return `<button class="pwb${on?' on':''}${S.pwConf===o.id?' conf':''}" data-pw="${o.id}"${ok?'':' disabled'}><b>${o.ic} ${o.nm} · ${o.t}</b><small>${o.d} <i>· ${st}${o.id==='jk'?` · réussite ${Math.round((pwOn('jk')&&S.pwLast&&S.pwLast.jk===S.q?Math.min(0.9,jkP()-0.05):jkP())*100)} %`:''}</i></small></button>`}).join('')}</div>`;
  el.querySelectorAll('.pwb[data-pw]').forEach(b=>b.onclick=()=>pwUse(b.dataset.pw))}
 /* Les ordres sortent de la poche du gérant : le bouton reste bloqué tant que la caisse ne suit
@@ -6437,7 +6440,7 @@ function screenExec(){
 }
 function stepEvents(){
  S.bigTape=false;
- if(S.live&&marginPct(S.k)>MGC.thr+1e-9){screenMarginCall();window.scrollTo(0,0);return}   /* lot 100 */
+ if(S.live&&S.ocGrace!==S.q&&marginPct(S.k)>MGC.thr+1e-9){screenMarginCall();window.scrollTo(0,0);return}   /* lot 100 */
  if(S.live&&S.stopQn!==S.q&&S.k.some(v=>v)&&liveRet()<=-limStop()){screenStopQ();window.scrollTo(0,0);return}   /* lot 103 */
  save('stepEvents');
  if(!S.midShown&&S.evIdx>=Math.ceil(S.evQueue.length/2)&&S.evQueue.length>1){S.midShown=true;screenMidMark();window.scrollTo(0,0);return}
@@ -6913,13 +6916,15 @@ function screenMarginCall(){const P=mgPlan(),cash=mgrCash(),nav=S.nav;
  const O=[{id:'inj',b:"Apporter des fonds propres",s:`La société de gestion verse ${mm(P.inj)} dans le fonds, bloqués avec votre co-investissement jusqu'à la clôture. Le book ne bouge pas.`,c:-1,ko:P.inj>cash},
   {id:'cut',b:"Couper vous-même",s:`Vous retirez les lignes les plus gourmandes en marge, au tarif d'urgence : ${mm(P.c1)} à votre charge.`,c:-2,k:P.k1,tc:P.c1},
   {id:'pb',b:"Laisser le prime broker liquider",s:`Il coupe ${Math.round(P.f*100)} % de chaque ligne au pire prix : ${mm(P.c2)} à votre charge.`,c:-5,k:P.k2,tc:P.c2}];
+ {const oc=PW.find(x=>x.id==='oc');if(oc&&pwAvail(oc))O.unshift({id:'oc',b:"💱 Octave appelle le prime broker",s:"Il obtient un délai jusqu'à la clôture : rien n'est coupé, et plus d'appel ce trimestre. Compté pour l'année.",c:0})}
  app.innerHTML=statusBar()+`<div class="evwrap fade"><div class="evcard bad">${evHead('Prime broker · appel de marge','risk')}<h3>Marge utilisée ${Math.round(P.mgu*100)} % : au-delà du seuil de ${Math.round(MGC.thr*100)} %</h3>
   <p>Le prime broker recalcule vos exigences après chaque mouvement. Il faut revenir à ${Math.round(MGC.back*100)} % de l'encours avant la prochaine séance.</p>${evTimerHTML}</div>
   <div class="choices" style="margin-top:12px">${O.map((o,i)=>`<button class="choice" data-m="${i}"${o.ko?' disabled':''}><b>${o.b}</b><span>${o.s} Confiance ${o.c}.${o.k?bkD(o.k,0,false):''}${o.ko?' <b class="neg-g">hors trésorerie</b>':''}</span></button>`).join('')}</div></div>`;
  const go=i=>{clearTimer();const o=O[i];
-  if(o.id==='inj'){const x=P.inj;S.nav+=x;S.navQ0+=x;S.coinvBase=(S.coinvBase||0)+x;S.coinvIn=(S.coinvIn||0)+x;S.coinvLock=(S.coinvLock||0)+x;S.mgInj=(S.mgInj||0)+x}
+  if(o.id==='oc'){(S.pwLast=S.pwLast||{}).oc=S.q;S.ocGrace=S.q}
+  else if(o.id==='inj'){const x=P.inj;S.nav+=x;S.navQ0+=x;S.coinvBase=(S.coinvBase||0)+x;S.coinvIn=(S.coinvIn||0)+x;S.coinvLock=(S.coinvLock||0)+x;S.mgInj=(S.mgInj||0)+x}
   else{const r0=liveRet();S.k=o.k;const r1=liveRet();S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0;S.pendingTC+=o.tc/S.nav;S.totalTC+=o.tc}
-  if(marginPct(S.k)>MGC.thr){const r0=liveRet();S.k=S.k.map(()=>0);const r1=liveRet();S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0;toast('Marge toujours au-delà du seuil : le prime broker solde le book.')}   /* lot 104 */
+  if(o.id!=='oc'&&marginPct(S.k)>MGC.thr){const r0=liveRet();S.k=S.k.map(()=>0);const r1=liveRet();S.qEvM=(S.qEvM||0)+(r0-r1)*S.navQ0;toast('Marge toujours au-delà du seuil : le prime broker solde le book.')}   /* lot 104 */
   S.marginCalls=(S.marginCalls||0)+1;S.everMarginCall=1;
   const g=gauge(o.c,0,`Appel de marge : ${o.b.toLowerCase()}`);S.evLog.push({t:'Appel de marge',pnl:0,m:0,lp:g.lp,rc:g.rc});
   refreshGain();stepEvents()};
@@ -6975,7 +6980,9 @@ function resolveQuarter(){
    const spq=pvol(w)/2;                       /* vol trimestrielle du book */
    const trough=gross-MGC.trough*spq;          /* creux intra-trimestriel approché */
    const mgTrough=mgu/Math.max(0.2,1+trough);  /* la marge enfle quand l'encours fond */
-   if(mgTrough>MGC.thr){
+   const oc=PW.find(x=>x.id==='oc');
+   if(mgTrough>MGC.thr&&(S.ocGrace===S.q||(oc&&pwAvail(oc)))){(S.pwLast=S.pwLast||{}).oc=S.q;S.ocSaved=S.q;S.qLog.push("appel de marge évité par Octave")}
+   else if(mgTrough>MGC.thr){
     const f=Math.max(0.05,Math.min(MGC.cut,1-MGC.thr/mgTrough));
     let liq=0;
     for(let i=0;i<N;i++){const d=-S.k[i]*f;if(Math.abs(d)>1e-9){const t=tcost(d,i);liq+=t.cost*MGC.crisis}}
@@ -7543,6 +7550,7 @@ function screenDebrief(o){
  {const c=S.colRes;if(c&&c.show)detl.push(c.lock?`Collatéral renforcé : rémunéré à 60 % du taux, ${mn(c.m)} par rapport aux bons du Trésor.`
   :c.hit?`💥 <b>Le placement du collatéral a fait défaut</b> — ${c.nm} : surcroît de rendement ${mn(c.sur)}, défaut <b class="neg-g">−${mm(c.loss)}</b> (−${dec(c.l*100,1)} % de l'encours), soit ${mn(c.m)} au total par rapport aux bons du Trésor.`
   :`Collatéral — ${c.nm} : pas de défaut (${Math.round(c.p*100)} % de risque), surcroît de rendement ${mn(c.sur)} par rapport aux bons du Trésor.`)}
+ if(S.ocSaved===S.q-1)warn.push(`💱 <b>Octave a appelé le prime broker</b> : l'appel de marge de la clôture n'a rien coupé.`);
  if(S.marginCall)warn.push(`Appel de marge : la marge utilisée a dépassé ${(MGC.thr*100).toFixed(0)} % de l'encours en cours de trimestre. Le prime broker a liquidé ${(S.marginCall.f*100).toFixed(0)} % du book au plus bas, ${mm(S.marginCall.cost)} de coûts de liquidation, et vous repartez avec les positions réduites d'autant.`);
  if(S.qLog.includes('mandat'))warn.push("Votre mandat est réduit : plus aucune position au-delà de 3 unités.");
  const story=S.qLog.filter(x=>x!=='mandat');
