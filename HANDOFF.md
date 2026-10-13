@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 343.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 344.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -366,6 +366,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **341** : activiste : trois manœuvres d'affilée à mises croissantes, réussies ou non, ouvrent le coup du siècle.
 - **342** : collatéral : défaut ×2,5 le trimestre d'un extrême, probabilité moyenne inchangée (`colPx`) ; rendement relevé de σ²/2 et de la covariance avec le book (`COLK`, `COLT0`, `COLD`). Campagne 339–342 : 77 %.
 - **343** : style « Chasseur de queues » renommé « Chasseur de cygnes noirs ».
+- **344** : risque marginal = risque du fonds (`fundParts`, `fundRisk`) : book avec l'information du desk (`covInfo` : tuyaux de facteurs et de marchés, variance ×(1−(2r−1)²·2/π)), extrêmes à la probabilité du desk, collatéral (part hors marge) et covariance défauts–extrêmes ; ligne « risque du fonds » au-dessus des limites ; le comité juge toujours le book seul. Affichage seulement, équilibre inchangé.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
