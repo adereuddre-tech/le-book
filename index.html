@@ -4112,6 +4112,9 @@ const COLL=[
  {id:'at1',nm:'Bank AT1 CoCos',ico:'🏦',y:0.02338,p:0.0521,l:0.1800,d:"Des obligations bancaires que le régulateur peut convertir ou effacer. Calmes pendant des années, puis une émission rayée en un week-end."},
  {id:'stab',nm:'Synthetic dollar (crypto basis)',ico:'🪙',y:0.04396,p:0.2821,l:0.1000,d:"Un dollar numérique tenu par une position de base sur les dérivés crypto. Le rendement suit le financement des perpétuels ; stable, sauf le jour où il ne l'est pas."},
 ];
+const COLK=2.5,COLT0=0.2,COLD=0.05;   /* lot 342 : défaut ×2,5 le trimestre d'un extrême ; T de référence 20 % ; perte typique du fonds dans un extrême 5 % */
+COLL.forEach(o=>{if(!o.p)return;const ph=Math.min(0.95,COLK*o.p);o.y0=o.y;o.y+=o.l*o.l*o.p*(1-o.p)/2+COLT0*(ph-o.p)*o.l*COLD});   /* Sharpe géométrique 0,35 + prime de covariance */
+function colPx(o,ext){if(!o.p)return 0;const T=Math.min(0.39,xProbTot()),ph=Math.min(0.95,COLK*o.p);return ext?ph:Math.max(0,(o.p-T*ph)/Math.max(1e-9,1-T))}
 function colOpt(){return COLL[(S&&S.col)||0]||COLL[0]}
 /* lot 249 : surcroît du trimestre = moyenne ± 8 % du net attendu (y − p·l), tirage pur par trimestre et par placement :
    le net reste positif et croît avec le risque sur toute l'échelle dans 95 % des trimestres */
@@ -4124,7 +4127,7 @@ function drawColl(){
    <b><span class="ci">${o.ico}</span> ${o.nm}</b><span>${dec((S.rate/4+colY(o))*100,1)} % ce trimestre</span><span class="${o.y?'pos-g':'dim-g'}">${o.y?`dont +${dec(colY(o)*100,1)} % · ${mm(colY(o)*S.nav)}`:'taux sans risque'}</span>
    <span class="${o.p?'neg-g':'dim-g'}">${o.p?`${Math.round(o.p*100)} % de −${dec(o.l*100,1)} %`:'aucun risque'}</span>
    <span class="dim-g">attendu ${sgn(colY(o)-o.p*o.l,1)}</span></button>`).join('')}</div>
-  <p class="note" style="margin-top:6px">${colOpt().d} Le surcroît de chaque placement change d'un trimestre à l'autre ; en moyenne, plus le risque est grand, plus l'attendu l'est.</p>`;
+  <p class="note" style="margin-top:6px">${colOpt().d} Le surcroît de chaque placement change d'un trimestre à l'autre ; en moyenne, plus le risque est grand, plus l'attendu l'est. Les défauts tombent ${dec(COLK,1)} fois plus souvent le trimestre d'un événement extrême (et d'autant moins sinon) : le rendement paie le drain de volatilité et cette corrélation avec votre book.</p>`;
  el.querySelectorAll('.coll').forEach(b=>b.onclick=()=>{S.col=+b.dataset.c;drawColl();refreshStatus();const o=colOpt();
   toast(`Collatéral → <b>${o.nm}</b> · ${dec((S.rate/4+colY(o))*100,1)} % ce trimestre${o.p?`, ${Math.round(o.p*100)} % de risque de −${dec(o.l*100,1)} %`:''}`)});
 }
@@ -7031,11 +7034,11 @@ function resolveQuarter(){
    }
   }
  }
- const cO=colOpt(),cHit=!redOn('collat')&&cO.p>0&&prng32(hash32('coll'+S.q,S.seed))()<cO.p;
+ const cO=colOpt(),cPe=colPx(cO,!!S.stressQ),cHit=!redOn('collat')&&cO.p>0&&prng32(hash32('coll'+S.q,S.seed))()<cPe;   /* lot 342 */
  const collTot=(colYield()-(cHit?cO.l*(1-mgShare()):0))*(S.colBaseNav||S.nav);   /* montant du trimestre */
  const collateral=(collTot-(S.qColM||0))/S.nav;   /* reste à verser (négatif si défaut) */
  {const bN=S.colBaseNav||S.nav,loss=cHit?cO.l*bN:0;
-  S.colRes={nm:redOn('collat')?'Collatéral renforcé':cO.nm,lock:redOn('collat'),x:collTot/bN-S.rate/4,hit:cHit,l:cO.l,p:cO.p,m:collTot-S.rate/4*bN,
+  S.colRes={nm:redOn('collat')?'Collatéral renforcé':cO.nm,lock:redOn('collat'),x:collTot/bN-S.rate/4,hit:cHit,l:cO.l,p:cPe,ext:!!S.stressQ,m:collTot-S.rate/4*bN,
    sur:collTot-S.rate/4*bN+loss,loss,show:redOn('collat')||cO.id!=='tres'}}
  const ops=S.budBp*1e-4;
  const tc=S.pendingTC;S.pendingTC=0;      /* à la charge du gérant, plus à celle du fonds */
@@ -7586,7 +7589,7 @@ function screenDebrief(o){
  if(capStress()>0&&!S.capWarned){S.capWarned=1;warn.push(`Capacité atteinte : à ${moneyB(S.nav)} d'encours, vos ordres coûtent ${((capFactor()-1)*100).toFixed(0)} % d'impact de plus qu'au premier jour. Collecter davantage ne rapportera bientôt plus ce que ça coûte.`)}
  {const c=S.colRes;if(c&&c.show)detl.push(c.lock?`Collatéral renforcé : rémunéré à 60 % du taux, ${mn(c.m)} par rapport aux bons du Trésor.`
   :c.hit?`💥 <b>Le placement du collatéral a fait défaut</b> — ${c.nm} : surcroît de rendement ${mn(c.sur)}, défaut <b class="neg-g">−${mm(c.loss)}</b> (−${dec(c.l*100,1)} % de l'encours), soit ${mn(c.m)} au total par rapport aux bons du Trésor.`
-  :`Collatéral — ${c.nm} : pas de défaut (${Math.round(c.p*100)} % de risque), surcroît de rendement ${mn(c.sur)} par rapport aux bons du Trésor.`)}
+  :`Collatéral — ${c.nm} : pas de défaut (${Math.round(c.p*100)} % de risque${c.ext?', trimestre d’extrême':''}), surcroît de rendement ${mn(c.sur)} par rapport aux bons du Trésor.`)}
  if(S.ocSaved===S.q-1)warn.push(`💱 <b>Octave a appelé le prime broker</b> : l'appel de marge de la clôture n'a rien coupé.`);
  if(S.marginCall)warn.push(`Appel de marge : la marge utilisée a dépassé ${(MGC.thr*100).toFixed(0)} % de l'encours en cours de trimestre. Le prime broker a liquidé ${(S.marginCall.f*100).toFixed(0)} % du book au plus bas, ${mm(S.marginCall.cost)} de coûts de liquidation, et vous repartez avec les positions réduites d'autant.`);
  if(S.qLog.includes('mandat'))warn.push("Votre mandat est réduit : plus aucune position au-delà de 3 unités.");
