@@ -5775,8 +5775,9 @@ function rivVolQ(rv){const st=RIVSTRAT[rv.style]||RIVSTRAT.fonda;let cv=0;(S.f||
  let bv=v,by=-1e9;for(let t=0.06;t<=cap+1e-9;t+=0.02){const y=rivPt(rv,t,1).y;if(y>by){by=y;bv=t}}
  return Math.max(0.06,Math.min(cap,0.5*v+0.5*bv))}
 function rivV(rv){return rv.vq||rv.vol}
-/* lot 80 : le prime broker finance le levier à un coût qui croît comme le carré du risque — même barème pour tous */
-const FINK=0.006;
+/* lot 80 : le prime broker finance le levier à un coût qui croît comme le carré du risque — même barème pour tous.
+   lot 347 : supprimé (FINK = 0). Sur des futures, le seul coût du levier est le collatéral déposé en marge, déjà compté. */
+const FINK=0;
 function rivDrag(v){return FINK*(v/0.2)*(v/0.2)}
 function finDrag(k){const v=riskShown(weights(k||S.k)).total;return FINK*(v/0.2)*(v/0.2)}   /* impact et financement d'un gros book, par trimestre */
 function rivTail(rv,j,v,q){const u=prng32(hash32('rtail'+j+'_'+q,S.seed));if(u()>=tailP(v,1))return 0;
@@ -5876,7 +5877,7 @@ function riskMap(sp,big){
    +`<circle cx="${f(px)}" cy="${f(py)}" r="5.5" fill="${me}" stroke="${hot?'#D2463C':'var(--bg,#0b1020)'}" stroke-width="${hot?1.6:.8}"/>`
    +`<text x="${f(px+8)}" y="${f(py-7)}" font-size="10" fill="${me}" font-family="var(--mono)" font-weight="700" ${px>x1-70?'text-anchor="end"':''}>${nm}</text>`;
   const tp=tailP(sp);
-  return `<p class="note" style="margin:0 0 4px">Valeurs <b>trimestrielles</b>, comme partout dans le jeu. Risque : écart-type du trimestre, book et collatéral compris, bruit d'estimation compris ; sa jauge passe à l'ambre puis au rouge à mesure qu'il monte. Rentabilité : rendement attendu du trimestre — collatéral, impact, financement du levier compris ; ni le drain de volatilité ni les événements extrêmes, qui dépendent du risque et se lisent sur l'axe horizontal ; sa jauge est rouge sous zéro et verte au niveau du meilleur concurrent. Traits tous les 5 points. Point jaune pâle : votre fonds juste avant votre dernier changement de position, toutes les autres positions comprises. Les concurrents sont placés à leur couple estimé (risque · rentabilité).</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
+  return `<p class="note" style="margin:0 0 4px">Valeurs <b>trimestrielles</b>, comme partout dans le jeu. Risque : écart-type du trimestre, book et collatéral compris, bruit d'estimation compris ; sa jauge passe à l'ambre puis au rouge à mesure qu'il monte. Rentabilité : rendement attendu du trimestre — collatéral (et ce que la marge lui retire), impact compris ; ni le drain de volatilité ni les événements extrêmes, qui dépendent du risque et se lisent sur l'axe horizontal ; sa jauge est rouge sous zéro et verte au niveau du meilleur concurrent. Traits tous les 5 points. Point jaune pâle : votre fonds juste avant votre dernier changement de position, toutes les autres positions comprises. Les concurrents sont placés à leur couple estimé (risque · rentabilité).</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
    +`<p class="note" style="margin:0 0 10px">${tp>0?`À ${sv} de risque : <b class="neg-g">${dec(tp*100,0)} % de probabilité</b> d'un accident de levier ce trimestre, perte de l'ordre de ${dec(TAILSEV*tailL(sp)*100,0)} % de l'encours si vous le laissez courir.`:`Sous ${dec(TAIL.x0*50,1)} % de risque par trimestre, pas d'accident de levier possible.`}</p>`;
  }
  const L=3,Rr=4,T=5,B=3,gid='gz'+(++riskMap.n);
@@ -5905,7 +5906,7 @@ function colExp(k){const o=colOpt(),m=k?Math.min(1,marginPct(k)):mgShare();retur
 function profitBook(k){
  k=k||S.k;const w=weights(k),k0=S.k0||S.k;let m=colExp(k);   /* lot 345 : coût d'opportunité du collatéral selon la marge de ce book */
  for(let i=0;i<N;i++){if(w[i])m+=w[i]*expRet(i).m;const d=k[i]-k0[i];if(d)m-=tcost(d,i).imp/S.nav}
- const sg=riskShown(w).total;return m-FINK*(sg/0.2)*(sg/0.2)+xBookTerm(k);   /* lot 85 : lecture des marchés, moins le financement facturé ; ni accidents ni drain ; lot 337 : l'extrême signalé */
+ const sg=riskShown(w).total;return m-FINK*(sg/0.2)*(sg/0.2)+xBookTerm(k);   /* lot 85 : lecture des marchés ; ni accidents ni drain ; lot 337 : l'extrême signalé ; lot 347 : plus de financement fictif */
 }
 const pc2=x=>`<b class="${Math.abs(x)<5e-5?'dim-g':cls(x)}">${x>=0?'+':'−'}${dec(Math.abs(x*100),2)} %</b>`;
 function expBook(k){
