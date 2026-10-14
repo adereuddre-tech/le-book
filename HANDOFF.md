@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 357.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 358.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -380,6 +380,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **355** : bot : équipe visée crans 7/5 (flux 5/4), réserve 15 % (flux 30 %), locaux dès que l'écart tient dans la moitié de la trésorerie, book du desk ×1,5 en facile, aversion 0,5. Campagnes 353–355 : bot prudent 93 %, bot agressif 36 %.
 - **356** : exécution : libellés qui passent à la ligne, montants alignés ; tableau des six styles lisible (colonnes larges, première colonne fixe, défilement horizontal, six noms) ; capital de départ du tableau ×0,8.
 - **357** : cadre fixe du bas (`#bdock`, `dockSync`) qui regroupe l'alerte de carton et le minuteur, la page lui réserve sa hauteur (plus de recouvrement) ; bandeau DIRECT qui défile même avec « réduire les animations ».
+- **358** : `STRGAP` 0,28 → 0,15.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).

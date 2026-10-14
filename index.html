@@ -5724,7 +5724,7 @@ const STRESS=[
  {id:'cyber',nm:'Cyberattaque sur les bourses',ext:1,sh:[-0.5,0,0.5,-1.5],liq:2.0,mg:1.2,p:"Les systèmes d'une grande place de cotation tombent pendant deux séances. Personne ne sait plus où est le prix."},
  {id:'crypto',nm:'Effondrement d\'une plateforme crypto',ext:1,x:{BTC:-3.5},sh:[0,0,0,-1.0],p:"La plus grande plateforme d'échange gèle les retraits. Le bitcoin perd un tiers en un week-end."},
  {id:'secheresse',nm:'Sécheresse historique',ext:1,x:{NRAM:-3.0,ZW:2.5,KC:2.5},sh:[0,0.5,0,0],p:"Trois mois sans pluie sur les grandes plaines et au Brésil. Les récoltes fondent, les prix agricoles flambent."}];
-const STRESSK=0.32,STRGAP=0.28;
+const STRESSK=0.32,STRGAP=0.15;   /* lot 358 : gap de crise 28 % → 15 % de la vol trimestrielle de chaque ligne */
 /* lot 264 : les dépêches extrêmes rejoignent le catalogue ; même calcul sur le book, même veille, même protection */
 MACROEV.filter(e=>e.x).forEach((e,j)=>{const x={};for(const sy in e.hit)x[sy]=e.hit[sy]/(STRESSK*1.5);
  STRESS.push({id:'mx'+j,mac:1,nm:e.t,t0:e.t,who:e.who,x,sh:[0,0,0,0],p:e.p,...(e.liq?{liq:e.liq}:{}),...(e.shut?{shut:e.shut}:{})})});
