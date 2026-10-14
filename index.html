@@ -2977,8 +2977,8 @@ function covInfo(){const base=covE();if(!S)return base;
 function xMoments(k){const Pd=typeof xDeskP==='function'&&S.bud?xDeskP():0,bo=0.5+0.5*((S.bud&&TAILM[S.bud.risk])||1),h=S.xHint;let Q=[];
  if(h&&h.id){const sc=STRESS.find(x=>x.id===h.id);if(sc)Q=[[sc,1]]}
  if(!Q.length){let sw=0;STRESS.forEach(x=>{const p=xScP(x);if(p>0){Q.push([x,p]);sw+=p}});Q=sw>0?Q.map(([x,p])=>[x,p/sw]):[]}
- let E1=0,E2=0;Q.forEach(([x,q])=>{const L=(0.5*bo+0.5)*stressLoss(k,x);E1+=q*L;E2+=q*L*L});
- if(h&&h.t&&!h.id){const L=(0.5*bo+0.5)*xEvLoss(k,h.t);E1=L;E2=L*L}
+ let E1=0,E2=0;Q.forEach(([x,q])=>{const L=xLossE(k,x);E1+=q*L;E2+=q*L*L});
+ if(h&&h.t&&!h.id){const L=xLossT(k,h.t);E1=L;E2=L*L}
  return {Pd,E1,E2}}
 /* lot 349 : rentabilité du fonds, tout compris (trimestrielle) */
 function fundRetParts(k){k=k||S.k;const k0=S.k0||S.k,w=weights(k);
@@ -2992,6 +2992,10 @@ function fundRetParts(k){k=k||S.k;const k0=S.k0||S.k,w=weights(k);
  const vis=vp>0?-pv*vl/vp:0;
  return {total:lect+cx+ext+acc+vis,lect,cx,ext,acc,vis,pd:XM.Pd}}
 function fundRet(k){return fundRetParts(k).total}
+/* lot 351 : rentabilité ajustée du risque — ce que montrent le panneau, les lignes et le nuage */
+function riskCost(k){const sg=riskShown(weights(k)).total;return 0.5*(sg/2)*(sg/2)}
+function adjParts(k){k=k||S.k;const lect=profitBook(k)-xBookTerm(k),XM=xMoments(k),ext=XM.Pd*XM.E1,rc=-riskCost(k);return {total:lect+ext+rc,lect,ext,rc,pd:XM.Pd}}
+function adjRet(k){return adjParts(k).total}
 function fundParts(k){k=k||S.k;const w=weights(k),st=volStress(w,undefined,covInfo()),ev=evVarExp(w).v,Vb=st*st+ev;
  const XM=xMoments(k),Pd=XM.Pd,E1=XM.E1,E2=XM.E2;
  const VX=Math.max(0,Pd*E2-(Pd*E1)**2);
@@ -4622,7 +4626,7 @@ function kPrev(e,mode){
 /* même lecture que les lignes de marché : rentabilité du trimestre, risque en points de vol ex ante */
 function bkD(k1,cost,hid){
  if(!k1)return '';const same=k1.every((v,i)=>v===S.k[i]);if(same&&!hid&&!cost)return '';
- const R=kk=>fundRisk(kk),dr=(R(k1)-R(S.k))*100,dp=fundRet(k1)-fundRet(S.k);
+ const R=kk=>riskShown(weights(kk)).total,dr=(R(k1)-R(S.k))*100,dp=adjRet(k1)-adjRet(S.k);
  const ch=k1.map((v,i)=>v!==S.k[i]?`${INSTR[i].sym} ${S.k[i]>0?'+':''}${S.k[i]}→${v>0?'+':''}${v}`:null).filter(Boolean);
  const cs=cost>0?`coûts <b>${mm(cost)}</b>`:cost<0?`coûts <b class="pos-g">−${mm(-cost)}</b>`:'';
  const l1=[ch.length?`${ch.slice(0,4).join(', ')}${ch.length>4?'…':''}`:'',cs].filter(Boolean).join(' · ');
@@ -5632,10 +5636,10 @@ function riskPts(k){
 /* Sans position : ce qu'une unité ajouterait au risque affiché, en points. */
 /* lot 58 : contribution marginale, moyenne des pentes à +1 et à −1 : (R(k+1) − R(k−1)) / 2, en points.
    Book vide : l'effet d'une unité (les deux pentes sont alors égales en valeur absolue). */
-function riskMarg(i,k){const R=kk=>fundRisk(kk),kp=[...k],km=[...k];kp[i]=(kp[i]||0)+1;km[i]=(km[i]||0)-1;
+function riskMarg(i,k){const R=kk=>riskShown(weights(kk)).total,kp=[...k],km=[...k];kp[i]=(kp[i]||0)+1;km[i]=(km[i]||0)-1;
  return (k.some(v=>v)?(R(kp)-R(km))/2:R(kp)-R(k))*100}
 function riskMargB(i,k){const R=kk=>riskShown(weights(kk)).total,kp=[...k],km=[...k];kp[i]=(kp[i]||0)+1;km[i]=(km[i]||0)-1;return (k.some(v=>v)?(R(kp)-R(km))/2:R(kp)-R(k))*100}
-function riskAdd(i,k){const k1=[...k];k1[i]=(k1[i]||0)+1;return (fundRisk(k1)-fundRisk(k))*100}
+function riskAdd(i,k){const k1=[...k];k1[i]=(k1[i]||0)+1;return (riskShown(weights(k1)).total-riskShown(weights(k)).total)*100}
 function expShort(o){const r=o.s>0?o.m/o.s:0;
  return `<span class="${cls(o.m)}">${sgn(o.m,1)}</span>`}
 /* lot 66 : plus de mandat de volatilité. Au-delà de TAIL.x0 de risque ex ante, un accident de levier
@@ -5756,11 +5760,17 @@ function xHintTxt(k){const h=S&&S.xHint;if(!h)return '';const nm=xHintName(),L=x
 function xDeskP(){const T=xProbTot();if(!(T>0))return 0;const W=xWatch();
  return S.xHint?W.s*T/Math.max(1e-9,W.s*T+W.fa*(1-T)):(1-W.s)*T/Math.max(1e-9,(1-W.s)*T+(1-W.fa)*(1-T))}
 /* perte attendue sur le book d'un extrême signalé (mouvement complet, choc immédiat amorti par le contrôle des risques) */
-function xBookTerm(k){if(!S||!S.xHint||!S.bud)return 0;k=k||S.k;const h=S.xHint,P=xDeskP(),bo=0.5+0.5*(TAILM[S.bud.risk]||1);let L=0;
- if(h.id){const sc=STRESS.find(x=>x.id===h.id);L=sc?stressLoss(k,sc):0}
- else if(h.t)L=xEvLoss(k,h.t);
- else{let sw=0,sl=0;STRESS.forEach(x=>{const p=xScP(x);sw+=p;sl+=p*stressLoss(k,x)});L=sw>0?sl/sw:0}
- return P*(0.5*bo+0.5)*L}
+/* lot 351 : perte attendue d'un extrême telle que le moteur l'applique — choc immédiat bo·(½·mouvement·foule − écart),
+   puis la suite du mouvement, qui se retourne un peu en moyenne (−12,5 % du mouvement) */
+const XCONT=-0.125;
+function xLossE(k,sc){const w=weights(k),h=stressHit(sc,k);let v=0;INSTR.forEach((x,i)=>{if(h[x.sym])v+=w[i]*h[x.sym]*x.sigQ});
+ const bo=0.5+0.5*((S.bud&&TAILM[S.bud.risk])||1),cr=v<0?crowd(riskShown(w).total):1;return bo*(0.5*v*cr-stressGap(k,sc))+XCONT*v}
+function xLossT(k,t){const v=xEvLoss(k,t);return 0.5*v+XCONT*v}
+function xBookTerm(k){if(!S||!S.xHint||!S.bud)return 0;k=k||S.k;const h=S.xHint,P=xDeskP();let L=0;
+ if(h.id){const sc=STRESS.find(x=>x.id===h.id);L=sc?xLossE(k,sc):0}
+ else if(h.t)L=xLossT(k,h.t);
+ else{let sw=0,sl=0;STRESS.forEach(x=>{const p=xScP(x);sw+=p;sl+=p*xLossE(k,x)});L=sw>0?sl/sw:0}
+ return P*L}
 function xWatchTxt(){const W=xWatch();return `Votre veille sent venir <b>${Math.round(W.s*100)} %</b> des extrêmes et en identifie <b>${Math.round(W.i*100)} %</b> ; fausse alerte ${Math.round(W.fa*100)} % des trimestres calmes.`}
 function stressP(){return Math.min(0.32,0.10+0.20*Math.max(0,((S&&S.liq)||1)-0.9)/0.6)}   /* lue sur la liquidité affichée au desk */
 function crowd(sp){return Math.min(2.5,1+2.5*Math.max(0,sp-0.20)/0.10)}
@@ -5852,14 +5862,14 @@ function gzBar(id,vert,fix,th,a,b,full0,full1,rx){
 function riskMap(sp,big){
  /* lot 68 : trimestriel — μ du trimestre, σ trimestriel = σ annuel / 2. gh = le fonds avant ses derniers changements
     (book de départ sur la page du book, book validé pendant le trimestre), en jaune pâle. */
- const pr=profitBook(S.k),R=(S.rivals||[]).map((rv,j)=>{const p=rivPtLive(rv,j);p.x/=2;return Object.assign(p,{c:rivCol(j),nm:rv.nm})});
+ const lvQ=S.phase==='events'&&S.live,pr=lvQ?profitBook(S.k):adjRet(S.k),R=(S.rivals||[]).map((rv,j)=>{const p=rivPtLive(rv,j);p.x/=2;if(!lvQ){const A=adjParts(S.k),sp0=riskShown(weights(S.k)).total,xr=sp0>0.02?A.ext/sp0:-tailExp(0.2)/0.2;p.y+=-0.5*p.x*p.x+xr*2*p.x}return Object.assign(p,{c:rivCol(j),nm:rv.nm})});   /* lot 351 */
  /* lot 69 : S._kLast = book au dernier affichage ; dès qu'il diffère du book courant, il devient le point
     précédent (S._kGhost). Quel que soit le chemin du changement (case du book, dépêche, desk, accident),
     le point jaune est donc le book juste avant, les autres positions comprises. Remis à zéro chaque trimestre. */
  const cs=colStdQ(),sq=Math.sqrt((sp/2)**2+cs*cs);   /* lot 84 : sans position, le risque est celui du collatéral */
  if(!S._kLast||S._kLast.length!==S.k.length){S._kLast=[...S.k];S._kGhost=null}
  else if(S._kLast.some((v,i)=>v!==S.k[i])){S._kGhost=S._kLast;S._kLast=[...S.k]}
- const kB=S._kGhost,gh=kB&&kB.length===S.k.length&&kB.some((v,i)=>v!==S.k[i])?{x:Math.sqrt((riskShown(weights(kB)).total/2)**2+cs*cs),y:profitBook(kB)}:null;
+ const kB=S._kGhost,gh=kB&&kB.length===S.k.length&&kB.some((v,i)=>v!==S.k[i])?{x:Math.sqrt((riskShown(weights(kB)).total/2)**2+cs*cs),y:lvQ?profitBook(kB):adjRet(kB)}:null;
  const xm=Math.max(0.05,sq,...R.map(r=>r.x),...(gh?[gh.x]:[]))*1.10;
  const ys=[pr,...R.map(r=>r.y),...(gh?[gh.y]:[])],ya=Math.min(0,...ys),yz=Math.max(0,...ys),ypad=Math.max(0.01,(yz-ya)*0.14);
  const y0=ya<0?ya-ypad:0,y1=yz+ypad;
@@ -5900,7 +5910,7 @@ function riskMap(sp,big){
    +`<circle cx="${f(px)}" cy="${f(py)}" r="5.5" fill="${me}" stroke="${hot?'#D2463C':'var(--bg,#0b1020)'}" stroke-width="${hot?1.6:.8}"/>`
    +`<text x="${f(px+8)}" y="${f(py-7)}" font-size="10" fill="${me}" font-family="var(--mono)" font-weight="700" ${px>x1-70?'text-anchor="end"':''}>${nm}</text>`;
   const tp=tailP(sp);
-  return `<p class="note" style="margin:0 0 4px">Valeurs <b>trimestrielles</b>, comme partout dans le jeu. Risque : écart-type du trimestre, book et collatéral compris, bruit d'estimation compris ; sa jauge passe à l'ambre puis au rouge à mesure qu'il monte. Rentabilité : rendement attendu du trimestre — collatéral (et ce que la marge lui retire), impact compris ; ni le drain de volatilité ni les événements extrêmes, qui dépendent du risque et se lisent sur l'axe horizontal ; sa jauge est rouge sous zéro et verte au niveau du meilleur concurrent. Traits tous les 5 points. Point jaune pâle : votre fonds juste avant votre dernier changement de position, toutes les autres positions comprises. Les concurrents sont placés à leur couple estimé (risque · rentabilité).</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
+  return `<p class="note" style="margin:0 0 4px">Valeurs <b>trimestrielles</b>, comme partout dans le jeu. Risque : écart-type du trimestre, book et collatéral compris, bruit d'estimation compris ; sa jauge passe à l'ambre puis au rouge à mesure qu'il monte. Rentabilité : rendement attendu du trimestre — collatéral (et ce que la marge lui retire), impact compris, moins le coût du risque (½ σ²) et la perte moyenne des extrêmes à la probabilité du desk ; ni les accidents de levier ni les squeezes, détaillés dans la fenêtre de chaque marché ; sa jauge est rouge sous zéro et verte au niveau du meilleur concurrent. Traits tous les 5 points. Point jaune pâle : votre fonds juste avant votre dernier changement de position, toutes les autres positions comprises. Les concurrents sont placés à leur couple estimé (risque · rentabilité).</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
    +`<p class="note" style="margin:0 0 10px">${tp>0?`À ${sv} de risque : <b class="neg-g">${dec(tp*100,0)} % de probabilité</b> d'un accident de levier ce trimestre, perte de l'ordre de ${dec(TAILSEV*tailL(sp)*100,0)} % de l'encours si vous le laissez courir.`:`Sous ${dec(TAIL.x0*50,1)} % de risque par trimestre, pas d'accident de levier possible.`}</p>`;
  }
  const L=3,Rr=4,T=5,B=3,gid='gz'+(++riskMap.n);
@@ -6038,14 +6048,15 @@ function showMarket(i){
     ...(XP.tipT?[[`Tuyau de ${XP.tipT.who}`,`${XP.tipT.up?'▲ hausse':'▼ baisse'} · ${Math.round(XP.tipT.rel*100)} %`,pc(XP.tip)]]:[]),
     ['<b>Attendu</b>','',`<b>${pc(XR.m)}</b>`]],['','Exposition × lecture','Effet'])}
   ${tbl([['Par unité, pour le fonds',`<b>${pc(w1*XR.m)}</b> ± ${dec(2*w1*XR.s*100,1)} %`],
-    ['Risque marginal du fonds (±1 unité)',`<b class="${rp>0?'neg-g':'pos-g'}">${rp>=0?'+':'−'}${dec(Math.abs(rp),1)} pt</b> sur ${Math.round(fundRisk(S.k)*100)}`],
-    ['dont le book seul, vu du comité',(v=>`${v>=0?'+':'−'}${dec(Math.abs(v),1)} pt sur ${Math.round(riskShown(weights(S.k)).total*100)}`)(riskMargB(i,S.k))],
+    ['Risque marginal (±1 unité)',`<b class="${rp>0?'neg-g':'pos-g'}">${rp>=0?'+':'−'}${dec(Math.abs(rp),1)} pt</b> sur ${Math.round(riskShown(weights(S.k)).total*100)}`],
+    ['Sur le risque du fonds (extrêmes, collatéral)',(()=>{const R=kk=>fundRisk(kk),kp=[...S.k],km=[...S.k];kp[i]+=1;km[i]-=1;const v=(S.k.some(x=>x)?(R(kp)-R(km))/2:R(kp)-R(S.k))*100;return `${v>=0?'+':'−'}${dec(Math.abs(v),1)} pt sur ${Math.round(fundRisk(S.k)*100)}`})()],
+    ['Rentabilité marginale tout compris (+1)',(v=>pc2(v))(fundRet((()=>{const a=[...S.k];a[i]+=1;return a})())-fundRet(S.k))],
     ['Position',S.k[i]===0?'à plat':`${S.k[i]>0?'+':''}${S.k[i]} · ${bn(notionalBn(S.k[i],i),1)}`],
     ['Autres fonds',Math.abs(S.crowd[i])<0.25?'neutres':(S.crowd[i]>0?'majoritairement longs':'majoritairement courts')]])}
   <details style="margin-top:10px"><summary>Comment lire ce tableau</summary>
    <p style="margin-top:8px">Facteurs : l'exposition du marché (de −1 à +1) multipliée par ce que vos sources disent du facteur. Signaux : ce que tendance, portage et valeur ajoutent${XP.cv>1?' — la valeur compte triple sur un catalyseur':''}. L'intervalle couvre environ 95 trimestres sur 100 : il mesure ce que vous ne savez pas.</p>
-   <p>Rentabilité et risque marginaux se lisent sur le <em>fonds</em>, tout compris : lecture des marchés, fourchette, impact et glissement, extrêmes à la probabilité du desk, accidents de levier, appels de marge et squeezes, collatéral selon la marge. Le panneau du book montre la lecture des marchés seule.</p>
-   <p>Risque marginal : ce qu'une unité de plus (ou de moins) ajoute au risque du <em>fonds</em> — le book lu avec tout ce que sait le desk (tuyaux de facteurs et de marchés), les extrêmes à la probabilité du desk, le collatéral et la corrélation de ses défauts avec les extrêmes. Le comité, lui, ne juge que le book.</p>
+   <p>Rentabilité affichée partout (panneau, lignes, nuage) : la lecture des marchés, moins le coût du risque (½ σ² du trimestre) et la perte moyenne des extrêmes à la probabilité du desk. Chaque unité rapporte un peu moins que la précédente. Risque marginal : celui du panneau, le book vu du comité.</p>
+   <p>Les deux lignes « fonds » vont plus loin : le risque du book lu avec tout ce que sait le desk, les extrêmes, le collatéral et la corrélation de ses défauts avec les extrêmes ; la rentabilité avec la fourchette, l'impact et le glissement, les accidents de levier, les appels de marge et les squeezes.</p>
    <p><em>Tendance</em> — ${TCVTXT.t.d}</p><p><em>Portage</em> — ${TCVTXT.c.d[x.grp]||''} Il a deux parts : le <em>structurel</em>, connu exactement (dividendes et prime de risque, prime de terme, écart de taux, coût de stockage, contango), et le <em>cycle</em>, que le desk lit avec du bruit. La pastille du book les additionne.</p><p><em>Valeur</em> — ${TCVTXT.v.d}</p>
    <p>Votre style lit son signal trois fois plus nettement que les deux autres ; la salle de marché règle le bruit (±${dec(TCVQ[S.bud.exec],2)} cran).</p></details>
   <details><summary>Le marché</summary>
@@ -6070,12 +6081,12 @@ function rowInfo(i){
    const n=a>=0.55?3:a>=0.32?2:1;return `<span>${FN[k]} <b style="color:${b>0?'var(--long)':'var(--short)'}">${(b>0?'+':'−').repeat(n)}</b></span>`}).join(' · ');
  let gl='';
  if(mktOpen(i)){
-  const R=kk=>fundRisk(kk),r0=R(S.k),kp=[...S.k],km=[...S.k];kp[i]+=1;km[i]-=1;   /* lot 344 : risque du fonds */
+  const R=kk=>riskShown(weights(kk)).total,r0=R(S.k),kp=[...S.k],km=[...S.k];kp[i]+=1;km[i]-=1;   /* lot 351 : le risque du panneau */
   const rP=(R(kp)-r0)*50,rM=(R(km)-r0)*50,rc=v=>`<b class="${v>0.05?'neg-g':v<-0.05?'pos-g':'dim-g'}">${v>=0?'+':'−'}${dec(Math.abs(v),1)} pt</b>`;
-  const fr0=fundRet(S.k),ex1=pc2(fundRet(kp)-fr0);   /* lot 349 */
+  const fr0=adjRet(S.k),ex1=pc2(adjRet(kp)-fr0);   /* lot 351 : rentabilité ajustée du risque */
   const k0=S.k0?S.k0[i]:S.k[i],d=S.k[i]-k0,t=tcost(d,i);
   const od=d>0?`<b class="pos-g">achat ${d}</b>`:d<0?`<b class="neg-g">vente ${-d}</b>`:'<b class="dim-g">aucun</b>';
-  const pM=pc2(fundRet(km)-fr0),pct1=v=>`<b class="${v>0.005?'neg-g':v<-0.005?'pos-g':'dim-g'}">${v>=0?'+':'−'}${dec(Math.abs(v),2)} %</b>`;
+  const pM=pc2(adjRet(km)-fr0),pct1=v=>`<b class="${v>0.005?'neg-g':v<-0.005?'pos-g':'dim-g'}">${v>=0?'+':'−'}${dec(Math.abs(v),2)} %</b>`;
   gl=`<div class="rgrid3"><span></span><span class="k">−1 · vente</span><span class="k">+1 · achat</span><span class="lb">rentabilité</span><span>${pM}</span><span>${ex1}</span><span class="lb">risque</span><span>${pct1(rM)}</span><span>${pct1(rP)}</span></div>`}
  el.innerHTML=`<div class="fxe2">${ex}</div>${gl}`;
 }
@@ -6262,7 +6273,7 @@ function screenCoinv(){
  const hAsk=S.hedgeAsk!==S.q,cAsk=S.q>=1&&S.coinvQ!==S.q;
  if(!hAsk&&!cAsk){screenComm();return}
  save('screenCoinv');
- const cash=Math.max(0,mgrCash()),pb=profitBook(S.k),sg=riskShown(weights(S.k)).total;S.coinvScr=cAsk?S.q:-1;
+ const cash=Math.max(0,mgrCash()),pb=adjRet(S.k),sg=riskShown(weights(S.k)).total;S.coinvScr=cAsk?S.q:-1;
  const amt=p=>p*cash;
  app.innerHTML=statusBar()+`<div class="fade"><div class="pnlhead"><div class="q">TRIMESTRE ${S.q+1} · ${hAsk&&cAsk?'PROTECTION ET CO-INVESTISSEMENT':hAsk?'PROTECTION':'CO-INVESTISSEMENT'}</div>
   <div class="regime">${hAsk&&cAsk?'Couvrir le fonds, y placer votre argent':hAsk?'Couvrir le fonds':'Votre argent dans le fonds'}</div></div>
@@ -6625,9 +6636,9 @@ function screenMacroEvent(ev){
  const go=i=>{clearTimer();resolveEvent(ev,touched,plan[i],imm,navB)};
  const NO=plan.findIndex(o=>o.n===0);let sel=NO;
  /* lot 244 : résumé compact dans le dock, détail au-dessus */
- const R0=fundRisk(S.k),P0=fundRet(S.k);
+ const R0=riskShown(weights(S.k)).total,P0=adjRet(S.k);
  const sline=(o,s)=>`<div class="dkr"><span>${['Poursuite','Retournement'][s]} <b>${Math.round(PR[s]*100)} %</b></span><span class="${o.pay[s]>0?'pos-g':o.pay[s]<0?'neg-g':'dim-g'}">${uNum(o.pay[s]*S.nav,UM)} ${unitLab}</span><span>conf. ${gcell(o.gz[s].lp)}</span></div>`;
- document.getElementById('evpan').innerHTML=plan.map((o,i)=>{const dp=o.n!==0&&o.trades.length?fundRet(o.t)-P0:0,dr=o.n!==0&&o.trades.length?(fundRisk(o.t)-R0)*100:0;
+ document.getElementById('evpan').innerHTML=plan.map((o,i)=>{const dp=o.n!==0&&o.trades.length?adjRet(o.t)-P0:0,dr=o.n!==0&&o.trades.length?(riskShown(weights(o.t)).total-R0)*100:0;
    return `<div class="pcell" data-p="${i}"><div class="evopt evdk" data-i="${i}"><div class="dkh"><b>${o.b}</b><span class="${o.cost>0?'neg-g':o.cost<0?'pos-g':'dim-g'}">${o.n===0?'aucun ordre':o.trades.length?(o.cost<0?'rabais +'+mm(-o.cost):'ordres −'+mm(o.cost)):'aucun ordre possible'}</span></div>
     ${sline(o,0)}${sline(o,1)}<div class="dkr dkm"><span>rentabilité ${pc2(dp)}</span><span>risque <b class="${dr>0.05?'neg-g':dr<-0.05?'pos-g':'dim-g'}">${dr>=0?'+':'−'}${dec(Math.abs(dr),1)} pt</b></span>${o.ban?'<span class="neg-g">carton rouge : interdit</span>':''}</div></div></div>`}).join('');
  /* lot 245 : tous les détails empilés, hauteur constante quel que soit le cran */
