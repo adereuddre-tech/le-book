@@ -563,6 +563,8 @@ table.qt{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:1
 table.qt th{text-align:right;color:var(--txt);font-weight:700;padding:6px 0;border-bottom:1px solid var(--line2);font-size:11.5px;letter-spacing:.02em}
 table.qt th:first-child,table.qt td:first-child{text-align:left}
 table.qt{table-layout:auto;width:100%}
+table.qt.sty{width:auto;min-width:860px}table.qt.sty td,table.qt.sty th{white-space:normal;min-width:110px;text-align:left;padding-right:8px}
+table.qt.sty td:first-child,table.qt.sty th:first-child{position:sticky;left:0;background:var(--panel);min-width:120px;color:var(--txt);z-index:1}
 table.qt td{text-align:right;padding:6px 0 6px 8px;border-bottom:1px solid var(--line);color:var(--dim);white-space:nowrap;vertical-align:top}
 table.qt td:first-child{text-align:left;white-space:normal;line-height:1.3;padding-left:0;padding-right:10px;word-break:normal;overflow-wrap:anywhere}
 table.qt th{white-space:nowrap;vertical-align:bottom;padding-left:8px}
@@ -3751,9 +3753,9 @@ function feeLine(){
 }
 function styTable(){const P=PROFILES,f=(x,d=2)=>'×'+dec(x,d),pw={rv:"les paires : deux écarts à refermer par trimestre",tail:"la protection au prix du choc, et qui rend plus que le choc",act:"le livre noir : un corner ou un squeeze par trimestre, hors du book",syst:"le modèle : book entier en facile, six convictions en moyen et difficile",fonda:"sources vérifiées : une probabilité sûre par trimestre",flux:"intuition : le sens d'un facteur, juste 4 fois sur 5"};
  const XR={rv:"12–78 % · 25–65 %",tail:"25–90 % · 40–80 %",act:"18–83 % · 55–95 %",syst:"20–85 % · 45–85 %",fonda:"10–75 % · 60–95 %",flux:"33–95 % · 5–45 %"};
- const R=[["Pouvoir",p=>pw[p.id]],["Extrêmes : sentir · identifier",p=>XR[p.id]],["Capital de départ",p=>STYSEED[p.id]?'+'+dec(STYSEED[p.id]*1000,2)+' M$':'—'],["Commission de performance",p=>STYPERF[p.id]?'+'+Math.round(STYPERF[p.id]*100)+' pts':'—'],
+ const R=[["Pouvoir",p=>pw[p.id]],["Extrêmes : sentir · identifier",p=>XR[p.id]],["Capital de départ",p=>STYSEED[p.id]?'+'+dec(STYSEED[p.id]*1000*0.8,2)+' M$':'—'],["Commission de performance",p=>STYPERF[p.id]?'+'+Math.round(STYPERF[p.id]*100)+' pts':'—'],
   ["Coût de l'équipe",p=>f(STYCOST[p.id])],["Coûts d'exécution",p=>f(p.tcMult)],["Book du desk (facile)",p=>f(p.deskScale||p.modelScale)+' le risque de croisière'],["Nervosité des investisseurs",p=>f(p.lpMult)],["Incidents : fréquence · coût",p=>f(p.incMult)+' · '+f(p.incSev||1,1)],["Mouvement capté sur les dépêches",p=>Math.round(p.capture*100)+' %']];
- return `<details class="wire" style="margin-top:10px"><summary>Les six styles en un tableau</summary><div style="overflow-x:auto"><table class="qt" style="margin-top:8px;font-size:12px"><thead><tr><th style="text-align:left"></th>${P.map(p=>`<th>${({syst:'Quant',fonda:'Fondamental',flux:'Flux'})[p.id]}</th>`).join('')}</tr></thead><tbody>${R.map(([l,fn])=>`<tr><td style="text-align:left">${l}</td>${P.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`}
+ return `<details class="wire" style="margin-top:10px"><summary>Les six styles en un tableau</summary><div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="qt sty" style="margin-top:8px;font-size:12px"><thead><tr><th style="text-align:left"></th>${P.map(p=>`<th>${({syst:'Quant',fonda:'Fondamental',flux:'Flux',rv:'Valeur relative',tail:'Cygnes noirs',act:'Activiste'})[p.id]||p.id}</th>`).join('')}</tr></thead><tbody>${R.map(([l,fn])=>`<tr><td style="text-align:left">${l}</td>${P.map(p=>`<td>${fn(p)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`}
 function screenSetup(){
  app.innerHTML=`<div class="hero fade" style="padding-top:34px">
   <div class="kicker">${fundName.toUpperCase()}${setup.size?' · '+SIZES.find(x=>x.id===setup.size).nm.split('—')[1].trim().toUpperCase():''}</div>
@@ -6464,9 +6466,9 @@ function screenExec(){
  const lqNm=S.liq>1.5?'très dégradée':S.liq>1.2?'dégradée':S.liq>1.05?'un peu tendue':S.liq<0.92?'excellente':'normale';
  app.innerHTML=statusBar()+`<div class="fade">
   <div class="block"><div class="blockhead"><h2>${orders.length?'Les traders passent vos ordres':'Aucun ordre à passer'}</h2><span class="hint">T${S.q+1} · exécution</span></div>
-   ${orders.length?`<p class="note" style="margin:0 0 4px">Exécution standard — qui paie quoi :</p><div class="kv"><span><b style="color:#fff">Fourchette et impact au tarif · payés par le fonds</b></span><b style="color:#fff;font-size:17px">${cS(tot)}</b></div>
-   <div class="kv"><span>Glissement du prix moyen · supporté par le fonds</span>${mn(execImpactAmt(tot,1,S.leakQ))}</div>
-   <div class="kv"><span>Courtage · payé par votre société (${dec(COMB*1e4,1)} pb du notionnel)</span>${cS(COMB*bnTraded(S.k0,S.k))}</div>${pwOn('jk')&&S.pwJK?`<div class="kv"><span>🐣 Tableur de Jean-Kevin : ${S.pwJK<1?'il marche':'il plante'} (${S.pwJK<1?'−':'+'}20 %), compris dans la facture</span>${mn(tot/S.pwJK-tot)}</div>`:''}`
+   ${orders.length?`<p class="note" style="margin:0 0 4px">Exécution standard — qui paie quoi :</p><div class="kv"><span style="color:var(--txt)">Fourchette et impact au tarif · payés par le fonds</span><b>${cS(tot)}</b></div>
+   <div class="kv"><span>Glissement du prix moyen · supporté par le fonds</span><b>${mn(execImpactAmt(tot,1,S.leakQ))}</b></div>
+   <div class="kv"><span>Courtage · payé par votre société (${dec(COMB*1e4,1)} pb du notionnel)</span><b>${cS(COMB*bnTraded(S.k0,S.k))}</b></div>${pwOn('jk')&&S.pwJK?`<div class="kv"><span>🐣 Tableur de Jean-Kevin : ${S.pwJK<1?'il marche':'il plante'} (${S.pwJK<1?'−':'+'}20 %), compris dans la facture</span><b>${mn(tot/S.pwJK-tot)}</b></div>`:''}`
    :`<p class="note" style="margin:0">Aucune position ce trimestre : vous ne payez aucun ordre. Le desk en profite pour vous parler d'autre chose.</p>`}
    ${orders.length?`<details style="margin-top:10px"><summary>Détail des ordres et des coûts</summary>
     <p class="note" style="margin:8px 0 0">${orders.length} marché${orders.length>1?'s':''} à travailler · liquidité ${lqNm} (×${dec(S.liq,2)}) · taux au jour le jour ${dec((S.rate*100),1)} % · trésorerie après paiement ${mm(mgrCash())} · ordres ${(tot/S.nav*1e4).toFixed(0)} pb, impact ${(Math.abs(execImpactAmt(tot,1,S.leakQ))/S.nav*1e4).toFixed(0)} pb de l'encours.</p>
