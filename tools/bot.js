@@ -19,7 +19,8 @@ function utilText(t){
    un ordre de dépêche que si la trésorerie reste ≥ 0 à la clôture attendue (trésorerie − coût + commission de gestion). */
 /* lot 233 : équipe du bot par style [front, back] et réserve de caisse ; le flux, plus sobre (calibration : 30 parties par variante,
    [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1) */
-const BUD0={syst:[3,2],fonda:[3,2],flux:[1,1]},RES0={flux:0.6};
+const BUD0={syst:[7,5],fonda:[7,5],flux:[5,4],act:[7,5],rv:[7,5],tail:[7,5]},RES0={flux:0.3};   /* lot 355 : bot qui embauche à fond */
+const RX0=1.5,AV0=0.5,OFFR0=0.5;   /* lot 355 : risque au-delà de la croisière, aversion réduite, locaux dès que la caisse suit */
 const FLOORS={syst:0.02,fonda:0.02,flux:0.04},FLOORK=0;
 /* lot 211 (lot D) : seuil de netteté du signal avant de réagir à une dépêche, par style (o.theta pour forcer) */
 const THETA0={syst:0.8,fonda:0.4,flux:0};   /* FLOORK : échelle. Bot 206 : 0 (plancher retiré, garde conservée) — un bot moins prudent, exposé au risque de faillite */
@@ -50,13 +51,14 @@ function playGame(o){
       /* lot 39 : onze crans, et les plus chers se verrouillent quand la caisse ne suit pas —
          on prend alors le cran le plus haut encore ouvert sous celui demandé */
       ids.forEach((b,i)=>{let e=null;
-        const res=o.reserve!=null?o.reserve:(RES0[o.prof]!=null?RES0[o.prof]:0.35),okR=j=>j===0||w.eval(`(S.budPrev&&${j}<=S.budPrev['${b}'])||budgetBpIf('${b}',${j})*1e-4*budNav()<=Math.min(${1-res}*(mgrCash()+(S.qOps||0)),mgrCash()+(S.qOps||0)-${o.fbud===false?0:FLOOR}*S.nav)`);   /* lot 199 : l'équipe ne mange pas le plancher */   /* garde une réserve pour les ordres */
+        const res=o.reserve!=null?o.reserve:(RES0[o.prof]!=null?RES0[o.prof]:0.15),okR=j=>j===0||w.eval(`(S.budPrev&&${j}<=S.budPrev['${b}'])||budgetBpIf('${b}',${j})*1e-4*budNav()<=Math.min(${1-res}*(mgrCash()+(S.qOps||0)),mgrCash()+(S.qOps||0)-${o.fbud===false?0:FLOOR}*S.nav)`);   /* lot 199 : l'équipe ne mange pas le plancher */   /* garde une réserve pour les ordres */
         if(w.eval('typeof teamLadder')==='function'){   /* lot 304 : équipe par personne — le bot recrute en échelle jusqu'au cran visé */
           const okT=j=>j===0||w.eval(`teamLadderSub('${b}',${j})||opsLadder('${b}',${j})<=Math.min(${1-res}*(mgrCash()+(S.qOps||0)),mgrCash()+(S.qOps||0)-${o.fbud===false?0:FLOOR}*S.nav)`);
           let jj=0;for(let j=bud[i];j>=0;j--){if(okT(j)){jj=j;break}}
           if(!w.eval(`teamIsLadder('${b}',${jj})`)){w.eval(`teamLadder('${b}',${jj});drawBuds()`);ch=true}return}
         for(let j=bud[i];j>=0;j--){const c=$(`#buds .lvl[data-b="${b}"][data-i="${j}"]`);if(c&&!c.disabled&&okR(j)){e=c;break}}
         if(e&&!e.classList.contains('on')){click(e);ch=true}});
+      if(!ch&&w.eval('typeof offDelta')==='function'&&w.eval(`typeof OFFICES!=='undefined'&&S.offBotQ!==S.q`)){const fr=o.offr!=null?o.offr:OFFR0;w.eval(`(()=>{S.offBotQ=S.q;const cur=S.office==null?0:S.office;for(let i=OFFICES.length-1;i>cur;i--){if(offOk(i)&&offDelta(i)<=${fr}*mgrCash()){S.office=i;setOps();drawBuds();break}}})()`)}
       if(ch)continue}
     if($('#send')){
       w.eval(`(()=>{const smart=${smart};
@@ -65,9 +67,9 @@ function playGame(o){
            le rendement attendu (profitBook : collatéral, impact, drain, accidents de levier compris) moins une
            aversion égale au drain de volatilité. Le « naïf » garde le book du modèle. */
         const best=raw=>{let bk=null,bu=-1e9;for(let a=0.1;a<=4.01;a+=0.1){const k=raw.map(z=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(z*a))));
-          const sg=riskShown(weights(k)).total,u=profitBook(k)-(${o.av===undefined?1:o.av}>0?0.5*sg*sg/4+tailExp(sg):0)-${o.av===undefined?1:o.av}*0.5*sg*sg/4;if(${o.lim===false?'false':'true'}&&typeof limVol==='function'&&pvol(weights(k))>limVol()*0.97&&bk)continue;if(u>bu){bu=u;bk=k}}return bk};
+          const sg=riskShown(weights(k)).total,u=profitBook(k)-(${o.av===undefined?AV0:o.av}>0?0.5*sg*sg/4+tailExp(sg):0)-${o.av===undefined?AV0:o.av}*0.5*sg*sg/4;if(${o.lim===false?'false':'true'}&&typeof limVol==='function'&&pvol(weights(k))>limVol()*0.97&&bk)continue;if(u>bu){bu=u;bk=k}}return bk};
         if(!smart){const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));return}
-        if(S.size==='small'){   /* lot 286 : en facile, tous les styles ont le book du desk ; lot 288 : appliqué tel quel, comme le bouton */const R=recoBook();S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v))));return}
+        if(S.size==='small'){   /* lot 286 : en facile, tous les styles ont le book du desk ; lot 355 : poussé au-delà de la croisière */const R=recoBook(),rx=${o.rx!=null?o.rx:RX0};S.k=R.k.map(v=>Math.max(-S.maxk,Math.min(S.maxk,Math.round(v*rx))));return}
         if(S.prof==='syst'){const R=recoBook(),top=R.sc.filter(o=>mktOpen(o.i)&&Math.abs(o.v)>1e-6).sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,6);const raw=INSTR.map(()=>0);top.forEach((o,r)=>raw[o.i]=Math.sign(o.v)*(6-r)/6);S.k=best(raw);return}   /* lot 282 : en moyen et difficile, le quant n'a que les six convictions (sens et rang) */
         const {W,f:f0}=styleEst();const f=[...f0];
         if(S.hunch)f[S.hunch.k]+=(S.hunch.up?1:-1)*1.03;   /* lot 118 : intuition juste 80 % du temps (1,2 à 85 %) */
