@@ -3148,7 +3148,7 @@ const NAVEND=0.05;
 const FUNDMIN=0.04,DDEND=0.50;   /* lot 83 : 40 M$ ; lot 104 : plus lus pour la fin de partie */
 const FUNDEMPTY=0.01;   /* lot 104 : fonds vidé */
 const STYCOST={syst:0.95,fonda:0.95,flux:1.20,rv:1.0,tail:0.90,act:1.20};   /* lot 122 */
-const BUDK=1.60;   /* lot 123 : toutes les équipes 20 % moins chères ; lot 348 : ×1,78 — la société ne paie plus la facture des ordres (campagne : survie 81 %, 79 % avant) */
+const BUDK=0.90;   /* lot 123 : toutes les équipes 20 % moins chères ; lot 348 : 1,60 ; lot 352 : retour à 0,90 (trop cher), la compensation viendra d'ailleurs */
 function budNav(){return (S.aum0||0.1)*((SIZE()&&SIZE().costM)||1)*(STYCOST[S.prof]||1)*BUDK}   /* lot 176 : base fixe, l'encours de départ */   /* lot 104 : salaires et loyer ne suivent pas l'encours à la baisse */
 function ddMax(){return (S&&PROF().ddMax)||0.28}
 /* Profondeur de chaque carnet, en Md$ de notionnel : ce qu'un ordre peut peser avant que le
