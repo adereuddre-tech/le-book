@@ -3111,7 +3111,10 @@ const TCK=3;
 /* lot 235 : impact ×1,5 ; facture × (encours / encours de départ)^0,35 au-dessus de l'encours de départ */
 const IMPC=1;   /* lot 236 : sans multiplicateur */
 const BRK0=0.1;   /* lot 236 : seuil du frein ; lot 259 : 100 M$ (200 avant) */
-let BRK=0.35;
+let BRK=0.40;   /* lot 353 : 0,35 → 0,40 */
+/* lot 353 : demi-fourchettes réalistes des futures, en pb du prix (un tick sur deux, liquidité normale) */
+const SPR={NQ:0.15,ES:0.25,ESTX:1.0,TOPX:0.95,MXEF:1.0,TN:0.7,GBL:0.4,R:0.55,OAT:0.8,JGB:0.5,EUR:0.25,JPY:0.4,GBP:0.4,AUD:0.4,MXP:2.0,
+ CL:0.7,HG:0.6,GC:0.2,KC:2.0,ZW:2.3,BTC:2.5,VX:15,EUA:1.5,BDI:25,NRAM:25};
 function brake(A){return Math.pow(Math.max(1,(A===undefined?S.nav:A)/BRK0),BRK)}
 /* lot 260 : surcoût d'urgence en cours de trimestre. Dépêche : suivre le mouvement (prendre la liquidité) ×2,5,
    le contrer (la fournir) ×1,5 ; extrême (les deux familles) : ×4 et ×2. Un trader sur la classe réduit le surcoût d'un tiers.
@@ -3131,7 +3134,7 @@ function tcost(dk,i){
  let bp=x.s+x.c*Math.pow(bn,pw)*(pw===0.5?1:Math.pow(bn,0.5-pw)*0+1);
  const Z=SIZES.find(z=>z.id===S.size)||SIZES[1];
  const bnE=bn*(Z.capX||1)*capFactor();
- bp=(x.s+x.c*Math.pow(bnE,pw)*(pw===0.5?1:1.9)*depthMult(x,bn)*IMPC)*TCK*brake();   /* lot 235 : impact ×1,5, frein sur la facture entière */
+ bp=x.c*Math.pow(bnE,pw)*(pw===0.5?1:1.9)*depthMult(x,bn)*IMPC*TCK*brake();   /* lot 235 : impact ×1,5 ; lot 353 : la fourchette n'est plus dans le multiplicateur */
  let m=execMot()*desk.mult(x)*S.liq*(1+(S.rate-0.03)*4)*S.execPenalty*PROF().tcMult;
  if(S.leak&&Math.abs(S.k[i])>2)m*=1.45;
  if((S.stars||[]).includes(INSTR[i].grp))m*=0.5;
@@ -3139,7 +3142,8 @@ function tcost(dk,i){
  if(pwOn('jk')&&S.pwJK)m*=S.pwJK;if(pwOn('ma')&&S.phase==='book')m*=0.6;   /* lot 268 : Jean-Kevin, Sœur Marie-Alpha */
  if(!covered(x.grp))m*=NOTRD;   /* lot 92 : sans trader, le courtier */   /* lot 70 : recrues gardées jusqu'à la fin, ÷2 sur leur classe (sans cumul) */
  bp*=m;
- const cost=bn*bp*1e-4,spr=Math.min(cost,bn*x.s*TCK*m*brake()*1e-4);
+ const sbp=(SPR[x.sym]!=null?SPR[x.sym]:x.s/4)*((S&&S.liq)||1);bp+=sbp;   /* lot 353 : demi-fourchette réaliste */
+ const cost=bn*bp*1e-4,spr=bn*sbp*1e-4;
  return {cost,bp,bn,spr,imp:cost-spr};
 }
 /* Fin de partie : l'encours sous 5 % de son niveau de départ (−95 %). */
