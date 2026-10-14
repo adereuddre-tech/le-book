@@ -3382,7 +3382,7 @@ function recoBook(){
  const mx=Math.max(0.001,...sc.map(o=>Math.abs(o.v)));
  /* positions continues, puis mise à l'échelle sur la vol cible */
  const raw=sc.map(o=>{const x=INSTR[o.i],dm=depthMult(x,Math.abs(2*U/x.sig*S.nav));return o.v/mx*3/(dm*dm)});
- const v0=pvol(weights(raw));
+ const v0=riskShown(weights(raw)).total;
  const tgM=cruise()*(PROF().deskScale||PROF().modelScale||1);   /* lot 286 ; lot 288 : flux et activiste, book du desk plus prudent */
  let a=v0>1e-9?tgM/v0:0;
  let k=raw.map((z,i)=>clampK(i,Math.round(z*a)));
@@ -3390,12 +3390,12 @@ function recoBook(){
  /* Si le premier arrondi écrase tout à zéro, la boucle sortait aussitôt et le desk
     proposait un book vide, sans rapport avec le mandat. On pousse l'échelle au lieu
     d'abandonner, et on laisse plus d'itérations pour converger malgré l'arrondi. */
- for(let it=0;it<14;it++){const v=pvol(weights(k));
+ for(let it=0;it<14;it++){const v=riskShown(weights(k)).total;
   if(v<1e-9){a=a>0?a*2:1;k=raw.map((z,i)=>clampK(i,Math.round(z*a)));continue}
   const r=tgM/v;
   if(r>0.94&&r<1.06)break;
   a*=r;k=raw.map((z,i)=>clampK(i,Math.round(z*a)));}
- return {k,W,sc,mx,vol:pvol(weights(k))};
+ return {k,W,sc,mx,vol:riskShown(weights(k)).total};
 }
 /* lot 198 : la lecture du desk, convention brute (liquidité = dollar) ; une seule source pour tout l'affichage */
 function factRead(){
@@ -3940,7 +3940,7 @@ TRADER_EXEC.forEach(ev=>(ev.ch||[]).forEach(c=>{const e=c.e||{};
   const k=(bp*10).toFixed(0);if(c.s){c.s=c.s.replace(/Coûts −\d+ %( sur [^.:,]*)?( ce trimestre)?/,`+${bp} pb pour votre société de gestion (${k} k$ sur 100 M$)`);
    if(e.gamble)c.s=c.s.replace(/coûts ×\d+(,\d+)? à la place/,`−${Math.round(bp/2)} pb à la place`)}}}));
 /* ══════════ lot 103 : limites du comité ══════════ */
-const LIM={vol:0.30,red:1.5,stop:0.10,conc:0.70,negLp:-3,neg:{vol:1.25,stop:0.03,conc:0.15}};
+const LIM={vol:0.327,red:1.5,stop:0.10,conc:0.70,negLp:-3,neg:{vol:1.25,stop:0.03,conc:0.15}};
 function limBO(){return Math.sqrt(BANDB[(S&&S.bud)?S.bud.risk:3]/BANDB[3])}
 function limNegOn(id,raw){return !raw&&!!(S&&S.limNeg&&S.limNeg.q===S.q&&S.limNeg.id===id)}
 function cruise(){return limVol()*2/3}   /* lot 286 : risque de croisière, remplace la vol cible pour le joueur */
@@ -3949,7 +3949,7 @@ function limStop(raw){return (LIM.stop*limBO()+(limNegOn('stop',raw)?LIM.neg.sto
 function limConc(raw){return Math.min(1,LIM.conc+(limNegOn('conc',raw)?LIM.neg.conc:0))}
 function clsConc(w){const sp=pvol(w);if(sp<1e-6)return {v:0,g:''};const rc=riskContrib(w),m={};INSTR.forEach((x,i)=>m[x.grp]=(m[x.grp]||0)+rc[i]);
  let g='',v=0;for(const k in m){const f=m[k]/sp;if(f>v){v=f;g=k}}return {v,g}}
-function limRows(k){const w=weights(k),sp=pvol(w),cc=clsConc(w),lv=limVol(),lc=limConc(),ng=S.limNeg&&S.limNeg.q===S.q?S.limNeg.id:'';
+function limRows(k){const w=weights(k),sp=riskShown(w).total,cc=clsConc(w),lv=limVol(),lc=limConc(),ng=S.limNeg&&S.limNeg.q===S.q?S.limNeg.id:'';
  const FP=fundParts(k),FR=fundRetParts(k),p2=v=>`${v>=0?'+':'−'}${dec(Math.abs(v)*100,2)} %`;
  return `<div class="kv"><span>Rentabilité du fonds · tout compris, ce trimestre</span><b class="${cls(FR.total)}">${p2(FR.total)}</b></div>
   <p class="note" style="margin:0 0 4px">Lecture des marchés ${p2(FR.lect)} · fourchette, impact et glissement ${p2(FR.cx)} · extrêmes (${Math.round(FR.pd*100)} %) ${p2(FR.ext)} · accidents de levier et appels de marge ${p2(FR.acc)}${FR.vis?` · squeezes ${p2(FR.vis)}`:''}. C'est sur elle que se lit la rentabilité marginale des marchés.</p>
@@ -4522,7 +4522,7 @@ function tapeBand(){
   ${tapeSvg(p,S.tape.from||0,{anim:1,draw:3,rivals:rivalTapes(),qs:q0,ql})}</div>`;
 }
 function cardWarn(){if(!S||S.over||!['book','exec','comm','events'].includes(S.phase)||!S.k)return null;
- const w=weights(S.k),sp=pvol(w),lv=limVol(),cc=clsConc(w),lc=limConc(),out=[];let lvl=0;
+ const w=weights(S.k),sp=riskShown(w).total,lv=limVol(),cc=clsConc(w),lc=limConc(),out=[];let lvl=0;   /* lot 360 : le risque affiché */
  if(sp>=lv*LIM.red){lvl=2;out.push(`risque ex ante ${dec(sp*50,1)} %, au moins ${dec(LIM.red,1)} fois la limite`)}
  else if(sp>lv+1e-9){lvl=1;out.push(`risque ex ante ${dec(sp*50,1)} % au-dessus de la limite de ${dec(lv*50,1)} %`)}
  if(Math.round(cc.v*100)>Math.round(lc*100)){lvl=Math.max(lvl,1);out.push(`${Math.round(cc.v*100)} % du risque en ${cc.g.toLowerCase()}, limite ${Math.round(lc*100)} %`)}
@@ -5554,7 +5554,7 @@ function pwUse(id){const o=PW.find(x=>x.id===id);if(!o||!pwOk(o))return;S.pw=S.p
   const t=pwTip(PWTIP[id],0.90,o.nm);if(t)(S.pwTips=S.pwTips||[]).push(Object.assign(t,{q:S.q}));
   toast(`${o.ic} <b>${o.nm}</b> · ${t?`${t.nm} finira le trimestre en ${t.up?'hausse':'baisse'}`:'rien à dire ce trimestre'}. Compté pour l'année.`);pwDraw();return}
  if(pwOn(id)){delete S.pw[id];if(id==='ma'&&S.pwMaK){S.k=S.pwMaK;S.pwMaK=null;drawRows();renderRisk();refreshSend();refreshGain()}toast(`${o.ic} <b>${o.nm}</b> · désarmé.`)}
- else{S.pw[id]=S.q;if(id==='jk')S.pwJK=null;if(id==='ma'){S.pwMaK=[...S.k];const sp=pvol(weights(S.k));if(sp>1e-6){const a=cruise()/sp;S.k=S.k.map((v,i)=>clampK(i,Math.round(v*a)));drawRows();renderRisk();refreshSend();refreshGain()}}
+ else{S.pw[id]=S.q;if(id==='jk')S.pwJK=null;if(id==='ma'){S.pwMaK=[...S.k];const sp=riskShown(weights(S.k)).total;if(sp>1e-6){const a=cruise()/sp;S.k=S.k.map((v,i)=>clampK(i,Math.round(v*a)));drawRows();renderRisk();refreshSend();refreshGain()}}
   toast(`${o.ic} <b>${o.nm}</b> · armé : confirmé quand vous passerez les ordres.`)}
  refreshStatus();renderTC&&renderTC();pwDraw()}
 /* à « Passer les ordres » : les pouvoirs armés sont joués et comptés pour l'année */
@@ -5749,8 +5749,8 @@ function stressHit(sc,k){k=k||S.k;const h={},K=STRESSK*(sc.ext?2:1);INSTR.forEac
   if(sc.tgt==='otc'&&x.pt==='otc'&&k[i])v-=Math.sign(k[i])*sc.H;
   if(sc.tgt==='crowd')v-=((S&&S.crowd&&S.crowd[i])||0)*sc.H;   /* lot 258 : la foule se déboucle — chaque marché recule du positionnement des autres fonds */
   if(Math.abs(v)>=0.03)h[x.sym]=+v.toFixed(3)});
- if(sc.tgt==='short'||sc.tgt==='rogue'){let bi=-1,bv=0;for(let i=0;i<N;i++){const a=sc.tgt==='short'?-k[i]:Math.abs(k[i]);if(a>bv){bv=a;bi=i}}
-  if(bi>=0){const sy=INSTR[bi].sym;h[sy]=+((h[sy]||0)-Math.sign(k[bi])*sc.H).toFixed(3)}}
+ if(sc.tgt==='short'||sc.tgt==='rogue'){const A=k.map(v=>Math.max(0,sc.tgt==='short'?-v:Math.abs(v))**3),T=A.reduce((a,b)=>a+b,0);   /* lot 360 : au prorata du cube */
+  if(T>0)A.forEach((a,i)=>{if(a>0){const sy=INSTR[i].sym;h[sy]=+((h[sy]||0)-Math.sign(k[i])*sc.H*a/T).toFixed(4)}})}
  return h}
 function stressEv(id){const sc=STRESS.find(x=>x.id===id);if(!sc)return null;return {stress:id,t:sc.mac?sc.t0:`Événement extrême : ${sc.nm.charAt(0).toLowerCase()+sc.nm.slice(1)}`,who:sc.mac?sc.who:sc.ext?'Événement extrême · le plus rare':'Événement extrême',x:true,p:sc.p,hit:stressHit(sc),...(sc.liq?{liq:sc.liq}:{}),...(sc.shut?{shut:sc.shut}:{}),...(sc.mg?{mg:sc.mg}:{})}}
 /* lot 252 : veille des extrêmes, graduée de 10 à 95 %. Elle couvre les deux familles d'extrêmes (STRESS, calculés sur le book,
@@ -5795,7 +5795,7 @@ function xBookTerm(k){if(!S||!S.xHint||!S.bud)return 0;k=k||S.k;const h=S.xHint,
  return P*L}
 function xWatchTxt(){const W=xWatch();return `Votre veille sent venir <b>${Math.round(W.s*100)} %</b> des extrêmes et en identifie <b>${Math.round(W.i*100)} %</b> ; fausse alerte ${Math.round(W.fa*100)} % des trimestres calmes.`}
 function stressP(){return Math.min(0.32,0.10+0.20*Math.max(0,((S&&S.liq)||1)-0.9)/0.6)}   /* lue sur la liquidité affichée au desk */
-function crowd(sp){return Math.min(2.5,1+2.5*Math.max(0,sp-0.20)/0.10)}
+function crowd(sp){const L=(S&&S.bud&&typeof limVol==='function')?limVol(1):0.20,x=(sp-L)/0.10,sp4=Math.log1p(Math.exp(4*x-2))/4;return 1+1.5*Math.tanh(2.5*sp4/1.5)}   /* lot 360 : départ à la limite du comité, montée douce, plafond 2,5 */
 function stressLoss(k,sc){const w=weights(k),h=stressHit(sc,k);let v=0;INSTR.forEach((x,i)=>{if(h[x.sym])v+=w[i]*h[x.sym]*x.sigQ});return (v<0?v*crowd(riskShown(w).total):v)-2*stressGap(k,sc)}   /* mouvement complet */
 const TAILMG=0;   /* lot 100 : les appels de marge viennent de la marge réelle */
 /* gravité moyenne relative à celle d'avant le lot 76 (0,62 calé sur 0,581 de sévérité médiane) */
@@ -5899,7 +5899,7 @@ function riskMap(sp,big){
  const sv=`${dec(sq*100,1)} %`,   /* lot 84 : trimestriel, comme la rentabilité */
   mv=`${pr>=0?'+':'−'}${dec(Math.abs(pr)*100,1)} %`;
  /* lot 73 : jauges. Risque : cible du mandat et seuil d'accident, en trimestriel. Rentabilité : zéro et meilleur concurrent. */
- const xr=TAIL.x0/2,xa=Math.min(cruise()/2,xr*0.85),stX=[[0,'g'],[xa*0.5,'g'],[xa,'a'],[xr,'r']];
+ const xr=limVol()/2,xa=cruise()/2,stX=[[0,'g'],[xa*0.5,'g'],[xa,'a'],[xr,'r']];   /* lot 360 : les zones du comité */
  const best=Math.max(0,...R.map(r=>r.y)),yg=best>0.002?best:y1,stY=[[Math.min(y0,-0.001),'r'],[0,'a'],[yg,'g']];
  const cX=rgb(gzCol(stX,sq)),cY=rgb(gzCol(stY,pr));
  const lv=(a,b)=>{const o=[];for(let v=Math.ceil(a/0.05-1e-9)*0.05;v<=b+1e-9;v+=0.05)o.push(+v.toFixed(2));return o};
@@ -5938,7 +5938,9 @@ function riskMap(sp,big){
  const L=3,Rr=4,T=5,B=3,gid='gz'+(++riskMap.n);
  const X=v=>L+(100-L-Rr)*v/xm,Y=v=>100-B-(100-B-T)*(v-y0)/(y1-y0);
  let s=`<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">`
-  +(TAIL.x0/2<xm?`<rect x="${f(X(TAIL.x0/2))}" y="${T}" width="${f(100-Rr-X(TAIL.x0/2))}" height="${f(100-B-T)}" fill="#D2463C" opacity=".10"/>`:'')
+  +(cruise()/2<xm?`<rect x="${f(X(cruise()/2))}" y="${T}" width="${f(Math.max(0,Math.min(100-Rr,X(limVol()/2))-X(cruise()/2)))}" height="${f(100-B-T)}" fill="#DFA45B" opacity=".07"/>`:'')
+  +(limVol()/2<xm?`<rect x="${f(X(limVol()/2))}" y="${T}" width="${f(100-Rr-X(limVol()/2))}" height="${f(100-B-T)}" fill="#D2463C" opacity=".12"/>`:'')
+  +(LIM.red*limVol()/2<xm?`<rect x="${f(X(LIM.red*limVol()/2))}" y="${T}" width="${f(100-Rr-X(LIM.red*limVol()/2))}" height="${f(100-B-T)}" fill="#D2463C" opacity=".12"/>`:'')
   +lv(0.05,xm).map(v=>`<line x1="${f(X(v))}" x2="${f(X(v))}" y1="${T}" y2="${100-B}" stroke="var(--dimmer)" stroke-width=".5" opacity=".45" vector-effect="non-scaling-stroke"/>`).join('')
   +lv(y0,y1).filter(v=>v>y0+1e-9).map(v=>`<line x1="${L}" x2="${100-Rr}" y1="${f(Y(v))}" y2="${f(Y(v))}" stroke="var(--dimmer)" stroke-width="${Math.abs(v)<1e-9?.9:.5}" opacity="${Math.abs(v)<1e-9?.8:.45}" vector-effect="non-scaling-stroke"/>`).join('')
   +`<line x1="${L}" x2="${100-Rr}" y1="${100-B}" y2="${100-B}" stroke="var(--dimmer)" stroke-width="1" vector-effect="non-scaling-stroke"/>`
@@ -7186,7 +7188,7 @@ function resolveQuarter(){
  /* taux directeur */
  S.rate=Math.max(0.002,Math.min(0.085,S.rate+0.004*S.f[1]+0.001*gauss()));
  /* jauges */
- const sp=pvol(wFin),vd=varDecomp(wFin),fmax=Math.max(...vd.fv)/vd.tot;
+ const sp=riskShown(wFin).total,vd=varDecomp(wFin),fmax=Math.max(...vd.fv)/vd.tot;
  const med=(()=>{const v=S.rivals.map(x=>x.last).sort((a,b)=>a-b),n=v.length;return n%2?v[n>>1]:(v[n/2-1]+v[n/2])/2})();   /* vraie médiane, quel que soit le nombre de concurrents */
  const lpD=[['Performance du trimestre, tout compris',qTotal>0?260*qTotal:200*qTotal]];   /* lot 237 */
  if(Math.abs(S.qEvLp||0)>=0.05)lpD.push(['Dépêches : déjà répercutées en séance',-(S.qEvLp||0)]);
