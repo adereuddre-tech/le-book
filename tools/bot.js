@@ -19,8 +19,8 @@ function utilText(t){
    un ordre de dépêche que si la trésorerie reste ≥ 0 à la clôture attendue (trésorerie − coût + commission de gestion). */
 /* lot 233 : équipe du bot par style [front, back] et réserve de caisse ; le flux, plus sobre (calibration : 30 parties par variante,
    [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1) */
-const BUD0={syst:[7,5],fonda:[7,5],flux:[5,4],act:[7,5],rv:[7,5],tail:[7,5]},RES0={flux:0.3};   /* lot 355 : bot qui embauche à fond */
-const RX0=1.5,AV0=0.5,OFFR0=0.5;   /* lot 355 : risque au-delà de la croisière, aversion réduite, locaux dès que la caisse suit */
+const BUD0={syst:[6,4],fonda:[6,4],flux:[4,3],act:[6,4],rv:[6,4],tail:[6,4]},RES0={flux:0.4};   /* lot 355 : bot qui embauche à fond */
+const RX0=1.3,AV0=0.7,OFFR0=0.35;   /* lot 359 : un peu moins agressif */   /* lot 355 : risque au-delà de la croisière, aversion réduite, locaux dès que la caisse suit */
 const FLOORS={syst:0.02,fonda:0.02,flux:0.04},FLOORK=0;
 /* lot 211 (lot D) : seuil de netteté du signal avant de réagir à une dépêche, par style (o.theta pour forcer) */
 const THETA0={syst:0.8,fonda:0.4,flux:0};   /* FLOORK : échelle. Bot 206 : 0 (plancher retiré, garde conservée) — un bot moins prudent, exposé au risque de faillite */
@@ -51,7 +51,7 @@ function playGame(o){
       /* lot 39 : onze crans, et les plus chers se verrouillent quand la caisse ne suit pas —
          on prend alors le cran le plus haut encore ouvert sous celui demandé */
       ids.forEach((b,i)=>{let e=null;
-        const res=o.reserve!=null?o.reserve:(RES0[o.prof]!=null?RES0[o.prof]:0.15),okR=j=>j===0||w.eval(`(S.budPrev&&${j}<=S.budPrev['${b}'])||budgetBpIf('${b}',${j})*1e-4*budNav()<=Math.min(${1-res}*(mgrCash()+(S.qOps||0)),mgrCash()+(S.qOps||0)-${o.fbud===false?0:FLOOR}*S.nav)`);   /* lot 199 : l'équipe ne mange pas le plancher */   /* garde une réserve pour les ordres */
+        const res=o.reserve!=null?o.reserve:(RES0[o.prof]!=null?RES0[o.prof]:0.25),okR=j=>j===0||w.eval(`(S.budPrev&&${j}<=S.budPrev['${b}'])||budgetBpIf('${b}',${j})*1e-4*budNav()<=Math.min(${1-res}*(mgrCash()+(S.qOps||0)),mgrCash()+(S.qOps||0)-${o.fbud===false?0:FLOOR}*S.nav)`);   /* lot 199 : l'équipe ne mange pas le plancher */   /* garde une réserve pour les ordres */
         if(w.eval('typeof teamLadder')==='function'){   /* lot 304 : équipe par personne — le bot recrute en échelle jusqu'au cran visé */
           const okT=j=>j===0||w.eval(`teamLadderSub('${b}',${j})||opsLadder('${b}',${j})<=Math.min(${1-res}*(mgrCash()+(S.qOps||0)),mgrCash()+(S.qOps||0)-${o.fbud===false?0:FLOOR}*S.nav)`);
           let jj=0;for(let j=bud[i];j>=0;j--){if(okT(j)){jj=j;break}}
