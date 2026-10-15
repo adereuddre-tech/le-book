@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 361.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 362.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -384,6 +384,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **359** : bot agressif modéré : équipe 6/4 (flux 4/3), réserve 25 % (flux 40 %), locaux si l'écart tient dans 35 % de la trésorerie, book du desk ×1,3, aversion 0,7. Campagne 357–359 : 43 % (faillites de trésorerie 55/96).
 - **360** : A : le comité juge le risque affiché (`riskShown`) — alertes, clôture, panneau des limites, book du desk, Sœur Marie-Alpha — avec `LIM.vol` 0,30 → 0,327 (sévérité inchangée : cartons 34 rouges / 85 jaunes contre 30 / 82) ; nuage aux zones du comité (ambre à la croisière, rouge à la limite, plus foncé à 1,5×) ; l'encombrement des extrêmes (`crowd`) part de la limite du comité, en douceur ; scénarios short et rogue répartis au prorata du cube au lieu de viser une seule ligne. Campagne : 51 %.
 - **361** : traders à 5, 6, 7, 8, 9 pb par trimestre (Dwight → Winnie, cumul 5/11/18/26/35) ; suite du front office décalée d'autant ; rôles mis en cohérence (Dwight le plus jeune, Winnie la plus chevronnée).
+- **362** : reste du front office à 10, 12, 14, 16, 18, 21, 25 pb (Sœur Marie-Alpha → Victoria, cumul 45 → 151) ; back office à 3, 3, 4, 4, 5, 5, 6, 6, 7, 8, 9, 10 pb (cumul 3 → 70).
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
