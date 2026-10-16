@@ -5555,7 +5555,8 @@ function pwOk(o){return pwOn(o.id)?!o.info&&S.phase==='book':pwAvail(o)&&!o.inc}
 const PWTIP={ig:'Taux',tu:'Matières premières',dw:'Actions',bo:'Devises'};   /* lot 330 : quatre tuyaux à 90 % */
 function pwTip(cls,rel,who){const c=[];for(let i=0;i<N;i++)if(mktOpen(i)&&INSTR[i].grp===cls&&!tipOf(i))c.push(i);if(!c.length)return null;
  const i=c.sort((a,b)=>Math.abs(expRet(b).m)-Math.abs(expRet(a).m))[0],u=prng32(hash32('pw'+who+S.q,S.seed))(),up=(S.rBase[i]>0)===(u<rel);return {who,sym:INSTR[i].sym,nm:INSTR[i].nm,up,rel,i}}
-function pwUse(id){const o=PW.find(x=>x.id===id);if(!o||!pwOk(o))return;S.pw=S.pw||{};S.pwLast=S.pwLast||{};
+function pwUse(id){const o=PW.find(x=>x.id===id);if(o&&o.inc&&pwAvail(o)&&!pwOn(o.id)){toast(`${o.ic} <b>${o.nm}</b> est prêt${o.id==='oc'?" : il se jouera sur l'écran de l'appel de marge, si l'appel tombe.":" : il se jouera sur l'écran de l'incident, si un incident tombe."} Rien à armer.`);return}
+ if(!o||!pwOk(o))return;S.pw=S.pw||{};S.pwLast=S.pwLast||{};
  if(o.info){if(S.pwConf!==id){S.pwConf=id;pwDraw();return}S.pwConf=null;S.pw[id]=S.q;S.pwLast[id]=S.q;
   const t=pwTip(PWTIP[id],0.90,o.nm);if(t)(S.pwTips=S.pwTips||[]).push(Object.assign(t,{q:S.q}));
   toast(`${o.ic} <b>${o.nm}</b> · ${t?`${t.nm} finira le trimestre en ${t.up?'hausse':'baisse'}`:'rien à dire ce trimestre'}. Compté pour l'année.`);pwDraw();return}
@@ -5583,7 +5584,7 @@ function pwDraw(){const el=document.getElementById('pwblk');if(!el)return;const 
   ${tips.map(t=>`<div class="flag" style="margin:0 0 8px"><span>📌 <b>${t.who}</b> : ${t.nm} finira le trimestre en <b>${t.up?'hausse':'baisse'}</b> — déjà dans ${t.fk!=null?'la lecture des facteurs':'votre attendu'}.</span></div>`).join('')}
   <div class="pwl">${L.map(o=>{const on=pwOn(o.id),ok=pwOk(o),back=pwBack(o.id);
    const st=on?(o.info?'joué ce trimestre':S.pwLast&&S.pwLast[o.id]===S.q&&PWG.includes(o.id)?'a servi · compté':PWG.includes(o.id)?(S.phase==='book'?'armé · touchez pour désarmer · ne compte que s’il sert':'en garde · ne compte que s’il sert'):'armé · touchez pour désarmer'):o.inc?(pwAvail(o)?(o.id==='oc'?'disponible · joue sur l’appel de marge':'disponible · se joue sur l’incident'):`revient au trimestre ${back+1}`):o.id==='mi'?(S.pwMi?'joué pour le mandat':'disponible'):pwAvail(o)?(S.pwConf===o.id?'touchez encore pour confirmer : compté pour l’année':'disponible'):`revient au trimestre ${back+1}`;
-   return `<button class="pwb${on?' on':''}${S.pwConf===o.id?' conf':''}" data-pw="${o.id}"${ok?'':' disabled'}><b>${o.ic} ${o.nm} · ${o.t}</b><small>${o.d} <i>· ${st}${o.id==='jk'?` · réussite ${Math.round((pwOn('jk')&&S.pwLast&&S.pwLast.jk===S.q?Math.min(0.9,jkP()-0.05):jkP())*100)} %`:''}</i></small></button>`}).join('')}</div>`;
+   return `<button class="pwb${on?' on':''}${S.pwConf===o.id?' conf':''}" data-pw="${o.id}"${ok||(o.inc&&pwAvail(o))?'':' disabled'}><b>${o.ic} ${o.nm} · ${o.t}</b><small>${o.d} <i>· ${st}${o.id==='jk'?` · réussite ${Math.round((pwOn('jk')&&S.pwLast&&S.pwLast.jk===S.q?Math.min(0.9,jkP()-0.05):jkP())*100)} %`:''}</i></small></button>`}).join('')}</div>`;
  el.querySelectorAll('.pwb[data-pw]').forEach(b=>b.onclick=()=>pwUse(b.dataset.pw))}
 /* Les ordres sortent de la poche du gérant : le bouton reste bloqué tant que la caisse ne suit
    pas. Un book inchangé ne coûte rien et n'est donc jamais bloqué — pas d'impasse possible. */
