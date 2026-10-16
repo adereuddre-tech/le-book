@@ -5819,7 +5819,7 @@ const TAIL={x0:0.20,w:0.30,p:0.60},TAILM=[2.5,1.4,1.4,1.00,0.8,0.65,0.5];
 function tailMit(sp){const m=TAILM[(S&&S.bud)?S.bud.risk:3]||1;if(m>=1)return m;const fd=Math.max(0,Math.min(1,(sp-0.30)/0.10));return m+(1-m)*fd}
 /* lot 368 : accidents du joueur, sans seuil — la fréquence monte avec le carré du risque rapporté à la limite, la gravité avec le risque */
 const ACC={p0:0.06,p1:0.14,s:0.65,cap:0.45,hot:0.15};
-function accRP(sp){if(!S||!S.bud)return 0;const x=sp/LIM.vol;return Math.min(0.6,(ACC.p0+ACC.p1*x*x)*Math.sqrt(tailMit(sp))*motS())}
+function accRP(sp){if(!S||!S.bud)return 0;const x=sp/LIM.vol;return Math.min(0.6,(ACC.p0*Math.min(1,sp/0.10)+ACC.p1*x*x)*Math.sqrt(tailMit(sp))*motS())}
 function accLoss(sp,mgu,byMg,sev){const spE=byMg?Math.max(sp,0.20+0.5*((mgu||0)-MGZ.watch)):sp;return Math.min(ACC.cap,ACC.s*(sev==null?TAILSEV:sev)*spE*crowd(sp)*motS())}
 function accExp(k,A){A=A||accP(k);return A.r*0.8*accLoss(A.sp,A.mgu,false)+A.m*0.8*accLoss(A.sp,A.mgu,true)}   /* coût moyen, sortie raisonnable */
 function accHot(sp){return accRP(sp)>=ACC.hot}
