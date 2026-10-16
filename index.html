@@ -987,7 +987,7 @@ const BOP=[
  {who:"Octave",hi:"Votre marge était trop chère. Je l'ai renégociée pendant votre réunion.",full:"Octave « Repo » Mercier",role:"trésorier, financement et collatéral",ic:"💱",bp:51,pw:"marge exigée −20 % sur tout le book ; une fois par an, il fait renoncer le prime broker à un appel de marge"},
  {who:"Hugo",hi:"Deux prime brokers valent mieux qu'un seul qui vous lâche.",full:"Hugo « Two Banks » Ravel",role:"responsable des contreparties",ic:"🏦",bp:60,pw:"accidents de levier par la marge ÷2 ; lignes visibles 30 % moins exposées"},
  {who:"Dr Anouk",hi:"Un trader qui dort bien ne fait pas de fat finger.",full:"Dr Anouk Ferreira",role:"psychologue de la salle des marchés",ic:"🧘",bp:70,pw:"débauchage ÷2 ; incidents −20 % ; une fois par an, un séminaire : moral +25"}];
-const BOMAP=[0,1,3,4,5,6,6,6,6,6,6,6,6],NOTRD=2,   /* lot 259 : courtier ×2 (×4 avant) */
+const BOMAP=[0,1,3,4,5,6,6,6,6,6,6,6,6],NOTRD=3,   /* lot 366 : courtier ×3 (lot 259 : ×2) */
  TRD={'Actions':1,'Taux':2,'Devises':3,'Matières premières':4,'Exotiques':5};
 const BUDGET=[
  {id:'fo',ico:'📈',nm:"Front office",
@@ -1024,7 +1024,8 @@ function syncBud(){if(!S||!S.bud)return;teamInit();S.bud.fo=eqLvl('fo',massBp('f
 function eF(p){return FOP[p]&&FOP[p].g==='f'?'e':''}
 function gonesL(){if(!S.gones){S.gones=[];if(S.gone){S.gones.push({p:S.gone.p,n:S.gone.n,boss:S.gone.boss});S.gone=null}}return S.gones}
 const CNTK=1.5;   /* lot 117 : un trader parti ne revient que contre 1,5 trimestre de son salaire */
-function cntCost(p){return Math.round(CNTK*(FOP[p].bp-FOP[p-1].bp))}
+function cntMot(){return mclp(1+(50-motV())/50,1,2)}   /* lot 366 : sous 50 de moral, la contre-offre coûte plus cher, jusqu'à ×2 à 0 */
+function cntCost(p){return Math.round(CNTK*(FOP[p].bp-FOP[p-1].bp)*cntMot())}
 function here(p){return !!(S&&S.bud)&&hired('fo',p)&&!gonesL().some(g=>g.p===p&&g.n===0)}   /* lot 304 : présence */
 /* lot 93 : distribution des rôles */
 const CAST=[
@@ -1061,7 +1062,7 @@ function bonRate(i){return Math.min(BONK.max,bonBase()*BONOFF[i])}
 /* lot 115 : effet direct du cran de bonus versé — g : part de la baisse des coûts du budget salle de marché que le desk livre ;
    p : risque de débauchage par trimestre ; ×1,5 le trimestre d'une baisse de taux */
 /* lot 329 : effets lus sur le moral, nœuds à 0, 25, 50, 75, 100 — neutres à 50, déchaînés à 100 */
-const BONFX=[{c:1.60,p:0.70},{c:1.30,p:0.45},{c:1.00,p:0.30},{c:0.75,p:0.15},{c:0.45,p:0.03}],BONCUT=1.5;
+const BONFX=[{c:1.60,p:0.85},{c:1.30,p:0.55},{c:1.00,p:0.25},{c:0.75,p:0.08},{c:0.45,p:0}],BONCUT=1.5;
 const BONREAD=[1.40,1.20,1,0.75,0.45],BONWIN=[-0.14,-0.08,0,0.08,0.20];
 /* lot 296 : le moral du desk, un stock de 0 à 100. Il ne dépend que de l'argent et des égards :
    cible = cran de bonus effectif (35, 45 … 75) + locaux (garage 0 … yacht +13) ; la moitié de l'écart se referme
@@ -1076,7 +1077,7 @@ function motV(){if(!S)return MORAL.tg[0];if(S.mot==null)S.mot=motT(bonEff());ret
 function motX(m){return mclp(m==null?motV():m,0,100)/25}
 function motI(A,x){const n=A.length-1;if(x<=0)return A[0]+(A[1]-A[0])*x;if(x>=n)return A[n]+(A[n]-A[n-1])*(x-n);const i=Math.floor(x),f=x-i;return A[i]+(A[i+1]-A[i])*f}
 function motC(m){return mclp(motI(BONFX.map(f=>f.c),motX(m)),0.45,1.6)}
-function motP(m){return mclp(motI(BONFX.map(f=>f.p),motX(m)),0.03,0.7)}
+function motP(m){return mclp(motI(BONFX.map(f=>f.p),motX(m)),0,0.9)}   /* lot 366 */
 function motR(m){return mclp(motI(BONREAD,motX(m)),0.45,1.4)}
 function motW(m){return mclp(motI(BONWIN,motX(m)),-0.14,0.20)}
 function motAdd(d,why){if(!S||!d)return;const m0=motV();S.mot=mclp(m0+d,0,100);(S.motLog=S.motLog||[]).push({q:S.q,d:S.mot-m0,why})}
@@ -3788,7 +3789,7 @@ function screenSetup(){
  </div></details>
  <details class="wire" style="margin-top:14px"><summary>Comment ça marche sous le capot</summary>
   <p class="note">Les rendements des marchés sont engendrés par quatre facteurs orthonormés plus une part propre : r<sub>i</sub> = σ<sub>i</sub>(Σ<sub>k</sub> b<sub>ik</sub>f<sub>k</sub> + e<sub>i</sub>z<sub>i</sub>) — croissance, inflation, liquidité (l'inverse du dollar), appétit pour le risque, avec Σ<sub>k</sub> b<sub>ik</sub>² + e<sub>i</sub>² = 1, ce qui rend la matrice de covariance semi-définie positive par construction. Le régime macro du trimestre fixe la moyenne et la volatilité des facteurs ; il suit une chaîne de Markov à sept états. S'y ajoutent, par marché, des dérives de tendance, de portage et de valeur.</p>
-  <p class="note">Une unité de position vaut 2,5 % de volatilité standalone, dimensionnée en inverse de la vol du marché ; le notionnel correspondant s'affiche à côté de chaque ordre. La vol ex-ante du book est √(wᵀΣw). Chaque changement de position paie une demi-fourchette plus un impact qui croît en racine carrée du notionnel (plus vite dans les carnets étroits). La facture entière est ensuite freinée par la taille : au-delà de 100 M$ d'encours, × (encours / 100 M$)<sup>0,35</sup> — deux fois plus cher à 700 M$. Elle est multipliée par votre front office, votre style, le moral du desk, la liquidité du régime et le taux au jour le jour ; sans trader sur la classe, l'ordre passe par un courtier, ×2. En cours de trimestre s'ajoute un surcoût d'urgence : suivre un mouvement coûte plus cher, le contrer moins, et un gros contre-pied dans un extrême peut rapporter.</p>
+  <p class="note">Une unité de position vaut 2,5 % de volatilité standalone, dimensionnée en inverse de la vol du marché ; le notionnel correspondant s'affiche à côté de chaque ordre. La vol ex-ante du book est √(wᵀΣw). Chaque changement de position paie une demi-fourchette plus un impact qui croît en racine carrée du notionnel (plus vite dans les carnets étroits). La facture entière est ensuite freinée par la taille : au-delà de 100 M$ d'encours, × (encours / 100 M$)<sup>0,35</sup> — deux fois plus cher à 700 M$. Elle est multipliée par votre front office, votre style, le moral du desk, la liquidité du régime et le taux au jour le jour ; sans trader sur la classe, l'ordre passe par un courtier, ×3. En cours de trimestre s'ajoute un surcoût d'urgence : suivre un mouvement coûte plus cher, le contrer moins, et un gros contre-pied dans un extrême peut rapporter.</p>
   <p class="note">Les sources disent vrai avec la probabilité de leur classe de fiabilité ; une source vraie est tirée parmi celles dont l'impact prétendu s'aligne sur les facteurs réalisés. Le rapport final calcule le Sharpe probabiliste de Bailey et López de Prado, qui vous dira si deux ans suffisent à distinguer la compétence de la chance. Ils ne suffisent presque jamais.</p>
  </details>
  <div id="picks"></div>
@@ -4901,7 +4902,7 @@ function showGauge(id){
    ${dl?tbl(dl.map(row),['Investisseurs · dernier trimestre','Δ']):''}`);
  } else if(id==='mot'){   /* lot 297 */
   const m=motV(),L=(S.motLog||[]).slice(-8).reverse();
-  openModal('Moral du desk',`<p>Le moral de vos traders ne dépend que de l'argent et des égards. Chaque trimestre, il fait la moitié du chemin vers une cible fixée par votre cran de bonus — 30 au minimum ou sans bonus versé, puis 40, 50, 62, 75 et 95 au cran 🔥 — relevée par vos locaux (garage 0, yacht +13) ; un déménagement joue tout de suite, de l'écart entier, avant les signaux et les ordres du trimestre. À 50, tout est neutre ; en dessous, le desk coûte et lit mal ; au-dessus, il se surpasse, et à 100 il est déchaîné : coûts ×0,45, bruit de lecture ×0,45, anecdotes +20 pts, débauchage 3 %, et il refuse toutes les offres. Une baisse de taux coûte 5 points par cran ; les petits gestes du quotidien (anecdotes) le déplacent d'un coup.</p>
+  openModal('Moral du desk',`<p>Le moral de vos traders ne dépend que de l'argent et des égards. Chaque trimestre, il fait la moitié du chemin vers une cible fixée par votre cran de bonus — 30 au minimum ou sans bonus versé, puis 40, 50, 62, 75 et 95 au cran 🔥 — relevée par vos locaux (garage 0, yacht +13) ; un déménagement joue tout de suite, de l'écart entier, avant les signaux et les ordres du trimestre. À 50, tout est neutre ; en dessous, le desk coûte et lit mal ; au-dessus, il se surpasse, et à 100 il est déchaîné : coûts ×0,45, bruit de lecture ×0,45, anecdotes +20 pts, débauchage 0 %, et il refuse toutes les offres. Une baisse de taux coûte 5 points par cran ; les petits gestes du quotidien (anecdotes) le déplacent d'un coup.</p>
    ${tbl([['Moral',`<b>${Math.round(m)}</b>`],['Cible de votre bonus et de vos locaux',`${Math.round(motT(S.bonI==null?MOT.i0:S.bonI))}`],["Coûts d'exécution",'×'+dec(motC(),2)],['Bruit sur la lecture des dépêches','×'+dec(motR(),2)],['Chances des anecdotes du desk',(bonD()>=0?'+':'−')+Math.round(Math.abs(bonD())*100)+' pts'],['Risque de débauchage ce trimestre',Math.round(poachNow()*100)+' %']])}
    <p class="note">Sous ${MORAL.lo}, le desk peut partir en groupe : ${Math.round(motLo(m)*100)} % aujourd'hui, de plus en plus probable vers 0. Au-dessus de ${MORAL.hi}, il peut refuser toutes les offres des concurrents et redoubler d'efforts : ${Math.round(motHi(m)*100)} % aujourd'hui, de plus en plus probable vers 100.</p>
    ${L.length?tbl(L.map(x=>[`T${x.q+1} · ${x.why}`,`<span class="${cls(x.d)}">${x.d>=0?'+':'−'}${Math.abs(x.d).toFixed(1)}</span>`]),['Derniers mouvements','Δ']):''}`);
@@ -5282,7 +5283,7 @@ function drawBuds(){
    <p class="note" style="margin:2px 0 6px">Touchez une personne pour la recruter ou vous en séparer${b.id==='bo'?' ; sans personne, il reste le loyer':''}. Ce qu'elle apporte en propre n'existe que si elle est là ; les effets d'ensemble suivent la masse salariale. Recruter ne coûte que le salaire ; licencier coûte un demi-trimestre de salaire d'indemnité. Les salaires montent de 2 % par trimestre (×${dec(salInf(),2)} depuis le début du mandat).${b.id==='bo'&&redOn('budget')?` <b class="neg-g">Carton rouge : le comité impose ${BOP[1].who}, ${BOP[2].who} et ${BOP[3].who}.</b>`:''}</p>
    <div class="team">${b.lv.map((l,i)=>{const gone=b.id==='fo'&&GL.some(g=>g.p===i),o=ok(b.id,i),h=hired(b.id,i),sal=salP(b.lv,i)*1e-4*budNav(),was=!!(P&&P[b.id][i]);
     return `<button class="lvl tm ${h?'in on':''}${gone?' gone':''}" data-b="${b.id}" data-i="${i}"${o?'':' disabled'}><span class="tic">${l.ic}</span><span class="tnm"><b>${l.full}</b><i>${gone?`parti${eF(i)} chez ${GL.find(g=>g.p===i).boss}`:l.role}</i></span><span class="tbp">${i>0?m3(sal):'—'}<br>${i===0?'<span class="hx">d\'office</span>':gone?'<span class="hx">contre-offre ci-dessous</span>':lock(b.id,i)?'<span class="hx">imposé : carton rouge</span>':h?(was?'<span class="hx">en poste</span>':'<span class="pos-g">recrue</span>'):(was&&!gone?`<span class="neg-g">départ −${m3(0.5*sal)}</span>`:o?'recruter':'<span class="hx">hors trésorerie</span>')}</span></button>`}).join('')}</div>
-   ${b.id==='fo'?GL.map(G=>`<div class="flag" style="margin:8px 0 0"><span><b>${FOP[G.p].who} est parti${eF(G.p)} chez ${G.boss}.</b> ${eF(G.p)?'Elle':'Il'} ne reviendra pas d'${eF(G.p)?'elle':'lui'}-même${FOP[G.p].cls?` : la classe ${FOP[G.p].cls.toLowerCase()} passe par un courtier`:''}. Contre-offre : son salaire plus une prime de retour, ${cntCost(G.p)} pb au total (${mm(cntCost(G.p)*1e-4*budNav())}), et ${eF(G.p)?'elle':'il'} revient tout de suite.</span></div><button class="lvl cntb" data-cnt="${G.p}"${cok(G)?'':' disabled'}>Faire revenir ${FOP[G.p].who} · ${mm(cntCost(G.p)*1e-4*budNav())}${cok(G)?'':' · <span class="hx">hors trésorerie</span>'}</button>`).join(''):''}
+   ${b.id==='fo'?GL.map(G=>`<div class="flag" style="margin:8px 0 0"><span><b>${FOP[G.p].who} est parti${eF(G.p)} chez ${G.boss}.</b> ${eF(G.p)?'Elle':'Il'} ne reviendra pas d'${eF(G.p)?'elle':'lui'}-même${FOP[G.p].cls?` : la classe ${FOP[G.p].cls.toLowerCase()} passe par un courtier`:''}. Contre-offre : son salaire plus une prime de retour${cntMot()>1.005?`, ×${dec(cntMot(),2)} avec un moral à ${Math.round(motV())}`:''}, ${cntCost(G.p)} pb au total (${mm(cntCost(G.p)*1e-4*budNav())}), et ${eF(G.p)?'elle':'il'} revient tout de suite.</span></div><button class="lvl cntb" data-cnt="${G.p}"${cok(G)?'':' disabled'}>Faire revenir ${FOP[G.p].who} · ${mm(cntCost(G.p)*1e-4*budNav())}${cok(G)?'':' · <span class="hx">hors trésorerie</span>'}</button>`).join(''):''}
    <div class="lvef">${budEf(b.id,cur)}${b.id==='fo'?covTxt()+bonTxt():''}</div>
    <details style="margin-top:8px"><summary>À quoi sert ce budget · les ${b.lv.length} postes et niveaux</summary><p class="note">${b.d}</p>${budExpl(b.id)}<ul class="efl">${b.lv.map((l,i)=>`<li><b>${l.who}</b> · salaire ${mm(salP(b.lv,i)*1e-4*budNav())} · niveau ${l.who} à partir de ${mm(l.bp*1e-4*budNav())} de masse salariale : ${budEf(b.id,i,i)}</li>`).join('')}</ul></details></div>`}).join('');
  const bp=budgetBp();
