@@ -156,7 +156,7 @@ function playGame(o){
     if(any.length){click(any[0]);continue}
     errs.push('bloqué');break;
   }
-  const r=JSON.parse(w.eval(`JSON.stringify({score:(S.mgrFees-S.mgrCosts)*1000,fees:S.mgrFees*1000,costs:S.mgrCosts*1000,q:S.q,qtot:S.qtot,over:S.over,ret:S.idx-1,nav:S.nav*1000,bud:S.bud,lp:S.lp,rc:S.rc,feats:Object.keys(S.fl||{}).length,red:(S.cards||{}).r||0,yel:((S.cards||{}).log||[]).filter(x=>x.c==='jaune').length,tails:(S.tails||[]).length,sp:(window.__sps||[]).reduce((a,b)=>a+b,0)/Math.max(1,(window.__sps||[]).length),riv:S.rivals.map(r=>+(r.cum-1).toFixed(3))})`));
+  const r=JSON.parse(w.eval(`JSON.stringify({score:(S.mgrFees-S.mgrCosts)*1000,fees:S.mgrFees*1000,costs:S.mgrCosts*1000,q:S.q,qtot:S.qtot,over:S.over,ret:S.idx-1,nav:S.nav*1000,bud:S.bud,lp:S.lp,rc:S.rc,feats:Object.keys(S.fl||{}).length,red:(S.cards||{}).r||0,yel:((S.cards||{}).log||[]).filter(x=>x.c==='jaune').length,tails:(S.tails||[]).length,sp:(window.__sps||[]).reduce((a,b)=>a+b,0)/Math.max(1,(window.__sps||[]).length),riv:S.rivals.map(r=>+(r.cum-1).toFixed(3)),mot:S.mot,bonT:(S.cBonT||0)*1000})`));
   if(o.collect){try{r.probe=JSON.parse(w.eval(o.collect))}catch(e){r.probe={err:e.message}}}
   w.close();
   return Object.assign(r,{cfg,floor:FLOOR,budIn:budArg,done,steps,nerr:errs.length,err:errs[0],st});
