@@ -3000,16 +3000,16 @@ function fundRetParts(k){k=k||S.k;const k0=S.k0||S.k,w=weights(k);
  const lect=profitBook(k)-xBookTerm(k);
  let cx=0;for(let i=0;i<N;i++){const d=k[i]-k0[i];if(d){const t=tcost(d,i);cx+=(t.imp-(1+IMPK)*t.cost)/S.nav}}   /* le fonds paie la facture et le glissement, pas seulement l'impact */
  const XM=xMoments(k),ext=XM.Pd*XM.E1;
- const A=accP(k),sp=A.sp,spE=Math.max(sp,0.20+0.5*(A.mgu-MGZ.watch)),Lm=Math.min(0.6,TAILSEV*tailL(spE));
- let im=0;if(A.m>0)for(let m=0;m<N;m++){const d=Math.trunc(k[m]/2)-k[m];if(d)im+=tcost(d,m).cost*urgM(URG.tail,m)}
- const acc=-A.m*(0.8*Lm+Math.min(0.08,im/S.nav));
+ const A=accP(k),sp=A.sp;
+ let im=0;if(A.p>0)for(let m=0;m<N;m++){const d=Math.trunc(k[m]/2)-k[m];if(d)im+=tcost(d,m).cost*urgM(URG.tail,m)}
+ const acc=-(accExp(k,A)+A.p*Math.min(0.08,im/S.nav));   /* lot 368 : accidents du risque et de la marge */
  const V=visList(k),pv=visP(k);let vl=0,vp=0;V.forEach(v=>{const H=v.kind==='short'?VIS.Hs:VIS.Hl,L=Math.min(0.6,Math.abs(w[v.i])*INSTR[v.i].sigQ*H*crowd(sp));vl+=v.p*0.8*L;vp+=v.p});
  const vis=vp>0?-pv*vl/vp:0;
  return {total:lect+cx+ext+acc+vis,lect,cx,ext,acc,vis,pd:XM.Pd}}
 function fundRet(k){return fundRetParts(k).total}
 /* lot 351 : rentabilité ajustée du risque — ce que montrent le panneau, les lignes et le nuage */
 function riskCost(k){const sg=riskShown(weights(k)).total;return 0.5*(sg/2)*(sg/2)}
-function adjParts(k){k=k||S.k;const lect=profitBook(k)-xBookTerm(k),XM=xMoments(k),ext=XM.Pd*XM.E1,rc=-riskCost(k);return {total:lect+ext+rc,lect,ext,rc,pd:XM.Pd}}
+function adjParts(k){k=k||S.k;const lect=profitBook(k)-xBookTerm(k),XM=xMoments(k),ext=XM.Pd*XM.E1,rc=-riskCost(k),acc=S&&S.bud?-accExp(k):0;return {total:lect+ext+rc+acc,lect,ext,rc,acc,pd:XM.Pd}}   /* lot 368 : coût moyen des accidents */
 function adjRet(k){return adjParts(k).total}
 function fundParts(k){k=k||S.k;const w=weights(k),st=volStress(w,undefined,covInfo()),ev=evVarExp(w).v,Vb=st*st+ev;
  const XM=xMoments(k),Pd=XM.Pd,E1=XM.E1,E2=XM.E2;
@@ -4762,7 +4762,7 @@ function previewGauge(){
  let dlp=0;   /* lot 100 : la marge ne coûte plus en confiance à la validation ; le prime broker appelle */
   const tc=liveTC()/S.nav;if(tc>0.002){dlp-=Math.min(3,(tc-0.002)*600);drc-=Math.min(2,(tc-0.002)*300)}
  const why=[];
- if(tailP(sp)>0)why.push(`accident de levier possible (${dec(tailP(sp)*100,0)} %)`);
+ if(accHot(sp))why.push(`accident de levier probable (${dec(accRP(sp)*100,0)} %)`);
  if(sp<0.02)why.push('book vide');if(mgu>MGC.thr)why.push(`marge utilisée ${(mgu*100).toFixed(0)} %, au-dessus du seuil d'appel`);else if(mgu>MGC.warn)why.push(`marge utilisée ${(mgu*100).toFixed(0)} %`);
  if(tc>0.002)why.push('facture de transactions lourde');
  return {lp:dlp,rc:drc,why:why.join(', ')};
@@ -4942,7 +4942,7 @@ function showGauge(id){
    <p style="margin:12px 0 4px">D'où vient la majoration</p>
    <p class="note">La majoration de corrélation stresse chaque paire de ${(RS.kap*100).toFixed(0)} % vers le signe qui vous coûte : ρ* = ρ + κ(1−|ρ|)·signe(wᵢwⱼ). Une couverture dont la corrélation négative se relâche cesse de couvrir, et c'est ce cas-là qui est chiffré. κ monte avec la dégradation de liquidité du régime. La part « dépêches » est l'écart-type des impacts du vivier d'actualités appliqué à <em>votre</em> book, pour ${dec(RS.nev,1)} dépêches attendues en moyenne — le vivier entier, pas les dépêches effectivement tirées : ce chiffre ne vous dit rien de ce qui va arriver.</p>
 
-   ${tbl([['Marge utilisée · seuil d\'appel',`${(marginPct(S.k)*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} %`],['Accident de levier ce trimestre',tailP(RS.total)>0?`${dec(tailP(RS.total)*100,0)} % · perte ≈ ${dec(TAILSEV*tailL(RS.total)*100,0)} %`:`aucun sous ${dec(TAIL.x0*50,0)} %`],['Perte à −2 σ trimestriels',`−${moneyB(RS.total*S.nav)}`],['Notionnel brut',`${moneyB(grossBn(S.k))} · ${dec((grossBn(S.k)/S.nav),2)}×`],['Marge utilisée · seuil d\'appel',`${(MGU*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} % de l\'encours`]])}
+   ${tbl([['Marge utilisée · seuil d\'appel',`${(marginPct(S.k)*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} %`],['Accident de levier ce trimestre',`${dec(accRP(RS.total)*100,0)} % · perte ≈ ${dec(accLoss(RS.total)*100,1)} %`],['Perte à −2 σ trimestriels',`−${moneyB(RS.total*S.nav)}`],['Notionnel brut',`${moneyB(grossBn(S.k))} · ${dec((grossBn(S.k)/S.nav),2)}×`],['Marge utilisée · seuil d\'appel',`${(MGU*100).toFixed(0)} % · ${(MGC.thr*100).toFixed(0)} % de l\'encours`]])}
    <p style="margin:12px 0 4px">Part de la variance par facteur</p>
    ${tbl([...FACT.map((f,k)=>[f.nm,(vd.fv[k]/vd.tot*100).toFixed(0)+' %']),['Propre aux marchés',(vd.idio/vd.tot*100).toFixed(0)+' %']])}
    ${top.length?`<p style="margin:12px 0 4px">Contributeurs au risque</p>${tbl(top.map(o=>[INSTR[o.i].sym+' '+INSTR[o.i].nm,(o.v/sp*100).toFixed(0)+' %']))}`:''}`);
@@ -5811,13 +5811,19 @@ const TAILSEV=(()=>{const m=a=>a.reduce((s,e)=>s+(e.sev[0]+e.sev[1])/2,0)/Math.m
    la probabilité monte jusqu'à 40 % au seuil d'appel (50 %) */
 const MGZ={watch:0.20,pmax:0.40,pow:1.3};
 function levAccP(mgu){return (mgu<=MGZ.watch?0:Math.min(0.6,MGZ.pmax*Math.pow((mgu-MGZ.watch)/(MGC.thr-MGZ.watch),MGZ.pow)))*(boH(11)?0.5:1)}
-function accP(k){const sp=riskShown(weights(k)).total,a=tailP(sp),b=levAccP(marginPct(k));return {p:1-(1-a)*(1-b),r:a,m:b,sp,mgu:marginPct(k)}}
+function accP(k){const sp=riskShown(weights(k)).total,a=accRP(sp),b=levAccP(marginPct(k));return {p:1-(1-a)*(1-b),r:a,m:b,sp,mgu:marginPct(k)}}
 function mgCol(m){return m>=MGC.thr?'var(--short)':m>=MGC.warn?'#E08A3C':m>=MGZ.watch?'var(--warn)':'var(--long)'}
 const TAIL={x0:0.20,w:0.30,p:0.60},TAILM=[2.5,1.4,1.4,1.00,0.8,0.65,0.5];
 /* lot 84 : la probabilité accélère avec le risque (e + 0,8 e²), et la protection du contrôle des risques
    s'efface entre 30 et 40 % : au-delà, aucun budget ne vous couvre */
 function tailMit(sp){const m=TAILM[(S&&S.bud)?S.bud.risk:3]||1;if(m>=1)return m;const fd=Math.max(0,Math.min(1,(sp-0.30)/0.10));return m+(1-m)*fd}
-function tailP(sp,std){if(!std)return 0;   /* lot 101 : le joueur passe aux événements extrêmes */
+/* lot 368 : accidents du joueur, sans seuil — la fréquence monte avec le carré du risque rapporté à la limite, la gravité avec le risque */
+const ACC={p0:0.06,p1:0.14,s:0.65,cap:0.45,hot:0.15};
+function accRP(sp){if(!S||!S.bud)return 0;const x=sp/LIM.vol;return Math.min(0.6,(ACC.p0+ACC.p1*x*x)*Math.sqrt(tailMit(sp))*motS())}
+function accLoss(sp,mgu,byMg,sev){const spE=byMg?Math.max(sp,0.20+0.5*((mgu||0)-MGZ.watch)):sp;return Math.min(ACC.cap,ACC.s*(sev==null?TAILSEV:sev)*spE*crowd(sp)*motS())}
+function accExp(k,A){A=A||accP(k);return A.r*0.8*accLoss(A.sp,A.mgu,false)+A.m*0.8*accLoss(A.sp,A.mgu,true)}   /* coût moyen, sortie raisonnable */
+function accHot(sp){return accRP(sp)>=ACC.hot}
+function tailP(sp,std){if(!std)return accRP(sp);   /* lot 368 : le joueur retrouve ses accidents (lot 101 : supprimés) */
  const e=Math.max(0,(sp-TAIL.x0)/TAIL.w);return Math.min(0.97,(e+0.8*e*e)*TAIL.p*(std?1:tailMit(sp)))}
 function tailL(sp){return Math.min(0.80,1.5*sp*Math.max(0.3,Math.min(1.2,(sp-0.15)/0.25)))}   /* lot 84 : ×1,5 */   /* perte de référence, × gravité de l'accident */
 function tailExp(sp,std){if(!std)return stressP()*0.2*sp*crowd(sp)*(0.5+0.5*(TAILM[S.bud.risk]||1));return tailP(sp,std)*TAILSEV*tailL(sp)*0.55}          /* coût moyen, sortie la moins chère */
@@ -5901,7 +5907,7 @@ function riskMap(sp,big){
  const xm=Math.max(0.05,sq,...R.map(r=>r.x),...(gh?[gh.x]:[]))*1.10;
  const ys=[pr,...R.map(r=>r.y),...(gh?[gh.y]:[])],ya=Math.min(0,...ys),yz=Math.max(0,...ys),ypad=Math.max(0.01,(yz-ya)*0.14);
  const y0=ya<0?ya-ypad:0,y1=yz+ypad;
- const hot=tailP(sp)>0,me=myCol(S.rivals||[]),f=v=>v.toFixed(1);
+ const hot=accHot(sp),me=myCol(S.rivals||[]),f=v=>v.toFixed(1);
  const sv=`${dec(sq*100,1)} %`,   /* lot 84 : trimestriel, comme la rentabilité */
   mv=`${pr>=0?'+':'−'}${dec(Math.abs(pr)*100,1)} %`;
  /* lot 73 : jauges. Risque : cible du mandat et seuil d'accident, en trimestriel. Rentabilité : zéro et meilleur concurrent. */
@@ -5937,9 +5943,9 @@ function riskMap(sp,big){
    +`<text x="${x0+6}" y="${f(Math.min(yb-18,Math.max(yt+22,py+3.5)))}" font-size="10" fill="${cY}" font-family="var(--mono)" font-weight="700">rentabilité ${mv}</text>`
    +`<circle cx="${f(px)}" cy="${f(py)}" r="5.5" fill="${me}" stroke="${hot?'#D2463C':'var(--bg,#0b1020)'}" stroke-width="${hot?1.6:.8}"/>`
    +`<text x="${f(px+8)}" y="${f(py-7)}" font-size="10" fill="${me}" font-family="var(--mono)" font-weight="700" ${px>x1-70?'text-anchor="end"':''}>${nm}</text>`;
-  const tp=tailP(sp);
+  const tp=accRP(sp);
   return `<p class="note" style="margin:0 0 4px">Valeurs <b>trimestrielles</b>, comme partout dans le jeu. Risque : écart-type du trimestre, book et collatéral compris, bruit d'estimation compris ; sa jauge passe à l'ambre puis au rouge à mesure qu'il monte. Rentabilité : rendement attendu du trimestre — collatéral (et ce que la marge lui retire), impact compris, moins le coût du risque (½ σ²) et la perte moyenne des extrêmes à la probabilité du desk ; ni les accidents de levier ni les squeezes, détaillés dans la fenêtre de chaque marché ; sa jauge est rouge sous zéro et verte au niveau du meilleur concurrent. Traits tous les 5 points. Point jaune pâle : votre fonds juste avant votre dernier changement de position, toutes les autres positions comprises. Les concurrents sont placés à leur couple estimé (risque · rentabilité).</p><svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-bottom:6px">${g}</svg>`
-   +`<p class="note" style="margin:0 0 10px">${tp>0?`À ${sv} de risque : <b class="neg-g">${dec(tp*100,0)} % de probabilité</b> d'un accident de levier ce trimestre, perte de l'ordre de ${dec(TAILSEV*tailL(sp)*100,0)} % de l'encours si vous le laissez courir.`:`Sous ${dec(TAIL.x0*50,1)} % de risque par trimestre, pas d'accident de levier possible.`}</p>`;
+   +`<p class="note" style="margin:0 0 10px">À ${sv} de risque : <b class="${accHot(sp)?'neg-g':''}">${dec(tp*100,0)} % de probabilité</b> d'un accident de levier ce trimestre, perte de l'ordre de ${dec(accLoss(sp)*100,1)} % de l'encours si vous le laissez courir. Aucun book n'y échappe tout à fait : la fréquence monte avec le carré du risque, la perte avec le risque, et le sang-froid du desk joue sur les deux.</p>`;
  }
  const L=3,Rr=4,T=5,B=3,gid='gz'+(++riskMap.n);
  const X=v=>L+(100-L-Rr)*v/xm,Y=v=>100-B-(100-B-T)*(v-y0)/(y1-y0);
@@ -6169,7 +6175,7 @@ function mgLineDraw(){const el=document.getElementById('mgline');if(!el)return;c
  const V=visList(S.k),pv=visP(S.k);
  el.innerHTML=`<div class="kv"><span><b>Levier</b> · marge utilisée <b style="color:${mgCol(m)}">${Math.round(m*100)} %</b> de l'encours <span class="dim-g">(surveillance ${Math.round(MGZ.watch*100)} % · appel ${Math.round(MGC.thr*100)} %)</span></span><b style="color:${A.p>0.15?'var(--short)':A.p>0.03?'var(--warn)':'var(--dim)'}">accident ${Math.round(A.p*100)} %</b></div>
   <span class="mgbar${m>=MGC.warn?' hot':''}" style="height:7px"><i style="width:${Math.min(100,m/0.6*100).toFixed(0)}%;background:${mgCol(m)}"></i><em style="left:${(MGZ.watch/0.6*100).toFixed(0)}%"></em><em style="left:${(MGC.thr/0.6*100).toFixed(0)}%" class="thr"></em></span>
-  <p class="note" style="margin:4px 0 0">${msg[0].toUpperCase()+msg.slice(1)}. Probabilité d'un accident de levier ce trimestre : ${Math.round(A.p*100)} %, nulle sous ${Math.round(MGZ.watch*100)} % de marge, ${Math.round(MGZ.pmax*100)} % au seuil d'appel. Pour la faire baisser : moins de notionnel, surtout sur les marchés à forte marge (actions, matières premières, crypto).</p>
+  <p class="note" style="margin:4px 0 0">${msg[0].toUpperCase()+msg.slice(1)}. Probabilité d'un accident de levier ce trimestre : ${Math.round(A.p*100)} % — ${Math.round(A.r*100)} % par le risque du book, jamais nul, et ${Math.round(A.m*100)} % par la marge, nul sous ${Math.round(MGZ.watch*100)} %, ${Math.round(MGZ.pmax*100)} % au seuil d'appel. Pour la faire baisser : moins de notionnel, surtout sur les marchés à forte marge (actions, matières premières, crypto).</p>
   ${V.length?`<div class="kv" style="margin-top:6px"><span><b style="white-space:normal;text-align:left">👁 Positions visibles du marché</b></span><b style="color:var(--short);flex-shrink:0">accident ${Math.round(pv*100)} %</b></div>${V.map(v=>`<p class="note" style="margin:2px 0 0">${v.kind==='short'?'Vente déclarée':'Achat à crédit repéré'} · <b>${INSTR[v.i].sym}</b> ${S.k[v.i]>0?'+':''}${S.k[v.i]} — ${dec(v.f*100,1)} % du carnet : ${v.kind==='short'?'short squeeze':'liquidation forcée'} ${Math.round(v.p*100)} %</p>`).join('')}<p class="note" style="margin:4px 0 0">Une ligne devient visible à partir de ±${VIS.kMin} unités et au-delà de ${Math.round(VIS.thr*100)} % de la profondeur de son carnet (les marchés étroits d'abord, et tous quand le fonds grossit). Une vente est alors déclarée ; un achat, vu du prime broker dès ${Math.round(MGZ.watch*100)} % de marge.</p>`:''}`}
 function renderRisk(){
  mgLineDraw();   /* lot 274 */
@@ -6187,7 +6193,7 @@ function renderRisk(){
  if(capStress()>0)flags+=`<div class="flag"><span>L'encours a dépassé ${moneyB(capSoftNav())}, la taille au-delà de laquelle ce book ne se déploie plus sans se voir : impact de marché ×${dec(capFactor(),2)} sur chaque ordre. La capacité de la stratégie est atteinte.</span></div>`;
  if(MGU>MGC.thr)flags+=`<div class="flag"><span>Marge utilisée ${(MGU*100).toFixed(0)} % de l'encours, au-dessus du seuil de ${(MGC.thr*100).toFixed(0)} % du prime broker. Le prime broker fera un appel de marge dès le début du trimestre.</span></div>`;
  else if(MGU>MGC.warn)flags+=`<div class="flag"><span>Marge utilisée ${(MGU*100).toFixed(0)} % de l'encours. Le seuil d'appel est à ${(MGC.thr*100).toFixed(0)} %.</span></div>`;
- if(tailP(RS.total)>0)flags+=`<div class="flag" style="border-color:var(--short)"><span><b>Zone d'accidents de levier.</b> À ${pct(RS.total)} de risque : ${dec(tailP(RS.total)*100,0)} % de probabilité d'un accident ce trimestre, perte de l'ordre de ${dec(TAILSEV*tailL(RS.total)*100,0)} % de l'encours si vous le laissez courir. Toute sortie coûte cher.</span></div>`;
+ if(accHot(RS.total))flags+=`<div class="flag" style="border-color:var(--short)"><span><b>Zone d'accidents de levier.</b> À ${pct(RS.total)} de risque : ${dec(accRP(RS.total)*100,0)} % de probabilité d'un accident ce trimestre, perte de l'ordre de ${dec(accLoss(RS.total)*100,1)} % de l'encours si vous le laissez courir. Toute sortie coûte cher.</span></div>`;
  if(sp<0.08&&sp>0.001)flags+=`<div class="flag"><span>Vous facturez ${dec((S.budBp*4/100+2),1)} % de frais annuels pour un book à ${pct(RQ(sp))} de volatilité.</span></div>`;
  if(sp<=0.001)flags+=`<div class="flag"><span>Aucune position. Le collatéral rapporte le taux au jour le jour, les frais courent, le comité regarde.</span></div>`;
  if(fmax>0.62)flags+=`<div class="flag"><span>${(fmax*100).toFixed(0)} % de votre variance vient du seul facteur « ${FACT[vd.fv.indexOf(Math.max(...vd.fv))].nm.toLowerCase()} ». Douze lignes, un pari.</span></div>`;
@@ -6974,7 +6980,7 @@ function tailDraw(){
  const byMg=u()<A.m/Math.max(1e-9,A.r+A.m);   /* lot 274 : l'accident vient de la marge ou du risque, au prorata */
  const wantMg=byMg,pool=TAILEV.map((e,j)=>j).filter(j=>!!TAILEV[j].mg===wantMg),i=pool[Math.floor(u()*pool.length)],ev=TAILEV[i],
   spE=byMg?Math.max(sp,0.20+0.5*(A.mgu-MGZ.watch)):sp,
-  L=Math.min(ev.mg?0.60:0.55,(ev.sev[0]+(ev.sev[1]-ev.sev[0])*u())*tailL(spE)),good=u()<0.5;
+  L=accLoss(sp,A.mgu,byMg,ev.sev[0]+(ev.sev[1]-ev.sev[0])*u()),good=u()<0.5;   /* lot 368 */
  let imp=0;for(let m=0;m<N;m++){const d=Math.trunc(S.k[m]/2)-S.k[m];if(d)imp+=tcost(d,m).cost*urgM(URG.tail,m)}   /* lot 260 : ×3 (×5 avant) */
  return {i,sp,L,good,imp:imp/S.nav,byMg,mgu:A.mgu};
 }
@@ -7004,7 +7010,7 @@ function screenTail(te){
  const CUT=O.findIndex(o=>o.id==='cut');
  app.innerHTML=statusBar()+`<div class="evwrap fade">
   <div class="evcard bad">${evHead(ev.who,'risk')}<h3>${ev.t}</h3><p>${ev.p}</p>
-   <p class="note">${te.vis?(te.vis==='short'?`Votre vente sur ${INSTR[te.pos].nm} pèse ${dec(te.fp*100,1)} % de la profondeur du carnet : à partir de ±${VIS.kMin} unités et au-delà de ${Math.round(VIS.thr*100)} %, elle est déclarée et tout le marché la voit.`:`Votre achat sur ${INSTR[te.pos].nm} pèse ${dec(te.fp*100,1)} % de la profondeur du carnet, avec ${Math.round(te.mgu*100)} % de marge utilisée : le prime broker l'a dans le collimateur.`):te.byMg?`Appel de marge : votre marge utilisée atteint ${Math.round(te.mgu*100)} % de l'encours. En dessous de ${Math.round(MGZ.watch*100)} %, il ne serait pas arrivé.`:`Accident de levier : votre book tourne à ${pct(RQ(te.sp))} de risque. En dessous de ${dec(TAIL.x0*50,0)} %, il ne serait pas arrivé.`}</p></div>
+   <p class="note">${te.vis?(te.vis==='short'?`Votre vente sur ${INSTR[te.pos].nm} pèse ${dec(te.fp*100,1)} % de la profondeur du carnet : à partir de ±${VIS.kMin} unités et au-delà de ${Math.round(VIS.thr*100)} %, elle est déclarée et tout le marché la voit.`:`Votre achat sur ${INSTR[te.pos].nm} pèse ${dec(te.fp*100,1)} % de la profondeur du carnet, avec ${Math.round(te.mgu*100)} % de marge utilisée : le prime broker l'a dans le collimateur.`):te.byMg?`Appel de marge : votre marge utilisée atteint ${Math.round(te.mgu*100)} % de l'encours. En dessous de ${Math.round(MGZ.watch*100)} %, il ne serait pas arrivé.`:`Accident de levier : votre book tourne à ${pct(RQ(te.sp))} de risque. Moins de risque l'aurait rendu plus rare et moins grave ; le sang-froid du desk (×${dec(motS(),2)}) pèse sur les deux.`}</p></div>
   <p class="note" style="margin:12px 0 0">Part du book que vous coupez, ou couverture payée par votre trésorerie :</p>
   <div class="evpan" id="tlpan"></div>
   <div class="evsel" style="grid-template-columns:repeat(6,1fr)">${O.map((o,k)=>`<button class="evstep tlstep ${o.id==='hedge'?'zr':o.x===0?'up':'dn'}${k===CUT?' on':''}" data-t="${k}"><b>${o.id==='hedge'?'🛡':Math.round(o.x*100)}</b><small>${o.id==='hedge'?'couvrir':o.x===0?'tenir':'% coupé'}</small></button>`).join('')}</div>
@@ -7643,7 +7649,7 @@ function verdicts(o){
   :t(["Le comité a demandé une copie de votre contrat de travail. Pour « vérifier une clause ».","La réduction du mandat a été mise au vote. Il manquait une voix.","Le conseil demande si le gérant est « encore le bon ».","Le dossier est parti au conseil avec une recommandation qu'on ne vous a pas lue."],7));
  /* risque */
  C.push(dd>0.15?t([`${dec(dd*100,0)} % sous le plus haut : le comité veut savoir ce qui est encore en place.`,`Un repli de ${dec(dd*100,0)} % : le comité parle de « plan de redressement ».`],8)
-  :tailP(sp)>0?t([`${pct(RQ(sp))} de risque : le comité rappelle que les accidents de levier ne préviennent pas.`,`Book à ${pct(RQ(sp))} : on vous demande qui paie si le prime broker rappelle ses marges.`],8)
+  :accHot(sp)?t([`${pct(RQ(sp))} de risque : le comité rappelle que les accidents de levier ne préviennent pas.`,`Book à ${pct(RQ(sp))} : on vous demande qui paie si le prime broker rappelle ses marges.`],8)
   :sp<0.08?t([`${pct(RQ(sp))} de risque : le comité n'a rien à vous reprocher, les investisseurs peut-être.`,`Un book à ${pct(RQ(sp))} : prudent, et facturé au tarif plein.`],8)
   :t([`Risque ex ante ${pct(RQ(sp))} : le comité prend acte.`,`${pct(RQ(sp))} de risque : rien à redire tant que les pertes restent contenues.`],8));
  if(inc)C.push(t([`${inc} incident${inc>1?'s':''} ce trimestre, placé${inc>1?'s':''} en tête du rapport, avant la performance.`,"L'incident a été discuté plus longtemps que le book. C'est ainsi que fonctionnent les comités.","Un incident, et c'est tout le dispositif de contrôle qui repasse à l'examen."],11));

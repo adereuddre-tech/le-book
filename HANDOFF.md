@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 367.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 368.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -390,6 +390,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **365** : Moral visé par cran de bonus versé (30, 40, 50, 62, 75, 95 + locaux), quel que soit le montant ; taux du lot 363 inchangé ; texte : le moral joue sur l'impact, pas sur la demi-fourchette ni le courtage.
 - **366** : Débauchage plus raide selon le moral (85/55/25/8/0 % par trimestre) ; courtier ×3 ; contre-offre ×(1+(50−moral)/50), entre ×1 et ×2.
 - **367** : Moral renforcé : lecture ×1,8…0,35, veille ±18/±12 pts, anecdotes −25…+25 pts ; nouveau facteur sang-froid ×1,4 (moral 0) … ×0,7 (100), affiché, appliqué aux accidents et crises aux lots 368-369.
+- **368** : Accidents de levier rétablis pour le joueur, sans seuil : p = (6 % + 14 %·(risque/limite)²)×√contrôle des risques×sang-froid ; perte = 0,65×gravité×risque×foule×sang-froid (≤ 45 %) ; marge : même perte ; la rentabilité estimée (adjParts.acc) et celle du fonds retranchent le coût moyen.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
