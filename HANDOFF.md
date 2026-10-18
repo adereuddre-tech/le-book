@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 380.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 381.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -403,6 +403,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **378** : Glossaire (impact payé par le fonds, moral, sang-froid, accident de levier, masse salariale) et info-bulle d'exécution à jour ; impact au lieu de coûts d'exécution dans les messages du desk.
 - **379** : Rapport final et trésorerie : fourchette et impact payés par le fonds, budget de l'équipe payé par vous ; la caisse paie l'équipe, le courtage et les bonus. Régression propre sur 372-379.
 - **380** : Taux de bonus composé : taux = 1 − (1 − minimum)^cran (×1 … ×4) ; petit minimum ≈ inchangé, équipe pleine 69/77/83/91/95/99 % au lieu de 69/87/90/90/90/90 ; plus de plafond à 90 %.
+- **381** : Protection : put au-delà de −10 % (au lieu de −3 %), prime 1,3 × l'espérance (au lieu de 2 ×) ; détenue, elle amortit les extrêmes dans le risque et la rentabilité du fonds ; la page montre le risque du fonds sans → avec et la valeur du risque évité (½ σ²). Primes mesurées 0,6–2,3 % au lieu de 4–6 % ; rentable avec une alerte nette (+89 pb), −20 à −50 pb sans.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
