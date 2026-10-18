@@ -4965,7 +4965,7 @@ function showGauge(id){
    ${tbl([...it.filter(x=>Math.abs(x[1])>1e-9).map(x=>[x[0],sg(x[1])]),[`<b>Gains nets · le score</b>`,`<b class="${net>=0?'pos-g':'neg-g'}">${score(net)}</b>`],
      ...(lock?[[`Part co-investie, bloquée (valeur du moment)`,`<b class="neg-g">−${mm(lock)}</b>`]]:[]),
      [`<b>Trésorerie disponible</b>`,`<b class="${mgrCash()>=0?'gold-g':'neg-g'}">${mm(mgrCash())}</b>`],...(bonPend()+coPend()>0?[[`Bonus d'équipe choisi`,`<b class="neg-g">−${mm(bonPend())}</b>`],[`Co-investissement du prochain trimestre`,`<b class="neg-g">−${mm(coPend())}</b>`],[`<b>Après vos choix</b>`,`<b class="${cashView()>=0?'gold-g':'neg-g'}">${mm(cashView())}</b>`]]:[])])}
-   <p class="note" style="margin-top:6px">${mgrCash()>=0?`Il vous reste <em>${mm(mgrCash())}</em> pour payer budget et ordres.`:`Vous êtes à découvert de <em>${mm(-mgrCash())}</em>. Les ordres et les événements restent possibles, mais pas le budget de l'équipe ; à la clôture, une trésorerie négative, c'est le dépôt de bilan.`}</p>
+   <p class="note" style="margin-top:6px">${mgrCash()>=0?`Il vous reste <em>${mm(mgrCash())}</em> pour payer l'équipe, le courtage et les bonus.`:`Vous êtes à découvert de <em>${mm(-mgrCash())}</em>. Les ordres et les événements restent possibles, mais pas le budget de l'équipe ; à la clôture, une trésorerie négative, c'est le dépôt de bilan.`}</p>
    <p style="margin:12px 0 4px">Le co-investissement</p>
    ${lock?tbl([[`Part placée à l'ouverture`,`${pc} % · ${mm(S.coinvBase)}`],[`Valeur du moment`,`${mm(lock)}${cLive?' · '+sg(cLive):''}`],[`Rendue à la clôture`,`${mm(S.coinvBase)} × (1 + résultat du fonds)`],[`Part au trimestre prochain`,`${Math.round((S.coinvPct||COINV)*100)} %`]])
      :tbl([[`Part placée en ce moment`,S.q===0?`aucune au premier trimestre`:`aucune, trimestre clos`],[`Part au trimestre prochain`,`${pc} % de la trésorerie d'ouverture`]])}
@@ -7942,8 +7942,8 @@ function screenFinal(){
    <div class="cell"><div class="cl">Volatilité réalisée</div><div class="cv">${pct(volA,1)}</div></div>
    <div class="cell"><div class="cl">Perte maximale</div><div class="cv neg-g">−${dec((S.maxdd*100),1)} %</div></div>
    <div class="cell"><div class="cl">Ratio de Sharpe annualisé</div><div class="cv ${sr>=0?'':'neg-g'}">${dec(sr,2).replace('-','−')}</div></div>
-   <div class="cell"><div class="cl">Exécution payée de votre poche</div><div class="cv">${moneyB(S.totalTC)}</div></div>
-   <div class="cell"><div class="cl">Budget d'exploitation payé</div><div class="cv">${moneyB(S.totalOps)}</div></div>
+   <div class="cell"><div class="cl">Fourchette et impact, payés par le fonds</div><div class="cv">${moneyB(S.totalTC)}</div></div>
+   <div class="cell"><div class="cl">Budget de l'équipe, payé par vous</div><div class="cv">${moneyB(S.totalOps)}</div></div>
    <div class="cell"><div class="cl">Encours final</div><div class="cv">${moneyB(S.nav)}</div></div>
    <div class="cell" style="grid-column:1/-1;background:linear-gradient(180deg,rgba(217,176,106,.20),rgba(217,176,106,.04))"><div class="cl" style="color:var(--gold)">Vos gains de gérant · le score</div><div class="cv" style="color:var(--gold);font-size:34px">${score(S.mgrFees-S.mgrCosts)}</div><div class="cl" style="margin-top:4px">le gérant médian de la place a gagné ${score(rivalMgrMedian())}</div></div>
    <div class="cell"><div class="cl">Classement sur quatre fonds</div><div class="cv">${rank}<sup style="font-size:12px">${rank===1?'er':'e'}</sup></div></div>
