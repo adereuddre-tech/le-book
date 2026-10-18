@@ -1,7 +1,7 @@
 # Le Book — note de reprise (état au lot 212, bot 211)
 
 Jeu de gérant de hedge fund global macro, en français. Fichier unique `index.html` (~830 ko), publié sur GitHub Pages :
-https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 371.**
+https://adereuddre-tech.github.io/le-book/ — dépôt `adereuddre-tech/le-book`, branche `main`. **Dernier lot publié : 372.**
 
 Historique détaillé : `docs/HANDOFF_archive_lot90.md` (lots 1–90) et `docs/HANDOFF_archive_lot192.md` (lots 76–192, mesures,
 architecture détaillée, invariants d'origine). Cette note-ci fait foi ; l'archive sert à retrouver le *pourquoi* d'un réglage.
@@ -394,6 +394,7 @@ Ensuite (idées anciennes) : anecdotes et dépêches supplémentaires, textes de
 - **369** : Extrêmes un peu plus fréquents (XPROB 0,20, plancher 13 %) ; sang-froid sur le choc subi et le gap de crise ; positions visibles sans seuil (1 % + empreinte, achats selon la marge), fuites et pertes × sang-froid.
 - **370** : Accident de levier : la base de 6 % monte avec le risque jusqu'à 10 % de vol (un book vide n'a pas d'accident). Campagne 369 : survie 73 %, rendement des survivants 93 → 65 %, 0,65 choc/trimestre ; ×2 vs minimum : +6,5 pts de rendement, Δscore −0,8.
 - **371** : Gontran et Octave : carte non grisée quand ils sont disponibles ; la toucher indique qu'ils se jouent sur l'écran de l'incident ou de l'appel de marge.
+- **372** : Gontran et Octave deviennent des gardiens (armés pendant le book, ne comptent que s'ils servent), comme Solange, Josiane et Mireille ; descriptions des gardiens harmonisées.
 - **233 (outil)** : bot flux plus sobre : équipe [1,1] et réserve de caisse 60 % (`BUD0`, `RES0` ; calibration 30 parties par variante : [3,2] 57 % de survie / 16,4 M$, [2,1] 50 % / 5,5, [1,1] 60 % / 10,6, [1,0] 47 % / 5,1).
   Lot 231 — diagnostic : le gérant flux touche ~0,5 M$ de frais de gestion par trimestre pour ~1 M$ d'équipe ; il vit des commissions de performance. Capital testé sans effet (0,5 / 1,5 / 2,5 M$ → survie 50 / 47 / 48 %, 30 parties chacune).
 Lots 102–174 : voir `docs/HANDOFF_archive_lot192.md` (section « Lots 105–110 (détail) » et suivantes).
