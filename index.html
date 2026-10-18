@@ -1104,7 +1104,7 @@ function noBonusPage(cur,qT){const sv=S.mot,mN=motNext(0),mH=motNext(cur),r={};[
   <p class="note" style="margin-top:0">${why} Le bonus d'équipe est une part de cette commission : il n'y a rien à verser, et le desk le sait. ${eq?'Votre taux est au minimum : rien ne change, mais rien ne motive non plus.':`Votre taux de ${dec(bonRate(cur)*100,1)} % reste acquis pour le prochain trimestre gagnant.`}</p>
   <p class="note">Sans bonus, le moral du desk glisse de ${Math.round(motV())} vers ${Math.round(mN)}${eq?'':` (il serait monté ou resté vers ${Math.round(mH)} avec votre taux)`} :</p>
   <table class="qt"><thead><tr><th>Effet</th>${eq?'':'<th>Avec votre taux</th>'}<th>Sans bonus</th></tr></thead><tbody>
-   ${row("Coûts d'exécution",'×'+dec(Fc.c,2),'×'+dec(F0.c,2))}
+   ${row("Impact de vos ordres",'×'+dec(Fc.c,2),'×'+dec(F0.c,2))}
    ${row('Bruit sur la lecture des dépêches','×'+dec(motR(mH),2),'×'+dec(motR(mN),2))}
    ${row('Sang-froid (accidents, fuites, crises)','×'+dec(motS(mH),2),'×'+dec(motS(mN),2))}
    ${row('Chances des anecdotes du desk',(motW(mH)>=0?'+':'−')+Math.round(Math.abs(motW(mH))*100)+' pts',(motW(mN)>=0?'+':'−')+Math.round(Math.abs(motW(mN))*100)+' pts')}
@@ -3579,7 +3579,7 @@ const GLOSS={
  'portage':"Ce que rapporte une position si les prix ne bougent pas : dividendes et prime de risque des actions, prime de terme des obligations, écart de taux entre deux devises, coût de stockage d'une matière, contango du VIX. Une part est structurelle et connue ; l'autre suit le cycle.",
  'tendance':"Le signal qui parie que ce qui a monté continuera de monter. Il gagne dans les marchés qui bougent longtemps dans le même sens, perd dans les retournements.",
  'fourchette':"L'écart entre le prix auquel on peut acheter et celui auquel on peut vendre. Chaque ordre en paie la moitié.",
- 'impact de marché':"Le prix qui bouge contre vous pendant que vous exécutez : plus l'ordre est gros par rapport au carnet, plus il pèse.",
+ 'impact de marché':"Le prix qui bouge contre vous pendant que vous exécutez : plus l'ordre est gros par rapport au carnet, plus il pèse. Il est payé par le fonds.",
  'unité de risque':"La taille standard d'une position : 2,5 % de volatilité annuelle à elle seule, quel que soit le marché.",
  'gate':"Clause qui limite les rachats d'un trimestre à une part de l'encours ; le reste attend le trimestre suivant. Les investisseurs n'aiment pas.",
  'surlevier':"Au-delà de ±3 unités, le notionnel dépasse ce que le marché absorbe sans broncher : marge, impact et risque d'accident montent vite.",
@@ -3591,8 +3591,10 @@ const GLOSS={
  'carton jaune':"Avertissement du comité des risques ; deux jaunes font un rouge, qui impose des contraintes le trimestre suivant.",
  'contre-pied':"Prendre la position inverse du mouvement ou de la foule : on fournit la liquidité que les autres cherchent.",
  'événement extrême':"Un choc rare et violent (guerre, krach, faillite d'une banque, squeeze…), calculé sur votre book. La veille peut le sentir venir ; une protection s'achète en début de trimestre.",
- 'moral':"L'humeur de vos traders, de 0 à 100. Il ne dépend que de l'argent (le bonus) et des égards (locaux, petits gestes) ; il règle les coûts d'exécution, la lecture des dépêches, les anecdotes et le débauchage.",
- 'masse salariale':"La somme des salaires de l'équipe choisie. Elle fixe le niveau du desk ou du back office : le cran le plus haut que cette somme paierait sur l'ancienne échelle.",
+ 'moral':"L'humeur de vos traders, de 0 à 100. Il ne dépend que de l'argent (le cran de bonus) et des égards (locaux, petits gestes) ; il règle l'impact de vos ordres, la lecture des dépêches et la veille, les anecdotes, le sang-froid et le débauchage.",
+ 'sang-froid':"Ce que le moral donne dans les crises : ×1,4 à moral 0, ×0,7 à 100, sur la fréquence des accidents internes et des fuites, et sur la gravité des accidents et des extrêmes.",
+ 'accident de levier':"Un choc venu de l'intérieur ou du prime broker : positions cachées, ordres en double, marges relevées. Possible à tout niveau de risque, plus fréquent et plus grave quand il monte ; le contrôle des risques et le sang-froid du desk le réduisent.",
+ 'masse salariale':"La somme des salaires de l'équipe choisie. Elle fixe le niveau d'ensemble du desk ou du back office ; ce qu'apporte chaque personne en propre s'y ajoute.",
  'drain de volatilité':"Ce qu'une forte volatilité coûte à la performance composée : perdre 50 % puis gagner 50 % laisse à −25 %."};
 const GLRX=new RegExp('(^|[^\\wÀ-ÿ])('+Object.keys(GLOSS).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[-]/g,'\\-')).join('|')+')(?![\\wÀ-ÿ])','i');
 function glossMark(root){if(!root)return;const els=root.querySelectorAll('p.note,.kv>span,details>p,.note');
@@ -6243,7 +6245,7 @@ function commitOrders(){
 /* ══════════ info-bulles de jeu, première partie ══════════ */
 const GAMEHINTS={
  comm:["Ce que vous annoncez","<p>Vous promettez un rendement <em>et</em> une fourchette de volatilité réalisée. Les deux doivent être tenus : livrer la performance avec le double du risque annoncé compte comme un échec.</p><p>Ne rien promettre coûte peu, mais coûte à coup sûr. Promettre fort rapporte gros et coûte davantage encore si ça casse : c'est le seul endroit du jeu où vous choisissez votre propre asymétrie.</p>"],
- exec:["L'exécution","<p>Le book est décidé, reste à le passer. Chaque interlocuteur vous propose un arbitrage entre le coût d'exécution, le risque pris, et ce que le comité acceptera de voir.</p><p>Les chiffres annoncés dans les options sont exacts : « coûts −40 % » réduit vraiment de 40 % la facture de courtage, que paie votre société. Mais l'impact de marché, lui, est payé par le fonds, et il suit la manière d'exécuter : payer le bloc protège le prix moyen, négocier un rabais le dégrade. Chaque bouton annonce les deux, avec l'effet sur les jauges.</p>"],
+ exec:["L'exécution","<p>Le book est décidé, reste à le passer. Chaque interlocuteur vous propose un arbitrage entre le coût d'exécution, le risque pris, et ce que le comité acceptera de voir.</p><p>Les chiffres annoncés dans les options sont exacts : « coûts −40 % » réduit vraiment de 40 % la facture des ordres, fourchette et impact, que paie le fonds. Le prix moyen suit la manière d'exécuter : payer le bloc le protège, négocier un rabais le dégrade. Votre société ne paie que le courtage, et les rabais ou dépenses de votre choix. Chaque bouton annonce les deux, avec l'effet sur les jauges.</p>"],
  event:["Les dépêches du trimestre","<p>Chaque dépêche déplace un ou plusieurs marchés immédiatement, sur les positions que vous détenez déjà. Vous choisissez ensuite de suivre le mouvement ou de ne pas réagir. La suite se joue à deux issues, poursuite ou retournement, dont chaque bouton donne la probabilité, le P&amp;L et l'effet sur les jauges.</p><p>Suivre est toujours un pari : frais de transaction, écart au book que vous aviez construit, et un comité qui n'aime pas les réactions qui coûtent.</p>"],
  debrief:["Le débriefing","<p>Le détail du trimestre se déplie : ce que les positions ont rapporté, ce que le collatéral a ajouté, ce que les transactions et les frais ont retiré. Les jauges bougent ensuite, et chaque mouvement est justifié ligne par ligne.</p><p>Ce que vous encaissez, vous, n'est pas la performance du fonds : c'est la commission de gestion, plus la commission de performance au-dessus du plus haut historique, moins vos propres dépenses.</p>"],
  board:["Le conseil","<p>Entre deux trimestres, le conseil et la presse commentent. Rien ne s'y décide mécaniquement, mais ce qui s'y dit annonce ce que les jauges feront ensuite.</p>"]
@@ -7249,13 +7251,13 @@ function resolveQuarter(){
  const tot=invClose({r:qTotal,med:avgR,ddp:Math.max(0,1-S.idx/Math.max(S.hwmIdx||1,S.idx))});   /* lot 102 : investisseurs nommés */
  {const pP=Math.min(0.95,Math.max(0,poachNow())),cands=[];for(let p=1;p<FOP.length;p++)if(here(p)&&FOP[p].cls)cands.push(p);   /* lot 96 : débauchage de base ; lot 99 : traders seulement ; lot 296 : lu sur le moral */
  const mu=prng32(hash32('mot'+S.q,S.seed)),mHi=!S.over&&mu()<motHi(),mLo=!S.over&&!mHi&&cands.length>1&&mu()<motLo();
- if(mHi){S.execPenalty=Math.max(0.7,S.execPenalty*0.92);S.poachMsg+=` Le moral est au plus haut : le desk refuse toutes les offres des concurrents, et redouble d'efforts (coûts d'exécution −8 %).`}
+ if(mHi){S.execPenalty=Math.max(0.7,S.execPenalty*0.92);S.poachMsg+=` Le moral est au plus haut : le desk refuse toutes les offres des concurrents, et redouble d'efforts (impact −8 %).`}
  if(mLo){const boss=(pick(S.rivals.filter(x=>x.poacher))||S.rivals[S.rivals.length-1]).boss,p=cands[Math.floor(mu()*cands.length)];cands.splice(cands.indexOf(p),1);gonesL().push({p,n:1,boss});
   S.poachMsg+=` Le moral est au plus bas : ${FOP[p].full} part en entraînant un collègue, chez ${boss}.`;motAdd(-3,'départ en groupe')}
  if(!S.over&&!mHi&&cands.length&&(mLo||rng()<pP)){const boss=(pick(S.rivals.filter(x=>x.poacher))||S.rivals[S.rivals.length-1]).boss;
   {const p=(S.huntP!=null&&cands.includes(S.huntP))?S.huntP:cands[Math.floor(rng()*cands.length)];S.huntP=null;gonesL().push({p,n:1,boss});S.poachMsg+=` ${boss} a débauché ${FOP[p].full} : ${eF(p)?'elle':'il'} ne reviendra pas sans contre-offre${FOP[p].cls?` (${FOP[p].cls.toLowerCase()} par un courtier, ×${dec(NOTRD,1)}, en attendant)`:''}.`}
   if((S.stars||[]).length){const g=S.stars.pop();S.poachMsg+=` Votre recrue ${g.toLowerCase()} part avec eux : la remise sur cette classe disparaît.`}}}
- if(tot>0.01&&S.bud.ret>=BUDMAX&&rng()<0.4){S.execPenalty=Math.max(0.7,S.execPenalty*0.92);S.poachMsg+=" Vous avez recruté un trader chez un concurrent : coûts d'exécution −8 %."}
+ if(tot>0.01&&S.bud.ret>=BUDMAX&&rng()<0.4){S.execPenalty=Math.max(0.7,S.execPenalty*0.92);S.poachMsg+=" Vous avez recruté un trader chez un concurrent : impact −8 %."}
  /* objectif du trimestre */
  S.streak=qTotal>0?(S.streak||0)+1:0;S.streakMax=Math.max(S.streakMax||0,S.streak);
  if(qTotal<=0)S.qNeg=(S.qNeg||0)+1;
