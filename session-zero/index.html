@@ -1,0 +1,433 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style><title>Sondage Session Zéro</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap">
+<style>
+/* Layout : une piste horizontale à cinq crans par question, de l'or (pôle gauche) au violet (pôle droit), comme les deux dés de dualité. */
+:root{
+  --bg:#f2f0f6;--surface:#fbfaff;--sunken:#e7e3ef;--fg:#201a2c;--muted:#5d5569;--line:#cbc4d8;
+  --gold:#8a5c00;--violet:#5b35a6;--ok:#23694a;--warn:#8a5c00;--crit:#a3263b;
+  --c1:#8a5c00;--c2:#8d6336;--c3:#6f6073;--c4:#67499f;--c5:#5b35a6;
+  --display:"Grenze Gotisch","Palatino Linotype",Georgia,serif;
+  --body:"Alegreya Sans","Trebuchet MS",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15111d;--surface:#1f1a2a;--sunken:#2a2338;--fg:#efeaf6;--muted:#ab9fbb;--line:#433a55;
+  --gold:#e8b64a;--violet:#a98fec;--ok:#62c598;--warn:#e8b64a;--crit:#f0788a;
+  --c1:#e8b64a;--c2:#d9ad7d;--c3:#b9a9b9;--c4:#b199df;--c5:#a98fec;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15111d;--surface:#1f1a2a;--sunken:#2a2338;--fg:#efeaf6;--muted:#ab9fbb;--line:#433a55;
+  --gold:#e8b64a;--violet:#a98fec;--ok:#62c598;--warn:#e8b64a;--crit:#f0788a;
+  --c1:#e8b64a;--c2:#d9ad7d;--c3:#b9a9b9;--c4:#b199df;--c5:#a98fec;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 17px/1.45 var(--body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.hero{padding-block:36px 24px}
+.hero-grid{display:flex;gap:24px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+h1{font:700 clamp(46px,8vw,76px)/.95 var(--display);margin:0;letter-spacing:.005em;text-wrap:balance}
+.hero p{max-width:62ch;margin:12px 0 0}
+.small{font-size:15px;color:var(--muted)}
+.dice{display:flex;gap:6px;flex:none}.dice svg{width:64px;height:64px}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-block:1px solid var(--line)}
+.bar-in{display:flex;gap:14px;align-items:center;min-height:50px;flex-wrap:wrap;padding-block:6px}
+.tabs{display:flex;gap:4px}
+.tab{appearance:none;border:0;background:none;color:var(--muted);font:500 16px var(--body);padding:6px 10px;border-radius:4px;cursor:pointer}
+.tab[aria-selected="true"]{color:var(--fg);background:var(--sunken)}
+.prog{flex:1;min-width:150px;display:flex;align-items:center;gap:10px;font-variant-numeric:tabular-nums;font-size:15px}
+.track{flex:1;height:6px;background:var(--sunken);border-radius:3px;overflow:hidden}
+.track i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--violet));transition:width .2s}
+main{padding-block:24px 64px;display:grid;gap:44px}
+section.bloc{display:grid;gap:18px}
+h2{font:700 38px/1.05 var(--display);margin:0;text-wrap:balance}
+.intro{margin:-10px 0 0;color:var(--muted);max-width:65ch}
+.field{display:grid;gap:6px;max-width:440px}
+label.lab{font-weight:700}
+input[type=text],textarea{width:100%;font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:9px 11px}
+textarea{min-height:88px;resize:vertical}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;display:grid;gap:12px;min-width:0}
+.q.un{border-color:var(--line)}
+.q legend{padding:0;font:700 25px/1.1 var(--display);float:left;width:100%}
+.scene{clear:both;margin:0}.scene b{font-weight:700}
+.poles{display:flex;justify-content:space-between;gap:12px;font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.poles span:first-child{color:var(--gold)}.poles span:last-child{color:var(--violet);text-align:right}
+.rail{display:grid;gap:8px;grid-template-columns:1fr}
+@media (min-width:940px){.rail{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.opt{--c:var(--c3);position:relative;display:grid;gap:3px;align-content:start;padding:10px 11px;border:1px solid var(--line);border-top:4px solid var(--c);border-radius:4px;cursor:pointer;background:var(--bg);min-width:0}
+.opt:hover{border-color:var(--c)}
+.opt input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.opt b{font-size:16px;line-height:1.2}
+.opt b span{color:var(--c);font-variant-numeric:tabular-nums;margin-right:3px}
+.opt small{font-size:15px;line-height:1.32;color:var(--muted)}
+.opt:has(input:checked){background:color-mix(in srgb,var(--c) 17%,var(--surface));border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+.opt:has(input:checked) small{color:var(--fg)}
+.opt:has(input:focus-visible),button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+.c1{--c:var(--c1)}.c2{--c:var(--c2)}.c3{--c:var(--c3)}.c4{--c:var(--c4)}.c5{--c:var(--c5)}
+.foot{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--muted);margin:0}
+.foot em{font-style:italic}
+.motiv{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.m{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:9px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:760px){.m{grid-template-columns:minmax(0,1fr) 340px;align-items:center}}
+.m h3{font-size:17px;margin:0}.m p{margin:0;font-size:15px;color:var(--muted)}
+.dots{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.dot{--c:var(--c3);position:relative;text-align:center;padding:7px 0 5px;border:1px solid var(--line);border-bottom:3px solid var(--c);border-radius:4px;font-size:13px;line-height:1.1;cursor:pointer;background:var(--bg)}
+.dot b{display:block;font-size:16px;font-variant-numeric:tabular-nums}
+.dot input{position:absolute;inset:0;opacity:0;margin:0;width:100%;height:100%;cursor:pointer}
+.dot:has(input:checked){background:color-mix(in srgb,var(--c) 22%,var(--surface));border-color:var(--c)}
+.dot:has(input:focus-visible){outline:3px solid var(--violet);outline-offset:2px}
+.scale-key{font-size:14px;color:var(--muted);margin:0}
+.fl{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr))}
+.flav{position:relative;display:grid;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:5px;background:var(--surface);cursor:pointer;min-width:0}
+.flav input{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer}
+.flav:has(input:checked){border-color:var(--violet);box-shadow:inset 0 0 0 1px var(--violet);background:color-mix(in srgb,var(--violet) 12%,var(--surface))}
+.flav:has(input:focus-visible){outline:3px solid var(--violet);outline-offset:2px}
+.flav:has(input:disabled){opacity:.55}
+.flav small{font-size:15px;color:var(--muted);line-height:1.3}
+.two{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.private{display:flex;gap:8px;align-items:baseline;font-size:15px;margin:0;color:var(--muted)}
+.btn{appearance:none;border:1px solid var(--violet);background:var(--violet);color:var(--surface);font:700 17px var(--body);padding:10px 18px;border-radius:5px;cursor:pointer}
+.btn.alt{background:none;color:var(--fg);border-color:var(--line);font-weight:500;font-size:15px;padding:7px 12px}
+.btn:disabled{opacity:.6;cursor:progress}
+.send{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;display:grid;gap:12px}
+.err{color:var(--crit);font-weight:500;margin:0}
+.okmsg{color:var(--ok);font-weight:700;margin:0}
+.code{font:13px/1.35 ui-monospace,Menlo,monospace;min-height:110px;word-break:break-all}
+/* Synthèse */
+.summary{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.stat{padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-radius:5px}
+.stat b{display:block;font:700 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.people{display:flex;flex-wrap:wrap;gap:8px}
+.person{display:flex;gap:7px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:5px 9px;font-size:15px}
+.person button{appearance:none;background:none;border:0;color:var(--muted);font:inherit;font-size:14px;cursor:pointer;text-decoration:underline;padding:0}
+.chip{display:inline-grid;place-items:center;min-width:28px;height:24px;padding:0 5px;border-radius:4px;background:var(--fg);color:var(--bg);font-size:13px;font-weight:700}
+.ax{display:grid;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.ax-h{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;justify-content:space-between}
+.ax-h h3{margin:0;font-size:18px}
+.pill{display:inline-block;padding:1px 8px;border-radius:9px;font-size:14px;font-weight:700;border:1px solid currentColor;margin-left:8px}
+.pill.bad{color:var(--crit)}.pill.mid{color:var(--warn)}.pill.good{color:var(--ok)}
+.num{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.cell{--c:var(--c3);min-height:38px;padding:5px;background:var(--bg);border-top:3px solid var(--c);border-radius:3px;display:flex;flex-wrap:wrap;gap:3px;align-content:flex-start;min-width:0}
+.bars{display:grid;gap:6px}
+.barrow{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr) 24px;gap:8px;align-items:center;font-size:15px}
+.barrow i{display:block;height:10px;background:var(--violet);border-radius:2px}
+.lim{display:grid;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.lim h3{margin:0;font-size:17px}.lim ul{margin:0;padding-left:20px}.lim li{overflow-wrap:anywhere;white-space:pre-wrap}
+.empty{padding:22px;border:1px dashed var(--line);border-radius:6px;color:var(--muted);margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="hero"><div class="wrap hero-grid">
+  <h1>Session zéro</h1>
+  <div class="dice" aria-hidden="true">
+    <svg viewBox="0 0 64 64"><polygon points="32,4 59,24 49,57 15,57 5,24" fill="none" stroke="var(--gold)" stroke-width="3"/><text x="32" y="41" text-anchor="middle" font-family="var(--display)" font-size="24" fill="var(--gold)">12</text></svg>
+    <svg viewBox="0 0 64 64"><polygon points="32,4 59,24 49,57 15,57 5,24" fill="var(--violet)"/><text x="32" y="41" text-anchor="middle" font-family="var(--display)" font-size="24" fill="var(--surface)">1</text></svg>
+  </div>
+</div></header>
+
+<div class="bar"><div class="wrap bar-in">
+  <div class="tabs" id="tabs" role="tablist" hidden>
+    <button class="tab" role="tab" id="t-form" aria-selected="true" type="button">Questionnaire</button>
+    <button class="tab" role="tab" id="t-syn" aria-selected="false" type="button">Synthèse MJ</button>
+  </div>
+  <div class="prog" id="prog"><span id="progtxt">0 / 25</span><div class="track"><i id="progbar"></i></div></div>
+</div></div>
+
+<main class="wrap" id="view-form"></main>
+<main class="wrap" id="view-syn" hidden></main>
+
+<script>
+"use strict";
+const AXES=[
+ {id:"letalite",t:"Mort des personnages",l:"Non létal",r:"Létal",scene:"Le groupe perd un combat contre une bande de brigands.",o:[
+  ["Aucun risque","Les brigands vous assomment et vous volent. Vous vous réveillez dans le fossé, sans bourse. Personne ne meurt."],
+  ["Mort choisie","Un personnage meurt seulement si son joueur le décide, par exemple pour couvrir la fuite des autres."],
+  ["Rare et annoncée","La mort reste possible quand l'enjeu est clair : « Si tu restes sur ce pont, tu peux y rester. »"],
+  ["Risque réel","Les dés peuvent tuer dans un combat important. Le MJ ne retient pas ses coups."],
+  ["Sans filet","Les brigands achèvent les blessés. Une embuscade banale peut coûter un personnage."]]},
+ {id:"realisme",t:"Réalisme",l:"Réaliste, gritty",r:"Cinématique",scene:"Ton personnage saute du balcon vers le lustre pour atteindre le duc.",o:[
+  ["Cru","Chute probable et cheville brisée : trois semaines de convalescence. Chaque blessure, ration et flèche compte."],
+  ["Rugueux","Possible, mais très risqué. Le lustre pèse cent kilos et peut céder. Les blessures laissent des traces."],
+  ["Héroïque crédible","Un jet raisonnable suffit. Tu atterris mal, et une nuit de repos te remet sur pied."],
+  ["Spectaculaire","Tu te balances et tu retombes sur la table du banquet. Le panache compte plus que le poids du lustre."],
+  ["Film d'action","Tu tranches la chaîne en plein vol, le lustre écrase la garde et tu te poses devant le duc sans une éraflure."]]},
+ {id:"magie",t:"Place de la magie",l:"Rare, low fantasy",r:"Répandue, high fantasy",scene:"Vous arrivez dans une ville de province et cherchez à soigner un compagnon.",o:[
+  ["Presque absente","Personne n'a jamais vu de sort. Votre mage fait fuir le village ou finit devant un tribunal."],
+  ["Rare et crainte","Une vieille rebouteuse connaît un rituel coûteux. Pour un objet magique, on est prêt à tuer."],
+  ["Rare mais connue","Le temple local a un prêtre guérisseur. Tout le monde sait que la magie existe, sans la croiser chaque jour."],
+  ["Courante","Une guilde de guérisseurs affiche ses tarifs. Des lanternes enchantées éclairent la rue principale."],
+  ["Omniprésente","Tu prends un ticket à l'apothicaire automate. Des navires volants desservent le port et les enfants apprennent leurs sorts à l'école."]]},
+ {id:"ton",t:"Ton général",l:"Léger",r:"Sombre",scene:"Le village que vous protégiez a été attaqué pendant votre absence.",o:[
+  ["Comique","Des gobelins ont volé toutes les cloches et veulent apprendre à en jouer. La soirée finit à la taverne."],
+  ["Léger","Quelques blessés et une grange brûlée. Les villageois vous offrent quand même un banquet."],
+  ["Aventure avec du poids","Il y a des morts, dont le forgeron qui vous aimait bien. Le deuil est réel, et l'espoir reste à portée de main."],
+  ["Sombre","Les survivants vous reprochent votre absence. Aucune décision ne sauvera tout le monde."],
+  ["Désespéré","Le village est vide et les enfants ont disparu. Le monde empire, et vous sauvez seulement ce qui peut l'être."]]},
+ {id:"morale",t:"Moralité du groupe",l:"Héros",r:"Anti-héros",scene:"Un marchand offre 500 pièces pour ramener un voleur qui nourrissait sa famille.",o:[
+  ["Sans tache","Vous refusez, vous aidez la famille et vous faites honte au marchand."],
+  ["Faillibles","Vous hésitez, vous cherchez un compromis et vous en payez le prix. Au fond, vous voulez bien faire."],
+  ["Zone grise","Chacun a ses raisons. Vous gardez l'or ou non, et personne ne dira qui avait raison."],
+  ["Intéressés","L'argent d'abord, avec quelques principes : le voleur revient vivant, et le prix monte."],
+  ["Sans scrupules","Vous livrez le voleur, puis vous revenez cambrioler le marchand la nuit suivante."]]},
+ {id:"cooperation",t:"Relations entre joueurs",l:"Compétitif",r:"Coopératif",scene:"Le groupe trouve une épée ancienne, et deux personnages la veulent.",o:[
+  ["Compétition ouverte","Vol, trahison et duel sont permis. Le plus malin la garde, même si le groupe explose."],
+  ["Rivalité mordante","On peut se mentir et se doubler, mais pas se tuer ni se ruiner sans accord."],
+  ["Tensions en jeu","Dispute mémorable et rancune durable entre personnages. Autour de la table, tout le monde s'en amuse."],
+  ["Coopératif avec frictions","Un court débat en personnage, puis une décision commune. Le désaccord reste s'il sert l'histoire."],
+  ["Solidarité totale","Les joueurs décident ensemble qui en tirera le plus. Le groupe ne se divise jamais pour de bon."]]},
+ {id:"narration",t:"Qui raconte",l:"Narration par le MJ",r:"Conarration",scene:"Tu réussis à convaincre le capitaine de la garde.",o:[
+  ["MJ seul","Tu annonces ton intention et le MJ raconte tout ce qui se passe."],
+  ["MJ et répliques","Le MJ décrit le résultat. Tu ajoutes la réplique et le geste de ton personnage."],
+  ["Aux bons moments","Sur une belle réussite, le MJ demande : « Comment tu t'y prends ? » Ta réponse devient vraie."],
+  ["Invention encouragée","Tu décides que le capitaine est ton ancien camarade de régiment, et le MJ l'intègre à la suite."],
+  ["Conarration pleine","Chacun peut cadrer une scène, créer un PNJ ou ajouter une complication. Le MJ arbitre et donne le tempo."]]},
+ {id:"monde",t:"Qui invente le monde",l:"Le MJ",r:"Toute la table",scene:"« Qui gouverne cette ville ? »",o:[
+  ["Monde du MJ","Le MJ le sait déjà. Vous découvrirez les lieux, les dieux et les factions en jouant."],
+  ["Mon coin de carte","Le MJ a tout préparé. Tu peux proposer ton village natal et ta famille."],
+  ["Questions ciblées","« Ton personnage a fui cette ville. Qui y a pris le pouvoir ? » Le MJ construit à partir de ta réponse."],
+  ["Création partagée","En session zéro, chacun crée une faction, un lieu ou un mystère. Le MJ les relie."],
+  ["Monde collectif","Personne ne le sait encore. La table le décide maintenant, et le monde grandit à chaque séance."]]},
+ {id:"structure",t:"Liberté dans l'intrigue",l:"Scénario guidé",r:"Bac à sable",scene:"Une princesse a été enlevée, mais le groupe préfère fouiller une mine abandonnée.",o:[
+  ["Fil tenu","Le MJ vous ramène vers la princesse. La campagne a une intrigue précise, et vous avez envie de la suivre."],
+  ["Fil souple","La mine vous occupe une soirée, puis un indice vous ramène à la princesse. Le chemin change, pas le but."],
+  ["Grands arcs","Plusieurs conflits avancent en parallèle. Si vous ignorez la princesse, les enjeux changent."],
+  ["Joueurs moteurs","La mine devient l'intrigue principale si vous le voulez. Le MJ prépare la suite d'après vos objectifs."],
+  ["Bac à sable","Pas d'intrigue principale. Une carte, des factions, des rumeurs : vous allez où vous voulez."]]},
+ {id:"rythme",t:"Rythme de la campagne",l:"Épisodique",r:"Feuilleton",scene:"Vous venez de chasser le dragon de la vallée.",o:[
+  ["Épisodes","Prochaine séance, nouvelle mission. Tu peux en rater une sans rien perdre."],
+  ["Épisodes et fil rouge","Nouvelle mission, avec un ennemi qui revient de temps en temps."],
+  ["Mélange","Des aventures autonomes nourrissent un arc de fond : le dragon travaillait pour quelqu'un."],
+  ["Feuilleton","Chaque séance découle de la précédente. L'or du dragon déclenche une guerre dont vous êtes responsables."],
+  ["Saga","Tout est lié. Un détail de la séance 3 devient décisif à la séance 30."]]},
+ {id:"backgrounds",t:"Histoires des personnages",l:"Décor",r:"Moteur de la campagne",scene:"Ton personnage a écrit qu'il cherche sa sœur disparue.",o:[
+  ["Couleur","Ce passé habille le personnage. L'intrigue vient d'ailleurs."],
+  ["Clin d'œil","Un PNJ mentionne ta sœur un jour, sans grande conséquence."],
+  ["Arc secondaire","Une aventure lui est consacrée, au sein d'une intrigue plus large."],
+  ["Arc majeur","Ta sœur est liée au grand méchant, et chaque personnage a un moment de ce genre."],
+  ["Cœur du récit","Les histoires des personnages forment la campagne. Le MJ construit tout à partir de vos fiches."]]},
+ {id:"liens",t:"Liens de départ",l:"Inconnus",r:"Passé commun",scene:"La première scène de la campagne s'ouvre.",o:[
+  ["Inconnus","Vous vous croisez à la taverne, et il vous reste tout à découvrir."],
+  ["Hasard","Une diligence attaquée vous force à vous battre côte à côte."],
+  ["Contact commun","Un même mécène ou un ami commun vous réunit pour une mission."],
+  ["Événement fondateur","Vous avez survécu au même naufrage, et ce souvenir vous lie."],
+  ["Histoire commune","Fratrie ou compagnons d'armes depuis des années, avec vos vieilles dettes et vos blagues."]]},
+ {id:"regles",t:"Poids des règles",l:"Narratif, règles légères",r:"Simulationniste, règles lourdes",scene:"Tu veux escalader un rempart sous la pluie, en armure.",o:[
+  ["Récit d'abord","Le MJ juge : « Ça passe, mais tu perds ton bouclier. » Souvent sans jet."],
+  ["Léger","Un seul jet décide. La fiche sert seulement quand il y a un vrai risque."],
+  ["Équilibré","Un jet contre une difficulté fixée par le MJ. Règles suivies en combat, souplesse ailleurs."],
+  ["Détaillé","L'armure, la pluie et la durée comptent. On applique les modificateurs et les règles de terrain."],
+  ["Simulation","Encombrement, vitesse par tour, fatigue, hauteur de chute : tout se calcule."]]},
+ {id:"arbitrage",t:"Litiges de règles",l:"Le MJ tranche",r:"Le texte fait foi",scene:"Désaccord sur une règle au milieu d'un combat tendu.",o:[
+  ["Parole du MJ","Décision en dix secondes, sans discussion, même après."],
+  ["Vérifié après","Le MJ tranche, on continue, et on regarde le livre après la séance."],
+  ["Une minute","Quelqu'un cite la règle, on échange une minute et le MJ décide."],
+  ["Livre ouvert","On ouvre le livre. Le texte l'emporte, sauf règle maison annoncée."],
+  ["Texte strict","La règle exacte compte autant que le combat, et chaque décision est notée pour la suite."]]},
+ {id:"optimisation",t:"Construction du personnage",l:"Concept",r:"Efficacité",scene:"Tu choisis tes capacités au passage de niveau.",o:[
+  ["Concept pur","Tu prends ce qui colle au personnage, même si c'est faible. Il joue de la cornemuse parce que c'est drôle."],
+  ["Concept d'abord","L'histoire du personnage décide, avec un peu de bon sens pour rester utile."],
+  ["Équilibre","Un personnage cohérent et efficace. Personne ne se sent largué."],
+  ["Optimisation assumée","Tu prépares tes niveaux et tu cherches les combinaisons, avec une histoire crédible."],
+  ["Build maximal","Chaque choix est calculé. Trouver les synergies fait partie du plaisir, et le MJ ajuste le défi."]]},
+ {id:"jets",t:"Jets du MJ",l:"Derrière l'écran",r:"Sur la table",scene:"Un monstre porte un coup qui ferait tomber ton personnage.",o:[
+  ["Écran libre","Le MJ lance en secret et peut ajuster le résultat pour servir l'histoire."],
+  ["Caché, respecté","Les jets restent cachés pour le mystère, mais le MJ suit les dés."],
+  ["Mixte","Attaques visibles. Perception et pièges restent derrière l'écran."],
+  ["Presque tout visible","Seuls les jets que les personnages ne doivent pas deviner restent cachés."],
+  ["Table ouverte","Tout se voit, y compris les difficultés. Si le dé tue, le dé tue."]]},
+ {id:"savoir",t:"Savoir du joueur et du personnage",l:"Cloison stricte",r:"Secrets ouverts",scene:"Toi, tu sais que ce marchand est un traître. Ton personnage ne le sait pas.",o:[
+  ["Étanche","Le MJ passe des notes secrètes pour que tu ne l'apprennes même pas."],
+  ["Effort sincère","Tu joues l'ignorance. Si tu dérapes, quelqu'un te le rappelle gentiment."],
+  ["Pragmatique","On sépare quand ça compte, sans faire la police sur les détails."],
+  ["Ironie dramatique","Ton personnage lui confie tout, pour le plaisir de voir venir la catastrophe."],
+  ["Tout partagé","Aucun secret entre joueurs. On construit les trahisons ensemble."]]}
+];
+const MOTIV=[
+ {id:"m_acting",t:"Incarner un rôle",ex:"Prendre la voix de ton personnage et tenir tête à un roi sans lancer un dé."},
+ {id:"m_exploring",t:"Explorer",ex:"Ouvrir la porte que tout le monde évite et voir ce qu'il y a derrière la colline."},
+ {id:"m_fighting",t:"Combattre",ex:"Une bataille tendue où tout le plan tient à un seul jet."},
+ {id:"m_instigating",t:"Provoquer",ex:"Tirer le levier rouge, juste pour voir ce qui se passe."},
+ {id:"m_optimizing",t:"Optimiser",ex:"Le niveau suivant, l'arme rare, la combinaison qui change tout."},
+ {id:"m_problem",t:"Résoudre",ex:"Démêler les motifs d'un PNJ et déjouer le plan du méchant."},
+ {id:"m_social",t:"Passer du temps ensemble",ex:"Retrouver les amis, rire et manger, sans se plonger dans les règles."},
+ {id:"m_story",t:"Peser sur l'histoire",ex:"Voir ton personnage changer le cours de l'intrigue principale."}
+];
+const MK=["Pas du tout","Peu","Assez","Beaucoup","Je viens pour ça"];
+const FLAV=[
+ ["heroic","Heroic Fantasy","La magie contre les monstres, et un donjon ancien à vider."],
+ ["sword","Sword and Sorcery","Sorciers maléfiques, cités décadentes, et l'or comme première motivation."],
+ ["epic","Epic Fantasy","Le bien contre le mal, des dilemmes moraux, une histoire d'amour au milieu de la guerre."],
+ ["mythic","Mythic Fantasy","Les dieux s'en mêlent, et votre voyage ressemble à une légende antique."],
+ ["horror","Horreur surnaturelle","Morts-vivants, démons, et une peur qui monte lentement."],
+ ["intrigue","Intrigue","Un mot glissé au bon conseiller vaut mieux qu'une armée."],
+ ["mystery","Mystère","Un meurtre au monastère, des indices, et un coupable à démasquer."],
+ ["swash","Cape et épée","Duels sur les toits, complots de palais et évasions en mer."],
+ ["war","Guerre","Votre commando peut renverser le cours d'une bataille."],
+ ["streams","Mélange des genres","Une épave extraterrestre sous la forêt, ou un mage face à une machine."]
+];
+const SCALE_IDS=[...AXES.map(a=>a.id),...MOTIV.map(m=>m.id)];
+const MIN_IDS=SCALE_IDS;
+const THEMES=[
+ {t:"Le monde et le ton",ids:["ton","morale","magie","realisme","letalite"]},
+ {t:"L'histoire",ids:["structure","rythme","backgrounds","liens"]},
+ {t:"La table",ids:["cooperation","narration","monde"]},
+ {t:"Les règles",ids:["regles","optimisation","arbitrage","jets"]}
+];
+const ORDERED=[...THEMES.flatMap(x=>x.ids),"savoir"].map(id=>AXES.find(a=>a.id===id));
+const ENDPOINT="";
+const DRAFT="sondage-session-zero-v1";
+let state={name:"",answers:{},flavors:[]};
+
+function h(tag,attrs,...kids){const e=document.createElement(tag);
+ for(const k in attrs||{}){const v=attrs[k];if(v==null||v===false)continue;
+  if(k==="class")e.className=v;else if(k==="text")e.textContent=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else if(k in e&&k!=="list")e[k]=v;else e.setAttribute(k,v)}
+ for(const c of kids.flat()){if(c==null||c===false)continue;e.append(c)}return e}
+function loadDraft(){try{const s=localStorage.getItem(DRAFT);if(s){const v=clean(JSON.parse(s));if(v)state=v}}catch(e){}}
+function saveDraft(){try{localStorage.setItem(DRAFT,JSON.stringify(state))}catch(e){}}
+function clean(x){if(!x||typeof x!=="object")return null;const a={};const src=x.answers&&typeof x.answers==="object"?x.answers:{};
+ for(const id of SCALE_IDS){const n=src[id];if(Number.isInteger(n)&&n>=1&&n<=5)a[id]=n}
+ const ids=FLAV.map(f=>f[0]);const f=Array.isArray(x.flavors)?x.flavors.filter(i=>ids.includes(i)).slice(0,3):[];
+ const s=(v,n)=>typeof v==="string"?v.slice(0,n):"";
+ return{name:s(x.name,40),answers:a,flavors:[...new Set(f)]}}
+function toCode(o){const b=new TextEncoder().encode(JSON.stringify(o));let t="";b.forEach(c=>t+=String.fromCharCode(c));return"SZ1-"+btoa(t).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function fromCode(c){const m=/SZ1-([A-Za-z0-9_-]+)/.exec(c||"");if(!m)return null;let s=m[1].replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";
+ const bin=atob(s);const b=Uint8Array.from(bin,x=>x.charCodeAt(0));return clean(JSON.parse(new TextDecoder().decode(b)))}
+
+/* ---------- Questionnaire ---------- */
+const form=document.getElementById("view-form");
+function radio(name,val,checked){return h("input",{type:"radio",name,id:name+"-"+val,value:String(val),checked:!!checked,onchange:()=>{state.answers[name]=val;changed()}})}
+function axisCard(a){const opts=a.o.map((o,i)=>h("label",{class:"opt c"+(i+1)},radio(a.id,i+1,state.answers[a.id]===i+1),
+   h("b",null,h("span",{text:(i+1)+"."}),o[0]),h("small",{text:o[1]})));
+ return h("fieldset",{class:"q",id:"q-"+a.id},h("legend",{text:a.t}),
+   h("p",{class:"scene"},h("b",{text:"La scène : "}),a.scene),
+   h("div",{class:"poles"},h("span",{text:a.l}),h("span",{text:a.r})),
+   h("div",{class:"rail"},opts))}
+function buildForm(){form.replaceChildren();
+ form.append(h("section",{class:"bloc"},h("div",{class:"field"},
+  h("label",{class:"lab",htmlFor:"pname",text:"Ton prénom"}),
+  h("input",{type:"text",id:"pname",maxLength:40,autocomplete:"given-name",value:state.name,oninput:e=>{state.name=e.target.value;saveDraft()}}))));
+ const grid=h("div",{class:"fl"});
+ FLAV.forEach(f=>grid.append(h("label",{class:"flav"},h("input",{type:"checkbox",id:"f-"+f[0],value:f[0],checked:state.flavors.includes(f[0]),onchange:e=>{
+    if(e.target.checked){if(state.flavors.length<3)state.flavors.push(f[0])}else state.flavors=state.flavors.filter(i=>i!==f[0]);lockFlav();saveDraft()}}),
+   h("b",{text:f[1]}),h("small",{text:f[2]}))));
+ form.append(h("section",{class:"bloc"},h("h2",{text:"Les thèmes"}),h("p",{class:"intro",text:"Trois au maximum."}),grid));
+ THEMES.forEach(th=>form.append(h("section",{class:"bloc"},h("h2",{text:th.t}),th.ids.map(id=>axisCard(AXES.find(a=>a.id===id))))));
+ form.append(h("section",{class:"bloc"},h("h2",{text:"Ce qui t'attire"}),h("div",{class:"motiv"},MOTIV.map(m=>h("fieldset",{class:"m",id:"q-"+m.id},
+  h("div",null,h("h3",{text:m.t}),h("p",{text:m.ex})),
+  h("div",{class:"dots"},[1,2,3,4,5].map(n=>h("label",{class:"dot c"+n},radio(m.id,n,state.answers[m.id]===n),h("b",{text:String(n)}),MK[n-1]))))))));
+ form.append(h("section",{class:"bloc"},h("h2",{text:"Metagaming"}),axisCard(AXES.find(a=>a.id==="savoir"))));
+ const out=h("div",{id:"out",role:"status","aria-live":"polite"});
+ form.append(h("section",{class:"send"},h("p",{id:"missing",class:"small",style:"margin:0"}),
+  h("div",null,h("button",{class:"btn",id:"sendbtn",type:"button",text:"Envoyer mes réponses",onclick:submit})),out));
+ lockFlav();changed(true)}
+function lockFlav(){document.querySelectorAll('.flav input').forEach(i=>{i.disabled=!i.checked&&state.flavors.length>=3})}
+function changed(skip){const n=SCALE_IDS.filter(i=>state.answers[i]).length;
+ document.getElementById("progtxt").textContent=n+" / "+SCALE_IDS.length;
+ document.getElementById("progbar").style.width=(100*n/SCALE_IDS.length)+"%";
+ const m=document.getElementById("missing");if(m)m.textContent=n===SCALE_IDS.length?"":(SCALE_IDS.length-n)+" question(s) sans réponse.";
+ if(!skip)saveDraft()}
+let api={db:null,user:null,uid:null,owner:false};
+let ready;
+function timeout(p,ms){return Promise.race([p,new Promise((_,r)=>setTimeout(()=>r({code:"timeout"}),ms))])}
+function showCode(out,o,intro){const code=toCode(o);const ta=h("textarea",{class:"code",id:"codeout",readOnly:true,value:code,"aria-label":"Code de réponses"});
+ const b=h("button",{class:"btn alt",type:"button",text:"Copier le code",onclick:async()=>{try{await navigator.clipboard.writeText(code);b.textContent="Code copié"}catch(e){ta.focus();ta.select();b.textContent="Sélectionné, copie-le manuellement"}}});
+ out.replaceChildren(h("p",{style:"margin:0",text:intro}),ta,h("div",null,b),null);out.style.display="grid";out.style.gap="10px"}
+function clientId(){const k=DRAFT+"-id";let v=null;try{v=localStorage.getItem(k)}catch(e){}
+ if(!v){v="c"+Math.random().toString(36).slice(2,12)+Date.now().toString(36);try{localStorage.setItem(k,v)}catch(e){}}return v}
+async function submit(){const out=document.getElementById("out"),btn=document.getElementById("sendbtn");
+ state.name=state.name.trim();
+ if(!state.name){out.replaceChildren(h("p",{class:"err",text:"Indique ton prénom en haut de la page pour que le MJ reconnaisse tes réponses."}));const n=document.getElementById("pname");n.scrollIntoView({block:"center"});n.focus();return}
+ const o=clean(state);btn.disabled=true;btn.textContent="Envoi…";
+ try{
+  if(ENDPOINT){const r=await timeout(fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...o,id:clientId()})}),15000);
+   const j=await r.json();if(!j.ok)throw{code:"refused"};
+  }else{await timeout(ready,11000).catch(()=>{});
+   if(!api.db||!api.uid)throw{code:"no_db"};
+   await timeout(api.db.doc("reponses/"+api.uid).set({...o,updatedAt:new Date().toISOString()}),8000)}
+  out.replaceChildren(h("p",{class:"okmsg",text:"Réponses envoyées. Merci !"}));
+ }catch(e){showCode(out,o,"L'envoi n'a pas abouti. Copie ce code et envoie-le au MJ par message.")}
+ btn.disabled=false;btn.textContent="Envoyer mes réponses"}
+
+/* ---------- Synthèse MJ ---------- */
+const syn=document.getElementById("view-syn");
+let mjKey=null;let rows={reponses:[],imports:[],remote:[]},loaded=false,dbNote="";
+function people(){const all=[...rows.reponses.map(r=>({...r,kind:"reponses"})),...rows.imports.map(r=>({...r,kind:"imports"})),...rows.remote.map(r=>({...r,kind:"remote"}))];
+ const seen=new Map();all.sort((a,b)=>(a.updatedAt||"").localeCompare(b.updatedAt||"")).forEach(r=>{const key=(r.name||"?").toLowerCase();seen.set(key,r)});
+ const list=[...seen.values()].sort((a,b)=>(a.name||"").localeCompare(b.name||"","fr"));
+ const used=new Set();list.forEach(p=>{const n=p.name||"?";let tag=n.slice(0,1).toUpperCase(),i=2;while(used.has(tag)&&i<=n.length){tag=n.slice(0,i);i++}used.add(tag);p.tag=tag});return list}
+function stats(id,ps){const v=ps.map(p=>p.answers[id]).filter(Boolean);if(!v.length)return{n:0,avg:0,range:-1};
+ return{n:v.length,avg:v.reduce((a,b)=>a+b,0)/v.length,range:Math.max(...v)-Math.min(...v),min:Math.min(...v),max:Math.max(...v)}}
+function verdict(s){if(s.n<2)return null;if(s.range>=3)return["bad","À trancher"];if(s.range===2)return["mid","À cadrer"];return["good","Aligné"]}
+function strip(id,ps){return h("div",{class:"strip"},[1,2,3,4,5].map(n=>h("div",{class:"cell c"+n,title:"Cran "+n},ps.filter(p=>p.answers[id]===n).map(p=>h("span",{class:"chip",title:p.name,text:p.tag})))))}
+function fmt(x){return x.toFixed(1).replace(".",",")}
+function renderSyn(){const ps=people();syn.replaceChildren();
+ const head=h("section",{class:"bloc"},h("h2",{text:"Synthèse MJ"}),h("p",{class:"intro",text:"Du plus divisé au plus aligné. Écart de 3 ou plus : à trancher. Écart de 2 : à cadrer."}));
+ syn.append(head);
+ if(dbNote)head.append(h("p",{class:"err",text:dbNote}));
+ const imp=h("textarea",{id:"impcode",class:"code",style:"min-height:64px",placeholder:"Colle ici le code SZ1-… reçu d'un joueur","aria-label":"Code de réponses à importer"});
+ const impMsg=h("p",{class:"small",style:"margin:0"});
+ const impBox=h("div",{class:"send"},h("h3",{style:"margin:0;font-size:18px",text:"Ajouter les réponses reçues par message"}),imp,
+  h("div",null,h("button",{class:"btn alt",type:"button",text:"Importer",onclick:()=>doImport(imp,impMsg)})),impMsg);
+ if(!ps.length){syn.append(h("p",{class:"empty",text:loaded?"Aucune réponse pour l'instant.":"Chargement des réponses…"}),impBox);return}
+ const sc=ORDERED.map(a=>({a,s:stats(a.id,ps)}));
+ const nb=sc.filter(x=>verdict(x.s)?.[0]==="bad").length,nm=sc.filter(x=>verdict(x.s)?.[0]==="mid").length,ng=sc.filter(x=>verdict(x.s)?.[0]==="good").length;
+ syn.append(h("div",{class:"summary"},
+  h("div",{class:"stat"},h("b",{text:String(ps.length)}),"répondant(s)"),
+  h("div",{class:"stat"},h("b",{text:String(nb)}),"à trancher"),
+  h("div",{class:"stat"},h("b",{text:String(nm)}),"à cadrer"),
+  h("div",{class:"stat"},h("b",{text:String(ng)}),"aligné(s)")));
+ syn.append(h("div",{class:"people"},ps.map(p=>{const n=SCALE_IDS.filter(i=>p.answers[i]).length;
+  return h("div",{class:"person"},h("span",{class:"chip",text:p.tag}),h("span",{text:(p.name||"Sans nom")+" · "+n+"/"+SCALE_IDS.length}),removeBtn(p))})));
+ syn.append(h("div",null,h("button",{class:"btn alt",type:"button",text:"Copier la synthèse en texte",onclick:e=>copySummary(e.target,ps,sc)})));
+ const order=[...sc].sort((x,y)=>y.s.range-x.s.range||ORDERED.indexOf(x.a)-ORDERED.indexOf(y.a));
+ syn.append(h("section",{class:"bloc"},h("h2",{text:"Paramètres de campagne"}),order.map(({a,s})=>{const v=verdict(s);
+  return h("article",{class:"ax"},h("div",{class:"ax-h"},h("h3",null,a.t,v?h("span",{class:"pill "+v[0],text:v[1]}):null),h("span",{class:"num",text:s.n?("Moyenne "+fmt(s.avg)+" · écart "+s.range):"Sans réponse"})),
+   h("div",{class:"poles"},h("span",{text:a.l}),h("span",{text:a.r})),strip(a.id,ps),
+   h("div",{class:"num",text:s.n?a.o.map((o,i)=>(i+1)+" "+o[0]).join(" · "):""}))})));
+ syn.append(h("section",{class:"bloc"},h("h2",{text:"Envies de joueurs"}),MOTIV.map(m=>{const s=stats(m.id,ps);return{m,s}}).sort((a,b)=>b.s.avg-a.s.avg).map(({m,s})=>h("article",{class:"ax"},h("div",{class:"ax-h"},h("h3",{text:m.t}),h("span",{class:"num",text:s.n?("Moyenne "+fmt(s.avg)+" · écart "+s.range):"Sans réponse"})),strip(m.id,ps)))));
+ const cnt=FLAV.map(f=>({f,n:ps.filter(p=>p.flavors.includes(f[0])).length,who:ps.filter(p=>p.flavors.includes(f[0])).map(p=>p.tag).join(" ")})).sort((a,b)=>b.n-a.n);
+ const mx=Math.max(1,ps.length);
+ syn.append(h("section",{class:"bloc"},h("h2",{text:"Saveurs choisies"}),h("div",{class:"bars lim"},cnt.map(c=>h("div",{class:"barrow"},h("span",{text:c.f[1]}),h("span",{title:c.who},h("i",{style:"width:"+(100*c.n/mx)+"%"})),h("span",{class:"num",text:String(c.n)}))))));
+ syn.append(impBox)}
+function remoteDel(p){const b=h("button",{type:"button",text:"retirer",onclick:async()=>{if(b.dataset.c!=="1"){b.dataset.c="1";b.textContent="confirmer ?";return}
+  try{await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"delete",key:mjKey,id:p.id})});await loadRemote()}catch(e){b.textContent="échec"}}});return b}
+async function loadRemote(){try{const r=await fetch(ENDPOINT+"?key="+encodeURIComponent(mjKey));const j=await r.json();
+  if(!j.ok){dbNote="Clé refusée. Vérifie ton lien MJ.";loaded=true;renderIfOpen();return}
+  rows.remote=j.rows.map(x=>{const c=clean(x);if(!c)return null;c.id=String(x.id||"");c.updatedAt=String(x.updatedAt||"");return c}).filter(Boolean);dbNote=""}
+ catch(e){dbNote="Les réponses ne sont pas accessibles pour l'instant."}loaded=true;renderIfOpen()}
+function removeBtn(p){if(p.kind==="remote")return remoteDel(p);if(!p.path||!api.db)return null;const b=h("button",{type:"button",text:"retirer",onclick:async()=>{if(b.dataset.c!=="1"){b.dataset.c="1";b.textContent="confirmer ?";return}try{await api.db.doc(p.path).delete()}catch(e){b.textContent="échec"}}});return b}
+async function doImport(ta,msg){let o=null;try{o=fromCode(ta.value)}catch(e){}
+ if(!o||!o.name){msg.textContent="Ce code est illisible. Vérifie qu'il a été copié en entier, depuis SZ1- jusqu'au dernier caractère.";return}
+ if(ENDPOINT){try{const k="imp"+o.name.normalize("NFD").replace(/[^A-Za-z0-9]/g,"").toLowerCase();const r=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...o,id:k})});const j=await r.json();if(!j.ok)throw 0;ta.value="";await loadRemote()}catch(e){msg.textContent="L'import a échoué. Réessaie dans un instant."}return}
+ if(!api.db){msg.textContent="Le stockage est indisponible dans cette vue, l'import n'a pas été enregistré.";return}
+ const key=("imp-"+o.name.normalize("NFD").replace(/[^A-Za-z0-9]/g,"").toLowerCase()||"imp-x").slice(0,60);
+ try{await api.db.doc("imports/"+(key==="imp-"?"imp-x":key)).set({...o,updatedAt:new Date().toISOString()});ta.value="";msg.textContent="Réponses de "+o.name+" ajoutées."}catch(e){msg.textContent="L'import a échoué. Réessaie dans un instant."}}
+async function copySummary(btn,ps,sc){const L=["# Synthèse session zéro","","Répondants : "+ps.map(p=>p.name).join(", "),"","## Paramètres (1 à 5)"];
+ [...sc].sort((x,y)=>y.s.range-x.s.range).forEach(({a,s})=>{L.push("- **"+a.t+"** ("+a.l+" → "+a.r+") : "+(s.n?"moy. "+fmt(s.avg)+", écart "+s.range+" | ":"")+ps.map(p=>p.name+" "+(p.answers[a.id]||"–")).join(", "))});
+ L.push("","## Envies");MOTIV.forEach(m=>{const s=stats(m.id,ps);L.push("- "+m.t+" : "+(s.n?"moy. "+fmt(s.avg)+" | ":"")+ps.map(p=>p.name+" "+(p.answers[m.id]||"–")).join(", "))});
+ L.push("","## Saveurs");FLAV.forEach(f=>{const w=ps.filter(p=>p.flavors.includes(f[0])).map(p=>p.name);if(w.length)L.push("- "+f[1]+" : "+w.join(", "))});
+ const txt=L.join("\n");try{await navigator.clipboard.writeText(txt);btn.textContent="Synthèse copiée"}catch(e){const ta=h("textarea",{class:"code",readOnly:true,value:txt});btn.after(ta);ta.select();btn.textContent="Sélectionne le texte ci-dessous"}}
+
+/* ---------- Démarrage ---------- */
+function setTab(name){const syn_on=name==="syn";document.getElementById("view-form").hidden=syn_on;syn.hidden=!syn_on;
+ document.getElementById("t-form").setAttribute("aria-selected",String(!syn_on));document.getElementById("t-syn").setAttribute("aria-selected",String(syn_on));
+ document.getElementById("prog").hidden=syn_on;if(syn_on)renderSyn()}
+document.getElementById("t-form").onclick=()=>setTab("form");
+document.getElementById("t-syn").onclick=()=>{setTab("syn");if(mjKey)loadRemote()};
+function subscribe(col){const t=setTimeout(()=>{if(!loaded){dbNote="Les réponses ne sont pas encore accessibles. Vérifie ta connexion.";loaded=true;renderIfOpen()}},10000);
+ api.db.collection(col).onSnapshot(s=>{if(!s.metadata.fromCache){clearTimeout(t);dbNote=""}
+  rows[col]=s.docs.map(d=>{const c=clean(d.data());if(!c)return null;c.path=col+"/"+d.id;const u=d.data().updatedAt;c.updatedAt=typeof u==="string"?u:"";return c}).filter(Boolean);loaded=true;renderIfOpen()},
+  e=>{clearTimeout(t);dbNote="La lecture des réponses a échoué. Recharge la page.";loaded=true;renderIfOpen()})}
+function renderIfOpen(){if(!syn.hidden)renderSyn()}
+async function boot(){const c=window.claude;if(!c||!c.use)return;
+ const [user,db]=await Promise.all([c.use("user"),c.use("db")]);api.user=user;api.db=db;
+ if(user){api.uid=await user.id();api.owner=await user.isOwner()}
+ if(db&&api.uid){let hasDraft=false;try{hasDraft=!!localStorage.getItem(DRAFT)}catch(e){}
+  if(!hasDraft){try{const s=await timeout(db.doc("reponses/"+api.uid).get(),8000);if(s.exists){const v=clean(s.data());if(v){state=v;buildForm()}}}catch(e){}}}
+ if(api.owner){document.getElementById("tabs").hidden=false;if(db){subscribe("reponses");subscribe("imports")}else{loaded=true;dbNote="Le stockage n'est pas disponible dans cette vue."}
+  if(location.hash==="#synthese")setTab("syn")}}
+loadDraft();buildForm();ready=boot().catch(()=>{});
+{const m=/^#mj-([A-Za-z0-9]+)$/.exec(location.hash);if(m&&ENDPOINT){mjKey=m[1];document.getElementById("tabs").hidden=false;setTab("syn");loadRemote()}}
+</script>
+</html>
