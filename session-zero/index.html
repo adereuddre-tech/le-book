@@ -69,6 +69,7 @@ fieldset{border:0;margin:0;padding:0;min-width:0}
 .motiv{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
 .m{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:9px;grid-template-columns:minmax(0,1fr)}
 @media (min-width:760px){.m{grid-template-columns:minmax(0,1fr) 340px;align-items:center}}
+.sub{font:700 25px/1.1 var(--display);margin:8px 0 0}
 .m h3{font-size:17px;margin:0}.m p{margin:0;font-size:15px;color:var(--muted)}
 .dots{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
 .dot{--c:var(--c3);position:relative;text-align:center;padding:7px 0 5px;border:1px solid var(--line);border-bottom:3px solid var(--c);border-radius:4px;font-size:13px;line-height:1.1;cursor:pointer;background:var(--bg)}
@@ -158,36 +159,24 @@ const AXES=[
   ["Rare mais connue","Le temple local a un prêtre guérisseur. Tout le monde sait que la magie existe, sans la croiser chaque jour."],
   ["Courante","Une guilde de guérisseurs affiche ses tarifs. Des lanternes enchantées éclairent la rue principale."],
   ["Omniprésente","Tu prends un ticket à l'apothicaire automate. Des navires volants desservent le port et les enfants apprennent leurs sorts à l'école."]]},
- {id:"ton",t:"Ton général",l:"Léger",r:"Sombre",scene:"Le village que vous protégiez a été attaqué pendant votre absence.",o:[
-  ["Comique","Des gobelins ont volé toutes les cloches et veulent apprendre à en jouer. La soirée finit à la taverne."],
-  ["Léger","Quelques blessés et une grange brûlée. Les villageois vous offrent quand même un banquet."],
-  ["Aventure avec du poids","Il y a des morts, dont le forgeron qui vous aimait bien. Le deuil est réel, et l'espoir reste à portée de main."],
-  ["Sombre","Les survivants vous reprochent votre absence. Aucune décision ne sauvera tout le monde."],
-  ["Désespéré","Le village est vide et les enfants ont disparu. Le monde empire, et vous sauvez seulement ce qui peut l'être."]]},
- {id:"morale",t:"Moralité du groupe",l:"Héros",r:"Anti-héros",scene:"Un marchand offre 500 pièces pour ramener un voleur qui nourrissait sa famille.",o:[
-  ["Sans tache","Vous refusez, vous aidez la famille et vous faites honte au marchand."],
-  ["Faillibles","Vous hésitez, vous cherchez un compromis et vous en payez le prix. Au fond, vous voulez bien faire."],
-  ["Zone grise","Chacun a ses raisons. Vous gardez l'or ou non, et personne ne dira qui avait raison."],
-  ["Intéressés","L'argent d'abord, avec quelques principes : le voleur revient vivant, et le prix monte."],
-  ["Sans scrupules","Vous livrez le voleur, puis vous revenez cambrioler le marchand la nuit suivante."]]},
+ {id:"morale",t:"Moralité du groupe",l:"Héros",r:"Anti-héros",scene:"Un baron vous reçoit : vin à volonté, table de jeu et une place à sa cour, si vous fermez les yeux sur ses paysans affamés.",o:[
+  ["Sans tache","Vous refusez ses faveurs et vous dénoncez le baron devant ses paysans."],
+  ["Faillibles","Une nuit de festin et quelques parties de dés, puis la mauvaise conscience vous pousse à agir."],
+  ["Zone grise","Chacun a son faible : l'un boit, l'autre joue, le troisième rêve d'un titre. Personne ne dira qui a raison."],
+  ["Esclaves de vos vices","Le vin, le jeu et la cour passent d'abord. Vous aidez les paysans quand ça ne vous coûte rien."],
+  ["Sans scrupules","Vous profitez de tout, puis vous faites chanter le baron pour lui prendre sa place."]]},
  {id:"cooperation",t:"Relations entre joueurs",l:"Compétitif",r:"Coopératif",scene:"Le groupe trouve une épée ancienne, et deux personnages la veulent.",o:[
   ["Compétition ouverte","Vol, trahison et duel sont permis. Le plus malin la garde, même si le groupe explose."],
   ["Rivalité mordante","On peut se mentir et se doubler, mais pas se tuer ni se ruiner sans accord."],
   ["Tensions en jeu","Dispute mémorable et rancune durable entre personnages. Autour de la table, tout le monde s'en amuse."],
   ["Coopératif avec frictions","Un court débat en personnage, puis une décision commune. Le désaccord reste s'il sert l'histoire."],
   ["Solidarité totale","Les joueurs décident ensemble qui en tirera le plus. Le groupe ne se divise jamais pour de bon."]]},
- {id:"narration",t:"Qui raconte",l:"Narration par le MJ",r:"Conarration",scene:"Tu réussis à convaincre le capitaine de la garde.",o:[
-  ["MJ seul","Tu annonces ton intention et le MJ raconte tout ce qui se passe."],
-  ["MJ et répliques","Le MJ décrit le résultat. Tu ajoutes la réplique et le geste de ton personnage."],
-  ["Aux bons moments","Sur une belle réussite, le MJ demande : « Comment tu t'y prends ? » Ta réponse devient vraie."],
-  ["Invention encouragée","Tu décides que le capitaine est ton ancien camarade de régiment, et le MJ l'intègre à la suite."],
-  ["Conarration pleine","Chacun peut cadrer une scène, créer un PNJ ou ajouter une complication. Le MJ arbitre et donne le tempo."]]},
- {id:"monde",t:"Qui invente le monde",l:"Le MJ",r:"Toute la table",scene:"« Qui gouverne cette ville ? »",o:[
-  ["Monde du MJ","Le MJ le sait déjà. Vous découvrirez les lieux, les dieux et les factions en jouant."],
-  ["Mon coin de carte","Le MJ a tout préparé. Tu peux proposer ton village natal et ta famille."],
-  ["Questions ciblées","« Ton personnage a fui cette ville. Qui y a pris le pouvoir ? » Le MJ construit à partir de ta réponse."],
-  ["Création partagée","En session zéro, chacun crée une faction, un lieu ou un mystère. Le MJ les relie."],
-  ["Monde collectif","Personne ne le sait encore. La table le décide maintenant, et le monde grandit à chaque séance."]]},
+ {id:"narration",t:"Qui raconte et invente le monde",l:"Le MJ",r:"Toute la table",scene:"Tu convaincs le capitaine de la garde, puis tu te demandes qui gouverne cette ville.",o:[
+  ["MJ seul","Tu annonces ton intention, le MJ raconte le résultat. Il sait déjà qui gouverne, et vous le découvrirez en jouant."],
+  ["MJ et répliques","Le MJ décrit, tu ajoutes la réplique de ton personnage. Tu peux proposer ton village natal et ta famille."],
+  ["Questions ciblées","Le MJ demande : « Ton personnage a fui cette ville. Qui y a pris le pouvoir ? » Ta réponse devient vraie."],
+  ["Invention encouragée","Tu décides que le capitaine est ton ancien camarade de régiment. Chacun crée une faction ou un lieu, que le MJ relie."],
+  ["Conarration pleine","Chacun peut cadrer une scène, créer un PNJ ou une faction. Qui gouverne ? La table le décide maintenant."]]},
  {id:"structure",t:"Liberté dans l'intrigue",l:"Scénario guidé",r:"Bac à sable",scene:"Une princesse a été enlevée, mais le groupe préfère fouiller une mine abandonnée.",o:[
   ["Fil tenu","Le MJ vous ramène vers la princesse. La campagne a une intrigue précise, et vous avez envie de la suivre."],
   ["Fil souple","La mine vous occupe une soirée, puis un indice vous ramène à la princesse. Le chemin change, pas le but."],
@@ -212,36 +201,18 @@ const AXES=[
   ["Contact commun","Un même mécène ou un ami commun vous réunit pour une mission."],
   ["Événement fondateur","Vous avez survécu au même naufrage, et ce souvenir vous lie."],
   ["Histoire commune","Fratrie ou compagnons d'armes depuis des années, avec vos vieilles dettes et vos blagues."]]},
- {id:"regles",t:"Poids des règles",l:"Narratif, règles légères",r:"Simulationniste, règles lourdes",scene:"Tu veux escalader un rempart sous la pluie, en armure.",o:[
-  ["Récit d'abord","Le MJ juge : « Ça passe, mais tu perds ton bouclier. » Souvent sans jet."],
-  ["Léger","Un seul jet décide. La fiche sert seulement quand il y a un vrai risque."],
-  ["Équilibré","Un jet contre une difficulté fixée par le MJ. Règles suivies en combat, souplesse ailleurs."],
-  ["Détaillé","L'armure, la pluie et la durée comptent. On applique les modificateurs et les règles de terrain."],
-  ["Simulation","Encombrement, vitesse par tour, fatigue, hauteur de chute : tout se calcule."]]},
- {id:"arbitrage",t:"Litiges de règles",l:"Le MJ tranche",r:"Le texte fait foi",scene:"Désaccord sur une règle au milieu d'un combat tendu.",o:[
-  ["Parole du MJ","Décision en dix secondes, sans discussion, même après."],
-  ["Vérifié après","Le MJ tranche, on continue, et on regarde le livre après la séance."],
-  ["Une minute","Quelqu'un cite la règle, on échange une minute et le MJ décide."],
-  ["Livre ouvert","On ouvre le livre. Le texte l'emporte, sauf règle maison annoncée."],
-  ["Texte strict","La règle exacte compte autant que le combat, et chaque décision est notée pour la suite."]]},
- {id:"optimisation",t:"Construction du personnage",l:"Concept",r:"Efficacité",scene:"Tu choisis tes capacités au passage de niveau.",o:[
-  ["Concept pur","Tu prends ce qui colle au personnage, même si c'est faible. Il joue de la cornemuse parce que c'est drôle."],
-  ["Concept d'abord","L'histoire du personnage décide, avec un peu de bon sens pour rester utile."],
-  ["Équilibre","Un personnage cohérent et efficace. Personne ne se sent largué."],
-  ["Optimisation assumée","Tu prépares tes niveaux et tu cherches les combinaisons, avec une histoire crédible."],
-  ["Build maximal","Chaque choix est calculé. Trouver les synergies fait partie du plaisir, et le MJ ajuste le défi."]]},
+ {id:"regles",t:"Poids des règles",l:"Narratif, règles légères",r:"Règles détaillées",scene:"Tu veux escalader un rempart sous la pluie, en armure, et quelqu'un conteste la règle appliquée.",o:[
+  ["Récit pur","Pas de jet : on raconte ce qui arrive. Le MJ tranche les doutes sans discussion."],
+  ["Récit d'abord","Le MJ juge : « Ça passe, mais tu perds ton bouclier. » Souvent sans jet. Un doute se règle en dix secondes."],
+  ["Équilibré","Un seul jet décide. La fiche sert seulement quand il y a un vrai risque. Le MJ tranche, on vérifie le livre après la séance."],
+  ["Cadré","Un jet contre une difficulté fixée par le MJ. Règles suivies en combat, souplesse ailleurs. On échange une minute, puis le MJ décide."],
+  ["Détaillé","L'armure, la pluie et la durée comptent : modificateurs et règles de terrain. On ouvre le livre, et le texte l'emporte."]]},
  {id:"jets",t:"Jets du MJ",l:"Derrière l'écran",r:"Sur la table",scene:"Un monstre porte un coup qui ferait tomber ton personnage.",o:[
   ["Écran libre","Le MJ lance en secret et peut ajuster le résultat pour servir l'histoire."],
   ["Caché, respecté","Les jets restent cachés pour le mystère, mais le MJ suit les dés."],
   ["Mixte","Attaques visibles. Perception et pièges restent derrière l'écran."],
   ["Presque tout visible","Seuls les jets que les personnages ne doivent pas deviner restent cachés."],
-  ["Table ouverte","Tout se voit, y compris les difficultés. Si le dé tue, le dé tue."]]},
- {id:"savoir",t:"Savoir du joueur et du personnage",l:"Cloison stricte",r:"Secrets ouverts",scene:"Toi, tu sais que ce marchand est un traître. Ton personnage ne le sait pas.",o:[
-  ["Étanche","Le MJ passe des notes secrètes pour que tu ne l'apprennes même pas."],
-  ["Effort sincère","Tu joues l'ignorance. Si tu dérapes, quelqu'un te le rappelle gentiment."],
-  ["Pragmatique","On sépare quand ça compte, sans faire la police sur les détails."],
-  ["Ironie dramatique","Ton personnage lui confie tout, pour le plaisir de voir venir la catastrophe."],
-  ["Tout partagé","Aucun secret entre joueurs. On construit les trahisons ensemble."]]}
+  ["Table ouverte","Tout se voit, y compris les difficultés. Si le dé tue, le dé tue."]]}
 ];
 const MOTIV=[
  {id:"m_acting",t:"Incarner un rôle",ex:"Prendre la voix de ton personnage et tenir tête à un roi sans lancer un dé."},
@@ -269,14 +240,13 @@ const FLAV=[
 const SCALE_IDS=[...AXES.map(a=>a.id),...MOTIV.map(m=>m.id)];
 const MIN_IDS=SCALE_IDS;
 const THEMES=[
- {t:"Le monde et le ton",ids:["ton","morale","magie","realisme","letalite"]},
+ {t:"Le monde",ids:["magie","realisme","letalite","morale"]},
  {t:"L'histoire",ids:["structure","rythme","backgrounds","liens"]},
- {t:"La table",ids:["cooperation","narration","monde"]},
- {t:"Les règles",ids:["regles","optimisation","arbitrage","jets"]}
+ {t:"Le style de jeu",ids:["cooperation","narration","regles","jets"]}
 ];
-const ORDERED=[...THEMES.flatMap(x=>x.ids),"savoir"].map(id=>AXES.find(a=>a.id===id));
+const ORDERED=THEMES.flatMap(x=>x.ids).map(id=>AXES.find(a=>a.id===id));
 const ENDPOINT="";
-const DRAFT="sondage-session-zero-v1";
+const DRAFT="sondage-session-zero-v2";
 let state={name:"",answers:{},flavors:[]};
 
 function h(tag,attrs,...kids){const e=document.createElement(tag);
@@ -311,12 +281,11 @@ function buildForm(){form.replaceChildren();
  FLAV.forEach(f=>grid.append(h("label",{class:"flav"},h("input",{type:"checkbox",id:"f-"+f[0],value:f[0],checked:state.flavors.includes(f[0]),onchange:e=>{
     if(e.target.checked){if(state.flavors.length<3)state.flavors.push(f[0])}else state.flavors=state.flavors.filter(i=>i!==f[0]);lockFlav();saveDraft()}}),
    h("b",{text:f[1]}),h("small",{text:f[2]}))));
- form.append(h("section",{class:"bloc"},h("h2",{text:"Les thèmes"}),h("p",{class:"intro",text:"Trois au maximum."}),grid));
+ form.append(h("section",{class:"bloc"},h("h2",{text:"Le genre"}),h("p",{class:"intro",text:"Trois au maximum."}),grid));
  THEMES.forEach(th=>form.append(h("section",{class:"bloc"},h("h2",{text:th.t}),th.ids.map(id=>axisCard(AXES.find(a=>a.id===id))))));
- form.append(h("section",{class:"bloc"},h("h2",{text:"Ce qui t'attire"}),h("div",{class:"motiv"},MOTIV.map(m=>h("fieldset",{class:"m",id:"q-"+m.id},
+ form.lastChild.append(h("h3",{class:"sub",text:"Ce qui t'attire"}),h("div",{class:"motiv"},MOTIV.map(m=>h("fieldset",{class:"m",id:"q-"+m.id},
   h("div",null,h("h3",{text:m.t}),h("p",{text:m.ex})),
-  h("div",{class:"dots"},[1,2,3,4,5].map(n=>h("label",{class:"dot c"+n},radio(m.id,n,state.answers[m.id]===n),h("b",{text:String(n)}),MK[n-1]))))))));
- form.append(h("section",{class:"bloc"},h("h2",{text:"Metagaming"}),axisCard(AXES.find(a=>a.id==="savoir"))));
+  h("div",{class:"dots"},[1,2,3,4,5].map(n=>h("label",{class:"dot c"+n},radio(m.id,n,state.answers[m.id]===n),h("b",{text:String(n)}),MK[n-1])))))));
  const out=h("div",{id:"out",role:"status","aria-live":"polite"});
  form.append(h("section",{class:"send"},h("p",{id:"missing",class:"small",style:"margin:0"}),
   h("div",null,h("button",{class:"btn",id:"sendbtn",type:"button",text:"Envoyer mes réponses",onclick:submit})),out));
@@ -385,7 +354,7 @@ function renderSyn(){const ps=people();syn.replaceChildren();
   return h("article",{class:"ax"},h("div",{class:"ax-h"},h("h3",null,a.t,v?h("span",{class:"pill "+v[0],text:v[1]}):null),h("span",{class:"num",text:s.n?("Moyenne "+fmt(s.avg)+" · écart "+s.range):"Sans réponse"})),
    h("div",{class:"poles"},h("span",{text:a.l}),h("span",{text:a.r})),strip(a.id,ps),
    h("div",{class:"num",text:s.n?a.o.map((o,i)=>(i+1)+" "+o[0]).join(" · "):""}))})));
- syn.append(h("section",{class:"bloc"},h("h2",{text:"Envies de joueurs"}),MOTIV.map(m=>{const s=stats(m.id,ps);return{m,s}}).sort((a,b)=>b.s.avg-a.s.avg).map(({m,s})=>h("article",{class:"ax"},h("div",{class:"ax-h"},h("h3",{text:m.t}),h("span",{class:"num",text:s.n?("Moyenne "+fmt(s.avg)+" · écart "+s.range):"Sans réponse"})),strip(m.id,ps)))));
+ syn.append(h("section",{class:"bloc"},h("h2",{text:"Ce qui t'attire"}),MOTIV.map(m=>{const s=stats(m.id,ps);return{m,s}}).sort((a,b)=>b.s.avg-a.s.avg).map(({m,s})=>h("article",{class:"ax"},h("div",{class:"ax-h"},h("h3",{text:m.t}),h("span",{class:"num",text:s.n?("Moyenne "+fmt(s.avg)+" · écart "+s.range):"Sans réponse"})),strip(m.id,ps)))));
  const cnt=FLAV.map(f=>({f,n:ps.filter(p=>p.flavors.includes(f[0])).length,who:ps.filter(p=>p.flavors.includes(f[0])).map(p=>p.tag).join(" ")})).sort((a,b)=>b.n-a.n);
  const mx=Math.max(1,ps.length);
  syn.append(h("section",{class:"bloc"},h("h2",{text:"Saveurs choisies"}),h("div",{class:"bars lim"},cnt.map(c=>h("div",{class:"barrow"},h("span",{text:c.f[1]}),h("span",{title:c.who},h("i",{style:"width:"+(100*c.n/mx)+"%"})),h("span",{class:"num",text:String(c.n)}))))));
