@@ -141,78 +141,78 @@ fieldset{border:0;margin:0;padding:0;min-width:0}
 <script>
 "use strict";
 const AXES=[
- {id:"letalite",t:"Mort des personnages",l:"Non létal",r:"Létal",scene:"Le groupe perd un combat contre une bande de brigands.",o:[
-  ["Aucun risque","Les brigands vous assomment et vous volent. Vous vous réveillez dans le fossé, sans bourse. Personne ne meurt."],
-  ["Mort choisie","Un personnage meurt seulement si son joueur le décide, par exemple pour couvrir la fuite des autres."],
-  ["Rare et annoncée","La mort reste possible quand l'enjeu est clair : « Si tu restes sur ce pont, tu peux y rester. »"],
-  ["Risque réel","Les dés peuvent tuer dans un combat important. Le MJ ne retient pas ses coups."],
-  ["Sans filet","Les brigands achèvent les blessés. Une embuscade banale peut coûter un personnage."]]},
- {id:"realisme",t:"Réalisme",l:"Réaliste, gritty",r:"Cinématique",scene:"Ton personnage saute du balcon vers le lustre pour atteindre le duc.",o:[
-  ["Cru","Chute probable et cheville brisée : trois semaines de convalescence. Chaque blessure, ration et flèche compte."],
-  ["Rugueux","Possible, mais très risqué. Le lustre pèse cent kilos et peut céder. Les blessures laissent des traces."],
-  ["Héroïque crédible","Un jet raisonnable suffit. Tu atterris mal, et une nuit de repos te remet sur pied."],
-  ["Spectaculaire","Tu te balances et tu retombes sur la table du banquet. Le panache compte plus que le poids du lustre."],
-  ["Film d'action","Tu tranches la chaîne en plein vol, le lustre écrase la garde et tu te poses devant le duc sans une éraflure."]]},
  {id:"magie",t:"Place de la magie",l:"Rare, low fantasy",r:"Répandue, high fantasy",scene:"Vous arrivez dans une ville de province et cherchez à soigner un compagnon.",o:[
   ["Presque absente","Personne n'a jamais vu de sort. Votre mage fait fuir le village ou finit devant un tribunal."],
   ["Rare et crainte","Une vieille rebouteuse connaît un rituel coûteux. Pour un objet magique, on est prêt à tuer."],
   ["Rare mais connue","Le temple local a un prêtre guérisseur. Tout le monde sait que la magie existe, sans la croiser chaque jour."],
   ["Courante","Une guilde de guérisseurs affiche ses tarifs. Des lanternes enchantées éclairent la rue principale."],
   ["Omniprésente","Tu prends un ticket à l'apothicaire automate. Des navires volants desservent le port et les enfants apprennent leurs sorts à l'école."]]},
- {id:"morale",t:"Moralité du groupe",l:"Héros",r:"Anti-héros",scene:"Un baron vous reçoit : vin à volonté, table de jeu et une place à sa cour, si vous fermez les yeux sur ses paysans affamés.",o:[
-  ["Sans tache","Vous refusez ses faveurs et vous dénoncez le baron devant ses paysans."],
-  ["Faillibles","Une nuit de festin et quelques parties de dés, puis la mauvaise conscience vous pousse à agir."],
-  ["Zone grise","Chacun a son faible : l'un boit, l'autre joue, le troisième rêve d'un titre. Personne ne dira qui a raison."],
+ {id:"realisme",t:"Réalisme",l:"Cinématique",r:"Réaliste, gritty",scene:"Ton personnage saute du balcon vers le lustre pour atteindre le duc.",o:[
+  ["Film d'action","Tu tranches la chaîne en plein vol, le lustre écrase la garde et tu te poses devant le duc sans une éraflure."],
+  ["Spectaculaire","Tu te balances et tu retombes sur la table du banquet. Le panache compte plus que le poids du lustre."],
+  ["Héroïque crédible","Un jet raisonnable suffit. Tu atterris mal, et une nuit de repos te remet sur pied."],
+  ["Rugueux","Possible, mais très risqué. Le lustre pèse cent kilos et peut céder. Les blessures laissent des traces."],
+  ["Cru","Chute probable et cheville brisée : trois semaines de convalescence. Chaque blessure, ration et flèche compte."]]},
+ {id:"letalite",t:"Mort des personnages",l:"Non létal",r:"Létal",scene:"Le groupe perd un combat contre une bande de brigands.",o:[
+  ["Aucun risque","Les brigands vous assomment et vous volent. Vous vous réveillez dans le fossé, sans bourse. Personne ne meurt."],
+  ["Mort choisie","Un personnage meurt seulement si son joueur le décide, par exemple pour couvrir la fuite des autres."],
+  ["Rare et annoncée","La mort reste possible quand l'enjeu est clair : « Si tu restes sur ce pont, tu peux y rester. »"],
+  ["Risque réel","Les dés peuvent tuer dans un combat important. Le MJ ne retient pas ses coups."],
+  ["Sans filet","Les brigands achèvent les blessés. Une embuscade banale peut coûter un personnage."]]},
+ {id:"morale",t:"Moralité du groupe",l:"Anti-héros",r:"Héros",scene:"Un baron vous reçoit : vin à volonté, table de jeu et une place à sa cour, si vous fermez les yeux sur ses paysans affamés.",o:[
+  ["Sans scrupules","Vous profitez de tout, puis vous faites chanter le baron pour lui prendre sa place."],
   ["Esclaves de vos vices","Le vin, le jeu et la cour passent d'abord. Vous aidez les paysans quand ça ne vous coûte rien."],
-  ["Sans scrupules","Vous profitez de tout, puis vous faites chanter le baron pour lui prendre sa place."]]},
- {id:"cooperation",t:"Relations entre joueurs",l:"Compétitif",r:"Coopératif",scene:"Le groupe trouve une épée ancienne, et deux personnages la veulent.",o:[
-  ["Compétition ouverte","Vol, trahison et duel sont permis. Le plus malin la garde, même si le groupe explose."],
-  ["Rivalité mordante","On peut se mentir et se doubler, mais pas se tuer ni se ruiner sans accord."],
-  ["Tensions en jeu","Dispute mémorable et rancune durable entre personnages. Autour de la table, tout le monde s'en amuse."],
-  ["Coopératif avec frictions","Un court débat en personnage, puis une décision commune. Le désaccord reste s'il sert l'histoire."],
-  ["Solidarité totale","Les joueurs décident ensemble qui en tirera le plus. Le groupe ne se divise jamais pour de bon."]]},
- {id:"narration",t:"Qui raconte et invente le monde",l:"Le MJ",r:"Toute la table",scene:"Tu convaincs le capitaine de la garde, puis tu te demandes qui gouverne cette ville.",o:[
-  ["MJ seul","Tu annonces ton intention, le MJ raconte le résultat. Il sait déjà qui gouverne, et vous le découvrirez en jouant."],
-  ["MJ et répliques","Le MJ décrit, tu ajoutes la réplique de ton personnage. Tu peux proposer ton village natal et ta famille."],
-  ["Questions ciblées","Le MJ demande : « Ton personnage a fui cette ville. Qui y a pris le pouvoir ? » Ta réponse devient vraie."],
-  ["Invention encouragée","Tu décides que le capitaine est ton ancien camarade de régiment. Chacun crée une faction ou un lieu, que le MJ relie."],
-  ["Conarration pleine","Chacun peut cadrer une scène, créer un PNJ ou une faction. Qui gouverne ? La table le décide maintenant."]]},
+  ["Zone grise","Chacun a son faible : l'un boit, l'autre joue, le troisième rêve d'un titre. Personne ne dira qui a raison."],
+  ["Faillibles","Une nuit de festin et quelques parties de dés, puis la mauvaise conscience vous pousse à agir."],
+  ["Sans tache","Vous refusez ses faveurs et vous dénoncez le baron devant ses paysans."]]},
  {id:"structure",t:"Liberté dans l'intrigue",l:"Scénario guidé",r:"Bac à sable",scene:"Une princesse a été enlevée, mais le groupe préfère fouiller une mine abandonnée.",o:[
   ["Fil tenu","Le MJ vous ramène vers la princesse. La campagne a une intrigue précise, et vous avez envie de la suivre."],
   ["Fil souple","La mine vous occupe une soirée, puis un indice vous ramène à la princesse. Le chemin change, pas le but."],
   ["Grands arcs","Plusieurs conflits avancent en parallèle. Si vous ignorez la princesse, les enjeux changent."],
   ["Joueurs moteurs","La mine devient l'intrigue principale si vous le voulez. Le MJ prépare la suite d'après vos objectifs."],
   ["Bac à sable","Pas d'intrigue principale. Une carte, des factions, des rumeurs : vous allez où vous voulez."]]},
- {id:"rythme",t:"Rythme de la campagne",l:"Épisodique",r:"Feuilleton",scene:"Vous venez de chasser le dragon de la vallée.",o:[
+ {id:"rythme",t:"Continuité entre les séances",l:"Épisodique",r:"Feuilleton",scene:"Vous venez de chasser le dragon de la vallée.",o:[
   ["Épisodes","Prochaine séance, nouvelle mission. Tu peux en rater une sans rien perdre."],
   ["Épisodes et fil rouge","Nouvelle mission, avec un ennemi qui revient de temps en temps."],
   ["Mélange","Des aventures autonomes nourrissent un arc de fond : le dragon travaillait pour quelqu'un."],
   ["Feuilleton","Chaque séance découle de la précédente. L'or du dragon déclenche une guerre dont vous êtes responsables."],
   ["Saga","Tout est lié. Un détail de la séance 3 devient décisif à la séance 30."]]},
- {id:"backgrounds",t:"Histoires des personnages",l:"Décor",r:"Moteur de la campagne",scene:"Ton personnage a écrit qu'il cherche sa sœur disparue.",o:[
+ {id:"backgrounds",t:"Poids des histoires des personnages",l:"Décor",r:"Moteur de la campagne",scene:"Ton personnage a écrit qu'il cherche sa sœur disparue.",o:[
   ["Couleur","Ce passé habille le personnage. L'intrigue vient d'ailleurs."],
   ["Clin d'œil","Un PNJ mentionne ta sœur un jour, sans grande conséquence."],
   ["Arc secondaire","Une aventure lui est consacrée, au sein d'une intrigue plus large."],
   ["Arc majeur","Ta sœur est liée au grand méchant, et chaque personnage a un moment de ce genre."],
   ["Cœur du récit","Les histoires des personnages forment la campagne. Le MJ construit tout à partir de vos fiches."]]},
- {id:"liens",t:"Liens de départ",l:"Inconnus",r:"Passé commun",scene:"La première scène de la campagne s'ouvre.",o:[
+ {id:"liens",t:"Liens entre personnages au départ",l:"Inconnus",r:"Passé commun",scene:"La première scène de la campagne s'ouvre.",o:[
   ["Inconnus","Vous vous croisez à la taverne, et il vous reste tout à découvrir."],
   ["Hasard","Une diligence attaquée vous force à vous battre côte à côte."],
   ["Contact commun","Un même mécène ou un ami commun vous réunit pour une mission."],
   ["Événement fondateur","Vous avez survécu au même naufrage, et ce souvenir vous lie."],
   ["Histoire commune","Fratrie ou compagnons d'armes depuis des années, avec vos vieilles dettes et vos blagues."]]},
+ {id:"cooperation",t:"Coopération entre joueurs",l:"Compétitif",r:"Coopératif",scene:"Le groupe trouve une épée ancienne, et deux personnages la veulent.",o:[
+  ["Compétition ouverte","Vol, trahison et duel sont permis. Le plus malin la garde, même si le groupe explose."],
+  ["Rivalité mordante","On peut se mentir et se doubler, mais pas se tuer ni se ruiner sans accord."],
+  ["Tensions en jeu","Dispute mémorable et rancune durable entre personnages. Autour de la table, tout le monde s'en amuse."],
+  ["Coopératif avec frictions","Un court débat en personnage, puis une décision commune. Le désaccord reste s'il sert l'histoire."],
+  ["Solidarité totale","Les joueurs décident ensemble qui en tirera le plus. Le groupe ne se divise jamais pour de bon."]]},
+ {id:"narration",t:"Part des joueurs dans le récit et le monde",l:"Le MJ",r:"Toute la table",scene:"Tu convaincs le capitaine de la garde, puis tu te demandes qui gouverne cette ville.",o:[
+  ["MJ seul","Tu annonces ton intention, le MJ raconte le résultat. Il sait déjà qui gouverne, et vous le découvrirez en jouant."],
+  ["MJ et répliques","Le MJ décrit, tu ajoutes la réplique de ton personnage. Tu peux proposer ton village natal et ta famille."],
+  ["Questions ciblées","Le MJ demande : « Ton personnage a fui cette ville. Qui y a pris le pouvoir ? » Ta réponse devient vraie."],
+  ["Invention encouragée","Tu décides que le capitaine est ton ancien camarade de régiment. Chacun crée une faction ou un lieu, que le MJ relie."],
+  ["Conarration pleine","Chacun peut cadrer une scène, créer un PNJ ou une faction. Qui gouverne ? La table le décide maintenant."]]},
  {id:"regles",t:"Poids des règles",l:"Narratif, règles légères",r:"Règles détaillées",scene:"Tu veux escalader un rempart sous la pluie, en armure, et quelqu'un conteste la règle appliquée.",o:[
   ["Récit pur","Pas de jet : on raconte ce qui arrive. Le MJ tranche les doutes sans discussion."],
   ["Récit d'abord","Le MJ juge : « Ça passe, mais tu perds ton bouclier. » Souvent sans jet. Un doute se règle en dix secondes."],
   ["Équilibré","Un seul jet décide. La fiche sert seulement quand il y a un vrai risque. Le MJ tranche, on vérifie le livre après la séance."],
   ["Cadré","Un jet contre une difficulté fixée par le MJ. Règles suivies en combat, souplesse ailleurs. On échange une minute, puis le MJ décide."],
   ["Détaillé","L'armure, la pluie et la durée comptent : modificateurs et règles de terrain. On ouvre le livre, et le texte l'emporte."]]},
- {id:"jets",t:"Jets du MJ",l:"Derrière l'écran",r:"Sur la table",scene:"Un monstre porte un coup qui ferait tomber ton personnage.",o:[
+ {id:"jets",t:"Transparence des jets du MJ",l:"Tout caché",r:"Tout sur la table",scene:"Un monstre porte un coup qui ferait tomber ton personnage.",o:[
   ["Écran libre","Le MJ lance en secret et peut ajuster le résultat pour servir l'histoire."],
-  ["Caché, respecté","Les jets restent cachés pour le mystère, mais le MJ suit les dés."],
-  ["Mixte","Attaques visibles. Perception et pièges restent derrière l'écran."],
-  ["Presque tout visible","Seuls les jets que les personnages ne doivent pas deviner restent cachés."],
-  ["Table ouverte","Tout se voit, y compris les difficultés. Si le dé tue, le dé tue."]]}
+  ["Caché, respecté","Tous les jets du MJ restent derrière l'écran, mais il suit les dés sans tricher."],
+  ["Combats visibles","Attaques et dégâts se lancent sur la table. Perception, pièges et PNJ restent derrière l'écran."],
+  ["Dés visibles","Tous les jets se lancent sur la table, mais le MJ garde secrètes les difficultés et les défenses."],
+  ["Table ouverte","Jets et difficultés sont annoncés avant de lancer. Si le dé tue, le dé tue."]]}
 ];
 const MOTIV=[
  {id:"m_acting",t:"Incarner un rôle",ex:"Prendre la voix de ton personnage et tenir tête à un roi sans lancer un dé."},
@@ -246,7 +246,7 @@ const THEMES=[
 ];
 const ORDERED=THEMES.flatMap(x=>x.ids).map(id=>AXES.find(a=>a.id===id));
 const ENDPOINT="https://script.google.com/macros/s/AKfycbyk2FU1ByKB6ytVM0BUrcrX7mK7gJkGOFxsqUDjt1cAosh4YRQSGg5FeXd2AG8S2tkd/exec";
-const DRAFT="sondage-session-zero-v2";
+const DRAFT="sondage-session-zero-v3";
 let state={name:"",answers:{},flavors:[]};
 
 function h(tag,attrs,...kids){const e=document.createElement(tag);
