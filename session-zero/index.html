@@ -88,6 +88,9 @@ fieldset{border:0;margin:0;padding:0;min-width:0}
 .two{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
 .private{display:flex;gap:8px;align-items:baseline;font-size:15px;margin:0;color:var(--muted)}
 .btn{appearance:none;border:1px solid var(--violet);background:var(--violet);color:var(--surface);font:700 17px var(--body);padding:10px 18px;border-radius:5px;cursor:pointer}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn.danger{color:var(--crit);border-color:var(--crit)}
+.btn.danger[data-c="1"]{background:var(--crit);color:var(--surface)}
 .btn.alt{background:none;color:var(--fg);border-color:var(--line);font-weight:500;font-size:15px;padding:7px 12px}
 .btn:disabled{opacity:.6;cursor:progress}
 .send{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;display:grid;gap:12px}
@@ -348,7 +351,7 @@ function renderSyn(){const ps=people();syn.replaceChildren();
   h("div",{class:"stat"},h("b",{text:String(ng)}),"aligné(s)")));
  syn.append(h("div",{class:"people"},ps.map(p=>{const n=SCALE_IDS.filter(i=>p.answers[i]).length;
   return h("div",{class:"person"},h("span",{class:"chip",text:p.tag}),h("span",{text:(p.name||"Sans nom")+" · "+n+"/"+SCALE_IDS.length}),removeBtn(p))})));
- syn.append(h("div",null,h("button",{class:"btn alt",type:"button",text:"Copier la synthèse en texte",onclick:e=>copySummary(e.target,ps,sc)})));
+ syn.append(h("div",{class:"actions"},h("button",{class:"btn alt",type:"button",text:"Copier la synthèse en texte",onclick:e=>copySummary(e.target,ps,sc)}),clearAllBtn(ps)));
  const order=[...sc].sort((x,y)=>y.s.range-x.s.range||ORDERED.indexOf(x.a)-ORDERED.indexOf(y.a));
  syn.append(h("section",{class:"bloc"},h("h2",{text:"Paramètres de campagne"}),order.map(({a,s})=>{const v=verdict(s);
   return h("article",{class:"ax"},h("div",{class:"ax-h"},h("h3",null,a.t,v?h("span",{class:"pill "+v[0],text:v[1]}):null),h("span",{class:"num",text:s.n?("Moyenne "+fmt(s.avg)+" · écart "+s.range):"Sans réponse"})),
@@ -359,6 +362,16 @@ function renderSyn(){const ps=people();syn.replaceChildren();
  const mx=Math.max(1,ps.length);
  syn.append(h("section",{class:"bloc"},h("h2",{text:"Saveurs choisies"}),h("div",{class:"bars lim"},cnt.map(c=>h("div",{class:"barrow"},h("span",{text:c.f[1]}),h("span",{title:c.who},h("i",{style:"width:"+(100*c.n/mx)+"%"})),h("span",{class:"num",text:String(c.n)}))))));
  syn.append(impBox)}
+function clearAllBtn(ps){const msg=h("span",{class:"small",role:"status"});
+ const b=h("button",{class:"btn alt danger",type:"button",id:"clearall",text:"Effacer toutes les réponses",onclick:async()=>{
+  if(b.dataset.c!=="1"){b.dataset.c="1";b.textContent="Confirmer : effacer les "+ps.length+" réponses";msg.textContent="Cette action est définitive.";return}
+  b.disabled=true;b.textContent="Effacement…";msg.textContent="";let fail=0;
+  for(const p of ps){try{
+    if(p.kind==="remote"){const r=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"delete",key:mjKey,id:p.id})});const j=await r.json();if(!j.ok)fail++}
+    else if(p.path&&api.db)await api.db.doc(p.path).delete();else fail++}catch(e){fail++}}
+  if(ENDPOINT&&mjKey)await loadRemote();else renderSyn();
+  if(fail){const m=document.getElementById("clearall");if(m)m.after(h("span",{class:"err",text:" "+fail+" réponse(s) n'ont pas pu être effacées. Réessaie."}))}}});
+ return h("span",{style:"display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap"},b,msg)}
 function remoteDel(p){const b=h("button",{type:"button",text:"retirer",onclick:async()=>{if(b.dataset.c!=="1"){b.dataset.c="1";b.textContent="confirmer ?";return}
   try{await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"delete",key:mjKey,id:p.id})});await loadRemote()}catch(e){b.textContent="échec"}}});return b}
 async function loadRemote(){try{const r=await fetch(ENDPOINT+"?key="+encodeURIComponent(mjKey));const j=await r.json();
