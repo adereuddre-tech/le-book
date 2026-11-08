@@ -325,7 +325,7 @@ async function submit(){const out=document.getElementById("out"),btn=document.ge
 const syn=document.getElementById("view-syn");
 let mjKey=null;let rows={reponses:[],imports:[],remote:[]},loaded=false,dbNote="";
 function people(){const all=[...rows.reponses.map(r=>({...r,kind:"reponses"})),...rows.imports.map(r=>({...r,kind:"imports"})),...rows.remote.map(r=>({...r,kind:"remote"}))];
- const seen=new Map();all.sort((a,b)=>(a.updatedAt||"").localeCompare(b.updatedAt||"")).forEach(r=>{const key=(r.name||"?").toLowerCase();seen.set(key,r)});
+ const seen=new Map();all.sort((a,b)=>(Date.parse(a.updatedAt)||0)-(Date.parse(b.updatedAt)||0)).forEach(r=>{const key=(r.name||"?").toLowerCase();seen.set(key,r)});
  const list=[...seen.values()].sort((a,b)=>(a.name||"").localeCompare(b.name||"","fr"));
  const used=new Set();list.forEach(p=>{const n=p.name||"?";let tag=n.slice(0,1).toUpperCase(),i=2;while(used.has(tag)&&i<=n.length){tag=n.slice(0,i);i++}used.add(tag);p.tag=tag});return list}
 function stats(id,ps){const v=ps.map(p=>p.answers[id]).filter(Boolean);if(!v.length)return{n:0,avg:0,range:-1};
